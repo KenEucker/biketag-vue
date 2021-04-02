@@ -49,10 +49,10 @@ export default {
   },
   methods: {
     testLogin() {
-            localStorage.setItem('username', this.username);
-            this.$store.commit('setUser');
-            this.username = '';
-            this.password = '';
+      localStorage.setItem('username', this.username);
+      this.$store.commit('setUser');
+      this.username = '';
+      this.password = '';
     },
     login() {
       fetch(`${process.env.VUE_APP_SERVER}/user/login`, {
