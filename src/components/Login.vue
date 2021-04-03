@@ -6,27 +6,9 @@
         <h1 style="color: #fff;">Bike Tag</h1>
       </div>
 
-      <div class="box" v-if="active === 'login'">
-        <div style="display: flex; justify-content: space-around; align-items: center; text-align: center; width: 100%; border-bottom: 3px solid navy;">
-          <h3 @click="active = 'login'" style="width:100%; cursor: pointer; background-color: navy; color: white; padding: 2px;">Login</h3>
-          <h3 @click="active = 'register'; response = 'Usernames must be 6-16 characters and contain only lowercase letters, numbers, hyphens, and underscores.'" style="width:100%; cursor: pointer; padding: 2px;">Register</h3>
-        </div>
+      <div class="box" v-if="!$auth.loading">
         <div style="display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; height: 100%; width: 80%;">
-          <input v-model="username" type="text" placeholder="Username" />
-          <input v-model="password" type="password" placeholder="Password" />
-          <input type="button" value="Submit" @click="testLogin()">
-        </div>
-      </div>
-
-      <div class="box" v-if="active === 'register'">
-        <div style="display: flex; justify-content: space-around; align-items: center; text-align: center; width: 100%; border-bottom: 3px solid navy;">
-          <h3 @click="active = 'login'; response=''" style="width:100%; cursor: pointer; padding: 2px;">Login</h3>
-          <h3 @click="active = 'register'" style="width:100%; cursor: pointer; background-color: navy; color: white; padding: 2px;">Register</h3>
-        </div>
-        <div style="display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; height: 100%; width: 80%;">
-          <input v-model="username" type="text" placeholder="Username" />
-          <input v-model="password" type="password" placeholder="Password" />
-          <input type="button" value="Submit" @click="register()">
+          <input type="button" value="Login" @click="login">
         </div>
       </div>
 
@@ -48,49 +30,8 @@ export default {
     };
   },
   methods: {
-    testLogin() {
-      localStorage.setItem('username', this.username);
-      this.$store.commit('setUser');
-      this.username = '';
-      this.password = '';
-    },
     login() {
-      fetch(`${process.env.VUE_APP_SERVER}/user/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: this.username, password: this.password }),
-      })
-        .then(res => res.json())
-        .then((data) => {
-          if (data.message === 'Login successful.') {
-            this.username = '';
-            this.password = '';
-            localStorage.setItem('username', data.username);
-            localStorage.setItem('id', data.id);
-            localStorage.setItem('token', data.token);
-            this.$store.commit('setUser');
-          } else {
-            this.response = 'Login failed.';
-          }
-        })
-        .catch(err => this.response = 'Login failed.');
-    },
-    register() {
-      fetch(`${process.env.VUE_APP_SERVER}/user/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: this.username, password: this.password }),
-      })
-        .then(res => res.json())
-        .then((data) => {
-          if (data === 'User created.') {
-            this.active = 'login';
-            this.response = `${data} Please log in.`;
-          } else {
-            this.response = 'Registration failed. Please try again. Usernames must 6-16 characters and contain only lowercase letters, numbers, hyphens, and underscores.';
-          }
-        })
-        .catch(err => this.response = err);
+      this.$auth.loginWithRedirect();
     },
   },
 };

@@ -2,11 +2,11 @@
 
   <div id="app">
 
-    <div v-if="username === undefined">
+    <div v-if="!$auth.isAuthenticated">
       <Login />
     </div>
 
-    <div v-if="username !== undefined">
+    <div v-if="$auth.isAuthenticated">
       <div class="header">
         <h1 style="color: #fff;">Bike Tag</h1>
       </div>
