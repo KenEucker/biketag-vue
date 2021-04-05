@@ -4,7 +4,7 @@ import router from './router';
 import store from './store';
 import './registerServiceWorker';
 import { Auth0Plugin } from "./auth";
-import { domain, clientId } from "../auth_config.json";
+import { domain, clientId } from "../config.json";
 
 // Install authentication
 Vue.use(Auth0Plugin, {

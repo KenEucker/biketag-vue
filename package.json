@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "dev": "vue-cli-service serve --port 3000",
+    "staging": "vue-cli-service serve --mode staging",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
@@ -21,9 +22,6 @@
     "@vue/cli-service": "^3.0.5",
     "@vue/eslint-config-airbnb": "^3.0.5",
     "vue-template-compiler": "^2.5.17"
-  },
-  "devServer": {
-    "port": 3000
   },
   "eslintConfig": {
     "root": true,

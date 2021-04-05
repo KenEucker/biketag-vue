@@ -1,48 +1,52 @@
 <template>
-
   <div id="app">
-
-    <div v-if="!$auth.isAuthenticated">
-      <Login />
-    </div>
-
-    <div v-if="$auth.isAuthenticated">
+    <div>
       <div class="header">
-        <h1 style="color: #fff;">Bike Tag</h1>
+        <div id="logo">
+          <h1 style="color: #fff">Bike Tag</h1>
+        </div>
+        <div id="auth">
+          <AuthButton />
+        </div>
       </div>
+
       <router-view />
+
       <div id="nav">
         <router-link to="/"><i class="fas fa-home fa-2x"></i></router-link>
-        <router-link to="/explore"><i class="fas fa-search fa-2x"></i></router-link>
-        <router-link to="/upload"><i class="fas fa-camera-retro fa-2x"></i></router-link>
-        <router-link to="/profile"><i class="fas fa-user-alt fa-2x"></i></router-link>
+        <router-link to="/explore"
+          ><i class="fas fa-search fa-2x"></i
+        ></router-link>
+        <router-link to="/upload"
+          ><i class="fas fa-camera-retro fa-2x"></i
+        ></router-link>
+        <router-link to="/user">
+          <i class="fas fa-user-alt fa-2x"></i>
+        </router-link>
       </div>
     </div>
-
   </div>
-
 </template>
 
 <script>
-
-import Login from '@/components/Login.vue';
+import AuthButton from "@/components/AuthButton.vue";
 
 export default {
   components: {
-    Login,
+    AuthButton,
   },
   mounted() {
     fetch(`${process.env.VUE_APP_SERVER}/user/self`, {
       headers: { Authorization: `Bearer ${this.token}` },
     })
-      .then(res => res.json())
+      .then((res) => res.json())
       .then((data) => {
-        if (data === 'Authentication Failed.') {
+        if (data === "Authentication Failed.") {
           localStorage.clear();
-          this.$store.commit('setUser');
+          this.$store.commit("setUser");
         }
       })
-      .catch(err => console.log(err));
+      .catch((err) => console.log(err));
   },
   computed: {
     username() {
@@ -53,27 +57,55 @@ export default {
     },
   },
 };
-
 </script>
 
 <style>
-
-* { box-sizing: border-box; word-break: break-word; }
-body { margin: 0; color: #666; }
-h1 { font-family: 'Dancing Script'; font-size: 2.2em; color: navy; margin: 0; }
-h2, h3, h4, h5, h6, p { font-family: 'Montserrat', Verdana, sans-serif; margin: 0; line-height: 1.5; }
+* {
+  box-sizing: border-box;
+  word-break: break-word;
+}
+body {
+  margin: 0;
+  color: #666;
+}
+h1 {
+  font-family: "Dancing Script";
+  font-size: 2.2em;
+  color: navy;
+  margin: 0;
+}
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  font-family: "Montserrat", Verdana, sans-serif;
+  margin: 0;
+  line-height: 1.5;
+}
 
 .header {
   background-color: navy;
   height: 11vh;
   width: 100vw;
   display: flex;
-  justify-content: center;
   align-items: center;
   position: fixed;
   left: 0;
   top: 0;
   z-index: 100;
+}
+
+#logo {
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+}
+
+#auth {
+  margin-top: 0px;
+  justify-content: right;
 }
 
 #nav {
@@ -89,10 +121,19 @@ h2, h3, h4, h5, h6, p { font-family: 'Montserrat', Verdana, sans-serif; margin: 
   bottom: 0;
 }
 
-#nav a { color: #fff; margin: 0 30px; }
-#nav a.router-link-exact-active { color: #42b883; }
+#nav a {
+  color: #fff;
+  margin: 0 30px;
+}
+#nav a.router-link-exact-active {
+  color: #42b883;
+}
 
-.body { margin-top: 10vh; margin-bottom: 10vh; padding-top: 10px; }
+.body {
+  margin-top: 10vh;
+  margin-bottom: 10vh;
+  padding-top: 10px;
+}
 
 .card {
   display: flex;
@@ -110,10 +151,10 @@ h2, h3, h4, h5, h6, p { font-family: 'Montserrat', Verdana, sans-serif; margin: 
 }
 
 @media only screen and (max-width: 500px) {
-    .card, .picture {
-        width: 100%;
-        box-shadow: none;
-    }
+  .card,
+  .picture {
+    width: 100%;
+    box-shadow: none;
+  }
 }
-
 </style>

@@ -105,5 +105,6 @@ dist
 # TernJS port file
 .tern-port
 
-# Auth Configs
+# Configs
 auth_config.json
+config.json
