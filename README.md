@@ -1,2 +1,1 @@
-# biketag-vue
-A vue app for the biketag game.
+This branch is for storing files referenced in the wiki.
