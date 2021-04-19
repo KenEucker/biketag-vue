@@ -2,20 +2,37 @@
   "name": "biketag-vue-ts",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "serve": "vite preview"
+    "dev": "npx vite",
+    "build": "npx vue-tsc --noEmit && vite build",
+    "serve": "npx vite preview",
+    "commit": "npx cz"
   },
   "dependencies": {
-    "vue": "^3.0.5",
-    "vue-material": "^1.0.0-beta-15",
+    "primeicons": "^4.1.0",
+    "primevue": "^3.4.0",
+    "vue": "^3.0.11",
     "vue-router": "^4.0.6"
   },
   "devDependencies": {
+    "@commitlint/cli": "^12.1.1",
+    "@commitlint/config-conventional": "^12.1.1",
     "@vitejs/plugin-vue": "^1.2.1",
     "@vue/compiler-sfc": "^3.0.5",
+    "commitizen": "^4.2.3",
+    "cz-conventional-changelog": "^3.3.0",
+    "sass": "^1.32.10",
     "typescript": "^4.1.3",
     "vite": "^2.1.5",
     "vue-tsc": "^0.0.24"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   }
 }
