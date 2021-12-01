@@ -11,10 +11,15 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Archive',
     component: () => import('@/views/Archive.vue'),
   },
+  // {
+  //   path: '/submittag',
+  //   name: 'SubmitTag',
+  //   component: () => import('@/views/SubmitTag.vue'),
+  // },
   {
     path: '/submittag',
     name: 'SubmitTag',
-    component: () => import('@/views/SubmitTag.vue'),
+    component: () => import('@/views/MultiForm.vue'),
   },
   {
     path: '/postreddit',
@@ -55,16 +60,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/players/:name',
     name: 'Profile',
     component: () => import('@/views/Profile.vue'),
-  },
-  {
-    path: '/queueimg',
-    name: 'QueueImg',
-    component: () => import('@/views/QueueImg.vue'),
-  },
-  {
-    path: '/queueimg2',
-    name: 'QueueImg2',
-    component: () => import('@/views/QueueImg2.vue'),
   },
 ]
 
