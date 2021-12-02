@@ -50,8 +50,8 @@ export default defineComponent({
     ...mapGetters(['getLastTag', 'getAllTags']),
     tagsForList() {
       return this.getAllTags.slice(
-        (this.currentPage - 1) * this.perPage,
-        this.currentPage * this.perPage
+        (this.currentPage - 1) * this.perPage + 1, // exclude current mystery tag
+        this.currentPage * this.perPage + 1 // exclude current mystery tag
       )
     },
     totalCount() {
