@@ -13,6 +13,7 @@ export interface State {
   allTags: Tag[]
   players: Player[]
   html: string
+  formStep: number
 }
 
 // define injection key
@@ -41,6 +42,7 @@ export const store = createStore<State>({
     allTags: [] as Tag[],
     players: [] as Player[],
     html: '',
+    formStep: 1,
   },
   getters: {
     getTitle(state) {
@@ -57,6 +59,9 @@ export const store = createStore<State>({
     },
     getAllPlayers(state) {
       return state.players
+    },
+    getFormStep(state) {
+      return state.formStep
     },
   },
   mutations: {
@@ -75,6 +80,12 @@ export const store = createStore<State>({
     SET_ALL_PLAYERS(state, players) {
       state.players = players
       console.log(players)
+    },
+    INT_FORM_STEP(state) {
+      state.formStep++
+    },
+    DEC_FORM_STEP(state) {
+      state.formStep++
     },
   },
   actions: {
@@ -97,6 +108,12 @@ export const store = createStore<State>({
       await biketagAPI.getPlayers({ sort: 'top' } as getPlayersPayload).then((res) => {
         commit('SET_ALL_PLAYERS', res.data)
       })
+    },
+    incFormStep({ commit }) {
+      commit('INT_FORM_STEP')
+    },
+    decFormStep({ commit }) {
+      commit('DEC_FORM_STEP')
     },
     setHtml({ commit }, payload) {
       axios.get('./' + payload).then((res) => {

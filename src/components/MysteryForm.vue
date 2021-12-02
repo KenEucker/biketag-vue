@@ -1,6 +1,7 @@
 <template>
   <b-container>
-    <div><img src="@/assets/images/Roundback.png" /></div>
+    <span>New Mystery Location</span>
+    <div><img class="img-fluid" src="@/assets/images/blank.png" /></div>
     <div class="p-3">
       <!-- <b-button>Photos</b-button> -->
       <label for="file-upload" class="custom-file-upload text-white">
@@ -10,11 +11,10 @@
       <!-- <b-button>Switch</b-button> -->
     </div>
     <div>
-      <b-form-input id="input-name" placeholder="Enter your name" />
-      <span>you are number 2 in the queue, submit a completed tag now to "win the round!"</span>
+      <b-form-input id="input-hint" placeholder="Enter your hint" />
     </div>
     <div class="mt-3">
-      <b-button variant="primary" class="w-100 submit-btn" @click="goReddit">
+      <b-button class="w-100 submit-btn bg-indigo border-0" @click="goNextStep">
         Submit New Tag &nbsp; <i class="fas fa-check-square" />
       </b-button>
       <span>
@@ -28,7 +28,12 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'StepOne',
+  name: 'MysteryForm',
+  methods: {
+    goNextStep() {
+      this.$store.dispatch('incFormStep')
+    },
+  },
 })
 </script>
 <style scoped>
