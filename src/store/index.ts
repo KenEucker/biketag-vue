@@ -8,7 +8,6 @@ import { Game, Tag, Player } from 'biketag/lib/common/schema'
 export interface State {
   game: Game
   gametitle: string
-  logourl: string
   biketagLatest: Tag
   allTags: Tag[]
   players: Player[]
@@ -33,12 +32,14 @@ const options = {
 }
 
 const client = new biketag(options)
+const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId ?? 'x37ikhvs'}/${
+  options.sanity?.dataset ?? 'production'
+}/`
 
 export const store = createStore<State>({
   state: {
     game: {} as Game,
     gametitle: 'PORTLAND.BIKETAG',
-    logourl: require('@/assets/images/SpinningBikeV1.svg'),
     biketagLatest: {} as Tag,
     allTags: [] as Tag[],
     players: [] as Player[],
@@ -53,7 +54,12 @@ export const store = createStore<State>({
       return state.gametitle
     },
     getLogoUrl(state) {
-      return state.logourl
+      return state.game.logo
+        ? `${sanityBaseCDNUrl}${state.game.logo
+            .replace('image-', '')
+            .replace('-png', '.png')
+            .replace('-jpg', '.jpg')}`
+        : require('@/assets/images/SpinningBikeV1.svg')
     },
     getLastTag(state) {
       return state.biketagLatest
@@ -71,23 +77,23 @@ export const store = createStore<State>({
   mutations: {
     SET_GAME_DATA(state, game) {
       state.game = game
-      console.log(game)
+      console.log({ game })
     },
     SET_LAST_TAG(state, tag) {
       state.biketagLatest = tag
-      console.log(tag)
+      console.log({ tag })
     },
     SET_ALL_TAGS(state, tags) {
       state.allTags = tags
-      console.log(tags)
+      console.log({ tags })
     },
     SET_HTML(state, html) {
       state.html = html
-      console.log(html)
+      console.log({ html })
     },
     SET_ALL_PLAYERS(state, players) {
       state.players = players
-      console.log(players)
+      console.log({ players })
     },
     INT_FORM_STEP(state) {
       state.formStep++
