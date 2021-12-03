@@ -34,7 +34,6 @@ export default defineComponent({
   name: 'HomePage',
   methods: {
     goAboutPage: function () {
-      this.$store.dispatch('setHtml')
       this.$router.push('/about')
     },
     goHintPage: function () {

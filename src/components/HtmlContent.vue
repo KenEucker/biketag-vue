@@ -20,22 +20,16 @@ export default defineComponent({
       html: String,
     }
   },
-  watch: {
-    $route() {
+  updated() {
+    this.$nextTick(function () {
       axios.get('./' + this.$route.name + '.html').then((response) => (this.html = response.data))
-    },
+    })
   },
-  mounted() {
-    axios.get('./' + this.$route.name + '.html').then((response) => (this.html = response.data))
+  created() {
+    this.$nextTick(function () {
+      axios.get('./' + this.$route.name + '.html').then((response) => (this.html = response.data))
+    })
   },
-  // computed: {
-  //   html() {
-  //     return useStore(key).state.html
-  //   },
-  // },
-  // mounted() {
-  //   useStore(key).dispatch('getHtml')
-  // },
 })
 </script>
 <style scoped></style>
