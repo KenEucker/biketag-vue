@@ -979,9 +979,9 @@
   integrity sha512-YnrybIoM9WFqmeK1D8p/gutqjJnmXCVFWAU3ucka9M7Dzpen3f2Dy4KsC6k1wDHrCtHQuUHHwZovh3i5UPDaZw==
 
 "@sanity/client@^2.8.0":
-  version "2.21.10"
-  resolved "https://registry.yarnpkg.com/@sanity/client/-/client-2.21.10.tgz#165296647f6c13269c06fa7127be5efa768bde97"
-  integrity sha512-vJ+cHCAYwd/5R8jcxH1ek0JtZ6AOKgKU55q+Q92rsAS6bg1NPhO3XrBL9AU2SRYbzEnq+0+qiQr5Ka20BG9qSg==
+  version "2.22.3"
+  resolved "https://registry.yarnpkg.com/@sanity/client/-/client-2.22.3.tgz#f4b6465ee0962b45a24f20cea99d6ae4e5ceffaf"
+  integrity sha512-/oF9tyCIg2trdusMthH6tqD3rQYIT8ahqqf3kNiViOkQbHDeb6lVSsmknrQLDDKqFxDZLO4w6Fzt1UQHi0XAQQ==
   dependencies:
     "@sanity/eventsource" "2.14.0"
     "@sanity/generate-help-url" "2.18.0"
@@ -1683,9 +1683,9 @@ big.js@^5.2.2:
   integrity sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==
 
 biketag@^1.9.1:
-  version "1.11.1"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.11.1.tgz#80497db2c81b5342923d0a308f131a2779a3bbc5"
-  integrity sha512-HUV0y4/vnudetne8Yak78b8R0AtwPmn9i1tFchHnI7bpZ8ygYzxmOUd2BZYRLNDM3RG/puI5TNyGA0qK6pdDzw==
+  version "1.11.4"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.11.4.tgz#864c47990fc5efe3dd2b48d0c0302ade06f38b49"
+  integrity sha512-Wc1+dC+QYWOiQO/vKWVw3rq65Oj43zIzRNgMvWd3IOA7g4v1Cr1Z+XCG6WEDx5gKGFZswsTDJ0JIUzbELNAxbw==
   dependencies:
     "@sanity/client" "^2.8.0"
     axios "^0.21.1"

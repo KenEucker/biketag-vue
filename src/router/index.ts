@@ -11,21 +11,21 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Archive',
     component: () => import('@/views/Archive.vue'),
   },
-  // {
-  //   path: '/submittag',
-  //   name: 'SubmitTag',
-  //   component: () => import('@/views/SubmitTag.vue'),
-  // },
   {
     path: '/submittag',
     name: 'SubmitTag',
     component: () => import('@/views/MultiForm.vue'),
   },
   {
-    path: '/postreddit',
-    name: 'PostReddit',
-    component: () => import('@/views/PostReddit.vue'),
+    path: '/test',
+    name: 'CarouselTest',
+    component: () => import('@/views/CarouselTest.vue'),
   },
+  // {
+  //   path: '/postreddit',
+  //   name: 'PostReddit',
+  //   component: () => import('@/views/PostReddit.vue'),
+  // },
   {
     path: '/how',
     name: 'How',
