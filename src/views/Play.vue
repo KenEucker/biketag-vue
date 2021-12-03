@@ -17,7 +17,7 @@ import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 
 export default defineComponent({
-  name: 'HomePage',
+  name: 'PlayPage',
   components: {
     BikeTag,
   },

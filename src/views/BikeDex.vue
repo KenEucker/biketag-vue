@@ -38,7 +38,7 @@ import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
 
 export default defineComponent({
-  name: 'HomePage',
+  name: 'BikeDexPage',
   components: {
     BikeTag,
   },
