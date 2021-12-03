@@ -1,8 +1,7 @@
-import { InjectionKey } from 'vue'
-import { createStore, Store } from 'vuex'
+import { createStore } from 'vuex'
 import axios from 'axios'
 import biketag from 'biketag'
-import { Game, Tag, Player } from 'biketag/lib/common/types'
+import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import { getPlayersPayload } from 'biketag/lib/common/payloads'
 
 // define your typings for the store state
@@ -16,9 +15,6 @@ export interface State {
   html: string
   formStep: number
 }
-
-// define injection key
-export const key: InjectionKey<Store<State>> = Symbol()
 
 const gamename = 'portland'
 const options = {
@@ -98,28 +94,28 @@ export const store = createStore<State>({
     },
   },
   actions: {
-    async setGame({ commit }) {
-      await client.game('portland').then((res) => {
+    setGame({ commit }) {
+      client.game('portland').then((res) => {
         commit('SET_GAME_DATA', res)
       })
     },
-    async setLastTag({ commit }) {
-      await client.getTag().then((res) => {
+    setLastTag({ commit }) {
+      client.getTag().then((res) => {
         commit('SET_LAST_TAG', res.data)
       })
     },
-    async setAllTags({ commit }) {
-      await client.getTags().then((res) => {
+    setAllTags({ commit }) {
+      client.getTags().then((res) => {
         commit('SET_ALL_TAGS', res.data)
       })
     },
-    async setAllPlayers({ commit }) {
-      await client.getPlayers().then((res) => {
+    setAllPlayers({ commit }) {
+      client.getPlayers().then((res) => {
         commit('SET_ALL_PLAYERS', res.data)
       })
     },
-    async setTopPlayers({ commit }) {
-      await client.getPlayers({ sort: 'top' } as getPlayersPayload).then((res) => {
+    setTopPlayers({ commit }) {
+      client.getPlayers({ sort: 'top' } as getPlayersPayload).then((res) => {
         commit('SET_ALL_PLAYERS', res.data)
       })
     },
