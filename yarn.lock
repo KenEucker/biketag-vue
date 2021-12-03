@@ -1682,10 +1682,10 @@ big.js@^5.2.2:
   resolved "https://registry.yarnpkg.com/big.js/-/big.js-5.2.2.tgz#65f0af382f578bcdc742bd9c281e9cb2d7768328"
   integrity sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==
 
-biketag@^1.9.1:
-  version "1.11.4"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.11.4.tgz#864c47990fc5efe3dd2b48d0c0302ade06f38b49"
-  integrity sha512-Wc1+dC+QYWOiQO/vKWVw3rq65Oj43zIzRNgMvWd3IOA7g4v1Cr1Z+XCG6WEDx5gKGFZswsTDJ0JIUzbELNAxbw==
+biketag@^1.12.0:
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.12.0.tgz#53ba5704a7c923a72ede7fc316e8744472e5f2f1"
+  integrity sha512-zMupC4JVe31j1W9NS/oHpNs2IwBoMux1bpUaB26RmoCNF9eglH38P32vundA8bSiIM9W0CkskmPfjM7SpCQCiQ==
   dependencies:
     "@sanity/client" "^2.8.0"
     axios "^0.21.1"
