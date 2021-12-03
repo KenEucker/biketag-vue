@@ -39,6 +39,7 @@ export default defineComponent({
     ...mapGetters(['getTitle', 'getLogoUrl', 'getLastTag']),
   },
   mounted() {
+    this.$store.dispatch('setGame')
     this.$store.dispatch('setLastTag')
   },
   methods: {
