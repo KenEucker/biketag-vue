@@ -1,5 +1,6 @@
 <template>
-  <div class="container">
+  <v-spinner v-show="loading" />
+  <div v-show="!loading" class="container">
     <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
@@ -34,6 +35,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+// import Spinner from 'vue-easy-spinner/package/Spinner.vue'
 import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
 
@@ -41,11 +43,13 @@ export default defineComponent({
   name: 'BikeDexPage',
   components: {
     BikeTag,
+    // Spinner,
   },
   data() {
     return {
       currentPage: 1,
       perPage: 10,
+      loading: true,
     }
   },
   computed: {
@@ -62,6 +66,7 @@ export default defineComponent({
   },
   mounted() {
     this.$store.dispatch('setAllTags')
+    this.loading = false
   },
   methods: {
     getImgurFoundDescriptionFromBikeTagData:

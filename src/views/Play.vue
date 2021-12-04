@@ -1,5 +1,6 @@
 <template>
-  <div class="container">
+  <b-spinner v-show="loading" />
+  <div v-show="!loading" class="container">
     <div>
       <bike-tag
         :tagnumber="getLastTag.tagnumber"
@@ -21,8 +22,16 @@ export default defineComponent({
   components: {
     BikeTag,
   },
+  data() {
+    return {
+      loading: true,
+    }
+  },
   computed: {
     ...mapGetters(['getLastTag']),
+  },
+  mounted() {
+    this.loading = false
   },
 })
 </script>
