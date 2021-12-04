@@ -1,6 +1,7 @@
 <template>
   <bike-header />
-  <div>
+  <b-spinner v-show="loading" />
+  <div v-show="!loading">
     <div>
       <h2>NEED A HINT?</h2>
       <hr />
@@ -23,8 +24,16 @@ import { mapGetters } from 'vuex'
 
 export default defineComponent({
   name: 'HintPage',
+  data() {
+    return {
+      loading: true,
+    }
+  },
   computed: {
     ...mapGetters(['getLastTag']),
+  },
+  mounted() {
+    this.loading = false
   },
 })
 </script>

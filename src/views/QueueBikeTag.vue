@@ -1,5 +1,6 @@
 <template>
-  <div class="container">
+  <b-spinner v-show="loading" />
+  <div v-show="!loading" class="container">
     <form>
       <div v-if="getFormStep === 1">
         <found-form />
@@ -28,6 +29,11 @@ export default defineComponent({
     MysteryForm,
     PostForm,
   },
+  data() {
+    return {
+      loading: true,
+    }
+  },
   computed: {
     ...mapGetters(['getFormStep']),
   },
@@ -45,6 +51,9 @@ export default defineComponent({
   // },
   //   }
   // },
+  mounted() {
+    this.loading = false
+  },
   methods: {
     prev() {
       this.step--
