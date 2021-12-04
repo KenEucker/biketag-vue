@@ -1,12 +1,13 @@
 <template>
   <div class="container">
-    <b-pagination
+    <!-- We will go with a leaderboard of top10 (to be configurable) -->
+    <!-- <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-    ></b-pagination>
+    ></b-pagination> -->
     <ul id="itemList" class="list-unstyled">
       <li v-for="(player, index) in playersForList" :key="player.name">
         <player
@@ -17,13 +18,13 @@
         />
       </li>
     </ul>
-    <b-pagination
+    <!-- <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-    ></b-pagination>
+    ></b-pagination> -->
   </div>
 </template>
 <script>
@@ -45,14 +46,16 @@ export default defineComponent({
   computed: {
     ...mapGetters(['getAllPlayers']),
     playersForList() {
-      return this.getAllPlayers.slice(
-        (this.currentPage - 1) * this.perPage,
-        this.currentPage * this.perPage
-      )
+      /// We will go with a leaderboard of top10 (to be configurable)
+      // return this.getAllPlayers.slice(
+      //   (this.currentPage - 1) * this.perPage,
+      //   this.currentPage * this.perPage
+      // )
+      return this.getAllPlayers.slice(0, 10)
     },
-    totalCount() {
-      return this.getAllPlayers.length
-    },
+    // totalCount() {
+    //   return this.getAllPlayers.length
+    // },
   },
   mounted() {
     this.$store.dispatch('setTopPlayers')

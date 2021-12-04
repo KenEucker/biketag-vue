@@ -1,19 +1,18 @@
 <template>
-  <header-nav />
-  <bike-header />
+  <bike-tag-header />
   <router-view />
-  <bike-footer />
+  <bike-tag-footer />
 </template>
 <script>
 import { defineComponent } from 'vue'
-import BikeHeader from '@/components/BikeHeader.vue'
-import BikeFooter from '@/components/BikeFooter.vue'
+import BikeTagHeader from '@/components/BikeTagHeader.vue'
+import BikeTagFooter from '@/components/BikeTagFooter.vue'
 
 export default defineComponent({
   name: 'App',
   components: {
-    BikeHeader,
-    BikeFooter,
+    BikeTagHeader,
+    BikeTagFooter,
   },
 })
 </script>

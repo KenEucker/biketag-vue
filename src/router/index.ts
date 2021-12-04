@@ -3,18 +3,18 @@ import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'Home',
-    component: () => import('@/views/Home.vue'),
+    name: 'Play',
+    component: () => import('@/views/Play.vue'),
   },
   {
-    path: '/archive',
-    name: 'Archive',
-    component: () => import('@/views/Archive.vue'),
+    path: '/bikedex',
+    name: 'BikeDex',
+    component: () => import('@/views/BikeDex.vue'),
   },
   {
-    path: '/submittag',
-    name: 'SubmitTag',
-    component: () => import('@/views/MultiForm.vue'),
+    path: '/queue',
+    name: 'Queue',
+    component: () => import('@/views/QueueBikeTag.vue'),
   },
   {
     path: '/test',
@@ -42,8 +42,8 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Hint.vue'),
   },
   {
-    path: '/donate',
-    name: 'Donate',
+    path: '/support',
+    name: 'support',
     component: () => import('@/components/HtmlContent.vue'),
   },
   {

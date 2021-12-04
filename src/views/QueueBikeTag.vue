@@ -22,7 +22,7 @@ import MysteryForm from '@/components/MysteryForm.vue'
 import PostForm from '@/components/PostForm.vue'
 
 export default defineComponent({
-  name: 'MultiForm',
+  name: 'QueueBikeTag',
   components: {
     FoundForm,
     MysteryForm,

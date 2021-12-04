@@ -1,8 +1,10 @@
 <template>
-  <div v-if="isShow" class="p-2">
-    <b-button class="btn-circle" variant="primary" @click="goBack">
-      <i class="fa fa-long-arrow-alt-left" />
-    </b-button>
+  <div class="container align-self-center">
+    <div v-if="isShow" class="p-2">
+      <b-button class="btn-circle" variant="primary" @click="goBack">
+        <i class="fa fa-long-arrow-alt-left" />
+      </b-button>
+    </div>
   </div>
   <div class="container mb-4">
     <div class="header--logo">
@@ -14,11 +16,12 @@
       </div>
     </div>
     <div>
-      <b-button class="m-1" variant="primary" @click="goArchivePage">ARCHIVE</b-button>
-      <b-button class="m-1" variant="primary" @click="goSubmitTagPage">
+      <b-button class="m-1" variant="primary" @click="goBikeDexPage">BikeDex</b-button>
+      <b-button class="m-1" variant="primary" @click="goQueuePage">
         PLAY( <span>{{ getLastTag.tagnumber }}</span> )
       </b-button>
-      <b-button class="m-1" variant="primary" @click="goHowPage">HOW</b-button>
+      <b-button class="m-1" variant="primary" @click="goHintPage">?</b-button>
+      <b-button class="m-1" variant="primary" @click="goHowPage">How-To</b-button>
     </div>
     <!-- <div class="main-img-clock-class" @click="goQueueImgPage">
       <i class="far fa-clock" />
@@ -31,10 +34,10 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 
 export default defineComponent({
-  name: 'HeaderTemplate',
+  name: 'BikeTagHeader',
   computed: {
     isShow() {
-      return this.$route.name === 'Home' ? false : true
+      return this.$route.name === 'Play' ? false : true
     },
     ...mapGetters(['getTitle', 'getLogoUrl', 'getLastTag']),
   },
@@ -43,17 +46,20 @@ export default defineComponent({
     this.$store.dispatch('setLastTag')
   },
   methods: {
-    goArchivePage: function () {
-      this.$router.push('/archive')
+    goBikeDexPage: function () {
+      this.$router.push('/bikedex')
     },
-    goSubmitTagPage: function () {
-      this.$router.push('/submittag')
+    goQueuePage: function () {
+      this.$router.push('/queue')
     },
     goHowPage: function () {
       this.$router.push('/how')
     },
     goBack: function () {
       this.$router.push('/')
+    },
+    goHintPage: function () {
+      this.$router.push('/hint')
     },
     // goQueueImgPage: function () {
     //   this.$router.push('/queueimg')

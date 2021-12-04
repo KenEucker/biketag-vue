@@ -1,20 +1,22 @@
-import { createStore } from 'vuex'
+import { InjectionKey } from 'vue'
+import { createStore, Store } from 'vuex'
 import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
-import { getPlayersPayload } from 'biketag/lib/common/payloads'
 
 // define your typings for the store state
 export interface State {
   game: Game
   gametitle: string
-  logourl: string
   biketagLatest: Tag
   allTags: Tag[]
   players: Player[]
   html: string
   formStep: number
 }
+
+// define injection key
+export const key: InjectionKey<Store<State>> = Symbol()
 
 const gamename = 'portland'
 const options = {
@@ -30,12 +32,14 @@ const options = {
 }
 
 const client = new biketag(options)
+const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId ?? 'x37ikhvs'}/${
+  options.sanity?.dataset ?? 'production'
+}/`
 
 export const store = createStore<State>({
   state: {
     game: {} as Game,
     gametitle: 'PORTLAND.BIKETAG',
-    logourl: require('@/assets/images/SpinningBikeV1.svg'),
     biketagLatest: {} as Tag,
     allTags: [] as Tag[],
     players: [] as Player[],
@@ -50,7 +54,12 @@ export const store = createStore<State>({
       return state.gametitle
     },
     getLogoUrl(state) {
-      return state.logourl
+      return state.game.logo
+        ? `${sanityBaseCDNUrl}${state.game.logo
+            .replace('image-', '')
+            .replace('-png', '.png')
+            .replace('-jpg', '.jpg')}`
+        : require('@/assets/images/SpinningBikeV1.svg')
     },
     getLastTag(state) {
       return state.biketagLatest
@@ -66,25 +75,25 @@ export const store = createStore<State>({
     },
   },
   mutations: {
-    SET_GAME_DATA(state, payload) {
-      state.game = payload
-      console.log(payload)
+    SET_GAME_DATA(state, game) {
+      state.game = game
+      console.log({ game })
     },
-    SET_LAST_TAG(state, payload) {
-      state.biketagLatest = payload
-      console.log(payload)
+    SET_LAST_TAG(state, tag) {
+      state.biketagLatest = tag
+      console.log({ tag })
     },
-    SET_ALL_TAGS(state, payload) {
-      state.allTags = payload
-      console.log(payload)
+    SET_ALL_TAGS(state, tags) {
+      state.allTags = tags
+      console.log({ tags })
     },
-    SET_HTML(state, payload) {
-      state.html = payload
-      console.log(payload)
+    SET_HTML(state, html) {
+      state.html = html
+      console.log({ html })
     },
-    SET_ALL_PLAYERS(state, payload) {
-      state.players = payload
-      console.log(payload)
+    SET_ALL_PLAYERS(state, players) {
+      state.players = players
+      console.log({ players })
     },
     INT_FORM_STEP(state) {
       state.formStep++
@@ -95,28 +104,28 @@ export const store = createStore<State>({
   },
   actions: {
     setGame({ commit }) {
-      client.game('portland').then((res) => {
-        commit('SET_GAME_DATA', res)
+      client.game('portland').then((d) => {
+        commit('SET_GAME_DATA', d)
       })
     },
     setLastTag({ commit }) {
-      client.getTag().then((res) => {
-        commit('SET_LAST_TAG', res.data)
+      client.getTag().then((r) => {
+        commit('SET_LAST_TAG', r.data)
       })
     },
     setAllTags({ commit }) {
-      client.getTags().then((res) => {
-        commit('SET_ALL_TAGS', res.data)
+      client.tags().then((d) => {
+        commit('SET_ALL_TAGS', d)
       })
     },
     setAllPlayers({ commit }) {
-      client.getPlayers().then((res) => {
-        commit('SET_ALL_PLAYERS', res.data)
+      client.players().then((d) => {
+        commit('SET_ALL_PLAYERS', d)
       })
     },
     setTopPlayers({ commit }) {
-      client.getPlayers({ sort: 'top' } as getPlayersPayload).then((res) => {
-        commit('SET_ALL_PLAYERS', res.data)
+      client.players({ sort: 'top' }).then((d) => {
+        commit('SET_ALL_PLAYERS', d)
       })
     },
     incFormStep({ commit }) {
@@ -125,9 +134,9 @@ export const store = createStore<State>({
     decFormStep({ commit }) {
       commit('DEC_FORM_STEP')
     },
-    setHtml({ commit }, payload) {
-      axios.get('./' + payload).then((res) => {
-        commit('SET_HTML', res.data)
+    setHtml({ commit }, file) {
+      axios.get('./' + file).then((r) => {
+        commit('SET_HTML', r.data)
       })
     },
   },

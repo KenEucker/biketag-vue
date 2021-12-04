@@ -1,19 +1,18 @@
 <template>
   <div class="container mt-4">
     <div>
-      <b-button class="m-1" variant="primary" @click="goAboutPage">ABOUT</b-button>
-      <b-button class="m-1" variant="primary" @click="goHintPage">HINT</b-button>
-      <b-button class="m-1" variant="primary" @click="goDonatePage">DONATE</b-button>
-    </div>
-    <div>
       <b-button class="m-1" @click="goLeaderboardPage">Leaderboard</b-button>
-      <b-button class="m-1" @click="goUsersPage">Users</b-button>
+      <b-button class="m-1" @click="goUsersPage">Playerboard</b-button>
     </div>
     <div class="back-to-home">
       <a href="https://biketag.org">
         <i class="fa fa-globe" aria-hidden="true"></i>
         <h5>worldwide</h5>
       </a>
+    </div>
+    <div>
+      <b-button class="m-1" variant="primary" @click="goAboutPage">About</b-button>
+      <b-button class="m-1" variant="primary" @click="goSupportPage">Support</b-button>
     </div>
     <footer class="footer container my-5">
       <!--Section: Content-->
@@ -31,17 +30,13 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'HomePage',
+  name: 'BikeTagFooter',
   methods: {
     goAboutPage: function () {
-      this.$store.dispatch('setHtml')
       this.$router.push('/about')
     },
-    goHintPage: function () {
-      this.$router.push('/hint')
-    },
-    goDonatePage: function () {
-      this.$router.push('/donate')
+    goSupportPage: function () {
+      this.$router.push('/support')
     },
     goLeaderboardPage: function () {
       this.$router.push('/leaderboard')

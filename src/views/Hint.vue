@@ -7,9 +7,8 @@
     </div>
     <div>
       <p>
-        user [<span id="userCredit" class="special">{{ getLastTag.player }}</span> ]
-        <span id="userLeftHintMessage"></span>
-        <br />
+        player <span id="userCredit" class="special">{{ getLastTag.mysteryPlayer }}</span>
+        provided a hint:
         <br />
         <span id="hintText" class="family">{{ getLastTag.hint }}</span>
       </p>

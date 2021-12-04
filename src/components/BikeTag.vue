@@ -1,34 +1,34 @@
 <template>
   <b-row>
-    <b-col v-show="foundImageUrl" md="6" class="mb-3">
-      <b-card>
-        <a :href="imageurl" target="_blank">
-          <div class="img-wrapper">
-            <span class="tag-number">#{{ tagnumber }}</span>
-            <span class="tag-player">{{ player }}</span>
-            <expandable-image
-              class="image img-fluid"
-              :src="foundImageUrl"
-              alt="#{{ tagnumber }} tag (hint:  {{ hint }}  ) by {{ player }}"
-            ></expandable-image>
-          </div>
-          <span class="desc">{{ foundDescription }}</span>
-        </a>
-      </b-card>
-    </b-col>
     <b-col :md="foundImageUrl ? 6 : 12" class="mb-3">
       <b-card>
         <a :href="imageurl" target="_blank">
           <div class="img-wrapper">
             <span class="tag-number">#{{ tagnumber }}</span>
-            <span class="tag-player">{{ player }}</span>
+            <span class="tag-player">{{ mysteryPlayer }}</span>
             <expandable-image
               class="image img-fluid"
               :src="mysteryImageUrl"
-              alt="#{{ tagnumber }} tag (hint:  {{ hint }}  ) by {{ player }}"
+              alt="mysteryDescription"
             ></expandable-image>
           </div>
           <span class="desc">{{ mysteryDescription }}</span>
+        </a>
+      </b-card>
+    </b-col>
+    <b-col v-show="foundImageUrl" md="6" class="mb-3">
+      <b-card>
+        <a :href="imageurl" target="_blank">
+          <div class="img-wrapper">
+            <span class="tag-number">#{{ tagnumber }}</span>
+            <span class="tag-player">{{ foundPlayer }}</span>
+            <expandable-image
+              class="image img-fluid"
+              :src="foundImageUrl"
+              alt="foundDescription"
+            ></expandable-image>
+          </div>
+          <span class="desc">{{ foundDescription }}</span>
         </a>
       </b-card>
     </b-col>
@@ -56,7 +56,11 @@ export default defineComponent({
       type: String,
       default: '',
     },
-    player: {
+    foundPlayer: {
+      type: String,
+      default: '',
+    },
+    mysteryPlayer: {
       type: String,
       default: '',
     },

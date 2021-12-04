@@ -14,9 +14,10 @@
           :tagnumber="tag.tagnumber"
           :found-image-url="tag.foundImageUrl"
           :mystery-image-url="tag.mysteryImageUrl"
-          :player="tag.player"
-          :found-description="foundDescription(tag.tagnumber, tag.foundLocation, tag.player)"
-          :mystery-description="mysteryDescription(tag.tagnumber, tag.hint, tag.player)"
+          :mystery-player="tag.mysteryPlayer"
+          :found-player="tag.foundPlayer"
+          :found-description="getImgurFoundDescriptionFromBikeTagData(tag)"
+          :mystery-description="getImgurMysteryDescriptionFromBikeTagData(tag)"
         />
       </li>
     </ul>
@@ -34,9 +35,10 @@
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
+import biketag from 'biketag'
 
 export default defineComponent({
-  name: 'HomePage',
+  name: 'BikeDexPage',
   components: {
     BikeTag,
   },
@@ -62,12 +64,10 @@ export default defineComponent({
     this.$store.dispatch('setAllTags')
   },
   methods: {
-    foundDescription(tagnum, foundLocation, player) {
-      return '#' + tagnum + ' PROOF FOUND AT ( ' + foundLocation + ' ) BY ' + player
-    },
-    mysteryDescription(tagnum, hint, player) {
-      return '#' + tagnum + ' TAG ( HINT: ' + hint + ' ) BY ' + player
-    },
+    getImgurFoundDescriptionFromBikeTagData:
+      biketag.getters.getImgurFoundDescriptionFromBikeTagData,
+    getImgurMysteryDescriptionFromBikeTagData:
+      biketag.getters.getImgurMysteryDescriptionFromBikeTagData,
   },
 })
 </script>

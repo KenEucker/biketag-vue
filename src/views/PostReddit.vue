@@ -30,7 +30,7 @@ export default defineComponent({
   name: 'PostReddit',
   methods: {
     gobefore: function () {
-      this.$router.push('/submittag')
+      this.$router.push('/queue')
     },
     gomain: function () {
       this.$router.push('/')
