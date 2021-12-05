@@ -6,11 +6,7 @@
           <div class="img-wrapper">
             <span class="tag-number">#{{ tagnumber }}</span>
             <span class="tag-player">{{ mysteryPlayer }}</span>
-            <expandable-image
-              class="image img-fluid"
-              :src="mysteryImageUrl"
-              alt="mysteryDescription"
-            ></expandable-image>
+            <expandable-image :src="mysteryImageUrl" alt="mysteryDescription"></expandable-image>
           </div>
           <span class="desc">{{ mysteryDescription }}</span>
         </a>

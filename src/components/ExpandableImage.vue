@@ -22,7 +22,8 @@
         />
       </svg>
     </i>
-    <img class="img-fluid" v-bind="$attrs" />
+    <b-spinner v-show="loading" />
+    <img v-show="!loading" class="img-fluid" v-bind="$attrs" @load="loaded" />
   </div>
 </template>
 <script type="ts">
@@ -33,6 +34,7 @@ export default defineComponent({
     return {
       expanded: false,
       closeButtonRef: null,
+      loading: true,
     }
   },
 
@@ -72,6 +74,9 @@ export default defineComponent({
     freezeVp(e) {
       e.preventDefault()
     },
+    loaded() {
+      this.loading = false
+    }
   },
   // template: '#expandable-image',
 })
