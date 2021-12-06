@@ -29,7 +29,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/how',
     name: 'How',
-    component: () => import('@/components/HtmlContent.vue'),
+    component: () => import('@/views/HowTo.vue'),
   },
   {
     path: '/about',
