@@ -2,30 +2,26 @@
   <b-row>
     <b-col :md="foundImageUrl ? 6 : 12" class="mb-3">
       <b-card>
-        <a :href="imageurl" target="_blank">
-          <div class="img-wrapper">
-            <span class="tag-number">#{{ tagnumber }}</span>
-            <span class="tag-player">{{ mysteryPlayer }}</span>
-            <expandable-image :src="mysteryImageUrl" alt="mysteryDescription"></expandable-image>
-          </div>
-          <span class="desc">{{ mysteryDescription }}</span>
-        </a>
+        <div class="img-wrapper">
+          <span class="tag-number">#{{ tagnumber }}</span>
+          <span class="tag-player">{{ mysteryPlayer }}</span>
+          <expandable-image :src="mysteryImageUrl" alt="mysteryDescription"></expandable-image>
+        </div>
+        <span class="desc">{{ mysteryDescription }}</span>
       </b-card>
     </b-col>
     <b-col v-show="foundImageUrl" md="6" class="mb-3">
       <b-card>
-        <a :href="imageurl" target="_blank">
-          <div class="img-wrapper">
-            <span class="tag-number">#{{ tagnumber }}</span>
-            <span class="tag-player">{{ foundPlayer }}</span>
-            <expandable-image
-              class="image img-fluid"
-              :src="foundImageUrl"
-              alt="foundDescription"
-            ></expandable-image>
-          </div>
-          <span class="desc">{{ foundDescription }}</span>
-        </a>
+        <div class="img-wrapper">
+          <span class="tag-number">#{{ tagnumber }}</span>
+          <span class="tag-player">{{ foundPlayer }}</span>
+          <expandable-image
+            class="image img-fluid"
+            :src="foundImageUrl"
+            alt="foundDescription"
+          ></expandable-image>
+        </div>
+        <span class="desc">{{ foundDescription }}</span>
       </b-card>
     </b-col>
   </b-row>
@@ -86,23 +82,16 @@ export default defineComponent({
   top: 0;
   left: 0;
   z-index: 99;
-  font-size: 5vh;
-  font-weight: 500;
-  color: white;
-  text-shadow: 2px 2px #292828e6;
-  background-color: rgba(0, 0, 0, 0.75);
   padding: 0 0.5rem;
+  text-shadow: 2px 2px #292828e6;
   /* border-radius: 10px; */
 }
 .img-wrapper > .tag-player {
   position: absolute;
   right: 1rem;
   bottom: 0;
-  font-family: AshesAshes;
-  font-size: 5vh;
-  color: white;
-  text-shadow: 2px 2px #292828e6;
   z-index: 99;
+  text-shadow: 2px 2px #292828e6;
 }
 .desc {
   position: relative;

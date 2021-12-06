@@ -1,0 +1,154 @@
+@import url('./_fonts.scss');
+
+$app-color: #2c3e50;
+$bg-color: rgb(200, 200, 200);
+$app-bg: linear-gradient(45deg, rgba(100, 100, 100, 0.8), rgba(150, 150, 150, 0.5) 70.71%),;
+$primary-color: #40c4ff;
+$secondary-color: #6c757d;
+$info-color: #0dcaf0;
+
+$link-color: $primary-color;
+
+$card-bg-color: #fff;
+$card-border-color: rgba(0, 0, 0, 0.125);
+
+$btn-primary-color: $primary-color;
+$btn-primary-shadow-color: rgb(49 132 253 / 50%);
+$btn-primary-text-color: #fff;
+
+$btn-secondary-color: $secondary-color;
+$btn-secondary-shadow-color: rgb(130 138 145 / 50%);
+$btn-secondary-text-color: #fff;
+
+$btn-upload-color: #ff4500;
+$btn-upload-text-color: #fff;
+
+$btn-found-color: $info-color;
+$btn-found-shadow-color: rgb(13 202 240 / 50%);
+$btn-found-text-color: #fff;
+
+$btn-mystery-color: #6710f2;
+$btn-mystery-shadow-color: rgb(103 16 242 / 50%);
+$btn-mystery-text-color: #fff;
+
+$btn-post-color: #d63384;
+$btn-post-shadow-color: rgb(214 51 132 / 50%);
+$btn-post-text-color: #fff;
+
+$title-font-family: AshesAshes;
+$title-font-size: calc(1.375rem + 1.5vw);
+$title-font-weight: 600;
+
+$tag-text-color: #fff;
+
+$tag-number-bg-color: rgba(0, 0, 0, 0.75);
+$tag-number-font-family: AvenueX;
+$tag-number-font-size: 5vh;
+$tag-number-font-weight: 500;
+
+$tag-player-font-family: AshesAshes;
+$tag-player-font-size: 5vh;
+
+
+#app {
+  color: $app-color;
+  background-color: $bg-color;
+  background: $app-bg;
+  .container {
+    a {
+      color: $primary-color;
+    }
+    .card {
+      background-color: $card-bg-color;
+      border-color: $card-border-color;
+    }
+    button.btn-primary {
+      color: $btn-primary-text-color;
+      background-color: $btn-primary-color;
+      border-color: $btn-primary-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-primary-shadow-color
+      }
+    }
+    button.btn-secondary {
+      color: $btn-secondary-text-color;
+      background-color: $btn-secondary-color;
+      border-color: $btn-secondary-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-secondary-shadow-color
+      }
+    }
+    .btn-upload {
+      color: $btn-upload-text-color;
+      background-color: $btn-upload-color;
+    }
+    button.btn-found {
+      color: $btn-found-text-color;
+      background-color: $btn-found-color;
+      border-color: $btn-found-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-found-shadow-color
+      }
+    }
+    button.btn-mystery {
+      color: $btn-mystery-text-color;
+      background-color: $btn-mystery-color;
+      border-color: $btn-mystery-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-mystery-shadow-color
+      }
+    }
+    button.btn-post {
+      color: $btn-post-text-color;
+      background-color: $btn-post-color;
+      border-color: $btn-post-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-post-shadow-color
+      }
+    }
+    .pagination {
+      .page-item {
+        .page-link {
+          color: $primary-color;
+          background-color: $btn-primary-text-color;
+        }
+        &.active {
+          .page-link {
+            color: $btn-primary-text-color;
+            background-color: $primary-color;
+            border-color: $primary-color;
+          }
+        }
+      }
+    }
+    .swiper {
+      .swiper-button-prev {
+        color: $primary-color;
+      }
+      .swiper-button-next {
+        color: $primary-color;
+      }
+    }
+
+    .header--logo {
+      .game-title {
+        font-family: $title-font-family;
+        font-size: $title-font-size;
+        font-weight: $title-font-weight;
+      }
+    }
+    .img-wrapper {
+      .tag-number {
+        color: $tag-text-color;
+        background-color: $tag-number-bg-color;
+        font-size: $tag-number-font-size;
+        font-weight: $tag-number-font-weight;
+      }
+      .tag-player {
+        color: $tag-text-color;
+        font-family: $tag-player-font-family;
+        font-size: $tag-player-font-size;
+      }
+    }
+  }
+}

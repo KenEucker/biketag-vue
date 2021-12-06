@@ -12,7 +12,7 @@
         <img :src="getLogoUrl" class="logo img-fluid" />
       </a>
       <div>
-        <h1>{{ getTitle }}</h1>
+        <span class="game-title">{{ getTitle }}</span>
       </div>
     </div>
     <div>
