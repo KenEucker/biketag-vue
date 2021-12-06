@@ -16,11 +16,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Queue',
     component: () => import('@/views/QueueBikeTag.vue'),
   },
-  {
-    path: '/test',
-    name: 'CarouselTest',
-    component: () => import('@/views/CarouselTest.vue'),
-  },
+  // {
+  //   path: '/test',
+  //   name: 'CarouselTest',
+  //   component: () => import('@/views/CarouselTest.vue'),
+  // },
   // {
   //   path: '/postreddit',
   //   name: 'PostReddit',
