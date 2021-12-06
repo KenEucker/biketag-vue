@@ -1,0 +1,104 @@
+@import 'theme';
+
+#app {
+  color: $app-color;
+  background-color: $bg-color;
+  background: $app-bg;
+  .container {
+    a {
+      color: $primary-color;
+    }
+    .card {
+      background-color: $card-bg-color;
+      border-color: $card-border-color;
+    }
+    button.btn-primary {
+      color: $btn-primary-text-color;
+      background-color: $btn-primary-color;
+      border-color: $btn-primary-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-primary-shadow-color
+      }
+    }
+    button.btn-secondary {
+      color: $btn-secondary-text-color;
+      background-color: $btn-secondary-color;
+      border-color: $btn-secondary-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-secondary-shadow-color
+      }
+    }
+    .btn-upload {
+      color: $btn-upload-text-color;
+      background-color: $btn-upload-color;
+    }
+    button.btn-found {
+      color: $btn-found-text-color;
+      background-color: $btn-found-color;
+      border-color: $btn-found-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-found-shadow-color
+      }
+    }
+    button.btn-mystery {
+      color: $btn-mystery-text-color;
+      background-color: $btn-mystery-color;
+      border-color: $btn-mystery-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-mystery-shadow-color
+      }
+    }
+    button.btn-post {
+      color: $btn-post-text-color;
+      background-color: $btn-post-color;
+      border-color: $btn-post-color;
+      &:focus{
+        box-shadow: 0 0 0 0.25rem $btn-post-shadow-color
+      }
+    }
+    .pagination {
+      .page-item {
+        .page-link {
+          color: $primary-color;
+          background-color: $btn-primary-text-color;
+        }
+        &.active {
+          .page-link {
+            color: $btn-primary-text-color;
+            background-color: $primary-color;
+            border-color: $primary-color;
+          }
+        }
+      }
+    }
+    .swiper {
+      .swiper-button-prev {
+        color: $primary-color;
+      }
+      .swiper-button-next {
+        color: $primary-color;
+      }
+    }
+
+    .header--logo {
+      .game-title {
+        font-family: $title-font-family;
+        font-size: $title-font-size;
+        font-weight: $title-font-weight;
+      }
+    }
+    .img-wrapper {
+      .tag-number {
+        color: $tag-text-color;
+        background-color: $tag-number-bg-color;
+        font-size: $tag-number-font-size;
+        font-weight: $tag-number-font-weight;
+      }
+      .tag-player {
+        color: $tag-text-color;
+        font-family: $tag-player-font-family;
+        font-size: $tag-player-font-size;
+      }
+    }
+  }
+}

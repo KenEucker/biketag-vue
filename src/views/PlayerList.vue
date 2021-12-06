@@ -1,6 +1,5 @@
 <template>
-  <b-spinner v-show="loading" />
-  <div v-show="!loading" class="container">
+  <div class="container">
     <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
@@ -36,7 +35,6 @@ export default defineComponent({
     return {
       currentPage: 1,
       perPage: 10,
-      loading: true,
     }
   },
   computed: {
@@ -53,7 +51,6 @@ export default defineComponent({
   },
   mounted() {
     this.$store.dispatch('setAllPlayers')
-    this.loading = false
   },
 })
 </script>

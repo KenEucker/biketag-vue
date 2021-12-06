@@ -12,7 +12,7 @@
         <img :src="getLogoUrl" class="logo img-fluid" />
       </a>
       <div>
-        <h1>{{ getTitle }}</h1>
+        <span class="game-title">{{ getTitle }}</span>
       </div>
     </div>
     <div>
@@ -42,7 +42,7 @@ export default defineComponent({
     ...mapGetters(['getTitle', 'getLogoUrl', 'getLastTag']),
   },
   mounted() {
-    this.$store.dispatch('setGame')
+    // this.$store.dispatch('setGame')
     this.$store.dispatch('setLastTag')
   },
   methods: {

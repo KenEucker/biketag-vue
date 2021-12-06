@@ -7,7 +7,7 @@
       <img class="mystery-img w-75 p-2 mb-3" src="@/assets/images/Roundback.png" />
     </div>
     <div>
-      <b-button class="w-100 submit-btn bg-pink border-0" @click="submit">
+      <b-button class="w-100 btn-post border-0" @click="submit">
         Post New Tag To Reddit For me &nbsp; <i class="fas fa-check-square" />
       </b-button>
       <span>

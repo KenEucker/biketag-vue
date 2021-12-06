@@ -1,6 +1,5 @@
 <template>
-  <b-spinner v-show="loading" />
-  <div v-show="!loading" class="container">
+  <div class="container">
     <!-- We will go with a leaderboard of top10 (to be configurable) -->
     <!-- <b-pagination
       v-model="currentPage"
@@ -42,7 +41,6 @@ export default defineComponent({
     return {
       currentPage: 1,
       perPage: 10,
-      loading: true,
     }
   },
   computed: {
@@ -61,7 +59,6 @@ export default defineComponent({
   },
   mounted() {
     this.$store.dispatch('setTopPlayers')
-    this.loading = false
   },
   methods: {
     playerPosition(index) {

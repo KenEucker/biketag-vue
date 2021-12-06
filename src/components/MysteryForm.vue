@@ -4,7 +4,7 @@
     <div><img class="img-fluid" src="@/assets/images/blank.png" /></div>
     <div class="p-3">
       <!-- <b-button>Photos</b-button> -->
-      <label for="file-upload" class="custom-file-upload text-white">
+      <label for="file-upload" class="btn-upload custom-file-upload">
         <i class="fa fa-camera" />
       </label>
       <input id="file-upload" type="file" class="d-none" />
@@ -14,7 +14,7 @@
       <b-form-input id="input-hint" placeholder="Enter your hint" />
     </div>
     <div class="mt-3">
-      <b-button class="w-100 submit-btn bg-indigo border-0" @click="goNextStep">
+      <b-button class="w-100 btn-mystery border-0" @click="goNextStep">
         Submit New Tag &nbsp; <i class="fas fa-check-square" />
       </b-button>
       <span>
@@ -38,7 +38,6 @@ export default defineComponent({
 </script>
 <style scoped>
 .custom-file-upload {
-  background-color: orangered;
   border-radius: 2rem;
   display: inline-block;
   padding: 6px 12px;
