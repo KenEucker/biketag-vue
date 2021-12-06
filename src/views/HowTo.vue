@@ -9,29 +9,32 @@
       @slide-change="onSlideChange"
     >
       <swiper-slide>
-        <p class="ms-4 me-4">
+        <p>
           BIKETAG IS A PHOTO TAG GAME WHERE YOU FIND A MYSTERY LOCATION IN THE REAL WORLD BY
-          BICYCLE. TO PLAY THE GAME YOU NEED YO UNDERSTAND THESE THREE THINGS:<br />
-          1) IMAGES OF BIKES AND UNIQUE THNIGS TOGETHER ARE WHAT WE CALL "BIKETAGS"<br />
-          2) THE OBJECT OF THE GAME IS TO FIND AND CREATE WHAT WE CALL "MYSTERY LOCATIONS"<br />
-          3) THE GAME NEVER ENDS AND EVERY ROUND IS A NEW CHANCE TO PLAY THE GMAE.
+          BICYCLE.
         </p>
+        <p>TO PLAY THE GAME YOU NEED YO UNDERSTAND THESE THREE THINGS:</p>
+        <p>1) IMAGES OF BIKES AND UNIQUE THNIGS TOGETHER ARE WHAT WE CALL "BIKETAGS"</p>
+        <p>2) THE OBJECT OF THE GAME IS TO FIND AND CREATE WHAT WE CALL "MYSTERY LOCATIONS"</p>
+        <p>3) THE GAME NEVER ENDS AND EVERY ROUND IS A NEW CHANCE TO PLAY THE GMAE.</p>
       </swiper-slide>
       <swiper-slide>
-        <div>
-          THE PLACE WHERE THE MOST RECENT BIKETAG WAS MADE IS CALLED THE "MYSTERY LOCATION".
-        </div>
-        <div>IN THIS EXAMPLE, AN ORANGE-COLORED BIKE IS SHOWN:</div>
+        <p>THE PLACE WHERE THE MOST RECENT BIKETAG WAS MADE IS CALLED THE "MYSTERY LOCATION".</p>
+        <p>IN THIS EXAMPLE, AN ORANGE-COLORED BIKE IS SHOWN:</p>
+        <div><img class="img-fluid w-75" src="@/assets/images/bike1.png" /></div>
       </swiper-slide>
       <swiper-slide>
-        <div>
+        <p>
           ONCE YOU ARRIVE AT THE MYSTERY LOCATION YOU MUST CREATE A MATCHING BIKETAG IMAGE OF YOUR
           OWN. IN THIS EXAMPLE, YOU ARE THE BLUE COLORED BIKE:
-        </div>
+        </p>
+        <div class="mb-2"><img class="img-fluid w-50" src="@/assets/images/bike1.png" /></div>
+        <div><img class="img-fluid w-50" src="@/assets/images/bike2.png" /></div>
       </swiper-slide>
       <swiper-slide>
-        <div>NEXT, IT'S TIME TO RIDE TO A NEW MYSTERY LOCATION AND MAKE A NEW BIKETAG.</div>
-        <div>KEEP IN MIND, GOOD MYSTERY LOCATIONS HELP PROGRESS THE GAME.</div>
+        <p>NEXT, IT'S TIME TO RIDE TO A NEW MYSTERY LOCATION AND MAKE A NEW BIKETAG.</p>
+        <div class="mb-3"><img class="img-fluid w-75" src="@/assets/images/bike3.png" /></div>
+        <p>KEEP IN MIND, GOOD MYSTERY LOCATIONS HELP PROGRESS THE GAME.</p>
       </swiper-slide>
     </swiper>
   </div>
@@ -68,3 +71,12 @@ export default {
   },
 }
 </script>
+<style scoped>
+.swiper {
+  max-width: 600px;
+}
+.swiper-slide p {
+  text-align: left;
+  line-height: 4vh;
+}
+</style>

@@ -74,9 +74,19 @@
     .swiper {
       .swiper-button-prev {
         color: $primary-color;
+        bottom: 0 !important;
+        top: auto;
       }
       .swiper-button-next {
         color: $primary-color;
+        bottom: 0 !important;
+        top: auto;
+      }
+      .swiper-slide {
+        p {
+          font-family: $how-font-family;
+          font-size: $how-font-size;
+        }
       }
     }
 

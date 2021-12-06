@@ -59,7 +59,7 @@ export const store = createStore<State>({
             .replace('image-', '')
             .replace('-png', '.png')
             .replace('-jpg', '.jpg')}`
-        : require('@/assets/images/SpinningBikeV1.svg')
+        : require('@/assets/images/pdx-bike-tag-small.png')
     },
     getLastTag(state) {
       return state.biketagLatest

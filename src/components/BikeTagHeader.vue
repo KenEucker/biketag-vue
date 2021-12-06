@@ -69,8 +69,8 @@ export default defineComponent({
 </script>
 <style scoped>
 .header--logo .logo {
-  width: 8rem;
-  height: 8rem;
+  width: 4rem;
+  height: 6rem;
   line-height: 8rem;
   margin: auto;
 }
