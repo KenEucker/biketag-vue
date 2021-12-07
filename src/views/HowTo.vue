@@ -1,6 +1,7 @@
 <template>
   <div class="container">
     <swiper
+      :pagination="{ clickable: true }"
       :slides-per-view="1"
       :space-between="0"
       navigation
@@ -29,7 +30,7 @@
           OWN. IN THIS EXAMPLE, YOU ARE THE BLUE COLORED BIKE:
         </p>
         <div class="mb-2"><img class="img-fluid w-50" src="@/assets/images/bike1.png" /></div>
-        <div><img class="img-fluid w-50" src="@/assets/images/bike2.png" /></div>
+        <div><img class="img-fluid w-50 mb-5" src="@/assets/images/bike2.png" /></div>
       </swiper-slide>
       <swiper-slide>
         <p>NEXT, IT'S TIME TO RIDE TO A NEW MYSTERY LOCATION AND MAKE A NEW BIKETAG.</p>
