@@ -20,7 +20,6 @@
       <b-button class="m-1" variant="primary" @click="goQueuePage">
         PLAY( <span>{{ getLastTag.tagnumber }}</span> )
       </b-button>
-      <b-button class="m-1" variant="primary" @click="goHintPage">?</b-button>
       <b-button class="m-1" variant="primary" @click="goHowPage">How-To</b-button>
     </div>
     <!-- <div class="main-img-clock-class" @click="goQueueImgPage">
@@ -57,9 +56,6 @@ export default defineComponent({
     },
     goBack: function () {
       this.$router.push('/')
-    },
-    goHintPage: function () {
-      this.$router.push('/hint')
     },
     // goQueueImgPage: function () {
     //   this.$router.push('/queueimg')

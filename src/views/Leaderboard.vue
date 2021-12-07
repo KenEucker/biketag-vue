@@ -9,12 +9,12 @@
       align="center"
     ></b-pagination> -->
     <ul id="itemList" class="list-unstyled">
-      <li v-for="(player, index) in playersForList" :key="player.name">
+      <li v-for="(player, index) in playersForList" :key="player.name" class="mb-3">
         <player
           :player-pos="playerPosition(index)"
           :player-name="player.name"
           :tag-count="player.tags.length"
-          :player-avatar-url="player.bicon"
+          :player-avatar-url="playerAvatar(player)"
         />
       </li>
     </ul>
@@ -63,6 +63,9 @@ export default defineComponent({
   methods: {
     playerPosition(index) {
       return index + 1 + (this.currentPage - 1) * this.perPage
+    },
+    playerAvatar(player) {
+      return player.bicon ? player.bicon : player.tags[player.tags.length - 1].mysteryImageUrl
     },
   },
 })

@@ -2,6 +2,7 @@
   <div class="container">
     <div>
       <bike-tag
+        hint-btn="true"
         :tagnumber="getLastTag.tagnumber"
         :mystery-image-url="getLastTag.mysteryImageUrl"
         :player="getLastTag.player"

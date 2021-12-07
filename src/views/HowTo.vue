@@ -1,10 +1,12 @@
 <template>
   <div class="container">
     <swiper
+      :autoplay="{ delay: 15000 }"
+      :pagination="{ clickable: true }"
       :slides-per-view="1"
-      :space-between="0"
+      :space-between="50"
       navigation
-      loop="true"
+      :loop="true"
       @swiper="onSwiper"
       @slide-change="onSlideChange"
     >
@@ -29,7 +31,7 @@
           OWN. IN THIS EXAMPLE, YOU ARE THE BLUE COLORED BIKE:
         </p>
         <div class="mb-2"><img class="img-fluid w-50" src="@/assets/images/bike1.png" /></div>
-        <div><img class="img-fluid w-50" src="@/assets/images/bike2.png" /></div>
+        <div><img class="img-fluid w-50 mb-5" src="@/assets/images/bike2.png" /></div>
       </swiper-slide>
       <swiper-slide>
         <p>NEXT, IT'S TIME TO RIDE TO A NEW MYSTERY LOCATION AND MAKE A NEW BIKETAG.</p>
@@ -41,19 +43,16 @@
 </template>
 <script>
 // import Swiper core and required components
-import SwiperCore, { Navigation, Pagination, A11y } from 'swiper'
+import SwiperCore, { Autoplay, Navigation, Pagination } from 'swiper'
 
 // Import Swiper Vue.js components
 import { Swiper, SwiperSlide } from 'swiper/vue'
 
 // Import Swiper styles
-import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
-import 'swiper/css/scrollbar'
+import 'swiper/css/bundle'
 
 // install Swiper components
-SwiperCore.use([Navigation, Pagination, A11y])
+SwiperCore.use([Autoplay, Navigation, Pagination])
 
 // Import Swiper styles
 export default {

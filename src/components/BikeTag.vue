@@ -2,6 +2,9 @@
   <b-row>
     <b-col :md="foundImageUrl ? 6 : 12" class="mb-3">
       <b-card>
+        <b-button v-show="hintBtn" class="btn-hint" variant="primary" @click="goHintPage"
+          >?</b-button
+        >
         <div class="img-wrapper">
           <span class="tag-number">#{{ tagnumber }}</span>
           <span class="tag-player">{{ mysteryPlayer }}</span>
@@ -36,6 +39,10 @@ export default defineComponent({
     ExpandableImage,
   },
   props: {
+    hintBtn: {
+      type: Boolean,
+      default: false,
+    },
     tagnumber: {
       type: String,
       default: '',
@@ -71,9 +78,21 @@ export default defineComponent({
     viewportMeta.content = 'width=device-width, initial-scale=1'
     document.head.appendChild(viewportMeta)
   },
+  methods: {
+    goHintPage: function () {
+      this.$router.push('/hint')
+    },
+  },
 })
 </script>
 <style scoped>
+.card-body > .btn-hint {
+  position: absolute;
+  top: -18px;
+  right: -14px;
+  z-index: 99;
+  border-radius: 5rem;
+}
 .img-wrapper {
   position: relative;
 }

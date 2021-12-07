@@ -8,8 +8,8 @@
       align="center"
     ></b-pagination>
     <ul id="itemList" class="list-unstyled">
-      <li v-for="player in playersForList" :key="player.name">
-        <player :player-name="player.name" :player-avatar-url="player.bicon" />
+      <li v-for="player in playersForList" :key="player.name" class="mb-3">
+        <player :player-name="player.name" :player-avatar-url="playerAvatar(player)" />
       </li>
     </ul>
     <b-pagination
@@ -51,6 +51,11 @@ export default defineComponent({
   },
   mounted() {
     this.$store.dispatch('setAllPlayers')
+  },
+  methods: {
+    playerAvatar(player) {
+      return player.bicon ? player.bicon : player.tags[player.tags.length - 1].mysteryImageUrl
+    },
   },
 })
 </script>
