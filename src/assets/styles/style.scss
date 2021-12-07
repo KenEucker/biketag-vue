@@ -1,6 +1,12 @@
 @import 'theme';
 
+html {
+  min-height: 100vh;
+  height: 100%;
+}
+
 #app {
+  min-height: 100vh;
   color: $app-color;
   background-color: $bg-color;
   background: $app-bg;
@@ -17,8 +23,8 @@
           font-weight: $btn-hint-font-weight;
           background-color: $btn-hint-color;
           border-color: $btn-hint-color;
-          &:focus{
-            box-shadow: 0 0 0 0.25rem $btn-hint-shadow-color
+          &:focus {
+            box-shadow: 0 0 0 0.25rem $btn-hint-shadow-color;
           }
         }
       }
@@ -27,16 +33,16 @@
       color: $btn-primary-text-color;
       background-color: $btn-primary-color;
       border-color: $btn-primary-color;
-      &:focus{
-        box-shadow: 0 0 0 0.25rem $btn-primary-shadow-color
+      &:focus {
+        box-shadow: 0 0 0 0.25rem $btn-primary-shadow-color;
       }
     }
     button.btn-secondary {
       color: $btn-secondary-text-color;
       background-color: $btn-secondary-color;
       border-color: $btn-secondary-color;
-      &:focus{
-        box-shadow: 0 0 0 0.25rem $btn-secondary-shadow-color
+      &:focus {
+        box-shadow: 0 0 0 0.25rem $btn-secondary-shadow-color;
       }
     }
     .btn-upload {
@@ -47,24 +53,24 @@
       color: $btn-found-text-color;
       background-color: $btn-found-color;
       border-color: $btn-found-color;
-      &:focus{
-        box-shadow: 0 0 0 0.25rem $btn-found-shadow-color
+      &:focus {
+        box-shadow: 0 0 0 0.25rem $btn-found-shadow-color;
       }
     }
     button.btn-mystery {
       color: $btn-mystery-text-color;
       background-color: $btn-mystery-color;
       border-color: $btn-mystery-color;
-      &:focus{
-        box-shadow: 0 0 0 0.25rem $btn-mystery-shadow-color
+      &:focus {
+        box-shadow: 0 0 0 0.25rem $btn-mystery-shadow-color;
       }
     }
     button.btn-post {
       color: $btn-post-text-color;
       background-color: $btn-post-color;
       border-color: $btn-post-color;
-      &:focus{
-        box-shadow: 0 0 0 0.25rem $btn-post-shadow-color
+      &:focus {
+        box-shadow: 0 0 0 0.25rem $btn-post-shadow-color;
       }
     }
     .pagination {
@@ -114,6 +120,12 @@
         }
       }
       .swiper-slide {
+        height: unset;
+
+        &.active {
+          flex-basis: max-content;
+          align-self: stretch;
+        }
         p {
           font-family: $how-font-family;
           font-size: $how-font-size;
