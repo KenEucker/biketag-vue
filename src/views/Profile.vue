@@ -50,9 +50,9 @@ export default defineComponent({
   },
   computed: {
     // mix the getters into computed with object spread operator
-    ...mapGetters(['getAllPlayers']),
+    ...mapGetters(['getPlayers']),
     player() {
-      return this.getAllPlayers.filter(
+      return this.getPlayers.filter(
         (player) => decodeURIComponent(player.name) == this.$route.params.name
       )[0]
     },

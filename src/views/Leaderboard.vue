@@ -44,17 +44,17 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getAllPlayers']),
+    ...mapGetters(['getPlayers']),
     playersForList() {
       /// We will go with a leaderboard of top10 (to be configurable)
-      // return this.getAllPlayers.slice(
+      // return this.getPlayers.slice(
       //   (this.currentPage - 1) * this.perPage,
       //   this.currentPage * this.perPage
       // )
-      return this.getAllPlayers.slice(0, 10)
+      return this.getPlayers.slice(0, 10)
     },
     // totalCount() {
-    //   return this.getAllPlayers.length
+    //   return this.getPlayers.length
     // },
   },
   mounted() {

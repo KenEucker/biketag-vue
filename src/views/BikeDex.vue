@@ -51,19 +51,19 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getLastTag', 'getAllTags']),
+    ...mapGetters(['getCurrentBikeTag', 'getTags']),
     tagsForList() {
-      return this.getAllTags.slice(
+      return this.getTags.slice(
         (this.currentPage - 1) * this.perPage + 1, // exclude current mystery tag
         this.currentPage * this.perPage + 1 // exclude current mystery tag
       )
     },
     totalCount() {
-      return this.getAllTags.length
+      return this.getTags.length
     },
   },
   mounted() {
-    this.$store.dispatch('setAllTags')
+    this.$store.dispatch('setTags')
   },
   methods: {
     getImgurFoundDescriptionFromBikeTagData:

@@ -7,10 +7,10 @@
     </div>
     <div>
       <p>
-        player <span id="userCredit" class="special">{{ getLastTag.mysteryPlayer }}</span>
+        player <span id="userCredit" class="special">{{ getCurrentBikeTag.mysteryPlayer }}</span>
         provided a hint:
         <br />
-        <span id="hintText" class="family">{{ getLastTag.hint }}</span>
+        <span id="hintText" class="family">{{ getCurrentBikeTag.hint }}</span>
       </p>
     </div>
   </div>
@@ -24,7 +24,7 @@ import { mapGetters } from 'vuex'
 export default defineComponent({
   name: 'HintPage',
   computed: {
-    ...mapGetters(['getLastTag']),
+    ...mapGetters(['getCurrentBikeTag']),
   },
 })
 </script>

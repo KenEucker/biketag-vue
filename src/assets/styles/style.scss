@@ -23,6 +23,9 @@ html {
           font-weight: $btn-hint-font-weight;
           background-color: $btn-hint-color;
           border-color: $btn-hint-color;
+          font-size: $btn-hint-font-size;
+          font-family: $btn-hint-font-family;
+          transform: rotate(30deg);
           &:focus {
             box-shadow: 0 0 0 0.25rem $btn-hint-shadow-color;
           }

@@ -1,6 +1,8 @@
 'use strict'
 
-const { merge } = require('webpack-merge')
+const {
+  merge
+} = require('webpack-merge')
 
 const baseWebpackConfig = require('./base')
 const cssWebpackConfig = require('./css')
@@ -13,13 +15,17 @@ module.exports = merge(baseWebpackConfig, cssWebpackConfig, {
 
   devServer: {
     historyApiFallback: {
-      rewrites: [{ from: /./, to: '/index.html' }],
+      rewrites: [{
+        from: /./,
+        to: '/index.html',
+      }, ],
     },
     devMiddleware: {
       publicPath: config.dev.publicPath,
     },
+    allowedHosts: 'all',
     open: false,
-    host: '0.0.0.0',
+    host: 'biketag.local',
     port: config.dev.port,
     liveReload: false,
   },

@@ -5,7 +5,7 @@ $how-font-size: 3.5vh;
 
 $app-color: #2c3e50;
 $bg-color: rgb(200, 200, 200);
-$app-bg: linear-gradient(45deg, rgba(100, 100, 100, 0.8), rgba(150, 150, 150, 0.5) 70.71%),;
+$app-bg: linear-gradient(45deg, rgba(100, 100, 100, 0.8), rgba(150, 150, 150, 0.5) 70.71%);
 $primary-color: #40c4ff;
 $secondary-color: #6c757d;
 $info-color: #0dcaf0;
@@ -38,10 +38,12 @@ $btn-post-color: #d63384;
 $btn-post-shadow-color: rgb(214 51 132 / 50%);
 $btn-post-text-color: #fff;
 
-$btn-hint-color: #ff4500;
-$btn-hint-shadow-color: rgb(255 69 0 / 50%);
-$btn-hint-text-color: #fff;
+$btn-hint-color: rgba(255 255 255 / 50%);
+$btn-hint-shadow-color: rgb(255 255 255 / 0%);
+$btn-hint-text-color: black;
 $btn-hint-font-weight: 1000;
+$btn-hint-font-family: 'Circular-Loom';
+$btn-hint-font-size: 1.2em;
 
 $btn-swiper-color: #fff;
 $btn-swiper-font-size: 20pt;

@@ -30,17 +30,16 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-explicit-any': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
 
     // this rule, if on, would require explicit return type on the `render` function
     '@typescript-eslint/explicit-function-return-type': 'off',
   },
 
-  overrides: [
-    {
-      files: ['*.js'],
-      rules: {
-        '@typescript-eslint/no-var-requires': 'off',
-      },
+  overrides: [{
+    files: ['*.js'],
+    rules: {
+      '@typescript-eslint/no-var-requires': 'off',
     },
-  ],
+  }, ],
 }

@@ -18,7 +18,7 @@
     <div>
       <b-button class="m-1" variant="primary" @click="goBikeDexPage">BikeDex</b-button>
       <b-button class="m-1" variant="primary" @click="goQueuePage">
-        PLAY( <span>{{ getLastTag.tagnumber }}</span> )
+        PLAY( <span>{{ getCurrentBikeTag.tagnumber }}</span> )
       </b-button>
       <b-button class="m-1" variant="primary" @click="goHowPage">How-To</b-button>
     </div>
@@ -38,11 +38,11 @@ export default defineComponent({
     isShow() {
       return this.$route.name === 'Play' ? false : true
     },
-    ...mapGetters(['getTitle', 'getLogoUrl', 'getLastTag']),
+    ...mapGetters(['getTitle', 'getGame', 'getLogoUrl', 'getCurrentBikeTag']),
   },
-  mounted() {
-    // this.$store.dispatch('setGame')
-    this.$store.dispatch('setLastTag')
+  async mounted() {
+    await this.$store.dispatch('setGame')
+    await this.$store.dispatch('setCurrentBikeTag')
   },
   methods: {
     goBikeDexPage: function () {

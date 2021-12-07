@@ -3,12 +3,14 @@ import { createStore, Store } from 'vuex'
 import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
+import { getDomainInfo } from '@/common/methods'
 
 // define your typings for the store state
 export interface State {
   game: Game
-  gametitle: string
-  biketagLatest: Tag
+  gameName: string
+  gameTitle: string
+  currentBikeTag: Tag
   allTags: Tag[]
   players: Player[]
   html: string
@@ -17,12 +19,14 @@ export interface State {
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
+const domain = getDomainInfo(undefined, window)
+const gameName = domain.subdomain ?? 'portland'
+console.log({ subdomain: domain.subdomain, domain, gameName })
 
-const gamename = 'portland'
 const options = {
-  game: gamename,
+  game: gameName,
   imgur: {
-    hash: 'Y9PKtpI',
+    // hash: 'Y9PKtpI',
     clientId: '4fa12c6ce36984b',
   },
   sanity: {
@@ -38,9 +42,10 @@ const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.project
 
 export const store = createStore<State>({
   state: {
+    gameName,
     game: {} as Game,
-    gametitle: 'PORTLAND.BIKETAG',
-    biketagLatest: {} as Tag,
+    gameTitle: `${gameName.toUpperCase()}.BIKETAG`,
+    currentBikeTag: {} as Tag,
     allTags: [] as Tag[],
     players: [] as Player[],
     html: '',
@@ -51,7 +56,7 @@ export const store = createStore<State>({
       return state.game
     },
     getTitle(state) {
-      return state.gametitle
+      return state.gameTitle
     },
     getLogoUrl(state) {
       return state.game.logo
@@ -61,13 +66,13 @@ export const store = createStore<State>({
             .replace('-jpg', '.jpg')}`
         : require('@/assets/images/pdx-bike-tag-small.png')
     },
-    getLastTag(state) {
-      return state.biketagLatest
+    getCurrentBikeTag(state) {
+      return state.currentBikeTag
     },
-    getAllTags(state) {
+    getTags(state) {
       return state.allTags
     },
-    getAllPlayers(state) {
+    getPlayers(state) {
       return state.players
     },
     getFormStep(state) {
@@ -75,15 +80,15 @@ export const store = createStore<State>({
     },
   },
   mutations: {
-    SET_GAME_DATA(state, game) {
+    SET_GAME(state, game) {
       state.game = game
       console.log({ game })
     },
-    SET_LAST_TAG(state, tag) {
-      state.biketagLatest = tag
+    SET_CURRENT_TAG(state, tag) {
+      state.currentBikeTag = tag
       console.log({ tag })
     },
-    SET_ALL_TAGS(state, tags) {
+    SET_TAGS(state, tags) {
       state.allTags = tags
       console.log({ tags })
     },
@@ -91,7 +96,7 @@ export const store = createStore<State>({
       state.html = html
       console.log({ html })
     },
-    SET_ALL_PLAYERS(state, players) {
+    SET_PLAYERS(state, players) {
       state.players = players
       console.log({ players })
     },
@@ -103,29 +108,30 @@ export const store = createStore<State>({
     },
   },
   actions: {
-    setGame({ commit }) {
-      client.game('portland').then((d) => {
-        commit('SET_GAME_DATA', d)
+    setGame({ commit, state }) {
+      return client.game(state.gameName).then((d) => {
+        client.config({ imgur: { hash: (d as Game).mainhash } }, true)
+        commit('SET_GAME', d)
       })
     },
-    setLastTag({ commit }) {
-      client.getTag().then((r) => {
-        commit('SET_LAST_TAG', r.data)
+    setCurrentBikeTag({ commit }) {
+      return client.getTag().then((r) => {
+        commit('SET_CURRENT_TAG', r.data)
       })
     },
-    setAllTags({ commit }) {
-      client.tags().then((d) => {
-        commit('SET_ALL_TAGS', d)
+    setTags({ commit }) {
+      return client.tags().then((d) => {
+        commit('SET_TAGS', d)
       })
     },
-    setAllPlayers({ commit }) {
-      client.players().then((d) => {
-        commit('SET_ALL_PLAYERS', d)
+    setPlayers({ commit }) {
+      return client.players().then((d) => {
+        commit('SET_PLAYERS', d)
       })
     },
     setTopPlayers({ commit }) {
-      client.players({ sort: 'top' }).then((d) => {
-        commit('SET_ALL_PLAYERS', d)
+      return client.players({ sort: 'top' }).then((d) => {
+        commit('SET_PLAYERS', d)
       })
     },
     incFormStep({ commit }) {

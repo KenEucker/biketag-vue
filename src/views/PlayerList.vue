@@ -38,19 +38,19 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getAllPlayers']),
+    ...mapGetters(['getPlayers']),
     playersForList() {
-      return this.getAllPlayers.slice(
+      return this.getPlayers.slice(
         (this.currentPage - 1) * this.perPage,
         this.currentPage * this.perPage
       )
     },
     totalCount() {
-      return this.getAllPlayers.length
+      return this.getPlayers.length
     },
   },
   mounted() {
-    this.$store.dispatch('setAllPlayers')
+    this.$store.dispatch('setPlayers')
   },
   methods: {
     playerAvatar(player) {

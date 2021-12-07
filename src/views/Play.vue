@@ -3,9 +3,9 @@
     <div>
       <bike-tag
         hint-btn="true"
-        :tagnumber="getLastTag.tagnumber"
-        :mystery-image-url="getLastTag.mysteryImageUrl"
-        :player="getLastTag.player"
+        :tagnumber="getCurrentBikeTag.tagnumber"
+        :mystery-image-url="getCurrentBikeTag.mysteryImageUrl"
+        :player="getCurrentBikeTag.player"
         mystery-description="CURRENT MYSTERY LOCATION TO FIND"
       />
     </div>
@@ -23,7 +23,7 @@ export default defineComponent({
     BikeTag,
   },
   computed: {
-    ...mapGetters(['getLastTag']),
+    ...mapGetters(['getCurrentBikeTag']),
   },
 })
 </script>

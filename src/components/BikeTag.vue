@@ -88,8 +88,8 @@ export default defineComponent({
 <style scoped>
 .card-body > .btn-hint {
   position: absolute;
-  top: -18px;
-  right: -14px;
+  top: 0;
+  right: 0;
   z-index: 99;
   border-radius: 5rem;
 }
