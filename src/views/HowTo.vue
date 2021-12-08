@@ -74,6 +74,7 @@ export default {
 .swiper {
   max-width: 600px;
 }
+
 .swiper-slide p {
   text-align: left;
   line-height: 4vh;

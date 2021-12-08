@@ -7,7 +7,7 @@
     </div>
   </div>
   <div class="container mb-4">
-    <div class="header--logo">
+    <div class="header-logo">
       <a href="./">
         <img :src="getLogoUrl" class="logo img-fluid" />
       </a>
@@ -64,16 +64,18 @@ export default defineComponent({
 })
 </script>
 <style scoped lang="scss">
-.header--logo .logo {
+.header-logo .logo {
   width: 4rem;
   height: 6rem;
   line-height: 8rem;
   margin: auto;
 }
+
 .bt-bicycle {
   background-size: cover;
   background-position: center;
 }
+
 .btn-circle {
   width: 40px;
   height: 40px;

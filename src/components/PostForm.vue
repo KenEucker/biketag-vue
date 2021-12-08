@@ -33,6 +33,7 @@ export default defineComponent({
 .found-img {
   float: left;
 }
+
 .mystery-img {
   float: right;
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="Round-root">
+  <div class="round-root">
     <div class="location-letter">New Mystery Location</div>
     <div class="queue-img">
       <div class="main-header">This is what your post will look like</div>
@@ -42,22 +42,27 @@ export default defineComponent({
 .logo-img {
   margin: 20px;
 }
+
 .tag366-img > img,
 .tag366-img1 > img {
   width: 200px;
   height: 100px;
 }
+
 .tag366-img1 {
   width: 100%;
   display: flex;
   justify-content: flex-end;
+
   /* height: 150px; */
 }
+
 .tag366-div {
   font-size: 20px;
   font-weight: bold;
   margin: 15px;
 }
+
 .tag366-div1 {
   font-size: 20px;
   font-weight: bold;
@@ -67,25 +72,34 @@ export default defineComponent({
   text-align: right;
   justify-content: flex-end;
 }
+
 .main-body-img-div {
   border: 1px solid greenyellow;
   margin-top: 10px;
   height: 370px;
 }
+
 .main-header {
   font-size: 20px;
   text-align: center;
   font-weight: 500;
 }
+
 .yourname-bottom {
   width: 70%;
   text-align: center;
 }
+
 .bottom-letter {
   width: 95%;
   margin-top: 10px;
   text-align: center;
 }
+
+i {
+  font-size: 20px;
+}
+
 .queue-found-tag {
   width: 100%;
   height: 50px;
@@ -98,13 +112,15 @@ export default defineComponent({
   font-size: 15px;
   border-radius: 7px;
   align-items: center;
+
+  i {
+    margin-left: 20px;
+    position: absolute;
+    font-size: 30px;
+    right: 20px;
+  }
 }
-.queue-found-tag > i {
-  margin-left: 20px;
-  position: absolute;
-  font-size: 30px;
-  right: 20px;
-}
+
 .true-location-btn {
   width: 70%;
   display: flex;
@@ -117,10 +133,12 @@ export default defineComponent({
   border-radius: 7px;
   background: forestgreen;
 }
+
 .true-location-btn > i {
   margin-right: 20px;
   font-size: 25px;
 }
+
 .location-btn {
   width: 100%;
   display: flex;
@@ -128,7 +146,8 @@ export default defineComponent({
   flex-direction: column;
   align-items: center;
 }
-.Round-root {
+
+.round-root {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -136,12 +155,14 @@ export default defineComponent({
   height: 100%;
   padding: 10px;
 }
+
 .queue-header {
   /* border: 1px solid red; */
   display: flex;
   align-items: center;
   width: 100%;
 }
+
 .go-out {
   width: 40px;
   height: 40px;
@@ -153,21 +174,22 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
 }
-i {
-  font-size: 20px;
-}
+
 .location-letter {
   font-size: 20px;
 }
+
 .queue-img {
   /* border: 1px solid red; */
   margin-top: 40px;
   width: 90%;
   height: 400px;
 }
+
 .queue-img > img {
   height: 100%;
 }
+
 .queue-btns {
   /* border: 1px solid red; */
   margin-top: 10px;
@@ -176,6 +198,7 @@ i {
   justify-content: space-between;
   align-items: center;
 }
+
 .queue-photo {
   background: forestgreen !important;
 }

@@ -95,39 +95,6 @@ export default defineComponent({
 })
 </script>
 <style scoped lang="scss">
-.expandable-image {
-  position: relative;
-  transition: 0.25s opacity;
-  cursor: zoom-in;
-}
-
-body > .expandable-image.expanded {
-  position: fixed;
-  z-index: 999999;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: black;
-  display: flex;
-  align-items: center;
-  opacity: 0;
-  padding-bottom: 0 !important;
-  cursor: default;
-}
-
-body > .expandable-image.expanded > img {
-  width: 100%;
-  max-width: 1200px;
-  max-height: 100%;
-  object-fit: contain;
-  margin: 0 auto;
-}
-
-body > .expandable-image.expanded > .close-button {
-  display: block;
-}
-
 .close-button {
   position: fixed;
   top: 10px;
@@ -135,37 +102,76 @@ body > .expandable-image.expanded > .close-button {
   display: none;
   cursor: pointer;
 }
-svg {
-  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.5));
+
+.expandable-image {
+  position: relative;
+  transition: 0.25s opacity;
+  cursor: zoom-in;
+
+  img {
+    width: 100%;
+  }
 }
+
+body {
+  .expandable-image.expanded {
+    position: fixed;
+    z-index: 999999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    display: flex;
+    align-items: center;
+    opacity: 0%;
+    padding-bottom: 0 !important;
+    cursor: default;
+
+    img {
+      width: 100%;
+      max-width: 1200px;
+      max-height: 100%;
+      object-fit: contain;
+      margin: 0 auto;
+    }
+  }
+
+  .close-button {
+    display: block;
+  }
+}
+
+svg {
+  filter: drop-shadow(1px 1px 1px rgb(0 0 0 / 50%));
+}
+
 svg path {
   fill: #fff;
 }
+
 .expand-button {
   position: absolute;
   z-index: 999;
   right: 10px;
   top: 10px;
-  padding: 0px;
   align-items: center;
   justify-content: center;
   padding: 3px;
-  opacity: 0;
+  opacity: 0%;
   transition: 0.2s opacity;
 }
 
 .expandable-image:hover .expand-button {
-  opacity: 1;
+  opacity: 100%;
 }
+
 .expand-button svg {
   width: 20px;
   height: 20px;
 }
+
 .expand-button path {
   fill: #fff;
-}
-
-.expandable-image img {
-  width: 100%;
 }
 </style>

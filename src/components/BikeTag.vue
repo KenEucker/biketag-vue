@@ -93,8 +93,10 @@ export default defineComponent({
   z-index: 99;
   border-radius: 5rem;
 }
+
 .img-wrapper {
   position: relative;
+
   .tag-number {
     position: absolute;
     top: 0;
@@ -102,8 +104,10 @@ export default defineComponent({
     z-index: 99;
     padding: 0 0.5rem;
     text-shadow: 2px 2px #292828e6;
+
     /* border-radius: 10px; */
   }
+
   .tag-player {
     position: absolute;
     right: 1rem;
@@ -111,6 +115,7 @@ export default defineComponent({
     z-index: 99;
     text-shadow: 2px 2px #292828e6;
   }
+
   .desc {
     position: relative;
     font-size: 3vh;

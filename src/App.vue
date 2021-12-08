@@ -23,6 +23,7 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
 }
+
 .card-body {
   border-radius: 0.25rem;
 }
