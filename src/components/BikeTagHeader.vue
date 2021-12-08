@@ -63,7 +63,7 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped>
+<style scoped lang="scss">
 .header--logo .logo {
   width: 4rem;
   height: 6rem;

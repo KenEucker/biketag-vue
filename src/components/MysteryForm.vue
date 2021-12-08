@@ -36,7 +36,7 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped>
+<style scoped lang="scss">
 .custom-file-upload {
   border-radius: 2rem;
   display: inline-block;

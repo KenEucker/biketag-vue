@@ -85,7 +85,7 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped>
+<style scoped lang="scss">
 .card-body > .btn-hint {
   position: absolute;
   top: 0;
@@ -95,25 +95,25 @@ export default defineComponent({
 }
 .img-wrapper {
   position: relative;
-}
-.img-wrapper > .tag-number {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 99;
-  padding: 0 0.5rem;
-  text-shadow: 2px 2px #292828e6;
-  /* border-radius: 10px; */
-}
-.img-wrapper > .tag-player {
-  position: absolute;
-  right: 1rem;
-  bottom: 0;
-  z-index: 99;
-  text-shadow: 2px 2px #292828e6;
-}
-.desc {
-  position: relative;
-  font-size: 3vh;
+  .tag-number {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99;
+    padding: 0 0.5rem;
+    text-shadow: 2px 2px #292828e6;
+    /* border-radius: 10px; */
+  }
+  .tag-player {
+    position: absolute;
+    right: 1rem;
+    bottom: 0;
+    z-index: 99;
+    text-shadow: 2px 2px #292828e6;
+  }
+  .desc {
+    position: relative;
+    font-size: 3vh;
+  }
 }
 </style>

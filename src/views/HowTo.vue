@@ -70,7 +70,7 @@ export default {
   },
 }
 </script>
-<style scoped>
+<style scoped lang="scss">
 .swiper {
   max-width: 600px;
 }

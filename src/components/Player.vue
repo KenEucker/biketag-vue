@@ -39,7 +39,7 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped>
+<style scoped lang="scss">
 span {
   font-size: 4vh;
 }

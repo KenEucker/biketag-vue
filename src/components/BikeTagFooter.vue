@@ -47,7 +47,7 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped>
+<style scoped lang="scss">
 .back-to-home a i {
   font-size: 5em;
 }

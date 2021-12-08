@@ -38,7 +38,7 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped>
+<style scoped lang="scss">
 .logo-img {
   margin: 20px;
 }

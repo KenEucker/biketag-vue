@@ -4,7 +4,7 @@
     :class="{
       expanded: expanded,
     }"
-    @click="expanded = true"
+    @click="expandClick"
   >
     <i v-if="expanded" class="close-button">
       <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
@@ -14,14 +14,14 @@
         />
       </svg>
     </i>
-    <i v-if="!expanded" class="expand-button">
+    <!-- <i v-if="!expanded" class="expand-button">
       <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
         <path
           fill="#000000"
           d="M10,21V19H6.41L10.91,14.5L9.5,13.09L5,17.59V14H3V21H10M14.5,10.91L19,6.41V10H21V3H14V5H17.59L13.09,9.5L14.5,10.91Z"
         />
       </svg>
-    </i>
+    </i> -->
     <b-spinner v-show="loading" />
     <img v-show="!loading" class="img-fluid" v-bind="$attrs" @load="loaded" />
   </div>
@@ -45,6 +45,8 @@ export default defineComponent({
           this.cloned = this.$el.cloneNode(true)
           this.closeButtonRef = this.cloned.querySelector('.close-button')
           this.closeButtonRef.addEventListener('click', this.closeImage)
+          document.addEventListener('keydown', this.doCloseImage)
+          document.addEventListener('backbutton', this.doCloseImage)
           document.body.appendChild(this.cloned)
           document.body.style.overflow = 'hidden'
           this.cloned.addEventListener('touchmove', this.freezeVp, false)
@@ -67,8 +69,19 @@ export default defineComponent({
   },
 
   methods: {
+    expandClick() {
+      this.expanded = true
+      console.log('clicked')
+    },
+    doCloseImage(event) {
+      if (event.key.toLowerCase() == 'escape') {
+        this.closeImage(event)
+      }
+    },
     closeImage(event) {
       this.expanded = false
+      document.removeEventListener('keydown', this.doCloseImage)
+      document.removeEventListener('backbutton', this.doCloseImage)
       event.stopPropagation()
     },
     freezeVp(e) {
@@ -76,12 +89,12 @@ export default defineComponent({
     },
     loaded() {
       this.loading = false
-    }
+    },
   },
   // template: '#expandable-image',
 })
 </script>
-<style scoped>
+<style scoped lang="scss">
 .expandable-image {
   position: relative;
   transition: 0.25s opacity;
