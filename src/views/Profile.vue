@@ -20,13 +20,9 @@
       <li v-for="tag in tagsForList" :key="tag.tagnumber">
         <bike-tag
           :key="tag.tagnumber"
-          :tagnumber="tag.tagnumber"
-          :found-image-url="tag.foundImageUrl"
-          :mystery-image-url="tag.mysteryImageUrl"
-          :mystery-player="tag.mysteryPlayer"
-          :found-player="tag.foundPlayer"
-          :found-description="getImgurFoundDescriptionFromBikeTagData(tag)"
-          :mystery-description="getImgurMysteryDescriptionFromBikeTagData(tag)"
+          :tag="tag"
+          :found-tagnumber="tag.tagnumber - 1"
+          :found-description="getSelfTagFoundDescription(tag)"
         />
       </li>
     </ul>
@@ -68,27 +64,34 @@ export default defineComponent({
     // mix the getters into computed with object spread operator
     ...mapGetters(['getPlayers']),
     player() {
-      return this.getPlayers.filter(
-        (player) => decodeURIComponent(player.name) == this.$route.params.name
-      )[0]
+      const playerName = this.$route.params.name
+      const playerList = this.getPlayers.filter((player) => {
+        return decodeURIComponent(encodeURIComponent(player.name)) == playerName
+      })
+      return playerList[0]
     },
     tagsForList() {
-      return this.player.tags.slice(
+      return this.player?.tags?.slice(
         (this.currentPage - 1) * this.perPage,
         this.currentPage * this.perPage
       )
     },
     totalCount() {
-      return this.player.tags.length
+      return this.player?.tags?.length
     },
   },
+  mounted() {
+    this.$store.dispatch('setPlayers')
+  },
   methods: {
-    getImgurFoundDescriptionFromBikeTagData:
-      biketag.getters.getImgurFoundDescriptionFromBikeTagData,
-    getImgurMysteryDescriptionFromBikeTagData:
-      biketag.getters.getImgurMysteryDescriptionFromBikeTagData,
     resetCurrentPage() {
       this.currentPage = 0
+    },
+    getSelfTagFoundDescription(tag) {
+      return biketag.getters.getImgurFoundDescriptionFromBikeTagData({
+        ...tag,
+        ...{ tagnumber: tag.tagnumber - 1 },
+      })
     },
   },
 })

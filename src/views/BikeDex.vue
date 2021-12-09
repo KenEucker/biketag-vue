@@ -18,16 +18,7 @@
     ></b-pagination>
     <ul id="itemList" class="list-unstyled">
       <li v-for="tag in tagsForList" :key="tag.tagnumber">
-        <bike-tag
-          :key="tag.tagnumber"
-          :tagnumber="tag.tagnumber"
-          :found-image-url="tag.foundImageUrl"
-          :mystery-image-url="tag.mysteryImageUrl"
-          :mystery-player="tag.mysteryPlayer"
-          :found-player="tag.foundPlayer"
-          :found-description="getImgurFoundDescriptionFromBikeTagData(tag)"
-          :mystery-description="getImgurMysteryDescriptionFromBikeTagData(tag)"
-        />
+        <bike-tag :key="tag.tagnumber" :tag="tag" />
       </li>
     </ul>
     <b-pagination
@@ -45,7 +36,6 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 // import Spinner from 'vue-easy-spinner/package/Spinner.vue'
 import BikeTag from '@/components/BikeTag.vue'
-import biketag from 'biketag'
 
 export default defineComponent({
   name: 'BikeDexPage',
@@ -82,10 +72,6 @@ export default defineComponent({
     this.$store.dispatch('setTags')
   },
   methods: {
-    getImgurFoundDescriptionFromBikeTagData:
-      biketag.getters.getImgurFoundDescriptionFromBikeTagData,
-    getImgurMysteryDescriptionFromBikeTagData:
-      biketag.getters.getImgurMysteryDescriptionFromBikeTagData,
     resetCurrentPage() {
       this.currentPage = 0
     },

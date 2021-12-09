@@ -1,30 +1,30 @@
 <template>
   <b-row>
-    <b-col :md="foundImageUrl ? 6 : 12" class="mb-3">
+    <b-col :md="!!_foundImageUrl ? 6 : 12" class="mb-3">
       <b-card>
         <b-button v-show="hintBtn" class="btn-hint" variant="primary" @click="goHintPage"
           >?</b-button
         >
         <div class="img-wrapper">
-          <span class="tag-number">#{{ tagnumber }}</span>
-          <span class="tag-player">{{ mysteryPlayer }}</span>
-          <expandable-image :src="mysteryImageUrl" alt="mysteryDescription"></expandable-image>
+          <span class="tag-number">#{{ _tagnumber }}</span>
+          <span class="tag-player">{{ _mysteryPlayer }}</span>
+          <expandable-image :src="_mysteryImageUrl" :alt="_mysteryDescription"></expandable-image>
         </div>
-        <span class="desc">{{ mysteryDescription }}</span>
+        <span class="desc">{{ _mysteryDescription }}</span>
       </b-card>
     </b-col>
-    <b-col v-show="foundImageUrl" md="6" class="mb-3">
+    <b-col v-show="!!_foundImageUrl" md="6" class="mb-3">
       <b-card>
         <div class="img-wrapper">
-          <span class="tag-number">#{{ tagnumber }}</span>
-          <span class="tag-player">{{ foundPlayer }}</span>
+          <span class="tag-number">#{{ _foundTagnumber }}</span>
+          <span class="tag-player">{{ _foundPlayer }}</span>
           <expandable-image
             class="image img-fluid"
-            :src="foundImageUrl"
-            alt="foundDescription"
+            :src="_foundImageUrl"
+            :alt="foundDescription"
           ></expandable-image>
         </div>
-        <span class="desc">{{ foundDescription }}</span>
+        <span class="desc">{{ _foundDescription }}</span>
       </b-card>
     </b-col>
   </b-row>
@@ -32,6 +32,7 @@
 <script>
 import { defineComponent } from 'vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
+import biketag from 'biketag'
 
 export default defineComponent({
   name: 'BikeTag',
@@ -43,33 +44,73 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    tag: {
+      type: Object,
+      default: () => {
+        return {}
+      },
+    },
     tagnumber: {
+      type: Number,
+      default: 0,
+    },
+    foundTagnumber: {
       type: Number,
       default: 0,
     },
     foundImageUrl: {
       type: String,
-      default: '',
+      default: null,
     },
     mysteryImageUrl: {
       type: String,
-      default: '',
+      default: null,
     },
     foundPlayer: {
       type: String,
-      default: '',
+      default: null,
     },
     mysteryPlayer: {
       type: String,
-      default: '',
+      default: null,
     },
     foundDescription: {
       type: String,
-      default: '',
+      default: null,
     },
     mysteryDescription: {
       type: String,
-      default: '',
+      default: null,
+    },
+  },
+  computed: {
+    _tagnumber() {
+      return this.tagnumber ? this.tagnumber : this.tag?.tagnumber
+    },
+    _foundTagnumber() {
+      return this.foundTagnumber ? this.foundTagnumber : this.tag?.tagnumber
+    },
+    _foundImageUrl() {
+      return this.foundImageUrl ? this.foundImageUrl : this.tag?.foundImageUrl
+    },
+    _mysteryImageUrl() {
+      return this.mysteryImageUrl ? this.mysteryImageUrl : this.tag?.mysteryImageUrl
+    },
+    _foundPlayer() {
+      return this.foundPlayer ? this.foundPlayer : this.tag?.foundPlayer
+    },
+    _mysteryPlayer() {
+      return this.mysteryPlayer ? this.mysteryPlayer : this.tag?.mysteryPlayer
+    },
+    _foundDescription() {
+      return this.foundDescription
+        ? this.foundDescription
+        : this.getImgurFoundDescriptionFromBikeTagData(this.tag ?? '')
+    },
+    _mysteryDescription() {
+      return this.mysteryDescription
+        ? this.mysteryDescription
+        : this.getImgurMysteryDescriptionFromBikeTagData(this.tag ?? '')
     },
   },
   mounted() {
@@ -82,6 +123,10 @@ export default defineComponent({
     goHintPage: function () {
       this.$router.push('/hint')
     },
+    getImgurFoundDescriptionFromBikeTagData:
+      biketag.getters.getImgurFoundDescriptionFromBikeTagData,
+    getImgurMysteryDescriptionFromBikeTagData:
+      biketag.getters.getImgurMysteryDescriptionFromBikeTagData,
   },
 })
 </script>

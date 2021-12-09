@@ -2,7 +2,7 @@
   <div class="p-1" role="button" @click="goProfilePage">
     <img class="player-bicon" :src="playerAvatarUrl" :alt="playerName" />
     <div>
-      <span v-if="playerPos" class="p-1">#{{ playerPos }}</span>
+      <span v-if="!!playerPos" class="p-1">#{{ playerPos }}</span>
       <span class="p-1">{{ playerName }}</span>
       <span v-if="tagCount" class="p-1">({{ tagCount }})</span>
     </div>
@@ -16,16 +16,16 @@ export default defineComponent({
   name: 'PlayerComp',
   props: {
     playerPos: {
-      type: String,
-      default: '',
+      type: Number,
+      default: 0,
     },
     playerName: {
       type: String,
       default: '',
     },
     tagCount: {
-      type: String,
-      default: '',
+      type: Number,
+      default: 0,
     },
     playerAvatarUrl: {
       type: String,
