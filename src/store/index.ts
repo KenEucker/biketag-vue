@@ -9,7 +9,6 @@ import { getDomainInfo } from '@/common/methods'
 export interface State {
   game: Game
   gameName: string
-  gameTitle: string
   currentBikeTag: Tag
   allTags: Tag[]
   players: Player[]
@@ -37,15 +36,14 @@ const options = {
 }
 
 const client = new biketag(options)
-const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId ?? 'x37ikhvs'}/${
-  options.sanity?.dataset ?? 'production'
-}/`
+// const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId ?? 'x37ikhvs'}/${
+//   options.sanity?.dataset ?? 'production'
+// }/`
 
 export const store = createStore<State>({
   state: {
     gameName,
     game: {} as Game,
-    gameTitle: `${gameName.toUpperCase()}.BIKETAG`,
     currentBikeTag: {} as Tag,
     allTags: [] as Tag[],
     players: [] as Player[],
@@ -58,15 +56,10 @@ export const store = createStore<State>({
       return state.game
     },
     getTitle(state) {
-      return state.gameTitle
+      return `${state.gameName.toUpperCase()}.BIKETAG`
     },
     getLogoUrl(state) {
-      return state.game.logo
-        ? `${sanityBaseCDNUrl}${state.game.logo
-            .replace('image-', '')
-            .replace('-png', '.png')
-            .replace('-jpg', '.jpg')}`
-        : require('@/assets/images/pdx-bike-tag-small.png')
+      return state.game.logo ? state.game.logo : require('@/assets/images/pdx-bike-tag-small.png')
     },
     getCurrentBikeTag(state) {
       return state.currentBikeTag
@@ -102,7 +95,7 @@ export const store = createStore<State>({
       state.players = players
       console.log({ players })
     },
-    INT_FORM_STEP(state) {
+    INC_FORM_STEP(state) {
       state.formStep++
     },
     DEC_FORM_STEP(state) {
@@ -137,7 +130,7 @@ export const store = createStore<State>({
       })
     },
     incFormStep({ commit }) {
-      commit('INT_FORM_STEP')
+      commit('INC_FORM_STEP')
     },
     decFormStep({ commit }) {
       commit('DEC_FORM_STEP')
