@@ -75,6 +75,9 @@ export const store = createStore<State>({
     getFormStep(state) {
       return state.formStep
     },
+    getQueuedTag(state) {
+      return state.queuedTag
+    },
   },
   mutations: {
     SET_GAME(state, game) {
@@ -96,6 +99,18 @@ export const store = createStore<State>({
     SET_PLAYERS(state, players) {
       state.players = players
       console.log({ players })
+    },
+    SET_QUEUE_FOUND(state, data) {
+      state.queuedTag.foundImageUrl = data.foundImageUrl
+      state.queuedTag.foundLocation = data.foundLocation
+      state.queuedTag.foundPlayer = data.foundPlayer
+      console.log(state.queuedTag)
+    },
+    SET_QUEUE_MYSTERY(state, data) {
+      state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
+      state.queuedTag.hint = data.hint
+      state.queuedTag.mysteryPlayer = state.queuedTag.foundPlayer
+      console.log(state.queuedTag)
     },
     INC_FORM_STEP(state) {
       state.formStep++
@@ -131,6 +146,12 @@ export const store = createStore<State>({
       return client.players({ sort: 'top' }).then((d) => {
         commit('SET_PLAYERS', d)
       })
+    },
+    setQueueFound({ commit }, d) {
+      return commit('SET_QUEUE_FOUND', d)
+    },
+    setQueueMystery({ commit }, d) {
+      return commit('SET_QUEUE_MYSTERY', d)
     },
     incFormStep({ commit }) {
       commit('INC_FORM_STEP')

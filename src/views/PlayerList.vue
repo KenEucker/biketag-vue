@@ -1,5 +1,14 @@
 <template>
   <div class="container">
+    <b-form-group>
+      <b-form-select
+        v-model="perPage"
+        class="w-25 m-auto"
+        :options="options"
+        size="sm"
+        @change="resetCurrentPage"
+      ></b-form-select>
+    </b-form-group>
     <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
@@ -34,7 +43,14 @@ export default defineComponent({
   data() {
     return {
       currentPage: 1,
-      perPage: 10,
+      perPage: 5,
+      options: [
+        { value: 5, text: '5' },
+        { value: 10, text: '10' },
+        { value: 15, text: '15' },
+        { value: 20, text: '20' },
+        { value: 25, text: '25' },
+      ],
     }
   },
   computed: {
@@ -55,6 +71,9 @@ export default defineComponent({
   methods: {
     playerAvatar(player) {
       return player.bicon ? player.bicon : player.tags[player.tags.length - 1].mysteryImageUrl
+    },
+    resetCurrentPage() {
+      this.currentPage = 0
     },
   },
 })
