@@ -1,16 +1,14 @@
 <template>
   <div class="container">
-    <form>
-      <div v-if="getFormStep === 1">
-        <found-form />
-      </div>
-      <div v-if="getFormStep === 2">
-        <mystery-form />
-      </div>
-      <div v-if="getFormStep === 3">
-        <post-form />
-      </div>
-    </form>
+    <div v-if="getFormStep === 1">
+      <found-form />
+    </div>
+    <div v-if="getFormStep === 2">
+      <mystery-form />
+    </div>
+    <div v-if="getFormStep === 3">
+      <post-form />
+    </div>
   </div>
 </template>
 <script>
@@ -31,20 +29,6 @@ export default defineComponent({
   computed: {
     ...mapGetters(['getFormStep']),
   },
-  // data() {
-  //   return {
-  //step: 1,
-  // registration: {
-  //   name: null,
-  //   email: null,
-  //   street: null,
-  //   city: null,
-  //   state: null,
-  //   numtickets: 0,
-  //   shirtsize: 'XL',
-  // },
-  //   }
-  // },
   methods: {
     prev() {
       this.step--

@@ -3,8 +3,8 @@
     <span>Post Tag</span>
     <div>
       <span>This is what your post look like</span>
-      <img class="found-img w-75 p-2" src="@/assets/images/blank.png" />
-      <img class="mystery-img w-75 p-2 mb-3" src="@/assets/images/blank.png" />
+      <img class="found-img w-75 p-2" :src="getQueuedTag.foundImageUrl" />
+      <img class="mystery-img w-75 p-2 mb-3" :src="getQueuedTag.mysteryImageUrl" />
     </div>
     <div>
       <b-button class="w-100 btn-post border-0" @click="submit">
@@ -19,9 +19,13 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import { mapGetters } from 'vuex'
 
 export default defineComponent({
   name: 'MysteryForm',
+  computed: {
+    ...mapGetters(['getQueuedTag']),
+  },
   methods: {
     goNextStep() {
       this.$store.dispatch('incFormStep')

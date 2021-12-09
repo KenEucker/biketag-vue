@@ -10,17 +10,17 @@
       <label for="file-upload" class="btn-upload custom-file-upload">
         <i class="fa fa-camera" />
       </label>
-      <input id="file-upload" type="file" class="d-none" accept="image/*" @change="previewImage" />
+      <input id="file-upload" type="file" class="d-none" accept="image/*" @change="setImage" />
       <!-- <b-button>Switch</b-button> -->
     </div>
     <div>
-      <b-form-input id="input-found" placeholder="Enter found location" />
+      <b-form-input id="input-found" v-model="location" placeholder="Enter found location" />
     </div>
     <div class="mt-3">
-      <b-form-input id="input-name" placeholder="Enter your name" />
+      <b-form-input id="input-name" v-model="player" placeholder="Enter your name" />
     </div>
     <div class="mt-3">
-      <b-button class="w-100 btn-found border-0" @click="goNextStep">
+      <b-button class="w-100 btn-found border-0" @click="queueFound">
         Queue Found Tag &nbsp; <i class="fas fa-check-square" />
       </b-button>
     </div>
@@ -35,13 +35,23 @@ export default defineComponent({
     return {
       preview: null,
       image: null,
+      location: '',
+      player: '',
     }
   },
   methods: {
+    queueFound() {
+      this.$store.dispatch('setQueueFound', {
+        foundImageUrl: this.preview,
+        foundLocation: this.location,
+        foundPlayer: this.player,
+      })
+      this.goNextStep()
+    },
     goNextStep() {
       this.$store.dispatch('incFormStep')
     },
-    previewImage(event) {
+    setImage(event) {
       var input = event.target
       if (input.files) {
         var reader = new FileReader()

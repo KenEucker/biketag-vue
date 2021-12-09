@@ -10,14 +10,14 @@
       <label for="file-upload" class="btn-upload custom-file-upload">
         <i class="fa fa-camera" />
       </label>
-      <input id="file-upload" type="file" class="d-none" accept="image/*" @change="previewImage" />
+      <input id="file-upload" type="file" class="d-none" accept="image/*" @change="setImage" />
       <!-- <b-button>Switch</b-button> -->
     </div>
     <div>
-      <b-form-input id="input-hint" placeholder="Enter your hint" />
+      <b-form-input id="input-hint" v-model="hint" placeholder="Enter your hint" />
     </div>
     <div class="mt-3">
-      <b-button class="w-100 btn-mystery border-0" @click="goNextStep">
+      <b-button class="w-100 btn-mystery border-0" @click="queueMystery">
         Submit New Tag &nbsp; <i class="fas fa-check-square" />
       </b-button>
       <span>
@@ -36,13 +36,21 @@ export default defineComponent({
     return {
       preview: null,
       image: null,
+      hint: '',
     }
   },
   methods: {
+    queueMystery() {
+      this.$store.dispatch('setQueueMystery', {
+        mysteryImageUrl: this.preview,
+        hint: this.hint,
+      })
+      this.goNextStep()
+    },
     goNextStep() {
       this.$store.dispatch('incFormStep')
     },
-    previewImage(event) {
+    setImage(event) {
       var input = event.target
       if (input.files) {
         var reader = new FileReader()
