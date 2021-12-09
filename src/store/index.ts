@@ -15,6 +15,7 @@ export interface State {
   players: Player[]
   html: string
   formStep: number
+  queuedTag: Tag
 }
 
 // define injection key
@@ -26,7 +27,7 @@ console.log({ subdomain: domain.subdomain, domain, gameName })
 const options = {
   game: gameName,
   imgur: {
-    // hash: 'Y9PKtpI',
+    hash: 'Y9PKtpI',
     clientId: '4fa12c6ce36984b',
   },
   sanity: {
@@ -50,6 +51,7 @@ export const store = createStore<State>({
     players: [] as Player[],
     html: '',
     formStep: 1,
+    queuedTag: {} as Tag,
   },
   getters: {
     getGame(state) {

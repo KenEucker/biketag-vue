@@ -1,13 +1,16 @@
 <template>
   <b-container>
     <span>New Mystery Location</span>
-    <div><img class="img-fluid" src="@/assets/images/blank.png" /></div>
+    <div>
+      <img v-if="preview" :src="preview" class="img-fluid" />
+      <img v-if="!preview" class="img-fluid" src="@/assets/images/blank.png" />
+    </div>
     <div class="p-3">
       <!-- <b-button>Photos</b-button> -->
       <label for="file-upload" class="btn-upload custom-file-upload">
         <i class="fa fa-camera" />
       </label>
-      <input id="file-upload" type="file" class="d-none" />
+      <input id="file-upload" type="file" class="d-none" accept="image/*" @change="previewImage" />
       <!-- <b-button>Switch</b-button> -->
     </div>
     <div>
@@ -29,9 +32,26 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'MysteryForm',
+  data: function () {
+    return {
+      preview: null,
+      image: null,
+    }
+  },
   methods: {
     goNextStep() {
       this.$store.dispatch('incFormStep')
+    },
+    previewImage(event) {
+      var input = event.target
+      if (input.files) {
+        var reader = new FileReader()
+        reader.onload = (e) => {
+          this.preview = e.target.result
+        }
+        this.image = input.files[0]
+        reader.readAsDataURL(input.files[0])
+      }
     },
   },
 })

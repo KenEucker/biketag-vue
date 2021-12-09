@@ -3,8 +3,8 @@
     <span>Post Tag</span>
     <div>
       <span>This is what your post look like</span>
-      <img class="found-img w-75 p-2" src="@/assets/images/Roundback.png" />
-      <img class="mystery-img w-75 p-2 mb-3" src="@/assets/images/Roundback.png" />
+      <img class="found-img w-75 p-2" src="@/assets/images/blank.png" />
+      <img class="mystery-img w-75 p-2 mb-3" src="@/assets/images/blank.png" />
     </div>
     <div>
       <b-button class="w-100 btn-post border-0" @click="submit">
