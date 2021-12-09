@@ -19,7 +19,7 @@ const routes: Array<RouteRecordRaw> = [
   // {
   //   path: '/test',
   //   name: 'CarouselTest',
-  //   component: () => import('@/views/CarouselTest.vue'),
+  //   component: () => import('@/views/ImagePreviewTest.vue'),
   // },
   // {
   //   path: '/postreddit',
