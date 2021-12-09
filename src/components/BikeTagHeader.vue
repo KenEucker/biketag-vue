@@ -50,6 +50,9 @@ export default defineComponent({
       case 'Players':
         await this.$store.dispatch('setPlayers')
         break
+      case 'Player':
+        await this.$store.dispatch('setPlayers')
+        break
     }
   },
   methods: {
