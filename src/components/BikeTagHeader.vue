@@ -38,7 +38,7 @@ export default defineComponent({
     isShow() {
       return this.$route.name === 'Play' ? false : true
     },
-    ...mapGetters(['getTitle', 'getGame', 'getLogoUrl', 'getCurrentBikeTag']),
+    ...mapGetters(['getTitle', 'getLogoUrl', 'getCurrentBikeTag']),
   },
   async mounted() {
     await this.$store.dispatch('setGame')

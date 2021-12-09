@@ -21,11 +21,6 @@ const routes: Array<RouteRecordRaw> = [
   //   name: 'CarouselTest',
   //   component: () => import('@/views/ImagePreviewTest.vue'),
   // },
-  // {
-  //   path: '/postreddit',
-  //   name: 'PostReddit',
-  //   component: () => import('@/views/PostReddit.vue'),
-  // },
   {
     path: '/how',
     name: 'How',
