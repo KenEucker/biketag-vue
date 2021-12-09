@@ -7,8 +7,6 @@
       :space-between="50"
       navigation
       :loop="true"
-      @swiper="onSwiper"
-      @slide-change="onSlideChange"
     >
       <swiper-slide>
         <p>
@@ -59,14 +57,6 @@ export default {
   components: {
     Swiper,
     SwiperSlide,
-  },
-  methods: {
-    onSwiper(swiper) {
-      console.log(swiper)
-    },
-    onSlideChange() {
-      console.log('slide change')
-    },
   },
 }
 </script>

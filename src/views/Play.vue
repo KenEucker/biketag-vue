@@ -3,7 +3,7 @@
     <div>
       <bike-tag
         class="biketag"
-        hint-btn="true"
+        :hint-btn="true"
         :tagnumber="getCurrentBikeTag.tagnumber"
         :mystery-image-url="getCurrentBikeTag.mysteryImageUrl"
         :player="getCurrentBikeTag.player"

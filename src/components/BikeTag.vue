@@ -44,8 +44,8 @@ export default defineComponent({
       default: false,
     },
     tagnumber: {
-      type: String,
-      default: '',
+      type: Number,
+      default: 0,
     },
     foundImageUrl: {
       type: String,
