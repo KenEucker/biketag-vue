@@ -38,7 +38,7 @@ import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 
 export default defineComponent({
-  name: 'BikeDexPage',
+  name: 'BikeDexView',
   components: {
     BikeTag,
     // Spinner,

@@ -36,7 +36,7 @@ import { mapGetters } from 'vuex'
 import Player from '@/components/Player.vue'
 
 export default defineComponent({
-  name: 'PlayerList',
+  name: 'PlayersView',
   components: {
     Player,
   },
@@ -73,7 +73,7 @@ export default defineComponent({
       return player.bicon ? player.bicon : player.tags[player.tags.length - 1].mysteryImageUrl
     },
     resetCurrentPage() {
-      this.currentPage = 0
+      this.currentPage = 1
     },
   },
 })

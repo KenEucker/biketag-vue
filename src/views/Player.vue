@@ -43,7 +43,7 @@ import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
 
 export default defineComponent({
-  name: 'ProfileView',
+  name: 'PlayerView',
   components: {
     BikeTag,
   },
@@ -64,17 +64,19 @@ export default defineComponent({
     // mix the getters into computed with object spread operator
     ...mapGetters(['getPlayers']),
     player() {
-      const playerName = this.$route.params.name
+      const playerName = decodeURIComponent(encodeURIComponent(this.$route.params.name))
       const playerList = this.getPlayers.filter((player) => {
         return decodeURIComponent(encodeURIComponent(player.name)) == playerName
       })
       return playerList[0]
     },
     tagsForList() {
-      return this.player?.tags?.slice(
-        (this.currentPage - 1) * this.perPage,
-        this.currentPage * this.perPage
-      )
+      const tags = this.player?.tags
+      return tags
+        ? tags
+            .reverse()
+            .slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
+        : []
     },
     totalCount() {
       return this.player?.tags?.length

@@ -1,6 +1,6 @@
 <template>
   <div class="container align-self-center">
-    <div v-if="isShow" class="p-2">
+    <div v-if="isShow" class="menu-btn p-2">
       <b-button class="btn-circle" variant="primary" @click="goBack">
         <i class="fa fa-long-arrow-alt-left" />
       </b-button>
@@ -43,6 +43,14 @@ export default defineComponent({
   async mounted() {
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setCurrentBikeTag')
+    switch (this.$route.name) {
+      case 'BikeDex':
+        await this.$store.dispatch('setTags')
+        break
+      case 'Players':
+        await this.$store.dispatch('setPlayers')
+        break
+    }
   },
   methods: {
     goBikeDexPage: function () {
@@ -65,8 +73,8 @@ export default defineComponent({
 </script>
 <style scoped lang="scss">
 .header-logo .logo {
-  width: 4rem;
-  height: 6rem;
+  width: auto;
+  height: 8rem;
   line-height: 8rem;
   margin: auto;
 }
@@ -84,5 +92,9 @@ export default defineComponent({
   cursor: pointer;
   justify-content: center;
   align-items: center;
+}
+
+.menu-btn {
+  position: absolute;
 }
 </style>

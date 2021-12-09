@@ -10,7 +10,7 @@ export interface State {
   game: Game
   gameName: string
   currentBikeTag: Tag
-  allTags: Tag[]
+  tags: Tag[]
   players: Player[]
   html: string
   formStep: number
@@ -22,7 +22,6 @@ export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(undefined, window)
 const gameName = domain.subdomain ?? 'portland'
 const clientId = '4fa12c6ce36984b'
-
 const options: any = {
   game: gameName,
   sanity: {
@@ -30,17 +29,17 @@ const options: any = {
     dataset: 'production',
   },
 }
+const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId}/${options.sanity?.dataset}/`
 console.log({ subdomain: domain.subdomain, domain, gameName })
 
 let client = new biketag(options)
-const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId}/${options.sanity?.dataset}/`
 
 export const store = createStore<State>({
   state: {
     gameName,
     game: {} as Game,
     currentBikeTag: {} as Tag,
-    allTags: [] as Tag[],
+    tags: [] as Tag[],
     players: [] as Player[],
     html: '',
     formStep: 1,
@@ -67,7 +66,7 @@ export const store = createStore<State>({
       return state.currentBikeTag
     },
     getTags(state) {
-      return state.allTags
+      return state.tags
     },
     getPlayers(state) {
       return state.players
@@ -89,7 +88,7 @@ export const store = createStore<State>({
       console.log({ tag })
     },
     SET_TAGS(state, tags) {
-      state.allTags = tags
+      state.tags = tags
       console.log({ tags })
     },
     SET_HTML(state, html) {

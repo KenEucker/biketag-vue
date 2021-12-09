@@ -22,7 +22,7 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 
 export default defineComponent({
-  name: 'HintPage',
+  name: 'HintView',
   computed: {
     ...mapGetters(['getCurrentBikeTag']),
   },

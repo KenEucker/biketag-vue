@@ -54,6 +54,7 @@ SwiperCore.use([Autoplay, Navigation, Pagination])
 
 // Import Swiper styles
 export default {
+  name: 'HowToView',
   components: {
     Swiper,
     SwiperSlide,

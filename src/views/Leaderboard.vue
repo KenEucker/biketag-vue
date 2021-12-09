@@ -33,7 +33,7 @@ import { mapGetters } from 'vuex'
 import Player from '@/components/Player.vue'
 
 export default defineComponent({
-  name: 'PlayerList',
+  name: 'LeaderboardView',
   components: {
     Player,
   },

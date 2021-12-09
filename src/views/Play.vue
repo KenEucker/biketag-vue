@@ -2,7 +2,6 @@
   <div class="container">
     <div>
       <bike-tag
-        class="biketag"
         :hint-btn="true"
         :tagnumber="getCurrentBikeTag.tagnumber"
         :mystery-image-url="getCurrentBikeTag.mysteryImageUrl"
@@ -19,7 +18,7 @@ import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 
 export default defineComponent({
-  name: 'PlayPage',
+  name: 'PlayView',
   components: {
     BikeTag,
   },
@@ -28,11 +27,3 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped lang="scss">
-.biketag {
-  // width: auto;
-  // max-width: 90vw;
-  // height: auto;
-  // max-height: 100vh;
-}
-</style>

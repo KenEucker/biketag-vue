@@ -1,5 +1,5 @@
 <template>
-  <div class="p-1" role="button" @click="goProfilePage">
+  <div class="p-1" role="button" @click="goPlayerPage">
     <img class="player-bicon" :src="playerAvatarUrl" :alt="playerName" />
     <div>
       <span v-if="!!playerPos" class="p-1">#{{ playerPos }}</span>
@@ -33,7 +33,7 @@ export default defineComponent({
     },
   },
   methods: {
-    goProfilePage: function () {
+    goPlayerPage: function () {
       this.$router.push('/players/' + encodeURIComponent(this.playerName))
     },
   },
