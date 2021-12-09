@@ -21,24 +21,19 @@ export interface State {
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(undefined, window)
 const gameName = domain.subdomain ?? 'portland'
-console.log({ subdomain: domain.subdomain, domain, gameName })
+const clientId = '4fa12c6ce36984b'
 
-const options = {
+const options: any = {
   game: gameName,
-  imgur: {
-    hash: 'Y9PKtpI',
-    clientId: '4fa12c6ce36984b',
-  },
   sanity: {
     projectId: 'x37ikhvs',
     dataset: 'production',
   },
 }
+console.log({ subdomain: domain.subdomain, domain, gameName })
 
-const client = new biketag(options)
-// const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId ?? 'x37ikhvs'}/${
-//   options.sanity?.dataset ?? 'production'
-// }/`
+let client = new biketag(options)
+const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId}/${options.sanity?.dataset}/`
 
 export const store = createStore<State>({
   state: {
@@ -59,7 +54,14 @@ export const store = createStore<State>({
       return `${state.gameName.toUpperCase()}.BIKETAG`
     },
     getLogoUrl(state) {
-      return state.game.logo ? state.game.logo : require('@/assets/images/pdx-bike-tag-small.png')
+      const logoUrl =
+        state.game?.logo?.indexOf('imgur.com') !== -1
+          ? state.game.logo
+          : `${sanityBaseCDNUrl}${state.game.logo
+              .replace('image-', '')
+              .replace('-png', '.png')
+              .replace('-jpg', '.jpg')}`
+      return logoUrl ?? require('@/assets/images/pdx-bike-tag-small.png')
     },
     getCurrentBikeTag(state) {
       return state.currentBikeTag
@@ -105,7 +107,8 @@ export const store = createStore<State>({
   actions: {
     setGame({ commit, state }) {
       return client.game(state.gameName).then((d) => {
-        client.config({ imgur: { hash: (d as Game).mainhash } }, true)
+        options.imgur = { clientId, hash: (d as Game).mainhash }
+        client = new biketag(options)
         commit('SET_GAME', d)
       })
     },
