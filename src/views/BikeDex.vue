@@ -1,5 +1,14 @@
 <template>
   <div class="container">
+    <b-form-group>
+      <b-form-select
+        v-model="perPage"
+        class="w-25 m-auto"
+        :options="options"
+        size="sm"
+        @change="resetCurrentPage"
+      ></b-form-select>
+    </b-form-group>
     <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
@@ -47,7 +56,14 @@ export default defineComponent({
   data() {
     return {
       currentPage: 1,
-      perPage: 10,
+      perPage: 5,
+      options: [
+        { value: 5, text: '5 Items' },
+        { value: 10, text: '10 Items' },
+        { value: 15, text: '15 Items' },
+        { value: 20, text: '20 Items' },
+        { value: 25, text: '25 Items' },
+      ],
     }
   },
   computed: {
@@ -70,6 +86,9 @@ export default defineComponent({
       biketag.getters.getImgurFoundDescriptionFromBikeTagData,
     getImgurMysteryDescriptionFromBikeTagData:
       biketag.getters.getImgurMysteryDescriptionFromBikeTagData,
+    resetCurrentPage() {
+      this.currentPage = 0
+    },
   },
 })
 </script>

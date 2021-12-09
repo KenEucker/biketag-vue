@@ -6,7 +6,7 @@
       </b-button>
     </div>
   </div>
-  <div class="container mb-4">
+  <div class="container mb-3">
     <div class="header-logo">
       <a href="./">
         <img :src="getLogoUrl" class="logo img-fluid" />
