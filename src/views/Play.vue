@@ -2,12 +2,14 @@
   <div class="container">
     <div>
       <bike-tag
+        v-if="tagnumber === 0"
         :hint-btn="true"
         :tagnumber="getCurrentBikeTag.tagnumber"
         :mystery-image-url="getCurrentBikeTag.mysteryImageUrl"
         :player="getCurrentBikeTag.mysteryPlayer"
         mystery-description="CURRENT MYSTERY LOCATION TO FIND"
       />
+      <bike-tag v-if="tagnumber !== 0" :tag="tag" />
     </div>
   </div>
 </template>

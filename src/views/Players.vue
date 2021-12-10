@@ -50,6 +50,7 @@ export default defineComponent({
     Player,
   },
   data() {
+    console.log(this.$route.params)
     return {
       currentPage: this.$route.params?.currentPage.length
         ? parseInt(this.$route.params?.currentPage)

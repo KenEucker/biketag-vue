@@ -45,11 +45,12 @@ export default defineComponent({
       case 'BikeDex':
         await this.$store.dispatch('setTags')
         break
+      case 'Player':
       case 'Players':
         await this.$store.dispatch('setPlayers')
         break
-      case 'Player':
-        await this.$store.dispatch('setPlayers')
+      case 'Leaderboard':
+        await this.$store.dispatch('setTopPlayers')
         break
       case 'Leaderboard':
         await this.$store.dispatch('setTopPlayers')

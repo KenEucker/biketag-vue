@@ -17,6 +17,16 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/BikeDex.vue'),
   },
   {
+    path: '/players/:currentPage?',
+    name: 'Players',
+    component: () => import('@/views/Players.vue'),
+  },
+  {
+    path: '/player/:name/:currentPage?',
+    name: 'Player',
+    component: () => import('@/views/Player.vue'),
+  },
+  {
     path: '/queue',
     name: 'Queue',
     component: () => import('@/views/QueueBikeTag.vue'),
