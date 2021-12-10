@@ -1,10 +1,5 @@
 <template>
   <div class="container">
-    <b-form-group>
-      <select v-model="perPage" class="form-select w-25 m-auto" @change="resetCurrentPage">
-        <option v-for="i in 5" :key="i * 5" :value="i * 5">{{ i * 5 }} Items</option>
-      </select>
-    </b-form-group>
     <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
@@ -29,6 +24,13 @@
         <player :player-name="player.name" :player-avatar-url="playerAvatar(player)" />
       </div>
     </div>
+    <b-form-group>
+      <select v-model="perPage" class="form-select w-25 m-auto" @change="resetCurrentPage">
+        <option v-for="i in 3" :key="Math.pow(10, i)" :value="Math.pow(10, i)">
+          {{ Math.pow(10, i) }}
+        </option>
+      </select>
+    </b-form-group>
     <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
@@ -55,14 +57,7 @@ export default defineComponent({
       currentPage: this.$route.params?.currentPage.length
         ? parseInt(this.$route.params?.currentPage)
         : 1,
-      perPage: 5,
-      options: [
-        { value: 5, text: '5' },
-        { value: 10, text: '10' },
-        { value: 15, text: '15' },
-        { value: 20, text: '20' },
-        { value: 25, text: '25' },
-      ],
+      perPage: 10,
     }
   },
   computed: {

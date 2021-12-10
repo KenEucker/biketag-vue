@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container">
     <div>
       <b-button class="m-1" @click="goLeaderboardPage">Leaderboard</b-button>
       <b-button class="m-1" @click="goUsersPage">Playerboard</b-button>

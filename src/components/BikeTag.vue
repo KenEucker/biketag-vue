@@ -5,7 +5,11 @@
         <div class="img-wrapper">
           <span class="tag-number">#{{ _tagnumber }}</span>
           <span class="tag-player">{{ _mysteryPlayer }}</span>
-          <expandable-image :src="_mysteryImageUrl" :alt="_mysteryDescription"></expandable-image>
+          <expandable-image
+            :src="getImgurImageSized(_mysteryImageUrl)"
+            :full-source="_mysteryImageUrl"
+            :alt="_mysteryDescription"
+          ></expandable-image>
         </div>
         <span class="desc">{{ _mysteryDescription }}</span>
       </b-card>
@@ -17,7 +21,8 @@
           <span class="tag-player">{{ _foundPlayer }}</span>
           <expandable-image
             class="image img-fluid"
-            :src="_foundImageUrl"
+            :src="getImgurImageSized(_foundImageUrl)"
+            :full-source="_foundImageUrl"
             :alt="foundDescription"
           ></expandable-image>
         </div>
@@ -42,6 +47,10 @@ export default defineComponent({
       default: () => {
         return {}
       },
+    },
+    size: {
+      type: String,
+      default: 'm',
     },
     tagnumber: {
       type: Number,
@@ -117,6 +126,13 @@ export default defineComponent({
       biketag.getters.getImgurFoundDescriptionFromBikeTagData,
     getImgurMysteryDescriptionFromBikeTagData:
       biketag.getters.getImgurMysteryDescriptionFromBikeTagData,
+    getImgurImageSized(imgurUrl = '') {
+      return imgurUrl
+        .replace('.jpg', `${this.size}.jpg`)
+        .replace('.gif', `${this.size}.gif`)
+        .replace('.png', `${this.size}.png`)
+        .replace('.mp4', `${this.size}.mp4`)
+    },
   },
 })
 </script>

@@ -30,9 +30,17 @@
 import { defineComponent } from 'vue'
 export default defineComponent({
   name: 'ExpandableImage',
+  props: {
+    fullSource: {
+      type: String,
+      default: null,
+    },
+  },
   data() {
     return {
+      source: null,
       expanded: false,
+      imgRef: null,
       closeButtonRef: null,
       loading: true,
     }
@@ -45,19 +53,27 @@ export default defineComponent({
           this.cloned = this.$el.cloneNode(true)
           this.closeButtonRef = this.cloned.querySelector('.close-button')
           this.closeButtonRef.addEventListener('click', this.closeImage)
+          if (this.fullSource) {
+            this.imgRef = this.cloned.querySelector('img')
+            this.source = this.imgRef.src
+            this.imgRef.src = this.fullSource
+          }
           document.addEventListener('keydown', this.doCloseImage)
           document.addEventListener('backbutton', this.doCloseImage)
           document.body.appendChild(this.cloned)
           document.body.style.overflow = 'hidden'
-          this.cloned.addEventListener('touchmove', this.freezeVp, false)
+          // this.cloned.addEventListener('touchmove', this.freezeVp, false)
           setTimeout(() => {
             this.cloned.style.opacity = 1
           }, 0)
         } else {
           this.cloned.style.opacity = 0
-          this.cloned.removeEventListener('touchmove', this.freezeVp, false)
+          // this.cloned.removeEventListener('touchmove', this.freezeVp, false)
           setTimeout(() => {
             this.closeButtonRef.removeEventListener('click', this.closeImage)
+            if (this.fullSource) {
+              this.imgRef.src = this.source
+            }
             this.cloned.remove()
             this.cloned = null
             this.closeButtonRef = null
