@@ -1,5 +1,5 @@
 <template>
-  <b-container>
+  <b-container class="col-8 col-lg-6">
     <span>Queue Found Location</span>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
@@ -20,7 +20,7 @@
       <b-form-input id="input-name" v-model="player" placeholder="Enter your name" />
     </div>
     <div class="mt-3">
-      <b-button class="w-100 btn-found border-0" @click="queueFound">
+      <b-button class="w-100 btn-found border-0" @click="queueFoundTag">
         Queue Found Tag &nbsp; <i class="fas fa-check-square" />
       </b-button>
     </div>
@@ -28,21 +28,33 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import { mapGetters } from 'vuex'
 
 export default defineComponent({
-  name: 'FoundForm',
+  name: 'QueueFoundTag',
+  props: {
+    tag: {
+      type: Object,
+      default: () => {
+        return {}
+      },
+    },
+  },
   data: function () {
     return {
       preview: null,
-      image: null,
-      location: '',
-      player: '',
+      image: this.tag?.foundImage ?? '',
+      location: this.tag?.foundLocation ?? '',
+      player: this.tag?.foundPlayer ?? '',
     }
   },
+  computed: {
+    ...mapGetters(['getQueuedTag']),
+  },
   methods: {
-    queueFound() {
+    queueFoundTag() {
       this.$store.dispatch('setQueueFound', {
-        foundImageUrl: this.preview,
+        foundImage: this.image,
         foundLocation: this.location,
         foundPlayer: this.player,
       })

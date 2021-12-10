@@ -71,7 +71,7 @@ export default defineComponent({
   methods: {
     expandClick() {
       this.expanded = true
-      console.log('clicked')
+      console.log('ExpandableImage::clicked')
     },
     doCloseImage(event) {
       if (event.key.toLowerCase() == 'escape') {
