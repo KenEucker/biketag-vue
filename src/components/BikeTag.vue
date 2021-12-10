@@ -2,9 +2,15 @@
   <b-row>
     <b-col :md="!!_foundImageUrl ? 6 : 12" class="mb-3">
       <b-card>
-        <b-button v-show="hintBtn" class="btn-hint" variant="primary" @click="goHintPage"
-          >?</b-button
+        <b-button
+          v-show="hint"
+          v-b-popover.click="hint"
+          class="btn-hint"
+          title="NEED A HINT?"
+          variant="primary"
         >
+          ?
+        </b-button>
         <div class="img-wrapper">
           <span class="tag-number">#{{ _tagnumber }}</span>
           <span class="tag-player">{{ _mysteryPlayer }}</span>
@@ -40,9 +46,9 @@ export default defineComponent({
     ExpandableImage,
   },
   props: {
-    hintBtn: {
-      type: Boolean,
-      default: false,
+    hint: {
+      type: String,
+      default: '',
     },
     tag: {
       type: Object,
