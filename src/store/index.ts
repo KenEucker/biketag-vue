@@ -3,7 +3,10 @@ import { createStore, Store } from 'vuex'
 import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
+<<<<<<< Updated upstream
 import { getDomainInfo } from '@/common/methods'
+=======
+>>>>>>> Stashed changes
 
 // define your typings for the store state
 export interface State {
@@ -142,8 +145,13 @@ export const store = createStore<State>({
       })
     },
     setTopPlayers({ commit }) {
+<<<<<<< Updated upstream
       return client.players({ sort: 'top' }).then((d) => {
         commit('SET_PLAYERS', d)
+=======
+      client.getPlayers({ sort: 'top' }).then((res) => {
+        commit('SET_ALL_PLAYERS', res.data)
+>>>>>>> Stashed changes
       })
     },
     setQueueFound({ commit }, d) {
