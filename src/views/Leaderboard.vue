@@ -1,13 +1,5 @@
 <template>
   <div class="container">
-    <!-- We will go with a leaderboard of top10 (to be configurable) -->
-    <!-- <b-pagination
-      v-model="currentPage"
-      :total-rows="totalCount"
-      :per-page="perPage"
-      aria-controls="itemList"
-      align="center"
-    ></b-pagination> -->
     <div
       v-masonry="containerId"
       transition-duration="0.3s"
@@ -16,32 +8,25 @@
       class="m-auto"
     >
       <div
-        v-for="(player, index) in playersForList"
+        v-for="(player, index) in playersList"
         :key="player.name"
         v-masonry-tile
         class="item p-lg-3 p-md-2 mb-2"
       >
         <player
-          :player-pos="playerPosition(index)"
+          :player-pos="index + 1"
           :player-name="player.name"
           :tag-count="player.tags.length"
           :player-avatar-url="playerAvatar(player)"
         />
       </div>
     </div>
-    <!-- <b-pagination
-      v-model="currentPage"
-      :total-rows="totalCount"
-      :per-page="perPage"
-      aria-controls="itemList"
-      align="center"
-    ></b-pagination> -->
   </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
-import Player from '@/components/Player.vue'
+import Player from '@/components/PlayerAvatar.vue'
 
 export default defineComponent({
   name: 'LeaderboardView',
@@ -50,31 +35,22 @@ export default defineComponent({
   },
   data() {
     return {
-      currentPage: 1,
+      currentPage: this.$route.params?.currentPage.length
+        ? parseInt(this.$route.params?.currentPage)
+        : 1,
       perPage: 10,
     }
   },
   computed: {
     ...mapGetters(['getPlayers']),
-    playersForList() {
-      /// We will go with a leaderboard of top10 (to be configurable)
-      // return this.getPlayers.slice(
-      //   (this.currentPage - 1) * this.perPage,
-      //   this.currentPage * this.perPage
-      // )
+    playersList() {
       return this.getPlayers.slice(0, 10)
     },
-    // totalCount() {
-    //   return this.getPlayers.length
-    // },
   },
   mounted() {
     this.$store.dispatch('setTopPlayers')
   },
   methods: {
-    playerPosition(index) {
-      return index + 1 + (this.currentPage - 1) * this.perPage
-    },
     playerAvatar(player) {
       let url
       if (player.bicon) {

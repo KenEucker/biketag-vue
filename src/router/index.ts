@@ -7,6 +7,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Play.vue'),
   },
   {
+    path: '/tag/:tagnumber',
+    name: 'Tag',
+    component: () => import('@/views/Play.vue'),
+  },
+  {
     path: '/bikedex/:currentPage?',
     name: 'BikeDex',
     component: () => import('@/views/BikeDex.vue'),
@@ -16,15 +21,15 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Queue',
     component: () => import('@/views/QueueBikeTag.vue'),
   },
-  // {
-  //   path: '/test',
-  //   name: 'CarouselTest',
-  //   component: () => import('@/views/ImagePreviewTest.vue'),
-  // },
   {
     path: '/how',
     name: 'How',
     component: () => import('@/views/HowTo.vue'),
+  },
+  {
+    path: '/leaderboard',
+    name: 'LeaderBoard',
+    component: () => import('@/views/Leaderboard.vue'),
   },
   {
     path: '/about',
@@ -45,11 +50,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/players/:currentPage?',
     name: 'Players',
     component: () => import('@/views/Players.vue'),
-  },
-  {
-    path: '/leaderboard',
-    name: 'LeaderBoard',
-    component: () => import('@/views/Leaderboard.vue'),
   },
   {
     path: '/player/:name/:currentPage?',

@@ -11,7 +11,7 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-      @page-click="handleClick"
+      @page-click="changePage"
     ></b-pagination>
     <div>
       <div v-for="tag in tagsForList" :key="tag.tagnumber" v-masonry-tile class="item">
@@ -24,7 +24,7 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-      @page-click="handleClick"
+      @page-click="changePage"
     ></b-pagination>
   </div>
 </template>
@@ -42,7 +42,9 @@ export default defineComponent({
   },
   data() {
     return {
-      currentPage: 1,
+      currentPage: this.$route.params?.currentPage.length
+        ? parseInt(this.$route.params?.currentPage)
+        : 1,
       perPage: 5,
     }
   },
@@ -70,7 +72,7 @@ export default defineComponent({
     resetCurrentPage() {
       this.currentPage = 1
     },
-    handleClick(event, pageNumber) {
+    changePage(event, pageNumber) {
       this.$router.push('/bikedex/' + pageNumber)
     },
   },

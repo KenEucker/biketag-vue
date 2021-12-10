@@ -13,7 +13,7 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'PlayerComp',
+  name: 'PlayerAvatar',
   props: {
     playerPos: {
       type: Number,
