@@ -73,7 +73,9 @@ export default defineComponent({
   },
   methods: {
     playerAvatar(player) {
-      return player.bicon ? player.bicon : player.tags[player.tags.length - 1].mysteryImageUrl
+      return player.bicon?.length
+        ? player.bicon
+        : player.tags[player.tags.length - 1].mysteryImageUrl
     },
     resetCurrentPage() {
       this.currentPage = 1

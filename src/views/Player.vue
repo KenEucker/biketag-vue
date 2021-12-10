@@ -47,7 +47,7 @@ export default defineComponent({
   },
   data() {
     return {
-      currentPage: 1,
+      currentPage: this.$router.params?.currentPage ?? 1,
       perPage: 5,
     }
   },
@@ -55,11 +55,13 @@ export default defineComponent({
     // mix the getters into computed with object spread operator
     ...mapGetters(['getPlayers']),
     player() {
-      const playerName = decodeURIComponent(encodeURIComponent(this.$route.params.name))
       const playerList = this.getPlayers.filter((player) => {
+        const playerName = this.playerName()
         return decodeURIComponent(encodeURIComponent(player.name)) == playerName
       })
-      return playerList[0]
+      const player = playerList[0]
+      console.log({ player })
+      return player
     },
     tagsForList() {
       const tags = this.player?.tags
@@ -85,6 +87,9 @@ export default defineComponent({
     resetCurrentPage() {
       this.currentPage = 1
     },
+    playerName() {
+      return decodeURIComponent(encodeURIComponent(this.$route.params.name))
+    },
     getSelfTagFoundDescription(tag) {
       return biketag.getters.getImgurFoundDescriptionFromBikeTagData({
         ...tag,
@@ -92,7 +97,7 @@ export default defineComponent({
       })
     },
     handleClick(event, pageNumber) {
-      this.$router.push('/players/' + pageNumber)
+      this.$router.push('/player/' + encodeURIComponent(this.playerName()) + '/' + pageNumber)
     },
   },
 })

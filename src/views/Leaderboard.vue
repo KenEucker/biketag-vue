@@ -65,7 +65,9 @@ export default defineComponent({
       return index + 1 + (this.currentPage - 1) * this.perPage
     },
     playerAvatar(player) {
-      return player.bicon ? player.bicon : player.tags[player.tags.length - 1].mysteryImageUrl
+      return player.bicon?.length
+        ? player.bicon
+        : player.tags[player.tags.length - 1].mysteryImageUrl
     },
   },
 })
