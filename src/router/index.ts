@@ -47,11 +47,6 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/components/HtmlContent.vue'),
   },
   {
-    path: '/hint',
-    name: 'Hint',
-    component: () => import('@/views/Hint.vue'),
-  },
-  {
     path: '/support',
     name: 'support',
     component: () => import('@/components/HtmlContent.vue'),
