@@ -34,7 +34,7 @@ export default defineComponent({
   },
   methods: {
     goPlayerPage: function () {
-      this.$router.push('/players/' + encodeURIComponent(this.playerName))
+      this.$router.push('/player/' + encodeURIComponent(this.playerName))
     },
   },
 })
