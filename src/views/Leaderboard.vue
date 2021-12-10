@@ -1,9 +1,9 @@
 <template>
   <div class="container">
     <ul id="itemList" class="list-unstyled">
-      <li v-for="(player, index) in playersForList" :key="player.name" class="mb-3">
+      <li v-for="(player, index) in playersList" :key="player.name" class="mb-3">
         <player
-          :player-pos="playerPosition(index)"
+          :player-pos="index + 1"
           :player-name="player.name"
           :tag-count="player.tags.length"
           :player-avatar-url="playerAvatar(player)"
@@ -24,7 +24,7 @@ export default defineComponent({
   },
   computed: {
     ...mapGetters(['getPlayers']),
-    playersForList() {
+    playersList() {
       return this.getPlayers.slice(0, 10)
     },
   },
