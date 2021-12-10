@@ -8,7 +8,7 @@
       class="m-auto"
     >
       <div
-        v-for="(player, index) in playersForList"
+        v-for="(player, index) in playersList"
         :key="player.name"
         v-masonry-tile
         class="item p-lg-3 p-md-2 mb-2"
@@ -32,14 +32,6 @@ export default defineComponent({
   name: 'LeaderboardView',
   components: {
     Player,
-  },
-  data() {
-    return {
-      currentPage: this.$route.params?.currentPage.length
-        ? parseInt(this.$route.params?.currentPage)
-        : 1,
-      perPage: 10,
-    }
   },
   computed: {
     ...mapGetters(['getPlayers']),
