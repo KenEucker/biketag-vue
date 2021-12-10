@@ -11,7 +11,7 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-      @page-click="handleClick"
+      @page-click="changePage"
     ></b-pagination>
     <ul id="itemList" class="list-unstyled">
       <li v-for="tag in tagsForList" :key="tag.tagnumber">
@@ -29,7 +29,7 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-      @page-click="handleClick"
+      @page-click="changePage"
     ></b-pagination>
   </div>
 </template>
@@ -39,15 +39,17 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
-
 export default defineComponent({
   name: 'PlayerView',
   components: {
     BikeTag,
   },
   data() {
+    console.log(this.$route.params)
     return {
-      currentPage: 1,
+      currentPage: this.$route.params?.currentPage.length
+        ? parseInt(this.$route.params?.currentPage)
+        : 1,
       perPage: 5,
     }
   },
@@ -55,11 +57,13 @@ export default defineComponent({
     // mix the getters into computed with object spread operator
     ...mapGetters(['getPlayers']),
     player() {
-      const playerName = decodeURIComponent(encodeURIComponent(this.$route.params.name))
       const playerList = this.getPlayers.filter((player) => {
+        const playerName = this.playerName()
         return decodeURIComponent(encodeURIComponent(player.name)) == playerName
       })
-      return playerList[0]
+      const player = playerList[0]
+      console.log({ player })
+      return player
     },
     tagsForList() {
       const tags = this.player?.tags
@@ -85,14 +89,17 @@ export default defineComponent({
     resetCurrentPage() {
       this.currentPage = 1
     },
+    playerName() {
+      return decodeURIComponent(encodeURIComponent(this.$route.params.name))
+    },
     getSelfTagFoundDescription(tag) {
       return biketag.getters.getImgurFoundDescriptionFromBikeTagData({
         ...tag,
         ...{ tagnumber: tag.tagnumber - 1 },
       })
     },
-    handleClick(event, pageNumber) {
-      this.$router.push('/player/' + this.$route.params.name + '/' + pageNumber)
+    changePage(event, pageNumber) {
+      this.$router.push('/player/' + encodeURIComponent(this.playerName()) + '/' + pageNumber)
     },
   },
 })
