@@ -92,7 +92,7 @@ export default defineComponent({
       })
     },
     handleClick(event, pageNumber) {
-      this.$router.push('/players/' + pageNumber)
+      this.$router.push('/player/' + this.$route.params.name + '/' + pageNumber)
     },
   },
 })

@@ -8,16 +8,27 @@
       aria-controls="itemList"
       align="center"
     ></b-pagination> -->
-    <ul id="itemList" class="list-unstyled">
-      <li v-for="(player, index) in playersForList" :key="player.name" class="mb-3">
+    <div
+      v-masonry="containerId"
+      transition-duration="0.3s"
+      item-selector=".item"
+      fit-width="true"
+      class="m-auto"
+    >
+      <div
+        v-for="(player, index) in playersForList"
+        :key="player.name"
+        v-masonry-tile
+        class="item p-lg-3 p-md-2 mb-2"
+      >
         <player
           :player-pos="playerPosition(index)"
           :player-name="player.name"
           :tag-count="player.tags.length"
           :player-avatar-url="playerAvatar(player)"
         />
-      </li>
-    </ul>
+      </div>
+    </div>
     <!-- <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
@@ -65,7 +76,15 @@ export default defineComponent({
       return index + 1 + (this.currentPage - 1) * this.perPage
     },
     playerAvatar(player) {
-      return player.bicon ? player.bicon : player.tags[player.tags.length - 1].mysteryImageUrl
+      let url
+      if (player.bicon) {
+        url = player.bicon
+      } else if (player.tags[player.tags.length - 1].mysteryImageUrl) {
+        url = player.tags[player.tags.length - 1].mysteryImageUrl
+      } else {
+        url = player.tags[player.tags.length - 1].foundImageUrl
+      }
+      return url
     },
   },
 })

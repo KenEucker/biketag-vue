@@ -13,11 +13,22 @@
       align="center"
       @page-click="handleClick"
     ></b-pagination>
-    <ul id="itemList" class="list-unstyled">
-      <li v-for="player in playersForList" :key="player.name" class="mb-3">
+    <div
+      v-masonry="containerId"
+      transition-duration="0.3s"
+      item-selector=".item"
+      fit-width="true"
+      class="m-auto"
+    >
+      <div
+        v-for="player in playersForList"
+        :key="player.name"
+        v-masonry-tile
+        class="item p-lg-3 p-md-2 mb-2"
+      >
         <player :player-name="player.name" :player-avatar-url="playerAvatar(player)" />
-      </li>
-    </ul>
+      </div>
+    </div>
     <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
@@ -73,7 +84,15 @@ export default defineComponent({
   },
   methods: {
     playerAvatar(player) {
-      return player.bicon ? player.bicon : player.tags[player.tags.length - 1].mysteryImageUrl
+      let url
+      if (player.bicon) {
+        url = player.bicon
+      } else if (player.tags[player.tags.length - 1].mysteryImageUrl) {
+        url = player.tags[player.tags.length - 1].mysteryImageUrl
+      } else {
+        url = player.tags[player.tags.length - 1].foundImageUrl
+      }
+      return url
     },
     resetCurrentPage() {
       this.currentPage = 1

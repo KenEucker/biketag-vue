@@ -52,7 +52,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Leaderboard.vue'),
   },
   {
-    path: '/player/:name',
+    path: '/player/:name/:currentPage?',
     name: 'Player',
     component: () => import('@/views/Player.vue'),
   },
