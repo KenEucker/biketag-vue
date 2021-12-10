@@ -1,9 +1,9 @@
 <template>
-  <div class="p-1" role="button" @click="goPlayerPage">
+  <div class="p-1 mw-min" role="button" @click="goPlayerPage">
     <img class="player-bicon" :src="playerAvatarUrl" :alt="playerName" />
     <div>
-      <span v-if="!!playerPos" class="p-1">#{{ playerPos }}</span>
-      <span class="p-1">{{ playerName }}</span>
+      <span v-if="!!playerPos" class="p-1">Top{{ playerPos }}</span>
+      <span class="player-name p-1">{{ playerName }}</span>
       <span v-if="tagCount" class="p-1">({{ tagCount }})</span>
     </div>
   </div>
@@ -43,9 +43,11 @@ export default defineComponent({
 span {
   font-size: 4vh;
 }
-
 .player-bicon {
   border-radius: 5%;
   max-width: 50vh;
+}
+.mw-min {
+  max-width: min-content;
 }
 </style>

@@ -39,7 +39,6 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
-
 export default defineComponent({
   name: 'PlayerView',
   components: {

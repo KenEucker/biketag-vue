@@ -1,15 +1,26 @@
 <template>
   <div class="container">
-    <ul id="itemList" class="list-unstyled">
-      <li v-for="(player, index) in playersList" :key="player.name" class="mb-3">
+    <div
+      v-masonry="containerId"
+      transition-duration="0.3s"
+      item-selector=".item"
+      fit-width="true"
+      class="m-auto"
+    >
+      <div
+        v-for="(player, index) in playersList"
+        :key="player.name"
+        v-masonry-tile
+        class="item p-lg-3 p-md-2 mb-2"
+      >
         <player
           :player-pos="index + 1"
           :player-name="player.name"
           :tag-count="player.tags.length"
           :player-avatar-url="playerAvatar(player)"
         />
-      </li>
-    </ul>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -33,9 +44,15 @@ export default defineComponent({
   },
   methods: {
     playerAvatar(player) {
-      return player.bicon?.length
-        ? player.bicon
-        : player.tags[player.tags.length - 1].mysteryImageUrl
+      let url
+      if (player.bicon) {
+        url = player.bicon
+      } else if (player.tags[player.tags.length - 1].mysteryImageUrl) {
+        url = player.tags[player.tags.length - 1].mysteryImageUrl
+      } else {
+        url = player.tags[player.tags.length - 1].foundImageUrl
+      }
+      return url
     },
   },
 })

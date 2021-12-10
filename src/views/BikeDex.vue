@@ -13,11 +13,11 @@
       align="center"
       @page-click="changePage"
     ></b-pagination>
-    <ul id="itemList" class="list-unstyled">
-      <li v-for="tag in tagsForList" :key="tag.tagnumber">
+    <div>
+      <div v-for="tag in tagsForList" :key="tag.tagnumber" v-masonry-tile class="item">
         <bike-tag :key="tag.tagnumber" :tag="tag" />
-      </li>
-    </ul>
+      </div>
+    </div>
     <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"

@@ -13,20 +13,9 @@
       align="center"
       @page-click="changePage"
     ></b-pagination>
-    <div
-      v-masonry="containerId"
-      transition-duration="0.3s"
-      item-selector=".item"
-      fit-width="true"
-      class="m-auto"
-    >
-      <div
-        v-for="player in playersForList"
-        :key="player.name"
-        v-masonry-tile
-        class="item p-lg-3 p-md-2 mb-2"
-      >
-        <player :player-name="player.name" :player-avatar-url="playerAvatar(player)" />
+    <div>
+      <div v-for="tag in tagsForList" :key="tag.tagnumber" v-masonry-tile class="item">
+        <bike-tag :key="tag.tagnumber" :tag="tag" />
       </div>
     </div>
     <b-pagination
@@ -39,42 +28,36 @@
     ></b-pagination>
   </div>
 </template>
+
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
-import Player from '@/components/PlayerAvatar.vue'
+import BikeTag from '@/components/BikeTag.vue'
 
 export default defineComponent({
-  name: 'PlayersView',
+  name: 'BikeDexView',
   components: {
-    Player,
+    BikeTag,
+    // Spinner,
   },
   data() {
-    console.log(this.$route.params)
     return {
       currentPage: this.$route.params?.currentPage.length
         ? parseInt(this.$route.params?.currentPage)
         : 1,
       perPage: 5,
-      options: [
-        { value: 5, text: '5' },
-        { value: 10, text: '10' },
-        { value: 15, text: '15' },
-        { value: 20, text: '20' },
-        { value: 25, text: '25' },
-      ],
     }
   },
   computed: {
-    ...mapGetters(['getPlayers']),
-    playersForList() {
-      return this.getPlayers.slice(
-        (this.currentPage - 1) * this.perPage,
-        this.currentPage * this.perPage
+    ...mapGetters(['getCurrentBikeTag', 'getTags']),
+    tagsForList() {
+      return this.getTags.slice(
+        (this.currentPage - 1) * this.perPage + 1, // exclude current mystery tag
+        this.currentPage * this.perPage + 1 // exclude current mystery tag
       )
     },
     totalCount() {
-      return this.getPlayers.length
+      return this.getTags.length
     },
   },
   watch: {
@@ -83,25 +66,14 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.$store.dispatch('setPlayers')
+    this.$store.dispatch('setTags')
   },
   methods: {
-    playerAvatar(player) {
-      let url
-      if (player.bicon) {
-        url = player.bicon
-      } else if (player.tags[player.tags.length - 1].mysteryImageUrl) {
-        url = player.tags[player.tags.length - 1].mysteryImageUrl
-      } else {
-        url = player.tags[player.tags.length - 1].foundImageUrl
-      }
-      return url
-    },
     resetCurrentPage() {
       this.currentPage = 1
     },
     changePage(event, pageNumber) {
-      this.$router.push('/players/' + pageNumber)
+      this.$router.push('/bikedex/' + pageNumber)
     },
   },
 })

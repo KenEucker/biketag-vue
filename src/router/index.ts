@@ -56,6 +56,16 @@ const routes: Array<RouteRecordRaw> = [
     name: 'support',
     component: () => import('@/components/HtmlContent.vue'),
   },
+  {
+    path: '/players/:currentPage?',
+    name: 'Players',
+    component: () => import('@/views/Players.vue'),
+  },
+  {
+    path: '/player/:name/:currentPage?',
+    name: 'Player',
+    component: () => import('@/views/Player.vue'),
+  },
 ]
 
 const router = createRouter({
