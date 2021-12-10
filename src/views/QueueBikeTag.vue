@@ -1,13 +1,13 @@
 <template>
   <div class="container">
     <div v-if="getFormStep === 1">
-      <found-form />
+      <queue-found :tag="getQueuedTag" />
     </div>
     <div v-if="getFormStep === 2">
-      <mystery-form />
+      <queue-mystery :tag="getQueuedTag" />
     </div>
     <div v-if="getFormStep === 3">
-      <post-form />
+      <submit-queued :tag="getQueuedTag" @submit="submit" />
     </div>
   </div>
 </template>
@@ -15,19 +15,19 @@
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 
-import FoundForm from '@/components/FoundForm.vue'
-import MysteryForm from '@/components/MysteryForm.vue'
-import PostForm from '@/components/PostForm.vue'
+import QueueFound from '@/components/QueueFound.vue'
+import QueueMystery from '@/components/QueueMystery.vue'
+import SubmitQueued from '@/components/SubmitQueued.vue'
 
 export default defineComponent({
   name: 'QueueBikeTagView',
   components: {
-    FoundForm,
-    MysteryForm,
-    PostForm,
+    QueueFound,
+    QueueMystery,
+    SubmitQueued,
   },
   computed: {
-    ...mapGetters(['getFormStep']),
+    ...mapGetters(['getFormStep', 'getQueuedTag']),
   },
   methods: {
     prev() {
@@ -37,6 +37,7 @@ export default defineComponent({
       this.step++
     },
     submit() {
+      console.log('queueBikeTag::submit', this.getQueuedTag)
       alert('Submit to blah and show blah and etc.')
     },
   },

@@ -1,5 +1,5 @@
 <template>
-  <b-container>
+  <b-container class="col-8 col-lg-6">
     <span>New Mystery Location</span>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
@@ -13,11 +13,14 @@
       <input id="file-upload" type="file" class="d-none" accept="image/*" @change="setImage" />
       <!-- <b-button>Switch</b-button> -->
     </div>
+    <div class="mt-3">
+      <b-form-input id="input-name" v-model="player" placeholder="Enter your name" />
+    </div>
     <div>
       <b-form-input id="input-hint" v-model="hint" placeholder="Enter your hint" />
     </div>
     <div class="mt-3">
-      <b-button class="w-100 btn-mystery border-0" @click="queueMystery">
+      <b-button class="w-100 btn-mystery border-0" @click="queueMysteryTag">
         Submit New Tag &nbsp; <i class="fas fa-check-square" />
       </b-button>
       <span>
@@ -29,20 +32,34 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import { mapGetters } from 'vuex'
 
 export default defineComponent({
-  name: 'MysteryForm',
+  name: 'QueueMysteryTag',
+  props: {
+    tag: {
+      type: Object,
+      default: () => {
+        return {}
+      },
+    },
+  },
   data: function () {
     return {
       preview: null,
-      image: null,
-      hint: '',
+      image: this.tag?.mysteryImage,
+      hint: this.tag?.hint ?? '',
+      player: this.tag?.mysteryPlayer ?? this.tag?.foundPlayer ?? '',
     }
   },
+  computed: {
+    ...mapGetters(['getQueuedTag']),
+  },
   methods: {
-    queueMystery() {
+    queueMysteryTag() {
       this.$store.dispatch('setQueueMystery', {
-        mysteryImageUrl: this.preview,
+        mysteryImage: this.image,
+        mysteryPlayer: this.player,
         hint: this.hint,
       })
       this.goNextStep()

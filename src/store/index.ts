@@ -30,7 +30,7 @@ const options: any = {
   },
 }
 const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId}/${options.sanity?.dataset}/`
-console.log({ subdomain: domain.subdomain, domain, gameName })
+console.log('store::init', { subdomain: domain.subdomain, domain, gameName })
 
 let client = new biketag(options)
 
@@ -81,35 +81,51 @@ export const store = createStore<State>({
   mutations: {
     SET_GAME(state, game) {
       state.game = game
-      console.log({ game })
+      console.log('store::game', { game })
     },
     SET_CURRENT_TAG(state, tag) {
       state.currentBikeTag = tag
-      console.log({ tag })
+      console.log('store::currentBikeTag', { tag })
     },
     SET_TAGS(state, tags) {
       state.tags = tags
-      console.log({ tags })
+      console.log('store::tags', { tags })
     },
     SET_HTML(state, html) {
       state.html = html
-      console.log({ html })
+      console.log('store::html', { html })
     },
     SET_PLAYERS(state, players) {
       state.players = players
-      console.log({ players })
+      console.log('store::players', { players })
     },
     SET_QUEUE_FOUND(state, data) {
       state.queuedTag.foundImageUrl = data.foundImageUrl
+      state.queuedTag.foundImage = data.foundImage
       state.queuedTag.foundLocation = data.foundLocation
       state.queuedTag.foundPlayer = data.foundPlayer
-      console.log(state.queuedTag)
+      console.log('store::queuedTag', state.queuedTag)
     },
     SET_QUEUE_MYSTERY(state, data) {
       state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
+      state.queuedTag.mysteryImage = data.mysteryImage
       state.queuedTag.hint = data.hint
       state.queuedTag.mysteryPlayer = state.queuedTag.foundPlayer
-      console.log(state.queuedTag)
+      console.log('store::queuedTag', state.queuedTag)
+    },
+    SET_QUEUED_TAG(state, data) {
+      state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
+      state.queuedTag.mysteryImage = data.mysteryImage
+      state.queuedTag.hint = data.hint
+      state.queuedTag.mysteryPlayer = state.queuedTag.foundPlayer
+      state.queuedTag.foundImageUrl = data.foundImageUrl
+      state.queuedTag.foundImage = data.foundImage
+      state.queuedTag.foundLocation = data.foundLocation
+      state.queuedTag.foundPlayer = data.foundPlayer
+      console.log('store::queuedTag', state.queuedTag)
+    },
+    RESET_FORM_STEP(state) {
+      state.formStep = 1
     },
     INC_FORM_STEP(state) {
       state.formStep++
@@ -149,6 +165,9 @@ export const store = createStore<State>({
     setQueueFound({ commit }, d) {
       return commit('SET_QUEUE_FOUND', d)
     },
+    setQueuedTag({ commit }, d) {
+      return commit('SET_QUEUED_TAG', d)
+    },
     setQueueMystery({ commit }, d) {
       return commit('SET_QUEUE_MYSTERY', d)
     },
@@ -157,6 +176,9 @@ export const store = createStore<State>({
     },
     decFormStep({ commit }) {
       commit('DEC_FORM_STEP')
+    },
+    resetFormStep({ commit }) {
+      commit('RESET_FORM_STEP')
     },
     setHtml({ commit }, file) {
       axios.get('./' + file).then((r) => {
