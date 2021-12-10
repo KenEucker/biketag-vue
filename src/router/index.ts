@@ -7,7 +7,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Play.vue'),
   },
   {
-    path: '/bikedex/:page?',
+    path: '/bikedex/:currentPage?',
     name: 'BikeDex',
     component: () => import('@/views/BikeDex.vue'),
   },
@@ -42,7 +42,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/components/HtmlContent.vue'),
   },
   {
-    path: '/players',
+    path: '/players/:currentPage?',
     name: 'Players',
     component: () => import('@/views/Players.vue'),
   },
@@ -52,7 +52,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Leaderboard.vue'),
   },
   {
-    path: '/players/:name',
+    path: '/player/:name',
     name: 'Player',
     component: () => import('@/views/Player.vue'),
   },

@@ -1,13 +1,9 @@
 <template>
   <div class="container">
     <b-form-group>
-      <b-form-select
-        v-model="perPage"
-        class="w-25 m-auto"
-        :options="options"
-        size="sm"
-        @change="resetCurrentPage"
-      ></b-form-select>
+      <select v-model="perPage" class="form-select w-25 m-auto" @change="resetCurrentPage">
+        <option v-for="i in 5" :key="i * 5" :value="i * 5">{{ i * 5 }} Items</option>
+      </select>
     </b-form-group>
     <b-pagination
       v-model="currentPage"
@@ -15,6 +11,7 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
+      @page-click="handleClick"
     ></b-pagination>
     <ul id="itemList" class="list-unstyled">
       <li v-for="player in playersForList" :key="player.name" class="mb-3">
@@ -27,6 +24,7 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
+      @page-click="handleClick"
     ></b-pagination>
   </div>
 </template>
@@ -65,6 +63,11 @@ export default defineComponent({
       return this.getPlayers.length
     },
   },
+  watch: {
+    '$route.params.currentPage': function (val) {
+      this.currentPage = Number(val)
+    },
+  },
   mounted() {
     this.$store.dispatch('setPlayers')
   },
@@ -74,6 +77,9 @@ export default defineComponent({
     },
     resetCurrentPage() {
       this.currentPage = 1
+    },
+    handleClick(event, pageNumber) {
+      this.$router.push('/players/' + pageNumber)
     },
   },
 })
