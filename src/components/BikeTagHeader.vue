@@ -52,9 +52,6 @@ export default defineComponent({
       case 'Leaderboard':
         await this.$store.dispatch('setTopPlayers')
         break
-      case 'Leaderboard':
-        await this.$store.dispatch('setTopPlayers')
-        break
     }
   },
   methods: {

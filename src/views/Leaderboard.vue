@@ -8,11 +8,19 @@
       class="m-auto"
     >
       <div
-        v-for="(player, index) in playersList"
+        v-for="(player, index) in playersForList"
         :key="player.name"
         v-masonry-tile
         class="item p-lg-3 p-md-2 mb-2"
       >
+        <player
+          :player-pos="index + 1"
+          :player-name="player.name"
+          :tag-count="player.tags.length"
+          :player-avatar-url="playerAvatar(player)"
+        />
+      </div>
+    </div>
   </div>
 </template>
 <script>
