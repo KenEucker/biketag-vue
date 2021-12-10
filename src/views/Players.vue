@@ -11,7 +11,7 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-      @page-click="handleClick"
+      @page-click="changePage"
     ></b-pagination>
     <ul id="itemList" class="list-unstyled">
       <li v-for="player in playersForList" :key="player.name" class="mb-3">
@@ -24,14 +24,14 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-      @page-click="handleClick"
+      @page-click="changePage"
     ></b-pagination>
   </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
-import Player from '@/components/Player.vue'
+import Player from '@/components/PlayerAvatar.vue'
 
 export default defineComponent({
   name: 'PlayersView',
@@ -39,8 +39,11 @@ export default defineComponent({
     Player,
   },
   data() {
+    console.log(this.$route.params)
     return {
-      currentPage: 1,
+      currentPage: this.$route.params?.currentPage.length
+        ? parseInt(this.$route.params?.currentPage)
+        : 1,
       perPage: 5,
       options: [
         { value: 5, text: '5' },
@@ -80,7 +83,7 @@ export default defineComponent({
     resetCurrentPage() {
       this.currentPage = 1
     },
-    handleClick(event, pageNumber) {
+    changePage(event, pageNumber) {
       this.$router.push('/players/' + pageNumber)
     },
   },

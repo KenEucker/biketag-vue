@@ -22,9 +22,6 @@
       </b-button>
       <b-button class="m-1" variant="primary" @click="goHowPage">How-To</b-button>
     </div>
-    <!-- <div class="main-img-clock-class" @click="goQueueImgPage">
-      <i class="far fa-clock" />
-    </div> -->
   </div>
 </template>
 
@@ -44,13 +41,12 @@ export default defineComponent({
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setCurrentBikeTag')
     switch (this.$route.name) {
+      case 'Play':
       case 'BikeDex':
         await this.$store.dispatch('setTags')
         break
-      case 'Players':
-        await this.$store.dispatch('setPlayers')
-        break
       case 'Player':
+      case 'Players':
         await this.$store.dispatch('setPlayers')
         break
     }
@@ -68,9 +64,6 @@ export default defineComponent({
     goBack: function () {
       this.$router.push('/')
     },
-    // goQueueImgPage: function () {
-    //   this.$router.push('/queueimg')
-    // },
   },
 })
 </script>

@@ -11,7 +11,7 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-      @page-click="handleClick"
+      @page-click="changePage"
     ></b-pagination>
     <ul id="itemList" class="list-unstyled">
       <li v-for="tag in tagsForList" :key="tag.tagnumber">
@@ -24,7 +24,7 @@
       :per-page="perPage"
       aria-controls="itemList"
       align="center"
-      @page-click="handleClick"
+      @page-click="changePage"
     ></b-pagination>
   </div>
 </template>
@@ -41,8 +41,11 @@ export default defineComponent({
     // Spinner,
   },
   data() {
+    console.log(this.$route.params)
     return {
-      currentPage: 1,
+      currentPage: this.$route.params?.currentPage.length
+        ? parseInt(this.$route.params?.currentPage)
+        : 1,
       perPage: 5,
     }
   },
@@ -70,7 +73,7 @@ export default defineComponent({
     resetCurrentPage() {
       this.currentPage = 1
     },
-    handleClick(event, pageNumber) {
+    changePage(event, pageNumber) {
       this.$router.push('/bikedex/' + pageNumber)
     },
   },
