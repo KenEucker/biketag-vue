@@ -84,7 +84,6 @@ export default defineComponent({
   },
   methods: {
     playerAvatar(player) {
-<<<<<<< HEAD
       let url
       if (player.bicon) {
         url = player.bicon
@@ -94,11 +93,6 @@ export default defineComponent({
         url = player.tags[player.tags.length - 1].foundImageUrl
       }
       return url
-=======
-      return player.bicon?.length
-        ? player.bicon
-        : player.tags[player.tags.length - 1].mysteryImageUrl
->>>>>>> 2ad140ec504a603402067c0ebd2c8b4f3380adca
     },
     resetCurrentPage() {
       this.currentPage = 1
