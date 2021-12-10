@@ -1,11 +1,21 @@
 <template>
-  <div class="container">
+  <div class="container rel">
     <div>
+      <b-button
+        v-if="tagnumber === 0"
+        v-b-popover.click="
+          getCurrentBikeTag.hint.length ? getCurrentBikeTag.hint : 'no hint provided, sorry'
+        "
+        class="btn-hint"
+        title="NEED A HINT?"
+        variant="primary"
+      >
+        ?
+      </b-button>
       <bike-tag
         v-if="tagnumber === 0"
         :tagnumber="getCurrentBikeTag.tagnumber"
         :mystery-image-url="getCurrentBikeTag.mysteryImageUrl"
-        :hint="getCurrentBikeTag.hint"
         :player="getCurrentBikeTag.mysteryPlayer"
         mystery-description="CURRENT MYSTERY LOCATION TO FIND"
       />
@@ -43,5 +53,22 @@ export default defineComponent({
   updated() {
     this.$store.dispatch('setTags')
   },
+  methods: {
+    hint() {
+      alert(this.getCurrentBikeTag.hint)
+    },
+  },
 })
 </script>
+<style scoped lang="scss">
+.rel {
+  position: relative;
+}
+.btn-hint {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  z-index: 99;
+  font-size: 1.25em;
+}
+</style>

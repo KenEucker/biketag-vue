@@ -2,15 +2,6 @@
   <b-row>
     <b-col :md="!!_foundImageUrl ? 6 : 12" class="mb-3">
       <b-card>
-        <b-button
-          v-show="hint"
-          v-b-popover.click="hint"
-          class="btn-hint"
-          title="NEED A HINT?"
-          variant="primary"
-        >
-          ?
-        </b-button>
         <div class="img-wrapper">
           <span class="tag-number">#{{ _tagnumber }}</span>
           <span class="tag-player">{{ _mysteryPlayer }}</span>
@@ -46,10 +37,6 @@ export default defineComponent({
     ExpandableImage,
   },
   props: {
-    hint: {
-      type: String,
-      default: '',
-    },
     tag: {
       type: Object,
       default: () => {
@@ -126,9 +113,6 @@ export default defineComponent({
     document.head.appendChild(viewportMeta)
   },
   methods: {
-    goHintPage: function () {
-      this.$router.push('/hint')
-    },
     getImgurFoundDescriptionFromBikeTagData:
       biketag.getters.getImgurFoundDescriptionFromBikeTagData,
     getImgurMysteryDescriptionFromBikeTagData:
@@ -137,14 +121,6 @@ export default defineComponent({
 })
 </script>
 <style scoped lang="scss">
-.card-body > .btn-hint {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 99;
-  border-radius: 5rem;
-}
-
 .img-wrapper {
   position: relative;
 
