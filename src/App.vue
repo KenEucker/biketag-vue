@@ -5,6 +5,7 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import { mapGetters } from 'vuex'
 import BikeTagHeader from '@/components/BikeTagHeader.vue'
 import BikeTagFooter from '@/components/BikeTagFooter.vue'
 
@@ -13,6 +14,42 @@ export default defineComponent({
   components: {
     BikeTagHeader,
     BikeTagFooter,
+  },
+  computed: {
+    ...mapGetters(['getTitle', 'getLogoUrl']),
+  },
+  async mounted() {
+    await this.$store.dispatch('setGame')
+    await this.generateManifest()
+  },
+  methods: {
+    async generateManifest() {
+      const manifestLinkEl = document.querySelector('link[rel="manifest"]')
+
+      if (manifestLinkEl) {
+        const existingManifest = await fetch(manifestLinkEl.href)
+        console.log({ existingManifest })
+        const applicationManifest = {
+          ...(await existingManifest.json()),
+          name: this.getTitle,
+          icons: [
+            {
+              src: this.getLogoUrl('h=192&w=192'),
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: this.getLogoUrl('h=512&w=512'),
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
+        }
+        const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
+        manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
+        console.log('dynamic application manifest', applicationManifest)
+      }
+    },
   },
 })
 </script>

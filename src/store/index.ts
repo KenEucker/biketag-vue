@@ -52,16 +52,18 @@ export const store = createStore<State>({
     getTitle(state) {
       return `${state.gameName.toUpperCase()}.BIKETAG`
     },
-    getLogoUrl(state) {
-      const logoUrl =
-        state.game?.logo?.indexOf('imgur.com') !== -1
-          ? state.game.logo
-          : `${sanityBaseCDNUrl}${state.game.logo
-              .replace('image-', '')
-              .replace('-png', '.png')
-              .replace('-jpg', '.jpg')}`
-      return logoUrl ? logoUrl : import('@/assets/images/pdx-bike-tag-small.png')
-    },
+    getLogoUrl:
+      (state) =>
+      (size = '') => {
+        const logoUrl =
+          state.game?.logo?.indexOf('imgur.com') !== -1
+            ? state.game.logo
+            : `${sanityBaseCDNUrl}${state.game.logo
+                .replace('image-', '')
+                .replace('-png', '.png')
+                .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
+        return logoUrl ? logoUrl : import('@/assets/images/pdx-bike-tag-small.png')
+      },
     getCurrentBikeTag(state) {
       return state.currentBikeTag
     },

@@ -9,7 +9,7 @@
   <div class="container mb-3">
     <div class="header-logo">
       <a href="./">
-        <img :src="getLogoUrl" class="logo img-fluid" />
+        <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
       </a>
       <div>
         <span class="game-title">{{ getTitle }}</span>

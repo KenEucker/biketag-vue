@@ -7,7 +7,7 @@
     "lint:style": "stylelint \"./src/**/*.vue\" \"./src/**/*.scss\" --fix",
     "serve": "vite",
     "build": "vite build",
-    "dev": "serve dist",
+    "dev": "yarn build -w & serve dist",
     "preview": "vite preview"
   },
   "dependencies": {
