@@ -6,11 +6,7 @@
     <div>
       <b-button
         v-if="tagnumber === 0"
-        v-b-popover.click="
-          getCurrentBikeTag && getCurrentBikeTag.hint && getCurrentBikeTag.hint.length
-            ? getCurrentBikeTag.hint
-            : 'no hint provided, sorry'
-        "
+        v-b-popover.click="getCurrentBikeTag.hint ?? 'no hint provided, sorry'"
         class="btn-hint"
         title="NEED A HINT?"
         variant="primary"
