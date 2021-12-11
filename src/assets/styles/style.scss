@@ -106,6 +106,16 @@ html {
       }
     }
 
+    .player-wrapper {
+      .player-name {
+        color: $player-name-text-color;
+      }
+      .tag-count {
+        color: $tag-count-text-color;
+        background-color: $tag-count-bg-color;
+      }
+    }
+
     .pagination {
       .page-item {
         .page-link {

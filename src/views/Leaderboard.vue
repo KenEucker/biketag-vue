@@ -14,6 +14,7 @@
         class="item p-lg-3 p-md-2 mb-2"
       >
         <player
+          size="md"
           :player-pos="index + 1"
           :player-name="player.name"
           :tag-count="player.tags.length"

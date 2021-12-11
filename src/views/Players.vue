@@ -21,7 +21,7 @@
         v-masonry-tile
         class="item p-lg-3 p-md-2 mb-2"
       >
-        <player :player-name="player.name" :player-avatar-url="playerAvatar(player)" />
+        <player size="md" :player-name="player.name" :player-avatar-url="playerAvatar(player)" />
       </div>
     </div>
     <b-form-group>
