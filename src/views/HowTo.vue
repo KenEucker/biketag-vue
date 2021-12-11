@@ -36,6 +36,52 @@
         <div class="mb-3"><img class="img-fluid w-75" src="@/assets/images/bike3.png" /></div>
         <p>KEEP IN MIND, GOOD MYSTERY LOCATIONS HELP PROGRESS THE GAME.</p>
       </swiper-slide>
+      <swiper-slide>
+        <p>
+          GREAT MYSTERY LOCATIONS HAVE UNIQUE, INTERESTING, AND IDENTIFIABLE THINGS. THINK ABOUT
+          WHERE YOU WANT TO GO AND CHOOSE WISELY TO KEEP THE GAME RUNNING SMOOTHLY.
+        </p>
+        <div class="mb-3">
+          <img class="img-fluid w-75" src="@/assets/images/good-examples.png" />
+        </div>
+        <p>
+          GREAT EXAMPLES INCLUDE CREATED OBJECTS LIKE MURALS AND BUILDINGS, AND PERMANENT OBJECTS
+          LIKE LANDMARKS AND NATURAL FEATURES.
+        </p>
+      </swiper-slide>
+      <swiper-slide>
+        <p>
+          NOT-SO-GREAT MYSTERY LOCATIONS ARE FEATURELESS, OBSCURE, AND ARE INACCESSIBLE. THEY
+          SHOULDN’T BE HARD TO FIND. DON’T CREATE A BIKETAG THAT IS UNSAFE FOR OTHERS.
+        </p>
+        <div class="mb-3">
+          <img class="img-fluid w-75" src="@/assets/images/not-so-good-examples.png" />
+        </div>
+        <p>
+          NOT-SO-GREAT EXAMPLES INCLUDE TEMPORARY AND MOVING OBJECTS LIKE FOOD TRUCKS AND GRAFFITI,
+          PLAIN OBJECTS LIKE CONCRETE WALLS, AND PRIVATE PROPERTY THAT WOULD REQUIRE TRESPASSING.
+        </p>
+      </swiper-slide>
+      <swiper-slide>
+        <p>
+          ONCE YOU HAVE THE IMAGES READY FOR THE CURRENT MYSTERY LOCATION YOU CAN SUBMIT THEM HERE
+        </p>
+        <div class="mb-3">
+          <img class="img-fluid w-50" src="@/assets/images/queue-tag.png" />
+        </div>
+        <p>PRESS THE PLAY BUTTON AND BEGIN YOUR NEW TAG SUBMISSION</p>
+      </swiper-slide>
+      <swiper-slide>
+        <p>
+          AFTER ADDING YOUR FOUND AND NEW MYSTERY IMAGES, YOU CAN SUBMIT THE TAG TO BE POSTED FOR
+          THE NEXT ROUND!
+        </p>
+        <div class="mb-3">
+          <img class="img-fluid w-50" src="@/assets/images/submit-tag.png" />
+        </div>
+        <p>THE TERMS OF USE OF THE BIKETAG APP ARE OUTLINED IN THE BIKETAG CODE OF CONDUCT</p>
+        <p>IMAGES YOU PROVIDE WILL BE PUBLICLY AVAILABLE ON THE INTERNET</p>
+      </swiper-slide>
     </swiper>
   </div>
 </template>

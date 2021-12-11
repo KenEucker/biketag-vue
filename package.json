@@ -18,12 +18,10 @@
     "html-loader": "^3.0.1",
     "swiper": "^7.3.1",
     "vue": "^3.2.21",
-    "vue-element-loading": "^2.0.2",
     "vue-loading-overlay": "^4.0.4",
     "vue-masonry": "^0.14.0",
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^4.0.12",
-    "vue-wait": "^1.5.3",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
