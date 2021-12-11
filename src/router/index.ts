@@ -2,13 +2,8 @@ import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/',
+    path: '/:tagnumber?',
     name: 'Play',
-    component: () => import('@/views/Play.vue'),
-  },
-  {
-    path: '/tag/:tagnumber',
-    name: 'Tag',
     component: () => import('@/views/Play.vue'),
   },
   {

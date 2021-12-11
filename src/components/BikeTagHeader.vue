@@ -41,6 +41,7 @@ export default defineComponent({
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setCurrentBikeTag')
     switch (this.$route.name) {
+      case 'Tag':
       case 'Play':
       case 'BikeDex':
         await this.$store.dispatch('setTags')

@@ -143,6 +143,7 @@ export default defineComponent({
         .replace('.mp4', `${this.size}.mp4`)
     },
     tagImageLoaded(type) {
+      console.log({ type })
       if (type === 'mystery') {
         this.mysteryImageLoaded = true
       } else if (type === 'found') {
@@ -151,7 +152,7 @@ export default defineComponent({
 
       if (
         this.mysteryImageLoaded &&
-        ((!!this._foundImageUrl && this.foundImageLoaded) || !this._foundImageUrl)
+        (!!this._foundImageUrl || this.foundImageLoaded || !this._foundImageUrl)
       ) {
         this.$emit('load')
       }
