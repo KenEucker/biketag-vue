@@ -1,6 +1,6 @@
 <template>
   <b-row>
-    <b-col :md="!!_foundImageUrl ? 6 : 12" class="mb-3">
+    <b-col :md="_foundImageUrl ? 6 : 12" class="mb-3">
       <b-card>
         <div class="img-wrapper">
           <span class="tag-number">#{{ _tagnumber }}</span>
@@ -15,7 +15,7 @@
         <span class="desc">{{ _mysteryDescription }}</span>
       </b-card>
     </b-col>
-    <b-col v-show="!!_foundImageUrl" md="6" class="mb-3">
+    <b-col v-show="_foundImageUrl" md="6" class="mb-3">
       <b-card>
         <div class="img-wrapper">
           <span class="tag-number">#{{ _foundTagnumber }}</span>

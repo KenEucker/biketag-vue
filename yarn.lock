@@ -1725,9 +1725,9 @@ big.js@^5.2.2:
   integrity sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==
 
 biketag@^1.12.8:
-  version "1.12.8"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.12.8.tgz#ef8454f63b4e6546c2dafa9db87791f6fa7a2770"
-  integrity sha512-UGzboobVApGNLQA2eFynlLQgYkxrQixRrRo8TN+QwvybPLWgZxAkdMeUrnBCtaJuAfKVQWVQysyN0dVl2dvW8A==
+  version "1.12.9"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.12.9.tgz#892b9d20624becdef881c3fbc3c95611beb605ff"
+  integrity sha512-0ZMDQ7y/dhMGYJZJzP/Fjt5EyzErnHKQJhU1rtplPGA8MmocFSjQ4kNWAzjAXlbzwzPITfVYfrP4UO/8OOc3KA==
   dependencies:
     "@sanity/client" "^2.8.0"
     axios "^0.21.1"
@@ -5157,12 +5157,13 @@ sass-loader@^12.3.0:
     neo-async "^2.6.2"
 
 sass@^1.43.4:
-  version "1.44.0"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.44.0.tgz#619aa0a2275c097f9af5e6b8fe8a95e3056430fb"
-  integrity sha512-0hLREbHFXGQqls/K8X+koeP+ogFRPF4ZqetVB19b7Cst9Er8cOR0rc6RU7MaI4W1JmUShd1BPgPoeqmmgMMYFw==
+  version "1.45.0"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.45.0.tgz#192ede1908324bb293a3e403d1841dbcaafdd323"
+  integrity sha512-ONy5bjppoohtNkFJRqdz1gscXamMzN3wQy1YH9qO2FiNpgjLhpz/IPRGg0PpCjyz/pWfCOaNEaiEGCcjOFAjqw==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
+    source-map-js ">=0.6.2 <2.0.0"
 
 schema-utils@^2.6.5:
   version "2.7.1"
@@ -5358,7 +5359,7 @@ sockjs@^0.3.21:
     uuid "^8.3.2"
     websocket-driver "^0.7.4"
 
-source-map-js@^1.0.1:
+"source-map-js@>=0.6.2 <2.0.0", source-map-js@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.0.1.tgz#a1741c131e3c77d048252adfa24e23b908670caf"
   integrity sha512-4+TN2b3tqOCd/kaGRJ/sTYA0tR0mdXx26ipdolxcwtJVqEnqNYvlCAt1q3ypy4QMlYus+Zh34RNtYLoq2oQ4IA==
@@ -6048,13 +6049,6 @@ vue-demi@^0.12.1:
   resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.12.1.tgz#f7e18efbecffd11ab069d1472d7a06e319b4174c"
   integrity sha512-QL3ny+wX8c6Xm1/EZylbgzdoDolye+VpCXRhI2hug9dJTP3OUJ3lmiKN3CsVV3mOJKwFi0nsstbgob0vG7aoIw==
 
-vue-element-loading@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/vue-element-loading/-/vue-element-loading-2.0.2.tgz#8aa3bd6a7aaa569c51cd8befa7d036a7649167cd"
-  integrity sha512-Djp0mISxhWglOYsCin987Y8+4/pj3a93ztdIusd6hK+7aBKXjCuQYgcMadUtS4UxERWccYbLXHtXr2wjVEt3Uw==
-  dependencies:
-    vue "^2.5.22"
-
 vue-eslint-parser@^8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-8.0.1.tgz#25e08b20a414551531f3e19f999902e1ecf45f13"
@@ -6111,16 +6105,6 @@ vue-style-loader@^4.1.3:
   dependencies:
     hash-sum "^1.0.2"
     loader-utils "^1.0.2"
-
-vue-wait@^1.5.3:
-  version "1.5.3"
-  resolved "https://registry.yarnpkg.com/vue-wait/-/vue-wait-1.5.3.tgz#3d4c994a4a522485cbfae36c57a356139f6333d9"
-  integrity sha512-R33p0wljvjOC1OoqZffPS7pjstn5dAOdML5TdhHky3PqlO98qntMcJceGaeHxKTOXcjh50XNFOBQfGVzqGixCA==
-
-vue@^2.5.22:
-  version "2.6.14"
-  resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.14.tgz#e51aa5250250d569a3fbad3a8a5a687d6036e235"
-  integrity sha512-x2284lgYvjOMj3Za7kqzRcUSxBboHqtgRE2zlos1qWaOye5yUmHn42LB1250NJBLRwEcdrB0JRwyPTEPhfQjiQ==
 
 vue@^3.2.21:
   version "3.2.24"
