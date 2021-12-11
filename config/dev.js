@@ -1,10 +1,12 @@
 'use strict'
 
-const { merge } = require('webpack-merge')
+const {
+  merge
+} = require('webpack-merge')
 
 const baseWebpackConfig = require('./base')
 const cssWebpackConfig = require('./css')
-const config = require('../project.config')
+const config = require('./project.config')
 
 module.exports = merge(baseWebpackConfig, cssWebpackConfig, {
   mode: 'development',
@@ -13,12 +15,10 @@ module.exports = merge(baseWebpackConfig, cssWebpackConfig, {
 
   devServer: {
     historyApiFallback: {
-      rewrites: [
-        {
-          from: /./,
-          to: '/index.html',
-        },
-      ],
+      rewrites: [{
+        from: /./,
+        to: '/index.html',
+      }, ],
     },
     devMiddleware: {
       publicPath: config.dev.publicPath,

@@ -60,7 +60,7 @@ export const store = createStore<State>({
               .replace('image-', '')
               .replace('-png', '.png')
               .replace('-jpg', '.jpg')}`
-      return logoUrl ?? require('@/assets/images/pdx-bike-tag-small.png')
+      return logoUrl ? logoUrl : require('@/assets/images/pdx-bike-tag-small.png')
     },
     getCurrentBikeTag(state) {
       return state.currentBikeTag

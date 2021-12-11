@@ -1,6 +1,6 @@
 <template>
   <loading v-if="tagIsLoading" v-model:active="tagIsLoading" :is-full-page="true">
-    <img class="spinner" src="images/SpinningBikeV1.svg" />
+    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
   <div class="container rel">
     <div>
@@ -78,6 +78,7 @@ export default defineComponent({
 .rel {
   position: relative;
 }
+
 .btn-hint {
   position: absolute;
   top: 10px;

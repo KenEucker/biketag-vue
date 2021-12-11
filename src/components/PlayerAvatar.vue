@@ -57,7 +57,6 @@ export default defineComponent({
   .player-name {
     position: absolute;
     left: 50%;
-    -webkit-transform: translateX(-50%);
     transform: translateX(-50%);
     z-index: 99;
     padding: 0 0.5rem;
@@ -79,11 +78,13 @@ export default defineComponent({
     border-radius: 5%;
     max-width: 50vh;
   }
+
   .player-name {
     font-size: 4vh;
     bottom: 1rem;
     top: auto;
   }
+
   .tag-count {
     font-size: 4vh;
     top: 1rem;
@@ -97,11 +98,13 @@ export default defineComponent({
     height: 300px;
     clip-path: circle(50%);
   }
+
   .player-name {
     font-size: 4vh;
     bottom: 30%;
     top: auto;
   }
+
   .tag-count {
     font-size: 3vh;
     top: 43%;
@@ -115,11 +118,13 @@ export default defineComponent({
     height: 200px;
     clip-path: circle(50%);
   }
+
   .player-name {
     font-size: 3.5vh;
     bottom: 1rem;
     top: auto;
   }
+
   .tag-count {
     font-size: 2.5vh;
     top: 43%;

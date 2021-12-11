@@ -20,6 +20,7 @@ html {
     from {
       transform: rotate(0deg);
     }
+
     to {
       transform: rotate(360deg);
     }
@@ -110,6 +111,7 @@ html {
       .player-name {
         color: $player-name-text-color;
       }
+
       .tag-count {
         color: $tag-count-text-color;
         background-color: $tag-count-bg-color;

@@ -51,10 +51,16 @@ const genStyleRules = () => {
     }
 
     if (loader) {
-      loaders.push({ loader, options: loaderOptions })
+      loaders.push({
+        loader,
+        options: loaderOptions
+      })
     }
 
-    return { test, use: loaders }
+    return {
+      test,
+      use: loaders
+    }
   }
 
   return [
