@@ -14,14 +14,6 @@
         />
       </svg>
     </i>
-    <!-- <i v-if="!expanded" class="expand-button">
-      <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
-        <path
-          fill="#000000"
-          d="M10,21V19H6.41L10.91,14.5L9.5,13.09L5,17.59V14H3V21H10M14.5,10.91L19,6.41V10H21V3H14V5H17.59L13.09,9.5L14.5,10.91Z"
-        />
-      </svg>
-    </i> -->
     <b-spinner v-show="loading" />
     <img v-show="!loading" class="img-fluid" v-bind="$attrs" @load="loaded" />
   </div>
@@ -87,7 +79,6 @@ export default defineComponent({
   methods: {
     expandClick() {
       this.expanded = true
-      console.log('ExpandableImage::clicked')
     },
     doCloseImage(event) {
       if (event.key.toLowerCase() == 'escape') {
