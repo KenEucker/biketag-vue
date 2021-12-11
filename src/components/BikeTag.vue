@@ -9,6 +9,7 @@
             :src="getImgurImageSized(_mysteryImageUrl)"
             :full-source="_mysteryImageUrl"
             :alt="_mysteryDescription"
+            @load="tagImageLoaded('mystery')"
           ></expandable-image>
         </div>
         <span class="desc">{{ _mysteryDescription }}</span>
@@ -24,6 +25,7 @@
             :src="getImgurImageSized(_foundImageUrl)"
             :full-source="_foundImageUrl"
             :alt="foundDescription"
+            @load="tagImageLoaded('found')"
           ></expandable-image>
         </div>
         <span class="desc">{{ _foundDescription }}</span>
@@ -85,6 +87,13 @@ export default defineComponent({
       default: null,
     },
   },
+  emits: ['load'],
+  data() {
+    return {
+      mysteryImageLoaded: false,
+      foundImageLoaded: false,
+    }
+  },
   computed: {
     _tagnumber() {
       return this.tagnumber ? this.tagnumber : this.tag?.tagnumber
@@ -132,6 +141,20 @@ export default defineComponent({
         .replace('.gif', `${this.size}.gif`)
         .replace('.png', `${this.size}.png`)
         .replace('.mp4', `${this.size}.mp4`)
+    },
+    tagImageLoaded(type) {
+      if (type === 'mystery') {
+        this.mysteryImageLoaded = true
+      } else if (type === 'found') {
+        this._foundImageLoaded = true
+      }
+
+      if (
+        this.mysteryImageLoaded &&
+        ((!!this._foundImageUrl && this.foundImageLoaded) || !this._foundImageUrl)
+      ) {
+        this.$emit('load')
+      }
     },
   },
 })
