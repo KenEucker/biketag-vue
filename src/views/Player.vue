@@ -1,4 +1,7 @@
 <template>
+  <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
+    <img class="spinner" src="images/SpinningBikeV1.svg" />
+  </loading>
   <div class="container">
     <b-pagination
       v-model="currentPage"
@@ -41,10 +44,14 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
+import Loading from 'vue-loading-overlay'
+import 'vue-loading-overlay/dist/vue-loading.css'
+
 export default defineComponent({
   name: 'PlayerView',
   components: {
     BikeTag,
+    Loading,
   },
   data() {
     console.log(this.$route.params)
@@ -53,6 +60,8 @@ export default defineComponent({
         ? parseInt(this.$route.params?.currentPage)
         : 1,
       perPage: 10,
+      tagsAreLoading: true,
+      tagsLoaded: [],
     }
   },
   computed: {
@@ -84,11 +93,15 @@ export default defineComponent({
       this.currentPage = Number(val)
     },
   },
+  created() {
+    this.startLoading()
+  },
   mounted() {
     this.$store.dispatch('setPlayers')
   },
   methods: {
     resetCurrentPage() {
+      this.startLoading()
       this.currentPage = 1
     },
     playerName() {
@@ -101,7 +114,18 @@ export default defineComponent({
       })
     },
     changePage(event, pageNumber) {
+      this.startLoading()
       this.$router.push('/player/' + encodeURIComponent(this.playerName()) + '/' + pageNumber)
+    },
+    startLoading() {
+      this.tagsLoaded = []
+      this.tagsAreLoading = true
+      setTimeout(() => {
+        this.tagsAreLoading = false
+      }, 2000)
+    },
+    tagLoaded() {
+      /// Remove?
     },
   },
 })
