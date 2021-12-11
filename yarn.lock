@@ -6048,6 +6048,13 @@ vue-demi@^0.12.1:
   resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.12.1.tgz#f7e18efbecffd11ab069d1472d7a06e319b4174c"
   integrity sha512-QL3ny+wX8c6Xm1/EZylbgzdoDolye+VpCXRhI2hug9dJTP3OUJ3lmiKN3CsVV3mOJKwFi0nsstbgob0vG7aoIw==
 
+vue-element-loading@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/vue-element-loading/-/vue-element-loading-2.0.2.tgz#8aa3bd6a7aaa569c51cd8befa7d036a7649167cd"
+  integrity sha512-Djp0mISxhWglOYsCin987Y8+4/pj3a93ztdIusd6hK+7aBKXjCuQYgcMadUtS4UxERWccYbLXHtXr2wjVEt3Uw==
+  dependencies:
+    vue "^2.5.22"
+
 vue-eslint-parser@^8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-8.0.1.tgz#25e08b20a414551531f3e19f999902e1ecf45f13"
@@ -6069,6 +6076,11 @@ vue-loader@^16.8.3:
     chalk "^4.1.0"
     hash-sum "^2.0.0"
     loader-utils "^2.0.0"
+
+vue-loading-overlay@^4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/vue-loading-overlay/-/vue-loading-overlay-4.0.4.tgz#8ddad8ca6b4d3e9eedf3805321e2fb08c0b52e74"
+  integrity sha512-ADIEUXLo+IEpK8hd2+iqhZtEV3m0WNh5FlGvAc6FWG0KJAEHGTGUFdugQgAtM6Y3iFZc/ovzMd7A9dN+7QC7hw==
 
 vue-masonry@^0.14.0:
   version "0.14.0"
@@ -6099,6 +6111,16 @@ vue-style-loader@^4.1.3:
   dependencies:
     hash-sum "^1.0.2"
     loader-utils "^1.0.2"
+
+vue-wait@^1.5.3:
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/vue-wait/-/vue-wait-1.5.3.tgz#3d4c994a4a522485cbfae36c57a356139f6333d9"
+  integrity sha512-R33p0wljvjOC1OoqZffPS7pjstn5dAOdML5TdhHky3PqlO98qntMcJceGaeHxKTOXcjh50XNFOBQfGVzqGixCA==
+
+vue@^2.5.22:
+  version "2.6.14"
+  resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.14.tgz#e51aa5250250d569a3fbad3a8a5a687d6036e235"
+  integrity sha512-x2284lgYvjOMj3Za7kqzRcUSxBboHqtgRE2zlos1qWaOye5yUmHn42LB1250NJBLRwEcdrB0JRwyPTEPhfQjiQ==
 
 vue@^3.2.21:
   version "3.2.24"
