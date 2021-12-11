@@ -6,7 +6,7 @@
           <span class="tag-number">#{{ _tagnumber }}</span>
           <span class="tag-player">{{ _mysteryPlayer }}</span>
           <expandable-image
-            :src="getImgurImageSized(_mysteryImageUrl)"
+            :source="getImgurImageSized(_mysteryImageUrl)"
             :full-source="_mysteryImageUrl"
             :alt="_mysteryDescription"
             @load="tagImageLoaded('mystery')"

@@ -15,7 +15,13 @@
       </svg>
     </i>
     <b-spinner v-show="loading" />
-    <img v-show="!loading" class="img-fluid" v-bind="$attrs" @load="loaded" />
+    <img
+      v-show="!loading"
+      :src="expanded ? fullSource : source"
+      class="img-fluid"
+      v-bind="$attrs"
+      @load="loaded"
+    />
   </div>
 </template>
 <script type="ts">
@@ -23,6 +29,10 @@ import { defineComponent } from 'vue'
 export default defineComponent({
   name: 'ExpandableImage',
   props: {
+    source: {
+      type: String,
+      default: null,
+    },
     fullSource: {
       type: String,
       default: null,
@@ -30,9 +40,7 @@ export default defineComponent({
   },
   data() {
     return {
-      source: null,
       expanded: false,
-      imgRef: null,
       closeButtonRef: null,
       loading: true,
     }
@@ -45,11 +53,6 @@ export default defineComponent({
           this.cloned = this.$el.cloneNode(true)
           this.closeButtonRef = this.cloned.querySelector('.close-button')
           this.closeButtonRef.addEventListener('click', this.closeImage)
-          if (this.fullSource) {
-            this.imgRef = this.cloned.querySelector('img')
-            this.source = this.imgRef.src
-            this.imgRef.src = this.fullSource
-          }
           document.addEventListener('keydown', this.doCloseImage)
           document.addEventListener('backbutton', this.doCloseImage)
           document.body.appendChild(this.cloned)
@@ -63,9 +66,6 @@ export default defineComponent({
           // this.cloned.removeEventListener('touchmove', this.freezeVp, false)
           setTimeout(() => {
             this.closeButtonRef.removeEventListener('click', this.closeImage)
-            if (this.fullSource) {
-              this.imgRef.src = this.source
-            }
             this.cloned.remove()
             this.cloned = null
             this.closeButtonRef = null
