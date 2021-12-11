@@ -22,6 +22,9 @@ export default defineConfig({
     vue(),
     vueJsx(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'worker.ts',
       manifest: {
         name: 'BikeTag',
         short_name: 'BikeTag',
