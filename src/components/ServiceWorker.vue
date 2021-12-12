@@ -43,12 +43,12 @@ export default defineComponent({
         name: this.getTitle,
         icons: [
           {
-            src: this.getLogoUrl('h=192&w=192'),
+            src: await this.getLogoUrl('h=192&w=192'),
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: this.getLogoUrl('h=512&w=512'),
+            src: await this.getLogoUrl('h=512&w=512'),
             sizes: '512x512',
             type: 'image/png',
           },
