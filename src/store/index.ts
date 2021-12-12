@@ -28,9 +28,9 @@ const options: any = {
     dataset: process.env.SANITY_DATASET,
   },
 }
-const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
-// console.log('store::init', { subdomain: domain.subdomain, domain, gameName })
 const defaultLogo = '/images/BikeTag.svg'
+const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
+console.log('store::init', { subdomain: domain.subdomain, domain, gameName })
 
 let client = new biketag(options)
 
@@ -49,7 +49,10 @@ export const store = createStore<State>({
     getGame(state) {
       return state.game
     },
-    getTitle(state) {
+    getGameSlug(state) {
+      return state.game?.slug
+    },
+    getGameTitle(state) {
       return `${state.gameName.toUpperCase()}.BIKETAG`
     },
     getLogoUrl:

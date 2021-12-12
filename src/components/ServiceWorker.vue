@@ -29,7 +29,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getTitle', 'getLogoUrl']),
+    ...mapGetters(['getGameSlug', 'getGameTitle', 'getLogoUrl']),
     updateServiceWorker,
   },
   async created() {
@@ -40,7 +40,8 @@ export default defineComponent({
       console.log({ existingManifest })
       const applicationManifest = {
         ...(await existingManifest.json()),
-        name: this.getTitle,
+        name: this.getGameTitle,
+        id: this.getGameSlug,
         icons: [
           {
             src: await this.getLogoUrl('h=192&w=192'),

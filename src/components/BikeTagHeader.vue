@@ -12,7 +12,7 @@
         <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
       </a>
       <div>
-        <span class="game-title">{{ getTitle }}</span>
+        <span class="game-title">{{ getGameTitle }}</span>
       </div>
     </div>
     <div>
@@ -35,7 +35,7 @@ export default defineComponent({
     isShow() {
       return this.$route.name === 'Play' ? false : true
     },
-    ...mapGetters(['getTitle', 'getLogoUrl', 'getCurrentBikeTag']),
+    ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag']),
   },
   async mounted() {
     await this.$store.dispatch('setGame')
