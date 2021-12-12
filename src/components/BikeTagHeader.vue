@@ -39,7 +39,9 @@ export default defineComponent({
   },
   async mounted() {
     await this.$store.dispatch('setGame')
+    await this.$store.dispatch('setTags')
     await this.$store.dispatch('setCurrentBikeTag')
+    await this.$store.dispatch('setPlayers')
     // switch (this.$route.name) {
     //   case 'Tag':
     //   case 'Play':
