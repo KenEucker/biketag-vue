@@ -5,7 +5,6 @@ import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import { getDomainInfo } from '@/common/methods'
 
-// define your typings for the store state
 export interface State {
   game: Game
   gameName: string
