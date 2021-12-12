@@ -6,6 +6,7 @@ import envCompatible from 'vite-plugin-env-compatible'
 import { injectHtml } from 'vite-plugin-html'
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
 import { VitePWA } from 'vite-plugin-pwa'
+import EnvironmentPlugin from 'vite-plugin-environment'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,6 +22,19 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
+    EnvironmentPlugin({
+      GAME_NAME: 'portland',
+      GAME_SOURCE: 'sanity',
+      IMGUR_CLIENT_ID: '4fa12c6ce36984b',
+      IMGUR_CLIENT_SECRET: null,
+      SANITY_PROJECT_ID: 'x37ikhvs',
+      SANITY_DATASET: 'production',
+      SANITY_CDN_URL: 'https://cdn.sanity.io/images/',
+      REDDIT_CLIENT_ID: null,
+      REDDIT_CLIENT_SECRET: null,
+      REDDIT_USERNAME: null,
+      REDDIT_PASSWORD: null,
+    }),
     VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',

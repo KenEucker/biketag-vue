@@ -46,6 +46,7 @@
     "typescript": "^4.4.4",
     "vite": "^2.7.1",
     "vite-plugin-env-compatible": "^1.0.0",
+    "vite-plugin-environment": "^1.0.1",
     "vite-plugin-html": "2.0.7",
     "vite-plugin-pwa": "^0.11.11",
     "workbox-core": "^6.4.2"

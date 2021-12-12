@@ -5298,6 +5298,11 @@ vite-plugin-env-compatible@^1.0.0:
   resolved "https://registry.yarnpkg.com/vite-plugin-env-compatible/-/vite-plugin-env-compatible-1.1.1.tgz#2e11b059a5f3e8fc609d6a4bba84ca497081ee20"
   integrity sha512-4lqhBWhOzP+SaCPoCVdmpM5cXzjKQV5jgFauxea488oOeElXo/kw6bXkMIooZhrh9q7gclTl8en6N9NmnqUwRQ==
 
+vite-plugin-environment@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/vite-plugin-environment/-/vite-plugin-environment-1.0.1.tgz#612d6e0cbc8de9e9d63883c54616c4923585e3ff"
+  integrity sha512-zosD4eipWFOLVG7DtcVKU/vCEXrAI/JzmoYihN/yR8DCBwXnL+zII0L18ko/kS7pLS0mUBlUzHa4e9sNbJu2sA==
+
 vite-plugin-html@2.0.7:
   version "2.0.7"
   resolved "https://registry.yarnpkg.com/vite-plugin-html/-/vite-plugin-html-2.0.7.tgz#55139ff8a843ba3b3d5cd48610ca6f6afdf7c23d"

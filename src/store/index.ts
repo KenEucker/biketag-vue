@@ -20,17 +20,17 @@ export interface State {
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(undefined, window)
-const gameName = domain.subdomain ?? 'portland'
-const clientId = '4fa12c6ce36984b'
+const gameName = domain.subdomain ?? process.env.GAME_NAME
+const clientId = process.env.IMGUR_CLIENT_ID
 const options: any = {
   game: gameName,
   sanity: {
-    projectId: 'x37ikhvs',
-    dataset: 'production',
+    projectId: process.env.SANITY_PROJECT_ID,
+    dataset: process.env.SANITY_DATASET,
   },
 }
-const sanityBaseCDNUrl = `https://cdn.sanity.io/images/${options.sanity?.projectId}/${options.sanity?.dataset}/`
-console.log('store::init', { subdomain: domain.subdomain, domain, gameName })
+const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
+// console.log('store::init', { subdomain: domain.subdomain, domain, gameName })
 
 let client = new biketag(options)
 

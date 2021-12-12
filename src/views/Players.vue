@@ -8,20 +8,14 @@
       align="center"
       @page-click="changePage"
     ></b-pagination>
-    <div
-      v-masonry="containerId"
-      transition-duration="0.3s"
-      item-selector=".item"
-      fit-width="true"
-      class="m-auto"
-    >
+    <div v-masonry transition-duration="0.3s" item-selector=".item" fit-width="true" class="m-auto">
       <div
         v-for="player in playersForList"
         :key="player.name"
         v-masonry-tile
         class="item p-lg-3 p-md-2 mb-2"
       >
-        <player size="md" :player-name="player.name" :player-avatar-url="playerAvatar(player)" />
+        <player size="md" :player="player" />
       </div>
     </div>
     <b-form-group>
@@ -44,7 +38,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
-import Player from '@/components/PlayerAvatar.vue'
+import Player from '@/components/PlayerBicon.vue'
 
 export default defineComponent({
   name: 'PlayersView',
@@ -81,17 +75,6 @@ export default defineComponent({
     this.$store.dispatch('setPlayers')
   },
   methods: {
-    playerAvatar(player) {
-      let url
-      if (player.bicon) {
-        url = player.bicon
-      } else if (player.tags[player.tags.length - 1].mysteryImageUrl) {
-        url = player.tags[player.tags.length - 1].mysteryImageUrl
-      } else {
-        url = player.tags[player.tags.length - 1].foundImageUrl
-      }
-      return url
-    },
     resetCurrentPage() {
       this.currentPage = 1
     },

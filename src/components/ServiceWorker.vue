@@ -22,11 +22,17 @@ export default defineComponent({
       default: '',
     },
   },
+  data() {
+    return {
+      offlineReady,
+      needRefresh,
+    }
+  },
   computed: {
     ...mapGetters(['getTitle', 'getLogoUrl']),
+    updateServiceWorker,
   },
   async created() {
-    console.log('hi')
     const manifestLinkEl = document.querySelector('link[rel="manifest"]')
 
     if (manifestLinkEl) {
@@ -54,9 +60,6 @@ export default defineComponent({
     }
   },
   methods: {
-    offlineReady,
-    needRefresh,
-    updateServiceWorker,
     close: async () => {
       offlineReady.value = false
       needRefresh.value = false

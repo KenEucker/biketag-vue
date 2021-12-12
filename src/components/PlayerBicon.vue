@@ -1,9 +1,13 @@
 <template>
-  <div :class="'player-wrapper avatar-' + size + ' p-1 mw-min'" role="button" @click="goPlayerPage">
-    <span class="player-name p-1">{{ _playerName }}</span>
-    <span v-if="tagCount" class="tag-count p-2">{{ tagCount }}</span>
-    <img class="player-bicon" :src="playerAvatarUrl" :alt="playerName" />
-    <!-- <span v-if="!!playerPos" class="p-1">Top{{ playerPos }}</span> -->
+  <div
+    v-if="player.name?.length"
+    :class="'player-wrapper avatar-' + size + ' p-1 mw-min'"
+    role="button"
+    @click="goPlayerPage"
+  >
+    <span class="player-name p-1">{{ playerName }}</span>
+    <span v-if="player.tags?.length" class="tag-count p-2">{{ player.tags.length }}</span>
+    <img class="player-bicon" :src="playerBiconUrl" :alt="playerName" />
   </div>
 </template>
 
@@ -11,41 +15,42 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'PlayerAvatar',
+  name: 'PlayerBicon',
   props: {
     size: {
       type: String,
       default: 'md',
     },
-    playerPos: {
-      type: Number,
-      default: 0,
-    },
-    playerName: {
-      type: String,
-      default: '',
-    },
-    tagCount: {
-      type: Number,
-      default: 0,
-    },
-    playerAvatarUrl: {
-      type: String,
-      default: '',
+    player: {
+      type: Object,
+      default: () => {
+        return {}
+      },
     },
   },
   computed: {
-    _playerName() {
+    playerName() {
       if (this.size === 'sm') {
-        return this.playerName.substr(0, 1)
+        return this.player.name.substr(0, 1)
       } else {
-        return this.playerName
+        return this.player.name
       }
+    },
+    playerBiconUrl() {
+      let url
+      if (this.player.bicon) {
+        url = this.player.bicon
+      } else if (this.player.tags[this.player.tags.length - 1].mysteryImageUrl) {
+        url = this.player.tags[this.player.tags.length - 1].mysteryImageUrl
+      } else {
+        url = this.player.tags[this.player.tags.length - 1].foundImageUrl
+      }
+      return url
     },
   },
   methods: {
     goPlayerPage: function () {
-      this.$router.push('/player/' + encodeURIComponent(this.playerName))
+      this.$router.push('/player/' + encodeURIComponent(this.player.name))
     },
   },
 })
