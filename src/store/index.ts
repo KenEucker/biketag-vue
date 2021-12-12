@@ -30,6 +30,7 @@ const options: any = {
 }
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
 // console.log('store::init', { subdomain: domain.subdomain, domain, gameName })
+const defaultLogo = '/images/BikeTag.svg'
 
 let client = new biketag(options)
 
@@ -61,7 +62,7 @@ export const store = createStore<State>({
                 .replace('image-', '')
                 .replace('-png', '.png')
                 .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
-        return logoUrl ? logoUrl : import('@/assets/images/pdx-bike-tag-small.png')
+        return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
       },
     getCurrentBikeTag(state) {
       return state.currentBikeTag
