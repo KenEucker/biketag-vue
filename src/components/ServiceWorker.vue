@@ -15,7 +15,7 @@ const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW()
 import { mapGetters } from 'vuex'
 
 export default defineComponent({
-  name: 'HtmlContent',
+  name: 'ServiceWorker',
   props: {
     filename: {
       type: String,
@@ -25,6 +25,34 @@ export default defineComponent({
   computed: {
     ...mapGetters(['getTitle', 'getLogoUrl']),
   },
+  async created() {
+    console.log('hi')
+    const manifestLinkEl = document.querySelector('link[rel="manifest"]')
+
+    if (manifestLinkEl) {
+      const existingManifest = await fetch(manifestLinkEl.href)
+      console.log({ existingManifest })
+      const applicationManifest = {
+        ...(await existingManifest.json()),
+        name: this.getTitle,
+        icons: [
+          {
+            src: this.getLogoUrl('h=192&w=192'),
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: this.getLogoUrl('h=512&w=512'),
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+      }
+      const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
+      manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
+      console.log('dynamic application manifest', applicationManifest)
+    }
+  },
   methods: {
     offlineReady,
     needRefresh,
@@ -32,37 +60,6 @@ export default defineComponent({
     close: async () => {
       offlineReady.value = false
       needRefresh.value = false
-    },
-    async mounted() {
-      await this.generateManifest()
-    },
-    generateManifest: async () => {
-      const manifestLinkEl = document.querySelector('link[rel="manifest"]')
-
-      console.log('hi')
-      if (manifestLinkEl) {
-        const existingManifest = await fetch(manifestLinkEl.href)
-        console.log({ existingManifest })
-        const applicationManifest = {
-          ...(await existingManifest.json()),
-          name: this.getTitle,
-          icons: [
-            {
-              src: this.getLogoUrl('h=192&w=192'),
-              sizes: '192x192',
-              type: 'image/png',
-            },
-            {
-              src: this.getLogoUrl('h=512&w=512'),
-              sizes: '512x512',
-              type: 'image/png',
-            },
-          ],
-        }
-        const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
-        manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
-        console.log('dynamic application manifest', applicationManifest)
-      }
     },
   },
 })
