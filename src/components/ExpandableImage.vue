@@ -131,7 +131,7 @@ body {
     background: black;
     display: flex;
     align-items: center;
-    opacity: 0%;
+    opacity: 0;
     padding-bottom: 0 !important;
     cursor: default;
 
@@ -165,12 +165,12 @@ svg path {
   align-items: center;
   justify-content: center;
   padding: 3px;
-  opacity: 0%;
+  opacity: 0;
   transition: 0.2s opacity;
 }
 
 .expandable-image:hover .expand-button {
-  opacity: 100%;
+  opacity: 1;
 }
 
 .expand-button svg {

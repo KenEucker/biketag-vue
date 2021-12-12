@@ -49,7 +49,7 @@ export default defineComponent({
       } else {
         url = this.player.tags[this.player.tags.length - 1].foundImageUrl
       }
-      return url
+      return this.getImgurImageSized(url, this.size[0])
     },
   },
   methods: {
@@ -57,6 +57,14 @@ export default defineComponent({
       if (!this.noLink) {
         this.$router.push('/player/' + encodeURIComponent(this.player.name))
       }
+    },
+    getImgurImageSized(imgurUrl = '', size = 'm') {
+      size = size === 't' ? 'm' : size
+      return imgurUrl
+        .replace('.jpg', `${size}.jpg`)
+        .replace('.gif', `${size}.gif`)
+        .replace('.png', `${size}.png`)
+        .replace('.mp4', `${size}.mp4`)
     },
   },
 })
@@ -68,10 +76,9 @@ export default defineComponent({
   .player-name {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
     z-index: 99;
-    padding: 0 0.5rem;
-    text-shadow: 2px 2px #292828e6;
+    text-shadow: 2px 2px 1px #292828e6;
+    transform: translate(-50%, 50%) rotate(-15deg);
   }
 
   .tag-count {
@@ -84,22 +91,40 @@ export default defineComponent({
   }
 }
 
-.avatar-lg {
+.avatar-txt {
+  .player-name {
+    transform: translate(-50%, -100%) rotate(-15deg);
+  }
+
+  .tag-count {
+    display: none;
+    padding: 0;
+    width: 1.75em;
+    font-size: 0.5em;
+  }
+
   .player-bicon {
-    border-radius: 5%;
-    max-width: 50vh;
+    display: none;
+  }
+}
+
+.avatar-sm {
+  .player-bicon {
+    width: 200px;
+    height: 200px;
+    clip-path: circle(50%);
   }
 
   .player-name {
-    font-size: 4vh;
+    font-size: 3.5vh;
     bottom: 1rem;
     top: auto;
   }
 
   .tag-count {
-    font-size: 4vh;
-    top: 1rem;
-    right: 1rem;
+    font-size: 2.5vh;
+    top: 43%;
+    right: 5px;
   }
 }
 
@@ -123,23 +148,28 @@ export default defineComponent({
   }
 }
 
-.avatar-sm {
+.avatar-lg {
   .player-bicon {
-    width: 200px;
-    height: 200px;
-    clip-path: circle(50%);
+    border-radius: 5%;
+    max-width: 50vh;
   }
 
   .player-name {
-    font-size: 3.5vh;
-    bottom: 1rem;
-    top: auto;
+    font-size: 4vh;
+    top: 0;
+    transform: translateX(-50%);
   }
 
   .tag-count {
-    font-size: 2.5vh;
-    top: 43%;
-    right: 5px;
+    font-size: 4vh;
+    top: 1rem;
+    right: 1rem;
+  }
+}
+
+.player-tags {
+  .tag-player {
+    display: none;
   }
 }
 

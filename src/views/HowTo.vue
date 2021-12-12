@@ -4,7 +4,7 @@
       :autoplay="{ delay: 15000 }"
       :pagination="{ clickable: true }"
       :slides-per-view="1"
-      :space-between="50"
+      :space-between="10"
       navigation
       :loop="true"
     >
@@ -13,10 +13,22 @@
           BIKETAG IS A PHOTO TAG GAME WHERE YOU FIND A MYSTERY LOCATION IN THE REAL WORLD BY
           BICYCLE.
         </p>
-        <p>TO PLAY THE GAME YOU NEED YO UNDERSTAND THESE THREE THINGS:</p>
-        <p>1) IMAGES OF BIKES AND UNIQUE THNIGS TOGETHER ARE WHAT WE CALL "BIKETAGS"</p>
+        <p>TO PLAY THE GAME YOU NEED YOU UNDERSTAND A FEW THINGS:</p>
+        <br />
+        <p>1) IMAGES OF BIKES AND UNIQUE THINGS TOGETHER ARE WHAT WE CALL "BIKETAGS"</p>
+        <br />
         <p>2) THE OBJECT OF THE GAME IS TO FIND AND CREATE WHAT WE CALL "MYSTERY LOCATIONS"</p>
-        <p>3) THE GAME NEVER ENDS AND EVERY ROUND IS A NEW CHANCE TO PLAY THE GMAE.</p>
+        <br />
+        <p>3) THE GAME NEVER ENDS AND EVERY ROUND IS A NEW CHANCE TO PLAY THE GAME.</p>
+        <br />
+        <p>
+          4) TO COMPLETE A BIKETAG ROUND YOU MUST SUBMIT BOTH A FOUND IMAGE AND A MYSTERY IMAGE.
+        </p>
+        <br />
+        <p>
+          5) THE BIKETAG GAME IS FREE TO PLAY AND THE BIKETAG APP DOESN'T REQUIRE YOU TO LOG IN TO
+          ANYTHING.
+        </p>
       </swiper-slide>
       <swiper-slide>
         <p>THE PLACE WHERE THE MOST RECENT BIKETAG WAS MADE IS CALLED THE "MYSTERY LOCATION".</p>
@@ -112,8 +124,9 @@ export default {
   max-width: 600px;
 }
 
-.swiper-slide p {
-  text-align: left;
-  line-height: 4vh;
+.swiper-slide {
+  p {
+    line-height: 3vh;
+  }
 }
 </style>

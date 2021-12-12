@@ -79,7 +79,7 @@ export default defineComponent({
   border-radius: 4px;
   z-index: 1;
   text-align: left;
-  box-shadow: 3px 4px 5px 0px #8885;
+  box-shadow: 3px 4px 5px 0 #8885;
 
   .message {
     margin-bottom: 8px;

@@ -107,6 +107,17 @@ html {
       }
     }
 
+    .player-name {
+      color: $tag-text-color;
+      font-family: $tag-player-font-family;
+      font-size: $tag-player-font-size;
+    }
+
+    .description {
+      font-weight: $tag-description-font-weight;
+      font-family: $tag-description-font-family;
+    }
+
     .player-wrapper {
       .player-name {
         color: $player-name-text-color;
@@ -119,6 +130,8 @@ html {
     }
 
     .pagination {
+      padding-bottom: 1em;
+
       .page-item {
         .page-link {
           color: $primary-color;
@@ -139,28 +152,32 @@ html {
       .swiper-button-prev {
         color: $btn-swiper-color;
         bottom: 0 !important;
-        top: auto;
-        left: 4rem;
+        top: 70%;
+        left: -0.5rem;
         right: auto;
-        z-index: 99;
+
+        // z-index: 99;
 
         &::after {
           font-size: $btn-swiper-font-size;
-          font-weight: bolder;
+
+          // font-weight: bolder;
         }
       }
 
       .swiper-button-next {
         color: $btn-swiper-color;
         bottom: 0 !important;
-        top: auto;
+        top: 70%;
         left: auto;
-        right: 4rem;
-        z-index: 99;
+        right: -0.5rem;
+
+        // z-index: 99;
 
         &::after {
           font-size: $btn-swiper-font-size;
-          font-weight: bolder;
+
+          // font-weight: bolder;
         }
       }
 
@@ -202,10 +219,11 @@ html {
 
     .img-wrapper {
       .tag-number {
-        color: $tag-text-color;
+        color: $tag-number-color;
         background-color: $tag-number-bg-color;
         font-size: $tag-number-font-size;
         font-weight: $tag-number-font-weight;
+        font-family: $tag-number-font-family;
       }
 
       .tag-player {

@@ -15,11 +15,13 @@
         align="center"
         @page-click="changePage"
       ></b-pagination>
-      <ul id="itemList" class="list-unstyled">
+      <ul id="itemList" class="player-tags list-unstyled">
         <li v-for="tag in tagsForList" :key="tag.tagnumber">
           <bike-tag
             :key="tag.tagnumber"
             :tag="tag"
+            :found-player="' '"
+            :mystery-player="' '"
             :found-tagnumber="tag.tagnumber - 1"
             :found-description="getSelfTagFoundDescription(tag)"
           />
@@ -138,3 +140,10 @@ export default defineComponent({
   },
 })
 </script>
+<style scoped lang="scss">
+.player-tags {
+  .tag-player {
+    display: none;
+  }
+}
+</style>

@@ -17,9 +17,11 @@
         v-if="tagnumber === 0"
         :tagnumber="getCurrentBikeTag.tagnumber"
         :mystery-image-url="getCurrentBikeTag.mysteryImageUrl"
+        :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
         :player="getCurrentBikeTag.mysteryPlayer"
         size="l"
-        mystery-description="CURRENT MYSTERY LOCATION TO FIND"
+        mystery-description="CURRENT MYSTERY
+      LOCATION TO FIND"
       />
       <bike-tag v-else :tag="tag" size="l" @load="tagLoaded" />
     </div>
@@ -47,7 +49,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags']),
+    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags', 'getPlayers']),
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
@@ -65,6 +67,7 @@ export default defineComponent({
   async mounted() {
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setTags')
+    await this.$store.dispatch('setPlayers')
     await this.$store.dispatch('setCurrentBikeTag')
     this.tagIsLoading = false
   },
@@ -74,6 +77,13 @@ export default defineComponent({
     },
     tagLoaded() {
       this.tagIsLoading = false
+    },
+    getPlayer(playerName) {
+      const playerList =
+        this.getPlayers?.filter((player) => {
+          return decodeURIComponent(encodeURIComponent(player.name)) == playerName
+        }) ?? []
+      return playerList[0]
     },
   },
 })

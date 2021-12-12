@@ -10,7 +10,14 @@
     ></b-pagination>
     <div>
       <div v-for="tag in tagsList" :key="tag.tagnumber" v-masonry-tile class="item">
-        <bike-tag :key="tag.tagnumber" :tag="tag" @load="tagLoaded(tagsList.tagnumber)" />
+        <bike-tag
+          :key="tag.tagnumber"
+          :tag="tag"
+          :reverse="true"
+          :found-player="getPlayer(tag.foundPlayer)"
+          :mystery-player="getPlayer(tag.mysteryPlayer)"
+          @load="tagLoaded(tagsList.tagnumber)"
+        />
       </div>
     </div>
     <b-form-group>
@@ -59,7 +66,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getTags']),
+    ...mapGetters(['getTags', 'getPlayers']),
     tagsList() {
       return this.getTags.slice(
         (this.currentPage - 1) * this.perPage + 1, // exclude current mystery tag
@@ -77,6 +84,7 @@ export default defineComponent({
   },
   async mounted() {
     await this.$store.dispatch('setTags')
+    await this.$store.dispatch('setPlayers')
   },
   created() {
     this.startLoading()
@@ -96,6 +104,13 @@ export default defineComponent({
       setTimeout(() => {
         this.tagsAreLoading = false
       }, 2000)
+    },
+    getPlayer(playerName) {
+      const playerList =
+        this.getPlayers?.filter((player) => {
+          return decodeURIComponent(encodeURIComponent(player.name)) == playerName
+        }) ?? []
+      return playerList[0]
     },
     tagLoaded() {
       /// Remove?
