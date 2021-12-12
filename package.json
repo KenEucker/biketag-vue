@@ -47,7 +47,8 @@
     "vite": "^2.7.1",
     "vite-plugin-env-compatible": "^1.0.0",
     "vite-plugin-html": "2.0.7",
-    "vite-plugin-pwa": "^0.11.11"
+    "vite-plugin-pwa": "^0.11.11",
+    "workbox-core": "^6.4.2"
   },
   "engines": {
     "node": ">=12.13.0"

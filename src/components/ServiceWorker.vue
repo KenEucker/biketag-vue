@@ -1,0 +1,95 @@
+<template>
+  <div v-if="offlineReady || needRefresh" class="pwa-toast" role="alert">
+    <div class="message">
+      <span v-if="offlineReady"> App ready to work offline </span>
+      <span v-else> New content available, click on reload button to update. </span>
+    </div>
+    <button v-if="needRefresh" @click="updateServiceWorker()">Reload</button>
+    <button @click="close">Close</button>
+  </div>
+</template>
+<script>
+import { defineComponent } from 'vue'
+import { useRegisterSW } from 'virtual:pwa-register/vue'
+const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW()
+import { mapGetters } from 'vuex'
+
+export default defineComponent({
+  name: 'HtmlContent',
+  props: {
+    filename: {
+      type: String,
+      default: '',
+    },
+  },
+  computed: {
+    ...mapGetters(['getTitle', 'getLogoUrl']),
+  },
+  methods: {
+    offlineReady,
+    needRefresh,
+    updateServiceWorker,
+    close: async () => {
+      offlineReady.value = false
+      needRefresh.value = false
+    },
+    async mounted() {
+      await this.generateManifest()
+    },
+    generateManifest: async () => {
+      const manifestLinkEl = document.querySelector('link[rel="manifest"]')
+
+      console.log('hi')
+      if (manifestLinkEl) {
+        const existingManifest = await fetch(manifestLinkEl.href)
+        console.log({ existingManifest })
+        const applicationManifest = {
+          ...(await existingManifest.json()),
+          name: this.getTitle,
+          icons: [
+            {
+              src: this.getLogoUrl('h=192&w=192'),
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: this.getLogoUrl('h=512&w=512'),
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
+        }
+        const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
+        manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
+        console.log('dynamic application manifest', applicationManifest)
+      }
+    },
+  },
+})
+</script>
+<style lang="scss">
+.pwa-toast {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  margin: 16px;
+  padding: 12px;
+  border: 1px solid #8885;
+  border-radius: 4px;
+  z-index: 1;
+  text-align: left;
+  box-shadow: 3px 4px 5px 0px #8885;
+
+  .message {
+    margin-bottom: 8px;
+  }
+
+  button {
+    border: 1px solid #8885;
+    outline: none;
+    margin-right: 5px;
+    border-radius: 2px;
+    padding: 3px 10px;
+  }
+}
+</style>

@@ -25,11 +25,14 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'worker.ts',
+      workbox: {
+        sourcemap: true,
+      },
       manifest: {
         name: 'BikeTag',
         short_name: 'BikeTag',
         description: 'The BikeTag Game',
-        theme_color: '#ffffff',
+        theme_color: '#000000',
         icons: [
           {
             src: '/android-chrome-192x192.png',
