@@ -1,0 +1,63 @@
+/* Themed colors */
+
+$dark-orchid: hsla(294, 63%, 46%, 1);
+$purple-plum: hsla(284, 47%, 53%, 1);
+$blue-gray: hsla(213, 39%, 59%, 1);
+$verdigris: hsla(185, 38%, 55%, 1);
+$ocean-green: hsla(166, 50%, 57%, 1);
+
+$charcoal: hsla(206, 21%, 27%, 1);
+$dark-jungle-green: hsla(126, 42%, 5%, 1);
+$black-shadows: hsla(293, 11%, 73%, 1);
+$silver-sand: hsla(208, 13%, 74%, 1);
+$beau-blue: hsla(201, 38%, 84%, 1);
+
+$alabaster: hsla(144, 15%, 87%, 1);
+$white: hsla(0, 0%, 100%, 1);
+$pink: hsla(349, 100%, 90%, 1);
+$light-pink: hsla(351, 77%, 82%, 1);
+$mountbatten-pink: hsla(343, 13%, 56%, 1);
+$black-coral: hsla(235, 6%, 38%, 1);
+$cadet: hsla(201, 17%, 37%, 1);
+
+/* Chosen colors */
+$app-color: $charcoal;
+$bg-color: $black-shadows;
+$primary-color: $verdigris;
+$secondary-color: $light-pink;
+$info-color: $ocean-green;
+$btn-primary-shadow-color: $dark-jungle-green;
+$btn-primary-text-color: $black-coral;
+$btn-secondary-shadow-color: $mountbatten-pink;
+$btn-secondary-text-color: $cadet;
+
+/* Component colors */
+$app-bg: linear-gradient(45deg, rgb(100 100 100 / 80%), rgb(150 150 150 / 50%) 70.71%);
+$card-bg-color: #fff;
+$card-border-color: rgb(0 0 0 / 12.5%);
+$btn-upload-color: #ff4500;
+$btn-upload-text-color: #fff;
+$btn-found-shadow-color: rgb(13 202 240 / 50%);
+$btn-found-text-color: #fff;
+$btn-mystery-color: #6710f2;
+$btn-mystery-shadow-color: rgb(103 16 242 / 50%);
+$btn-mystery-text-color: #fff;
+$btn-post-color: #d63384;
+$btn-post-shadow-color: rgb(214 51 132 / 50%);
+$btn-post-text-color: #fff;
+$btn-hint-color: rgba(255 255 255 / 50%);
+$btn-hint-shadow-color: rgb(255 255 255 / 0%);
+$btn-hint-text-color: black;
+$btn-swiper-color: rgba(255 255 255 / 2500%);
+$tag-text-color: #fff;
+$tag-number-color: black;
+$tag-number-bg-color: hsl(40deg 100% 80%);
+$tag-count-bg-color: #d63384;
+$tag-count-text-color: #fff;
+$player-name-text-color: #fff;
+
+/* Named colors */
+$link-color: $primary-color;
+$btn-primary-color: $primary-color;
+$btn-secondary-color: $secondary-color;
+$btn-found-color: $info-color;
