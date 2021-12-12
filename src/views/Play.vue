@@ -6,7 +6,7 @@
     <div>
       <b-button
         v-if="tagnumber === 0"
-        v-b-popover.click="getCurrentBikeTag.hint ?? 'no hint provided, sorry'"
+        v-b-popover.click="getHint"
         class="btn-hint"
         title="NEED A HINT?"
         variant="primary"
@@ -20,9 +20,8 @@
         :player="getCurrentBikeTag.mysteryPlayer"
         size="l"
         mystery-description="CURRENT MYSTERY LOCATION TO FIND"
-        @load="tagLoaded"
       />
-      <bike-tag v-if="tagnumber !== 0" :tag="tag" size="l" @load="tagLoaded" />
+      <bike-tag v-else :tag="tag" size="l" @load="tagLoaded" />
     </div>
   </div>
 </template>
@@ -48,7 +47,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getTags']),
+    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags']),
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
@@ -56,13 +55,18 @@ export default defineComponent({
       }
       return undefined
     },
+    getHint() {
+      return this.getCurrentBikeTag.hint ?? 'no hint provided, sorry'
+    },
   },
   created() {
     this.tagIsLoading = true
   },
-  updated() {
-    // this.tagIsLoading = true
-    // this.$store.dispatch('setTags')
+  async mounted() {
+    await this.$store.dispatch('setGame')
+    await this.$store.dispatch('setTags')
+    await this.$store.dispatch('setCurrentBikeTag')
+    this.tagIsLoading = false
   },
   methods: {
     hint() {

@@ -40,20 +40,20 @@ export default defineComponent({
   async mounted() {
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setCurrentBikeTag')
-    switch (this.$route.name) {
-      case 'Tag':
-      case 'Play':
-      case 'BikeDex':
-        await this.$store.dispatch('setTags')
-        break
-      case 'Player':
-      case 'Players':
-        await this.$store.dispatch('setPlayers')
-        break
-      case 'Leaderboard':
-        await this.$store.dispatch('setTopPlayers')
-        break
-    }
+    // switch (this.$route.name) {
+    //   case 'Tag':
+    //   case 'Play':
+    //   case 'BikeDex':
+    //     await this.$store.dispatch('setTags')
+    //     break
+    //   case 'Player':
+    //   case 'Players':
+    //     await this.$store.dispatch('setPlayers')
+    //     break
+    //   case 'Leaderboard':
+    //     await this.$store.dispatch('setTopPlayers')
+    //     break
+    // }
   },
   methods: {
     goBikeDexPage: function () {

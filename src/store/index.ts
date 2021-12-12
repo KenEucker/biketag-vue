@@ -67,6 +67,9 @@ export const store = createStore<State>({
                 .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
         return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
       },
+    getCurrentHint(state) {
+      return state.currentBikeTag?.hint
+    },
     getCurrentBikeTag(state) {
       return state.currentBikeTag
     },
@@ -85,40 +88,79 @@ export const store = createStore<State>({
   },
   mutations: {
     SET_GAME(state, game) {
+      const oldState = state.game
       state.game = game
-      console.log('store::game', { game })
+
+      if (oldState?.name !== game?.name) {
+        console.log('store::game', { game })
+      }
     },
     SET_CURRENT_TAG(state, tag) {
+      const oldState = state.currentBikeTag
       state.currentBikeTag = tag
-      console.log('store::currentBikeTag', { tag })
+
+      if (oldState?.tagnumber !== tag?.tagnumber) {
+        console.log('store::currentBikeTag', { tag })
+      }
     },
     SET_TAGS(state, tags) {
+      const oldState = state.tags
       state.tags = tags
-      console.log('store::tags', { tags })
+
+      if (oldState?.length !== tags?.length) {
+        console.log('store::tags', { tags })
+      }
     },
     SET_HTML(state, html) {
+      const oldState = state.html
       state.html = html
-      console.log('store::html', { html })
+
+      if (oldState?.length !== html?.length) {
+        console.log('store::html', { html })
+      }
     },
     SET_PLAYERS(state, players) {
+      const oldState = state.players
       state.players = players
-      console.log('store::players', { players })
+
+      if (oldState?.length !== players?.length) {
+        console.log('store::players', { players })
+      }
     },
     SET_QUEUE_FOUND(state, data) {
+      const oldState = state.queuedTag
       state.queuedTag.foundImageUrl = data.foundImageUrl
       state.queuedTag.foundImage = data.foundImage
       state.queuedTag.foundLocation = data.foundLocation
       state.queuedTag.foundPlayer = data.foundPlayer
-      console.log('store::queuedTag', state.queuedTag)
+
+      if (
+        oldState?.foundImageUrl !== data?.foundImageUrl ||
+        oldState?.foundImage !== data?.foundImage ||
+        oldState?.foundLocation !== data?.foundImageUrl ||
+        oldState?.foundPlayer !== data?.foundPlayer
+      ) {
+        console.log('store::queuedTag', state.queuedTag)
+      }
     },
     SET_QUEUE_MYSTERY(state, data) {
+      const oldState = state.queuedTag
       state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
       state.queuedTag.mysteryImage = data.mysteryImage
       state.queuedTag.hint = data.hint
       state.queuedTag.mysteryPlayer = state.queuedTag.foundPlayer
-      console.log('store::queuedTag', state.queuedTag)
+
+      if (
+        oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
+        oldState?.mysteryImage !== data?.mysteryImage ||
+        oldState?.hint !== data?.hint ||
+        oldState?.mysteryPlayer !== data?.mysteryPlayer
+      ) {
+        console.log('store::queuedTag', state.queuedTag)
+      }
     },
     SET_QUEUED_TAG(state, data) {
+      const oldState = state.queuedTag
       state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
       state.queuedTag.mysteryImage = data.mysteryImage
       state.queuedTag.hint = data.hint
@@ -127,7 +169,19 @@ export const store = createStore<State>({
       state.queuedTag.foundImage = data.foundImage
       state.queuedTag.foundLocation = data.foundLocation
       state.queuedTag.foundPlayer = data.foundPlayer
-      console.log('store::queuedTag', state.queuedTag)
+
+      if (
+        oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
+        oldState?.mysteryImage !== data?.mysteryImage ||
+        oldState?.hint !== data?.hint ||
+        oldState?.mysteryPlayer !== data?.mysteryPlayer ||
+        oldState?.foundImageUrl !== data?.foundImageUrl ||
+        oldState?.foundImage !== data?.foundImage ||
+        oldState?.foundLocation !== data?.foundImageUrl ||
+        oldState?.foundPlayer !== data?.foundPlayer
+      ) {
+        console.log('store::queuedTag', state.queuedTag)
+      }
     },
     RESET_FORM_STEP(state) {
       state.formStep = 1
@@ -144,27 +198,27 @@ export const store = createStore<State>({
       return client.game(state.gameName).then((d) => {
         options.imgur = { clientId, hash: (d as Game).mainhash }
         client = new biketag(options)
-        commit('SET_GAME', d)
+        return commit('SET_GAME', d)
       })
     },
     setCurrentBikeTag({ commit }) {
       return client.getTag().then((r) => {
-        commit('SET_CURRENT_TAG', r.data)
+        return commit('SET_CURRENT_TAG', r.data)
       })
     },
     setTags({ commit }) {
       return client.tags().then((d) => {
-        commit('SET_TAGS', d)
+        return commit('SET_TAGS', d)
       })
     },
     setPlayers({ commit }) {
       return client.players().then((d) => {
-        commit('SET_PLAYERS', d)
+        return commit('SET_PLAYERS', d)
       })
     },
     setTopPlayers({ commit }) {
       return client.players({ sort: 'top' }).then((d) => {
-        commit('SET_PLAYERS', d)
+        return commit('SET_PLAYERS', d)
       })
     },
     setQueueFound({ commit }, d) {
@@ -177,17 +231,17 @@ export const store = createStore<State>({
       return commit('SET_QUEUE_MYSTERY', d)
     },
     incFormStep({ commit }) {
-      commit('INC_FORM_STEP')
+      return commit('INC_FORM_STEP')
     },
     decFormStep({ commit }) {
-      commit('DEC_FORM_STEP')
+      return commit('DEC_FORM_STEP')
     },
     resetFormStep({ commit }) {
-      commit('RESET_FORM_STEP')
+      return commit('RESET_FORM_STEP')
     },
     setHtml({ commit }, file) {
-      axios.get('./' + file).then((r) => {
-        commit('SET_HTML', r.data)
+      return axios.get('./' + file).then((r) => {
+        return commit('SET_HTML', r.data)
       })
     },
   },

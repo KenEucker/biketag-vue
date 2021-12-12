@@ -22,7 +22,7 @@
           <span class="tag-player">{{ _foundPlayer }}</span>
           <expandable-image
             class="image img-fluid"
-            :src="getImgurImageSized(_foundImageUrl)"
+            :source="getImgurImageSized(_foundImageUrl)"
             :full-source="_foundImageUrl"
             :alt="foundDescription"
             @load="tagImageLoaded('found')"

@@ -3,7 +3,7 @@
     <span>New Mystery Location</span>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
-      <img v-if="!preview" class="img-fluid" src="@/assets/images/blank.png" />
+      <img v-else class="img-fluid" src="@/assets/images/blank.png" />
     </div>
     <div class="p-3">
       <!-- <b-button>Photos</b-button> -->

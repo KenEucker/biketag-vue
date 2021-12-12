@@ -3,10 +3,10 @@
     <div v-if="getFormStep === 1">
       <queue-found :tag="getQueuedTag" />
     </div>
-    <div v-if="getFormStep === 2">
+    <div v-else-if="getFormStep === 2">
       <queue-mystery :tag="getQueuedTag" />
     </div>
-    <div v-if="getFormStep === 3">
+    <div v-else-if="getFormStep === 3">
       <submit-queued :tag="getQueuedTag" @submit="submit" />
     </div>
   </div>

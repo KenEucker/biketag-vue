@@ -59,7 +59,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getTags']),
+    ...mapGetters(['getTags']),
     tagsList() {
       return this.getTags.slice(
         (this.currentPage - 1) * this.perPage + 1, // exclude current mystery tag
@@ -75,8 +75,8 @@ export default defineComponent({
       this.currentPage = Number(val)
     },
   },
-  mounted() {
-    this.$store.dispatch('setTags')
+  async mounted() {
+    await this.$store.dispatch('setTags')
   },
   created() {
     this.startLoading()

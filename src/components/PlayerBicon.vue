@@ -27,6 +27,10 @@ export default defineComponent({
         return {}
       },
     },
+    noLink: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     playerName() {
@@ -50,7 +54,9 @@ export default defineComponent({
   },
   methods: {
     goPlayerPage: function () {
-      this.$router.push('/player/' + encodeURIComponent(this.player.name))
+      if (!this.noLink) {
+        this.$router.push('/player/' + encodeURIComponent(this.player.name))
+      }
     },
   },
 })

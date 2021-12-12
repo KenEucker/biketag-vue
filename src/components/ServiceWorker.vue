@@ -33,11 +33,11 @@ export default defineComponent({
     updateServiceWorker,
   },
   async created() {
+    await this.$store.dispatch('setGame')
     const manifestLinkEl = document.querySelector('link[rel="manifest"]')
 
     if (manifestLinkEl) {
       const existingManifest = await fetch(manifestLinkEl.href)
-      console.log({ existingManifest })
       const applicationManifest = {
         ...(await existingManifest.json()),
         name: this.getGameTitle,

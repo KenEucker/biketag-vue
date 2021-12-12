@@ -28,8 +28,8 @@ export default defineComponent({
       return this.getPlayers.slice(0, 10)
     },
   },
-  mounted() {
-    this.$store.dispatch('setTopPlayers')
+  async mounted() {
+    await this.$store.dispatch('setTopPlayers')
   },
 })
 </script>

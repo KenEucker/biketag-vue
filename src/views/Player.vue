@@ -3,39 +3,44 @@
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
   <div class="container">
-    <b-pagination
-      v-model="currentPage"
-      :total-rows="totalCount"
-      :per-page="perPage"
-      aria-controls="itemList"
-      align="center"
-      @page-click="changePage"
-    ></b-pagination>
-    <ul id="itemList" class="list-unstyled">
-      <li v-for="tag in tagsForList" :key="tag.tagnumber">
-        <bike-tag
-          :key="tag.tagnumber"
-          :tag="tag"
-          :found-tagnumber="tag.tagnumber - 1"
-          :found-description="getSelfTagFoundDescription(tag)"
-        />
-      </li>
-    </ul>
-    <b-form-group>
-      <select v-model="perPage" class="form-select w-25 m-auto" @change="resetCurrentPage">
-        <option v-for="i in 3" :key="Math.pow(10, i)" :value="Math.pow(10, i)">
-          {{ Math.pow(10, i) }}
-        </option>
-      </select>
-    </b-form-group>
-    <b-pagination
-      v-model="currentPage"
-      :total-rows="totalCount"
-      :per-page="perPage"
-      aria-controls="itemList"
-      align="center"
-      @page-click="changePage"
-    ></b-pagination>
+    <div class="d-flex justify-content-center">
+      <player size="lg" :player="player" :no-link="true" />
+    </div>
+    <div class="row">
+      <b-pagination
+        v-model="currentPage"
+        :total-rows="totalCount"
+        :per-page="perPage"
+        aria-controls="itemList"
+        align="center"
+        @page-click="changePage"
+      ></b-pagination>
+      <ul id="itemList" class="list-unstyled">
+        <li v-for="tag in tagsForList" :key="tag.tagnumber">
+          <bike-tag
+            :key="tag.tagnumber"
+            :tag="tag"
+            :found-tagnumber="tag.tagnumber - 1"
+            :found-description="getSelfTagFoundDescription(tag)"
+          />
+        </li>
+      </ul>
+      <b-form-group>
+        <select v-model="perPage" class="form-select w-25 m-auto" @change="resetCurrentPage">
+          <option v-for="i in 3" :key="Math.pow(10, i)" :value="Math.pow(10, i)">
+            {{ Math.pow(10, i) }}
+          </option>
+        </select>
+      </b-form-group>
+      <b-pagination
+        v-model="currentPage"
+        :total-rows="totalCount"
+        :per-page="perPage"
+        aria-controls="itemList"
+        align="center"
+        @page-click="changePage"
+      ></b-pagination>
+    </div>
   </div>
 </template>
 
@@ -44,6 +49,7 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
+import Player from '@/components/PlayerBicon.vue'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
 
@@ -52,6 +58,7 @@ export default defineComponent({
   components: {
     BikeTag,
     Loading,
+    Player,
   },
   data() {
     console.log(this.$route.params)
@@ -96,8 +103,9 @@ export default defineComponent({
   created() {
     this.startLoading()
   },
-  mounted() {
-    this.$store.dispatch('setPlayers')
+  async mounted() {
+    await this.$store.dispatch('setTags')
+    await this.$store.dispatch('setPlayers')
   },
   methods: {
     resetCurrentPage() {

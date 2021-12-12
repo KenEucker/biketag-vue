@@ -71,8 +71,9 @@ export default defineComponent({
       this.currentPage = Number(val)
     },
   },
-  mounted() {
-    this.$store.dispatch('setPlayers')
+  async mounted() {
+    await this.$store.dispatch('setTags')
+    await this.$store.dispatch('setPlayers')
   },
   methods: {
     resetCurrentPage() {
