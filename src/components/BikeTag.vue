@@ -170,6 +170,10 @@ export default defineComponent({
 })
 </script>
 <style scoped lang="scss">
+.reversed {
+  flex-flow: row-reverse;
+}
+
 .polaroid {
   background-color: white;
   box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
