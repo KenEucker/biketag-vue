@@ -142,7 +142,7 @@ export default defineComponent({
     document.head.appendChild(viewportMeta)
   },
   methods: {
-    getFoundDescription: (tag) => `#${tag.tagnumber} (found at) ${tag.foundLocation}`,
+    getFoundDescription: (tag) => `#${tag.tagnumber} (found at) ${tag.foundLocation ?? 'unknown'}`,
     getMysteryDescription: (tag) =>
       `#${tag.tagnumber} (posted on) ${new Date(tag.foundTime * 1000).toLocaleDateString()}`,
     getImgurImageSized(imgurUrl = '') {

@@ -26,11 +26,11 @@ export default defineComponent({
     return {
       offlineReady,
       needRefresh,
+      updateServiceWorker,
     }
   },
   computed: {
     ...mapGetters(['getGameSlug', 'getGameTitle', 'getLogoUrl']),
-    updateServiceWorker,
   },
   async created() {
     await this.$store.dispatch('setGame')

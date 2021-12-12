@@ -140,10 +140,3 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped lang="scss">
-.player-tags {
-  .tag-player {
-    display: none;
-  }
-}
-</style>
