@@ -69,7 +69,7 @@ export default defineComponent({
     ...mapGetters(['getTags', 'getPlayers']),
     tagsList() {
       return this.getTags.slice(
-        (this.currentPage - 1) * this.perPage, // exclude current mystery tag
+        (this.currentPage - 1) * this.perPage + 1, // exclude current mystery tag
         this.currentPage * this.perPage // exclude current mystery tag
       )
     },
