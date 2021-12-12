@@ -32,7 +32,7 @@ export default defineComponent({
     ...mapGetters(['getTitle', 'getLogoUrl']),
     updateServiceWorker,
   },
-  async mounted() {
+  async created() {
     const manifestLinkEl = document.querySelector('link[rel="manifest"]')
 
     if (manifestLinkEl) {
