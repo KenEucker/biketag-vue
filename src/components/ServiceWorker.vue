@@ -4,7 +4,7 @@
       <span v-if="offlineReady"> App ready to work offline </span>
       <span v-else> New content available, click on reload button to update. </span>
     </div>
-    <button v-if="needRefresh" @click="updateServiceWorker()">Reload</button>
+    <button v-if="needRefresh" @click="updateServiceWorker">Reload</button>
     <button @click="close">Close</button>
   </div>
 </template>
@@ -26,7 +26,6 @@ export default defineComponent({
     return {
       offlineReady,
       needRefresh,
-      updateServiceWorker,
     }
   },
   computed: {
@@ -65,6 +64,7 @@ export default defineComponent({
       offlineReady.value = false
       needRefresh.value = false
     },
+    updateServiceWorker,
   },
 })
 </script>

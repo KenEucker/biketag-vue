@@ -6,12 +6,10 @@
       <img v-else class="img-fluid" src="@/assets/images/blank.png" />
     </div>
     <div class="p-3">
-      <!-- <b-button>Photos</b-button> -->
       <label for="file-upload" class="btn-upload custom-file-upload">
         <i class="fa fa-camera" />
       </label>
       <input id="file-upload" type="file" class="d-none" accept="image/*" @change="setImage" />
-      <!-- <b-button>Switch</b-button> -->
     </div>
     <div>
       <b-form-input id="input-found" v-model="location" placeholder="Enter found location" />
