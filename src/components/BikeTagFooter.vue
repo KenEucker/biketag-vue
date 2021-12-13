@@ -2,19 +2,18 @@
   <div class="container mt-5">
     <div class="footer-buttons">
       <b-button class="m-1" variant="primary" @click="goAboutPage">About</b-button>
-      <b-button class="m-1" variant="primary" @click="goLeaderboardPage">Leaderboard</b-button>
-      <div class="worldwide">
-        <a href="https://biketag.org">
-          <i class="fa fa-globe" aria-hidden="true"></i>
-          <h5>worldwide</h5>
-        </a>
-      </div>
       <b-button class="m-1" variant="primary" @click="goUsersPage">Players</b-button>
-      <b-button class="m-1" variant="primary" @click="goSupportPage">Support</b-button>
+      <b-button class="m-1" variant="primary" @click="goLeaderboardPage">Top10</b-button>
+    </div>
+    <div class="worldwide mt-2 mb-2">
+      <a href="https://biketag.org">
+        <i class="fa fa-globe" aria-hidden="true"></i>
+        <h5>worldwide</h5>
+      </a>
     </div>
     <footer class="container mt-4 pb-5">
       <div class="row">
-        <a href="https://github.com/KenEucker/biketag-website"
+        <a href="https://github.com/KenEucker/biketag-vue"
           ><img src="../assets/images/github-logo.png" alt="GitHub" /><img
             src="../assets/images/github-mark.png"
             alt="GitHub Mark"
@@ -52,13 +51,12 @@ export default defineComponent({
 .footer-buttons {
   display: inline-flex;
 
-  .worldwide a i {
-    font-size: 5em;
-  }
-
   .btn {
     max-height: 3em;
   }
+}
+.worldwide a i {
+  font-size: 5em;
 }
 
 footer {
