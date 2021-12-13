@@ -1,28 +1,29 @@
 <template>
-  <div class="container">
-    <div>
-      <b-button class="m-1" @click="goLeaderboardPage">Leaderboard</b-button>
-      <b-button class="m-1" @click="goUsersPage">Players</b-button>
-    </div>
-    <div class="back-to-home">
-      <a href="https://biketag.org">
-        <i class="fa fa-globe" aria-hidden="true"></i>
-        <h5>worldwide</h5>
-      </a>
-    </div>
-    <div>
+  <div class="container mt-5">
+    <div class="footer-buttons">
       <b-button class="m-1" variant="primary" @click="goAboutPage">About</b-button>
+      <b-button class="m-1" variant="primary" @click="goLeaderboardPage">Leaderboard</b-button>
+      <div class="worldwide">
+        <a href="https://biketag.org">
+          <i class="fa fa-globe" aria-hidden="true"></i>
+          <h5>worldwide</h5>
+        </a>
+      </div>
+      <b-button class="m-1" variant="primary" @click="goUsersPage">Players</b-button>
       <b-button class="m-1" variant="primary" @click="goSupportPage">Support</b-button>
     </div>
-    <footer class="footer container my-5">
-      <!--Section: Content-->
-      <section>
-        <p class="copyright">
-          BikeTag is an open source website
-          <a href="https://github.com/KenEucker/biketag-website">developed on github</a>
-        </p>
-      </section>
-      <!--Section: Content-->
+    <footer class="container mt-4 pb-5">
+      <div class="row">
+        <a href="https://github.com/KenEucker/biketag-website"
+          ><img src="../assets/images/github-logo.png" alt="GitHub" /><img
+            src="../assets/images/github-mark.png"
+            alt="GitHub Mark"
+        /></a>
+        <span>Sourced and Deployed on</span>
+        <a href="https://www.netlify.com/"
+          ><img src="../assets/images/netlify-logo-dark.svg" alt="Netlify"
+        /></a>
+      </div>
     </footer>
   </div>
 </template>
@@ -48,7 +49,28 @@ export default defineComponent({
 })
 </script>
 <style scoped lang="scss">
-.back-to-home a i {
-  font-size: 5em;
+.footer-buttons {
+  display: inline-flex;
+
+  .worldwide a i {
+    font-size: 5em;
+  }
+
+  .btn {
+    max-height: 3em;
+  }
+}
+
+footer {
+  display: flex;
+  flex-flow: wrap;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 50vw;
+
+  .row > * {
+    flex-basis: max-content;
+    margin: auto;
+  }
 }
 </style>
