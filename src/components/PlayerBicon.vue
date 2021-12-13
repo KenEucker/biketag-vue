@@ -110,8 +110,8 @@ export default defineComponent({
 
 .avatar-sm {
   .player-bicon {
-    width: 200px;
-    height: 200px;
+    width: 8rem;
+    height: 8rem;
     clip-path: circle(50%);
   }
 
@@ -130,8 +130,8 @@ export default defineComponent({
 
 .avatar-md {
   .player-bicon {
-    width: 300px;
-    height: 300px;
+    width: 10rem;
+    height: 10rem;
     clip-path: circle(50%);
   }
 

@@ -5,7 +5,7 @@
       <b-button class="m-1" variant="primary" @click="goUsersPage">Players</b-button>
       <b-button class="m-1" variant="primary" @click="goLeaderboardPage">Top10</b-button>
     </div>
-    <div class="worldwide mt-2 mb-2">
+    <div class="worldwide mt-4 mb-4">
       <a href="https://biketag.org">
         <i class="fa fa-globe" aria-hidden="true"></i>
         <h5>worldwide</h5>
