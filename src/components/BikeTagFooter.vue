@@ -55,6 +55,7 @@ export default defineComponent({
     max-height: 3em;
   }
 }
+
 .worldwide a i {
   font-size: 5em;
 }

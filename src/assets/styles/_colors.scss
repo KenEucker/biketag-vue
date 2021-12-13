@@ -1,24 +1,22 @@
 /* Themed colors */
 
-$dark-orchid: hsla(294, 63%, 46%, 1);
-$purple-plum: hsla(284, 47%, 53%, 1);
-$blue-gray: hsla(213, 39%, 59%, 1);
-$verdigris: hsla(185, 38%, 55%, 1);
-$ocean-green: hsla(166, 50%, 57%, 1);
-
-$charcoal: hsla(206, 21%, 27%, 1);
-$dark-jungle-green: hsla(126, 42%, 5%, 1);
-$black-shadows: hsla(293, 11%, 73%, 1);
-$silver-sand: hsla(208, 13%, 74%, 1);
-$beau-blue: hsla(201, 38%, 84%, 1);
-
-$alabaster: hsla(144, 15%, 87%, 1);
-$white: hsla(0, 0%, 100%, 1);
-$pink: hsla(349, 100%, 90%, 1);
-$light-pink: hsla(351, 77%, 82%, 1);
-$mountbatten-pink: hsla(343, 13%, 56%, 1);
-$black-coral: hsla(235, 6%, 38%, 1);
-$cadet: hsla(201, 17%, 37%, 1);
+$dark-orchid: hsl(294deg 63% 46% / 100%);
+$purple-plum: hsl(284deg 47% 53% / 100%);
+$blue-gray: hsl(213deg 39% 59% / 100%);
+$verdigris: hsl(185deg 38% 55% / 100%);
+$ocean-green: hsl(166deg 50% 57% / 100%);
+$charcoal: hsl(206deg 21% 27% / 100%);
+$dark-jungle-green: hsl(126deg 42% 5% / 100%);
+$black-shadows: hsl(293deg 11% 73% / 100%);
+$silver-sand: hsl(208deg 13% 74% / 100%);
+$beau-blue: hsl(201deg 38% 84% / 100%);
+$alabaster: hsl(144deg 15% 87% / 100%);
+$white: hsl(0deg 0% 100% / 100%);
+$pink: hsl(349deg 100% 90% / 100%);
+$light-pink: hsl(351deg 77% 82% / 100%);
+$mountbatten-pink: hsl(343deg 13% 56% / 100%);
+$black-coral: hsl(235deg 6% 38% / 100%);
+$cadet: hsl(201deg 17% 37% / 100%);
 
 /* Chosen colors */
 $app-color: $charcoal;
