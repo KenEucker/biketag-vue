@@ -7,7 +7,7 @@ export type DomainInfo = {
 }
 
 export const getDomainInfo = (req: request.Request | undefined, win: Window): DomainInfo => {
-  const nonSubdomainHosts = ['biketag.io', 'biketag.local', '0.0.0.0', 'localhost']
+  const nonSubdomainHosts = [`${process.env.HOST ?? 'biketag.local'}`, '0.0.0.0', 'localhost']
   let host = (req ? req.headers.host : win ? win.location.host : '')
     .toLowerCase()
     .replace(/www./g, '')

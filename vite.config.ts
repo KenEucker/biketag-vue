@@ -26,6 +26,7 @@ export default defineConfig({
       GAME_NAME: 'portland',
       GAME_SOURCE: 'sanity',
       IMGUR_CLIENT_ID: '4fa12c6ce36984b',
+      HOST: 'biketag.dev',
       IMGUR_CLIENT_SECRET: null,
       SANITY_PROJECT_ID: 'x37ikhvs',
       SANITY_DATASET: 'production',
