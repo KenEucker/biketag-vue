@@ -6,7 +6,7 @@
     <div>
       <b-button
         v-if="tagnumber === 0 && !tagIsLoading"
-        v-b-popover.click="getHint"
+        v-b-popover.click.left="getHint"
         class="btn-hint"
         title="NEED A HINT?"
         variant="primary"
