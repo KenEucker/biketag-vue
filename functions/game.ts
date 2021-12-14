@@ -15,7 +15,7 @@ const myHandler: Handler = async (event) => {
   const gameResponse = await biketag.getGame(biketagOpts.game, { source: 'sanity' })
   return {
     statusCode: gameResponse.status,
-    body: gameResponse.success ? JSON.stringify(gameResponse.data) : gameResponse.error,
+    body: JSON.stringify(gameResponse.success ? gameResponse.data : gameResponse),
   }
 }
 
