@@ -2,10 +2,10 @@
   <loading v-if="tagIsLoading" v-model:active="tagIsLoading" :is-full-page="true">
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
-  <div class="container rel">
+  <div class="container rel col-lg-6">
     <div>
       <b-button
-        v-if="tagnumber === 0"
+        v-if="tagnumber === 0 && !tagIsLoading"
         v-b-popover.click="getHint"
         class="btn-hint"
         title="NEED A HINT?"

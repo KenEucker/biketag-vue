@@ -23,6 +23,7 @@ const gameName = domain.subdomain ?? process.env.GAME_NAME
 const clientId = process.env.IMGUR_CLIENT_ID
 const options: any = {
   game: gameName,
+  /// TODO: remove these credentials and rely on the "biketag" api backend for retrieving game data (always)
   sanity: {
     projectId: process.env.SANITY_PROJECT_ID,
     dataset: process.env.SANITY_DATASET,
