@@ -11,12 +11,14 @@ const myHandler: Handler = async (event, context) => {
       dataset: process.env.SANITY_DATASET,
     },
   }
+  // comment added
   const biketag = new BikeTagClient(biketagOpts)
   const gameResponse = await biketag.getGame(biketagOpts.game, { source: 'sanity' })
+  const { success, data } = gameResponse
   return {
     statusCode: gameResponse.status,
     body: JSON.stringify({
-      gmae: gameResponse.success ? gameResponse.data : gameResponse,
+      gmae: success ? data : gameResponse,
       event,
       context,
     }),
