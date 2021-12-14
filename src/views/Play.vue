@@ -20,8 +20,7 @@
         :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
         :player="getCurrentBikeTag.mysteryPlayer"
         size="l"
-        mystery-description="CURRENT MYSTERY
-      LOCATION TO FIND"
+        mystery-description="CURRENT MYSTERY LOCATION TO FIND"
       />
       <bike-tag v-else :tag="tag" size="l" @load="tagLoaded" />
     </div>
