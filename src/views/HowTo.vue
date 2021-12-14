@@ -1,13 +1,17 @@
 <template>
   <div class="container">
     <swiper
-      :autoplay="{ delay: 15000 }"
+      :autoplay="{ delay: 12500 }"
       :pagination="{ clickable: true }"
       :slides-per-view="1"
       :space-between="10"
       navigation
       :loop="true"
     >
+      <audio id="jingle" ref="jingle">
+        <source id="audioSource" type="audio/mpeg" :src="getEasterEgg" />
+        Your browser does not support the audio element.
+      </audio>
       <swiper-slide>
         <p>
           BIKETAG IS A PHOTO TAG GAME WHERE YOU FIND A MYSTERY LOCATION IN THE REAL WORLD BY
@@ -16,21 +20,10 @@
         <p>
           TO PLAY THE GAME YOU NEED YOU UNDERSTAND A FEW THINGS:
           <span
-            v-if="easterEgg && !playingEaster"
-            id="play"
+            v-if="getEasterEgg && !playingEaster"
             class="fas fa-volume-down"
             @click="playEasterEgg"
           ></span>
-          <span
-            v-if="easterEgg && playingEaster"
-            id="mute"
-            class="fas fa-volume-mute"
-            @click="muteEasterEgg"
-          ></span>
-          <audio id="biketag-jingle">
-            <source id="audioSource" type="audio/mpeg" :src="easterEgg" />
-            Your browser does not support the audio element.
-          </audio>
         </p>
 
         <br />
@@ -144,29 +137,18 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getGameSlug', 'getGameSettings']),
-    easterEgg() {
-      return this.getGameSettings && this.getGameSettings['easter::jingle']
-        ? `https://biketag.org/public/${this.getGameSettings['easter::jingle']}`
-        : null
-    },
+    ...mapGetters(['getGameSlug', 'getEasterEgg']),
   },
   mounted() {
     this.$store.dispatch('setGame')
   },
   methods: {
     playEasterEgg(e) {
-      e.preventDefault()
-      e.stopPropagation()
-      if (this.easterEgg) {
-        document.getElementById('biketag-jingle').play()
+      // e.preventDefault()
+      // e.stopPropagation()
+      if (this.getEasterEgg) {
+        document.getElementById('jingle').play().then(console.log).catch(console.error)
         this.playingEaster = true
-      }
-    },
-    muteEasterEgg() {
-      if (this.playingEaster) {
-        document.getElementById('biketag-jingle').pause()
-        this.playingEaster = false
       }
     },
   },
@@ -181,9 +163,5 @@ export default {
   p {
     line-height: 3vh;
   }
-}
-
-#biketag-jingle {
-  z-index: 99999999;
 }
 </style>

@@ -56,6 +56,13 @@ export const store = createStore<State>({
     getGameSettings(state) {
       return state.game?.settings
     },
+    getEasterEgg(state) {
+      if (state.game?.settings) {
+        const jingle = state.game?.settings['easter::jingle']
+        return jingle ? `https://biketag.org/public/${jingle}` : null
+      }
+      return null
+    },
     getGameTitle(state) {
       return `${state.gameName.toUpperCase()}.BIKETAG`
     },
