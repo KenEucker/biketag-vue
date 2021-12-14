@@ -15,8 +15,22 @@
         </p>
         <p>
           TO PLAY THE GAME YOU NEED YOU UNDERSTAND A FEW THINGS:
-          <span v-if="hasEaster && !playingEaster" id="play" class="fas fa-volume-down"></span>
-          <span v-if="hasEaster && playingEaster" id="mute" class="fas fa-volume-mute"></span>
+          <span
+            v-if="easterEgg && !playingEaster"
+            id="play"
+            class="fas fa-volume-down"
+            @click="playEasterEgg"
+          ></span>
+          <span
+            v-if="easterEgg && playingEaster"
+            id="mute"
+            class="fas fa-volume-mute"
+            @click="muteEasterEgg"
+          ></span>
+          <audio id="biketag-jingle">
+            <source id="audioSource" type="audio/mpeg" :src="easterEgg" />
+            Your browser does not support the audio element.
+          </audio>
         </p>
 
         <br />
@@ -130,17 +144,29 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getGameSlug', 'getSettings']),
+    ...mapGetters(['getGameSlug', 'getGameSettings']),
     easterEgg() {
-      return getSettings.indexOf(`${this.getGameSlug}`)
+      return this.getGameSettings && this.getGameSettings['easter::jingle']
+        ? `https://biketag.org/public/${this.getGameSettings['easter::jingle']}`
+        : null
     },
   },
   mounted() {
-    this.$store.dispatch('setSettings')
+    this.$store.dispatch('setGame')
   },
   methods: {
-    playEasterEgg() {
-      if (this.hasEaster) {
+    playEasterEgg(e) {
+      e.preventDefault()
+      e.stopPropagation()
+      if (this.easterEgg) {
+        document.getElementById('biketag-jingle').play()
+        this.playingEaster = true
+      }
+    },
+    muteEasterEgg() {
+      if (this.playingEaster) {
+        document.getElementById('biketag-jingle').pause()
+        this.playingEaster = false
       }
     },
   },
@@ -155,5 +181,9 @@ export default {
   p {
     line-height: 3vh;
   }
+}
+
+#biketag-jingle {
+  z-index: 99999999;
 }
 </style>
