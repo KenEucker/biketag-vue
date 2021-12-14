@@ -2,7 +2,7 @@
   <loading v-if="tagIsLoading" v-model:active="tagIsLoading" :is-full-page="true">
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
-  <div class="container rel">
+  <div class="container rel col-lg-6">
     <div>
       <b-button
         v-if="tagnumber === 0 && !tagIsLoading"
@@ -20,8 +20,7 @@
         :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
         :player="getCurrentBikeTag.mysteryPlayer"
         size="l"
-        mystery-description="CURRENT MYSTERY
-      LOCATION TO FIND"
+        mystery-description="CURRENT MYSTERY LOCATION TO FIND"
       />
       <bike-tag v-else :tag="tag" size="l" @load="tagLoaded" />
     </div>
