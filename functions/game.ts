@@ -2,7 +2,7 @@ import { builder, Handler } from '@netlify/functions'
 import { getDomainInfo } from '../src/common/methods'
 import { BikeTagClient } from 'biketag'
 
-const myHandler: Handler = async (event, context) => {
+const myHandler: Handler = async (event) => {
   const domainInfo = getDomainInfo(event, undefined)
   const biketagOpts = {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
