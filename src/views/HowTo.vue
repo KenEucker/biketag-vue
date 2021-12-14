@@ -13,7 +13,12 @@
           BIKETAG IS A PHOTO TAG GAME WHERE YOU FIND A MYSTERY LOCATION IN THE REAL WORLD BY
           BICYCLE.
         </p>
-        <p>TO PLAY THE GAME YOU NEED YOU UNDERSTAND A FEW THINGS:</p>
+        <p>
+          TO PLAY THE GAME YOU NEED YOU UNDERSTAND A FEW THINGS:
+          <span v-if="hasEaster && !playingEaster" id="play" class="fas fa-volume-down"></span>
+          <span v-if="hasEaster && playingEaster" id="mute" class="fas fa-volume-mute"></span>
+        </p>
+
         <br />
         <p>1) IMAGES OF BIKES AND UNIQUE THINGS TOGETHER ARE WHAT WE CALL "BIKETAGS"</p>
         <br />
@@ -107,6 +112,8 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 // Import Swiper styles
 import 'swiper/css/bundle'
 
+import { mapGetters } from 'vuex'
+
 // install Swiper components
 SwiperCore.use([Autoplay, Navigation, Pagination])
 
@@ -116,6 +123,26 @@ export default {
   components: {
     Swiper,
     SwiperSlide,
+  },
+  data() {
+    return {
+      playingEaster: false,
+    }
+  },
+  computed: {
+    ...mapGetters(['getGameSlug', 'getSettings']),
+    easterEgg() {
+      return getSettings.indexOf(`${this.getGameSlug}`)
+    },
+  },
+  mounted() {
+    this.$store.dispatch('setSettings')
+  },
+  methods: {
+    playEasterEgg() {
+      if (this.hasEaster) {
+      }
+    },
   },
 }
 </script>
