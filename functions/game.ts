@@ -2,7 +2,7 @@ import { builder, Handler } from '@netlify/functions'
 import { getDomainInfo } from '../src/common/methods'
 import { BikeTagClient } from 'biketag'
 
-const myHandler: Handler = async (event) => {
+const myHandler: Handler = async (event, context) => {
   const domainInfo = getDomainInfo(event, undefined)
   const biketagOpts = {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
@@ -15,7 +15,11 @@ const myHandler: Handler = async (event) => {
   const gameResponse = await biketag.getGame(biketagOpts.game, { source: 'sanity' })
   return {
     statusCode: gameResponse.status,
-    body: JSON.stringify(gameResponse.success ? gameResponse.data : gameResponse),
+    body: JSON.stringify({
+      gmae: gameResponse.success ? gameResponse.data : gameResponse,
+      event,
+      context,
+    }),
   }
 }
 
