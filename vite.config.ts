@@ -35,6 +35,8 @@ export default defineConfig({
       REDDIT_CLIENT_SECRET: null,
       REDDIT_USERNAME: null,
       REDDIT_PASSWORD: null,
+      AUTH0_CLIENT_ID: null,
+      AUTH0_DOMAIN: null,
     }),
     VitePWA({
       strategies: 'injectManifest',

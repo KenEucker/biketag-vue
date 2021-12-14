@@ -21,6 +21,10 @@
         PLAY( <span>{{ getCurrentBikeTag.tagnumber }}</span> )
       </b-button>
       <b-button class="m-1" variant="primary" @click="goHowPage">How-To</b-button>
+      <div v-if="$auth?.loading && !$auth.loading.value">
+        <button v-if="!$auth.isAuthenticated.value" @click="login">Log in</button>
+        <button v-if="$auth.isAuthenticated.value" @click="logout">Log out</button>
+      </div>
     </div>
   </div>
 </template>
@@ -42,22 +46,16 @@ export default defineComponent({
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setCurrentBikeTag')
     await this.$store.dispatch('setPlayers')
-    // switch (this.$route.name) {
-    //   case 'Tag':
-    //   case 'Play':
-    //   case 'BikeDex':
-    //     await this.$store.dispatch('setTags')
-    //     break
-    //   case 'Player':
-    //   case 'Players':
-    //     await this.$store.dispatch('setPlayers')
-    //     break
-    //   case 'Leaderboard':
-    //     await this.$store.dispatch('setTopPlayers')
-    //     break
-    // }
   },
   methods: {
+    login() {
+      this.$auth.loginWithRedirect()
+    },
+    logout() {
+      this.$auth.logout({
+        returnTo: window.location.origin,
+      })
+    },
     goBikeDexPage: function () {
       this.$router.push('/bikedex')
     },
