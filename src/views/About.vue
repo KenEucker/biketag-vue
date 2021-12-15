@@ -319,6 +319,7 @@ export default defineComponent({
   flex-flow: wrap;
   max-width: 80vw;
   justify-content: center;
+  height: 100% !important;
 }
 .about {
   flex-direction: column;
