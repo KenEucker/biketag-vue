@@ -18,7 +18,9 @@
             src="../assets/images/github-mark.png"
             alt="GitHub Mark"
         /></a>
-        <span>Sourced and Deployed on</span>
+        <span>Sourced</span>
+        <img class="flow" src="../assets/images/bidirectional-flow.svg" />
+        <span>Deployed</span>
         <a href="https://www.netlify.com/"
           ><img src="../assets/images/netlify-logo-dark.svg" alt="Netlify"
         /></a>
@@ -67,12 +69,24 @@ footer {
   justify-content: center;
   max-width: 55vw;
 
-  .row span {
-    font-family: monospace;
+  .row {
+    span {
+      font-family: monospace;
+    }
+    .flow {
+      max-height: 131px;
+      position: absolute;
+      left: -50%;
+      right: -50%;
+      z-index: -1;
+      padding-top: 1px;
+    }
+
+    a {
+    }
   }
 
   .row > * {
-    flex-basis: max-content;
     margin: auto;
   }
 }
