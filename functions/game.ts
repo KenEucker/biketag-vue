@@ -6,6 +6,10 @@ const myHandler: Handler = async (event) => {
   const domainInfo = getDomainInfo(event, undefined)
   const biketagOpts = {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
+    imgur: {
+      clientId: process.env.IMGUR_CLIENT_ID,
+      hash: process.env.IMGUR_HASH,
+    },
     sanity: {
       projectId: process.env.SANITY_PROJECT_ID,
       dataset: process.env.SANITY_DATASET,

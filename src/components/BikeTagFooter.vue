@@ -65,7 +65,11 @@ footer {
   flex-flow: wrap;
   flex-wrap: wrap;
   justify-content: center;
-  max-width: 50vw;
+  max-width: 55vw;
+
+  .row span {
+    font-family: monospace;
+  }
 
   .row > * {
     flex-basis: max-content;

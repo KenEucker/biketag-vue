@@ -53,6 +53,16 @@ export const store = createStore<State>({
     getGameSlug(state) {
       return state.game?.slug
     },
+    getGameSettings(state) {
+      return state.game?.settings
+    },
+    getEasterEgg(state) {
+      if (state.game?.settings) {
+        const jingle = state.game?.settings['easter::jingle']
+        return jingle ? `https://biketag.org/public/${jingle}` : null
+      }
+      return null
+    },
     getGameTitle(state) {
       return `${state.gameName.toUpperCase()}.BIKETAG`
     },
@@ -196,7 +206,7 @@ export const store = createStore<State>({
   },
   actions: {
     setGame({ commit, state }) {
-      return client.game(state.gameName).then((d) => {
+      return client.game(state.gameName, { source: 'sanity' }).then((d) => {
         options.imgur = { clientId, hash: (d as Game).mainhash }
         client = new biketag(options)
         return commit('SET_GAME', d)

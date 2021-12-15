@@ -21,25 +21,47 @@
         PLAY( <span>{{ getCurrentBikeTag.tagnumber }}</span> )
       </b-button>
       <b-button class="m-1" variant="primary" @click="goHowPage">How-To</b-button>
-      <div v-if="$auth?.loading && !$auth.loading.value">
+      <span
+        v-if="getEasterEgg && playingEaster"
+        class="fas fa-volume-mute"
+        @click="muteEasterEgg"
+      ></span>
+      <div v-if="authLoading">
         <button v-if="!$auth.isAuthenticated.value" @click="login">Log in</button>
         <button v-if="$auth.isAuthenticated.value" @click="logout">Log out</button>
       </div>
     </div>
+    <audio id="biketag-jingle" ref="jingle">
+      <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
+      Your browser does not support the audio element.
+    </audio>
   </div>
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { mapGetters } from 'vuex'
 
 export default defineComponent({
   name: 'BikeTagHeader',
+  setup() {
+    return {
+      jingle: ref(null),
+    }
+  },
+  data() {
+    return {
+      playingEaster: false,
+    }
+  },
   computed: {
     isShow() {
       return this.$route.name === 'Play' ? false : true
     },
-    ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag']),
+    ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag', 'getEasterEgg']),
+    authLoading() {
+      return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
+    },
   },
   async mounted() {
     await this.$store.dispatch('setGame')
@@ -50,6 +72,26 @@ export default defineComponent({
   methods: {
     login() {
       this.$auth.loginWithRedirect()
+    },
+    playEasterEgg(e) {
+      e.preventDefault()
+      e.stopPropagation()
+      if (this.getEasterEgg) {
+        document.getElementById('biketag-jingle').play()
+        this.playingEaster = true
+      }
+    },
+    playingNow(e) {
+      // document.getElementById('biketag-jingle').play()
+      this.playingEaster = true
+    },
+    muteEasterEgg(e) {
+      e.preventDefault()
+      e.stopPropagation()
+      if (this.playingEaster) {
+        document.getElementById('jingle').pause()
+        this.playingEaster = false
+      }
     },
     logout() {
       this.$auth.logout({

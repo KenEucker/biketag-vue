@@ -13,7 +13,7 @@
             @load="tagImageLoaded('mystery')"
           ></expandable-image>
         </div>
-        <div class="card-bottom">
+        <div class="card-bottom" @click="goTagPage">
           <span class="description">{{ _mysteryDescription }}</span>
         </div>
       </b-card>
@@ -103,6 +103,7 @@ export default defineComponent({
     return {
       mysteryImageLoaded: false,
       foundImageLoaded: false,
+      noLink: false,
     }
   },
   computed: {
@@ -164,6 +165,12 @@ export default defineComponent({
         (!!this._foundImageUrl || this.foundImageLoaded || !this._foundImageUrl)
       ) {
         this.$emit('load')
+      }
+    },
+    goTagPage: function () {
+      console.log('hi')
+      if (!this.noLink) {
+        this.$router.push('/' + encodeURIComponent(this._tagnumber))
       }
     },
   },

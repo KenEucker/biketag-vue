@@ -1,19 +1,31 @@
 <template>
   <div class="container">
     <swiper
-      :autoplay="{ delay: 15000 }"
+      :autoplay="{ delay: 12500 }"
       :pagination="{ clickable: true }"
       :slides-per-view="1"
       :space-between="10"
       navigation
       :loop="true"
     >
+      <audio id="jingle" ref="jingle">
+        <source id="audioSource" type="audio/mpeg" :src="getEasterEgg" />
+        Your browser does not support the audio element.
+      </audio>
       <swiper-slide>
         <p>
           BIKETAG IS A PHOTO TAG GAME WHERE YOU FIND A MYSTERY LOCATION IN THE REAL WORLD BY
           BICYCLE.
         </p>
-        <p>TO PLAY THE GAME YOU NEED YOU UNDERSTAND A FEW THINGS:</p>
+        <p>
+          TO PLAY THE GAME YOU NEED YOU UNDERSTAND A FEW THINGS:
+          <span
+            v-if="getEasterEgg && !playingEaster"
+            class="fas fa-volume-down"
+            @click="playEasterEgg"
+          ></span>
+        </p>
+
         <br />
         <p>1) IMAGES OF BIKES AND UNIQUE THINGS TOGETHER ARE WHAT WE CALL "BIKETAGS"</p>
         <br />
@@ -107,6 +119,8 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 // Import Swiper styles
 import 'swiper/css/bundle'
 
+import { mapGetters } from 'vuex'
+
 // install Swiper components
 SwiperCore.use([Autoplay, Navigation, Pagination])
 
@@ -116,6 +130,27 @@ export default {
   components: {
     Swiper,
     SwiperSlide,
+  },
+  data() {
+    return {
+      playingEaster: false,
+    }
+  },
+  computed: {
+    ...mapGetters(['getGameSlug', 'getEasterEgg']),
+  },
+  mounted() {
+    this.$store.dispatch('setGame')
+  },
+  methods: {
+    playEasterEgg(e) {
+      // e.preventDefault()
+      // e.stopPropagation()
+      if (this.getEasterEgg) {
+        document.getElementById('jingle').play().then(console.log).catch(console.error)
+        this.playingEaster = true
+      }
+    },
   },
 }
 </script>
