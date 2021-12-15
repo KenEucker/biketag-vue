@@ -8,7 +8,8 @@
     <div class="worldwide mt-4 mb-4">
       <a href="https://biketag.org">
         <i class="fa fa-globe" aria-hidden="true"></i>
-        <h5>worldwide</h5>
+        <i class="fa fa-globe ghost" aria-hidden="true"></i>
+        <p>worldwide</p>
       </a>
     </div>
     <footer class="container mt-4 pb-5">
@@ -58,8 +59,24 @@ export default defineComponent({
   }
 }
 
-.worldwide a i {
-  font-size: 5em;
+.worldwide {
+  p {
+    color: black;
+  }
+
+  a i {
+    font-size: 5em;
+    &:hover {
+      filter: blur(2px);
+    }
+  }
+
+  .ghost {
+    color: black;
+    z-index: -1;
+    position: absolute;
+    transform: translate(-103%, 2%);
+  }
 }
 
 footer {
