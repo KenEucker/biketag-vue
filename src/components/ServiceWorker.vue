@@ -56,7 +56,7 @@ export default defineComponent({
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
       manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
-      console.log('dynamic application manifest', applicationManifest)
+      console.log('app::application manifest updated', applicationManifest)
     }
   },
   methods: {

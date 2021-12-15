@@ -298,7 +298,6 @@ export default defineComponent({
         return decodeURIComponent(encodeURIComponent(player.name)) == playerName
       })
       const player = playerList[0]
-      console.log({ player })
       return player
     },
   },

@@ -11,16 +11,12 @@ const myHandler: Handler = async (event) => {
     source: 'sanity',
     concise: true,
   })) as unknown as Game
-  const biketagPayload = getPayloadOpts(
-    event.rawQuery,
-    {
-      imgur: {
-        hash: game.mainhash,
-      },
+  const biketagPayload = getPayloadOpts(event, {
+    imgur: {
+      hash: game.mainhash,
     },
-    biketagOpts.game
-  )
-  console.log({ biketagOpts, biketagPayload, game })
+    game: biketagOpts.game,
+  })
   const ambassadorsResponse = await biketag.getAmbassadors(
     biketagPayload as getAmbassadorsPayload,
     {

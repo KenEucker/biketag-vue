@@ -41,7 +41,6 @@ export default defineComponent({
     Loading,
   },
   data() {
-    console.log(this.$route.params)
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
       tagIsLoading: true,
