@@ -20,6 +20,7 @@ const myHandler: Handler = async (event) => {
     },
     biketagOpts.game
   )
+  console.log({ biketagOpts, biketagPayload, game })
   const ambassadorsResponse = await biketag.getAmbassadors(
     biketagPayload as getAmbassadorsPayload,
     {
@@ -30,9 +31,7 @@ const myHandler: Handler = async (event) => {
 
   return {
     statusCode: ambassadorsResponse.status,
-    body: JSON.stringify({
-      ambassadors: success ? data : ambassadorsResponse,
-    }),
+    body: JSON.stringify(success ? data : ambassadorsResponse),
   }
 }
 

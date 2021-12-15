@@ -24,12 +24,11 @@ const myHandler: Handler = async (event) => {
     source: 'imgur',
   })
   const { success, data } = settingsResponse
+  console.log({ biketagOpts, biketagPayload, game })
 
   return {
     statusCode: settingsResponse.status,
-    body: JSON.stringify({
-      settings: success ? data : settingsResponse,
-    }),
+    body: JSON.stringify(success ? data : settingsResponse),
   }
 }
 
