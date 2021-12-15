@@ -6,7 +6,7 @@ export type DomainInfo = {
   isSubdomain: boolean
 }
 
-export const getDomainInfo = (req: request.Request | undefined, win: Window): DomainInfo => {
+export const getDomainInfo = (req: request.Request | undefined, win?: Window): DomainInfo => {
   const nonSubdomainHosts = [
     `${process.env.HOST ?? 'biketag.local'}`,
     'biketag.dev',
@@ -35,5 +35,32 @@ export const getDomainInfo = (req: request.Request | undefined, win: Window): Do
     host: host + (port ? ':' + port : ''),
     isSubdomain,
     subdomain,
+  }
+}
+
+export const getPayloadOpts = (query: string, body = {}, game?: string): any => {
+  const params: any = new URLSearchParams(query) ?? []
+  const biketagPayload = Object.fromEntries(params)
+
+  biketagPayload.game = biketagPayload.game ?? biketagPayload.slug ?? game
+
+  return {
+    ...biketagPayload,
+    ...body,
+  }
+}
+
+export const getBikeTagClientOpts = (req: request.Request | undefined) => {
+  const domainInfo = getDomainInfo(req)
+  return {
+    game: domainInfo.subdomain ?? process.env.GAME_NAME,
+    imgur: {
+      clientId: process.env.IMGUR_CLIENT_ID,
+      hash: process.env.IMGUR_HASH,
+    },
+    sanity: {
+      projectId: process.env.SANITY_PROJECT_ID,
+      dataset: process.env.SANITY_DATASET,
+    },
   }
 }

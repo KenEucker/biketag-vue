@@ -67,13 +67,14 @@ footer {
   flex-flow: wrap;
   flex-wrap: wrap;
   justify-content: center;
-  max-width: 55vw;
+  max-width: 20vw;
 
   .row {
     span {
       font-family: monospace;
       padding-left: 1px;
       margin-left: 5px;
+      color: white;
     }
     .flow {
       max-height: 131px;
@@ -82,9 +83,6 @@ footer {
       right: -50%;
       z-index: -1;
       padding-top: 1px;
-    }
-
-    a {
     }
   }
 
