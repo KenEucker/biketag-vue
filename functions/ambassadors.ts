@@ -17,6 +17,7 @@ const myHandler: Handler = async (event) => {
     },
     game: biketagOpts.game,
   })
+  console.log({ biketagPayload })
   const ambassadorsResponse = await biketag.getAmbassadors(
     biketagPayload as getAmbassadorsPayload,
     {
