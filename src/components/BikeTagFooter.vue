@@ -18,9 +18,9 @@
             src="../assets/images/github-mark.png"
             alt="GitHub Mark"
         /></a>
-        <span>Sourced</span>
+        <span><sup>0</sup>Sourced</span>
         <img class="flow" src="../assets/images/bidirectional-flow.svg" />
-        <span>Deployed</span>
+        <span>Deployed<sup>1</sup></span>
         <a href="https://www.netlify.com/"
           ><img src="../assets/images/netlify-logo-dark.svg" alt="Netlify"
         /></a>
@@ -72,6 +72,8 @@ footer {
   .row {
     span {
       font-family: monospace;
+      padding-left: 1px;
+      margin-left: 5px;
     }
     .flow {
       max-height: 131px;
