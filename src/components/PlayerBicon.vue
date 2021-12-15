@@ -151,7 +151,7 @@ export default defineComponent({
 .avatar-lg {
   .player-bicon {
     border-radius: 5%;
-    max-width: 50vh;
+    max-width: 55vh;
   }
 
   .player-name {

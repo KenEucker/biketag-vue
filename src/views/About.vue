@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="d-flex justify-content-center">
+    <div class="about d-flex justify-content-center">
       <html-content />
       <div
         v-masonry
@@ -319,5 +319,8 @@ export default defineComponent({
   flex-flow: wrap;
   max-width: 80vw;
   justify-content: center;
+}
+.about {
+  flex-direction: column;
 }
 </style>
