@@ -12,7 +12,7 @@ const myHandler: Handler = async (event) => {
 
   return {
     statusCode: gameResponse.status,
-    body: JSON.stringify({ data: success ? data : gameResponse, biketagPayload }),
+    body: JSON.stringify(success ? data : gameResponse),
   }
 }
 
