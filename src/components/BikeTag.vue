@@ -168,7 +168,6 @@ export default defineComponent({
       }
     },
     goTagPage: function () {
-      console.log('hi')
       if (!this.noLink) {
         this.$router.push('/' + encodeURIComponent(this._tagnumber))
       }

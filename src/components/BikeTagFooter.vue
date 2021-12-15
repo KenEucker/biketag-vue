@@ -8,7 +8,8 @@
     <div class="worldwide mt-4 mb-4">
       <a href="https://biketag.org">
         <i class="fa fa-globe" aria-hidden="true"></i>
-        <h5>worldwide</h5>
+        <i class="fa fa-globe ghost" aria-hidden="true"></i>
+        <p>worldwide</p>
       </a>
     </div>
     <footer class="container mt-4 pb-5">
@@ -18,7 +19,9 @@
             src="../assets/images/github-mark.png"
             alt="GitHub Mark"
         /></a>
-        <span>Sourced and Deployed on</span>
+        <span><sup>0</sup>Sourced</span>
+        <img class="flow" src="../assets/images/bidirectional-flow.svg" />
+        <span>Deployed<sup>1</sup></span>
         <a href="https://www.netlify.com/"
           ><img src="../assets/images/netlify-logo-dark.svg" alt="Netlify"
         /></a>
@@ -56,8 +59,24 @@ export default defineComponent({
   }
 }
 
-.worldwide a i {
-  font-size: 5em;
+.worldwide {
+  p {
+    color: black;
+  }
+
+  a i {
+    font-size: 5em;
+    &:hover {
+      filter: blur(2px);
+    }
+  }
+
+  .ghost {
+    color: black;
+    z-index: -1;
+    position: absolute;
+    transform: translate(-103%, 2%);
+  }
 }
 
 footer {
@@ -65,14 +84,26 @@ footer {
   flex-flow: wrap;
   flex-wrap: wrap;
   justify-content: center;
-  max-width: 55vw;
+  max-width: 20vw;
 
-  .row span {
-    font-family: monospace;
+  .row {
+    span {
+      font-family: monospace;
+      padding-left: 1px;
+      margin-left: 5px;
+      color: white;
+    }
+    .flow {
+      max-height: 131px;
+      position: absolute;
+      left: -50%;
+      right: -50%;
+      z-index: -1;
+      padding-top: 1px;
+    }
   }
 
   .row > * {
-    flex-basis: max-content;
     margin: auto;
   }
 }

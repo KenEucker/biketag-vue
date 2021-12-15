@@ -63,7 +63,6 @@ export default defineComponent({
     Player,
   },
   data() {
-    console.log(this.$route.params)
     return {
       currentPage: this.$route.params?.currentPage.length
         ? parseInt(this.$route.params?.currentPage)
@@ -82,7 +81,6 @@ export default defineComponent({
         return decodeURIComponent(encodeURIComponent(player.name)) == playerName
       })
       const player = playerList[0]
-      console.log({ player })
       return player
     },
     tagsForList() {

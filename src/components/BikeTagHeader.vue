@@ -56,7 +56,7 @@ export default defineComponent({
   },
   computed: {
     isShow() {
-      return this.$route.name === 'Play' ? false : true
+      return this.$route.name === 'Play' && !this.$route.params?.tagnumber?.length ? false : true
     },
     ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag', 'getEasterEgg']),
     authLoading() {
@@ -108,7 +108,7 @@ export default defineComponent({
       this.$router.push('/how')
     },
     goBack: function () {
-      this.$router.push('/')
+      this.$router.back()
     },
   },
 })
