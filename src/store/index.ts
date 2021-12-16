@@ -19,7 +19,7 @@ export interface State {
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(undefined, window)
-const gameName = domain.subdomain ?? process.env.GAME_NAME
+const gameName = domain.subdomain ?? (process.env.GAME_NAME as string)
 const clientId = process.env.IMGUR_CLIENT_ID
 const options: any = {
   game: gameName,

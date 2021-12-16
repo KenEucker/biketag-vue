@@ -320,6 +320,7 @@ export default defineComponent({
   justify-content: center;
   height: 100% !important;
 }
+
 .about {
   flex-direction: column;
 }

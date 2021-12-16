@@ -19,6 +19,12 @@ export default defineConfig({
     ],
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
   },
+  css: {
+    preprocessorOptions: {
+      scss: { charset: false },
+      css: { charset: false },
+    },
+  },
   plugins: [
     vue(),
     vueJsx(),
