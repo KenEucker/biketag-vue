@@ -7,7 +7,7 @@ import { Game } from 'biketag/lib/common/schema'
 const myHandler: Handler = async (event) => {
   const biketagOpts = getBikeTagClientOpts(event)
   const biketag = new BikeTagClient(biketagOpts)
-  const game = (await biketag.getGame(biketagOpts.game, {
+  const game = (await biketag.game(biketagOpts.game, {
     source: 'sanity',
     concise: true,
   })) as unknown as Game

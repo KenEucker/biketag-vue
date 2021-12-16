@@ -94,19 +94,31 @@ export const parseQuery = (query = '') => {
   return Object.fromEntries(params)
 }
 
+export const parseBody = (body = '') => {
+  let parsed = {}
+  try {
+    parsed = JSON.parse(body)
+  } catch (e) {
+    parsed = parseQuery(body)
+  }
+
+  return parsed
+}
+
 export const getPayloadOpts = (event: any, base = {}): any => {
-  const biketagPayload = parseQuery(event.rawQuery)
-  const parsedBody = parseQuery(event.body)
+  const parsedQuery = parseQuery(event.rawQuery)
+  const parsedBody = parseBody(event.body)
 
   return {
     ...base,
-    ...biketagPayload,
+    ...parsedQuery,
     ...parsedBody,
   }
 }
 
 export const getBikeTagClientOpts = (req: request.Request | undefined) => {
   const domainInfo = getDomainInfo(req)
+  console.log({ sub: domainInfo.subdomain, pro: process.env.GAME_NAME })
   return {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     imgur: {
