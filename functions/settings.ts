@@ -17,6 +17,7 @@ const myHandler: Handler = async (event) => {
     },
     game: biketagOpts.game,
   })
+  console.log({ biketagPayload })
   const settingsResponse = await biketag.getSettings(biketagPayload as getSettingsPayload, {
     source: 'imgur',
   })

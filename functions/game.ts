@@ -9,10 +9,11 @@ const myHandler: Handler = async (event) => {
   const biketag = new BikeTagClient(biketagOpts)
   const gameResponse = await biketag.getGame(biketagPayload as getGamePayload, { source: 'sanity' })
   const { success, data } = gameResponse
+  console.log({ biketagPayload })
 
   return {
     statusCode: gameResponse.status,
-    body: JSON.stringify({ data: success ? data : gameResponse, biketagPayload }),
+    body: JSON.stringify(success ? data : gameResponse),
   }
 }
 

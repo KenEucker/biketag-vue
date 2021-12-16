@@ -1,0 +1,22 @@
+{
+  "menu": {
+    "home": "Home",
+    "about": "About",
+    "external": "External",
+    "language": "Languages"
+  },
+  "components": {
+    "Foo": "from JSX",
+    "ImportType": "import type should be removed without side-effect"
+  },
+  "pages": {
+    "play": {
+      "hint": "need a hint?",
+      "nohint": "no hint provided, sorry",
+      "mystery": "current mystery location to find"
+    },
+    "about": {
+      "title": "About"
+    }
+  }
+}

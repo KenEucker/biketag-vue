@@ -8,7 +8,7 @@
         v-if="tagnumber === 0 && !tagIsLoading"
         v-b-popover.click.left="getHint"
         class="btn-hint"
-        title="NEED A HINT?"
+        :title="t('pages.play.hint').toLocaleUpperCase()"
         variant="primary"
       >
         ?
@@ -20,25 +20,33 @@
         :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
         :player="getCurrentBikeTag.mysteryPlayer"
         size="l"
-        mystery-description="CURRENT MYSTERY LOCATION TO FIND"
+        :mystery-description="t('pages.play.mystery').toLocaleUpperCase()"
       />
       <bike-tag v-else :tag="tag" size="l" @load="tagLoaded" />
     </div>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
+import { useI18n } from 'vue-i18n'
+import type { MessageSchema } from '@/i18n/schemas'
 
 export default defineComponent({
   name: 'PlayView',
   components: {
     BikeTag,
     Loading,
+  },
+  setup() {
+    const { t } = useI18n<{ message: MessageSchema }>({
+      useScope: 'global',
+    })
+    return { t }
   },
   data() {
     return {
@@ -56,7 +64,7 @@ export default defineComponent({
       return undefined
     },
     getHint() {
-      return this.getCurrentBikeTag.hint ?? 'no hint provided, sorry'
+      return this.getCurrentBikeTag.hint ?? this.t('pages.play.nohint')
     },
   },
   created() {

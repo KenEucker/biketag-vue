@@ -14,7 +14,7 @@
     "@auth0/auth0-spa-js": "^1.19.3",
     "@babel/runtime": "^7.16.3",
     "@popperjs/core": "^2.10.2",
-    "biketag": "^1.13.2",
+    "biketag": "^1.13.4",
     "bootstrap": "^5.1.3",
     "bootstrap-vue-3": "^0.0.5",
     "core-js": "^3.19.1",
@@ -23,12 +23,14 @@
     "swiper": "^7.3.1",
     "swrv": "^1.0.0-beta.8",
     "vue": "^3.2.21",
+    "vue-i18n": "^9.2.0-beta.23",
     "vue-loading-overlay": "^4.0.4",
     "vue-masonry": "^0.14.0",
     "vue-router": "^4.0.12",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
+    "@intlify/vite-plugin-vue-i18n": "^3.2.1",
     "@netlify/functions": "^0.10.0",
     "@originjs/vite-plugin-commonjs": "^1.0.0-beta3",
     "@types/node": "^16.11.12",
