@@ -4098,6 +4098,11 @@ detective-typescript@^7.0.0:
     node-source-walk "^4.2.0"
     typescript "^3.9.7"
 
+device-uuid@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/device-uuid/-/device-uuid-1.0.4.tgz#f6973e58f19b92a237aeca7b16a395ae7195a883"
+  integrity sha1-9pc+WPGbkqI3rsp7FqOVrnGVqIM=
+
 diff@^4.0.1:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.2.tgz#60f3aecb89d5fae520c11aa19efc2bb982aade7d"
