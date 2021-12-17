@@ -116,8 +116,8 @@ export const getPayloadOpts = (event: any, base = {}): any => {
   }
 }
 
-export const getBikeTagClientOpts = (req: request.Request | Event | undefined) => {
-  const domainInfo = getDomainInfo(req as request.Request)
+export const getBikeTagClientOpts = (req?: request.Request) => {
+  const domainInfo = getDomainInfo(req)
   console.log({ sub: domainInfo.subdomain, pro: process.env.GAME_NAME })
   return {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
