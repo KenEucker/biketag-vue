@@ -12,5 +12,5 @@
 [[headers]]
   for = "/api/*"
   [headers.values]
-    Access-Control-Allow-Credentials = true
-    Access-Control-Allow-Origin = 'https://localhost:8080'
+    Access-Control-Allow-Credentials = 'true'
+    Access-Control-Allow-Origin = '*'
