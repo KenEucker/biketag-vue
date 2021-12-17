@@ -2836,10 +2836,10 @@ better-opn@^2.1.1:
   dependencies:
     open "^7.0.3"
 
-biketag@^1.13.6:
-  version "1.13.6"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.13.6.tgz#b2497d3bc5319669d05f5b572cfdc9055b9f2228"
-  integrity sha512-7msn7hM1zCuJcCZQ4OTzBSQqazUZe0DA+TSeMVjcwYokXSqFI066gd4/sH3YtnHjwbm5wSnKAF1liCOT4LloWw==
+biketag@^1.13.7:
+  version "1.13.7"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.13.7.tgz#a4aec226e53f6d1f8e5013fbb164343974e458d9"
+  integrity sha512-NUGGyLpgXfYwhO7zo829q3dZiPP+1NVJupyQPKAzH/x3ZidUCVoMaFcFmUa2RJtKde0KngJds2tSAUpDYBcmLQ==
   dependencies:
     "@sanity/client" "^2.8.0"
     axios "^0.21.1"
