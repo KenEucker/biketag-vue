@@ -30,9 +30,9 @@ export default defineConfig({
     vueJsx(),
     EnvironmentPlugin({
       GAME_NAME: process.env.GAME_NAME ?? 'test',
-      GAME_SOURCE: process.env.GAME_SOURCE ?? 'sanity',
+      GAME_SOURCE: process.env.GAME_SOURCE ?? null,
       IMGUR_CLIENT_ID: process.env.IMGUR_CLIENT_ID ?? null,
-      HOST: process.env.HOST ?? 'biketag.dev',
+      HOST: process.env.HOST ?? 'biketag.io',
       IMGUR_CLIENT_SECRET: process.env.IMGUR_CLIENT_SECRET ?? null,
       SANITY_PROJECT_ID: process.env.SANITY_PROJECT_ID ?? null,
       SANITY_DATASET: process.env.SANITY_DATASET ?? null,
