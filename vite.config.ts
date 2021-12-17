@@ -19,11 +19,17 @@ export default defineConfig({
     ],
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
   },
+  css: {
+    preprocessorOptions: {
+      scss: { charset: false },
+      css: { charset: false },
+    },
+  },
   plugins: [
     vue(),
     vueJsx(),
     EnvironmentPlugin({
-      GAME_NAME: process.env.GAME_NAME ?? 'portland',
+      GAME_NAME: process.env.GAME_NAME ?? 'test',
       GAME_SOURCE: process.env.GAME_SOURCE ?? 'sanity',
       IMGUR_CLIENT_ID: process.env.IMGUR_CLIENT_ID ?? null,
       HOST: process.env.HOST ?? 'biketag.dev',

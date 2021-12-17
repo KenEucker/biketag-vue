@@ -50,7 +50,9 @@ export default defineComponent({
   },
   data() {
     return {
-      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
+      tagnumber: this.$route.params?.tagnumber?.length
+        ? parseInt(this.$route.params.tagnumber as string)
+        : 0,
       tagIsLoading: true,
     }
   },

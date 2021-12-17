@@ -143,9 +143,7 @@ export default {
     this.$store.dispatch('setGame')
   },
   methods: {
-    playEasterEgg(e) {
-      // e.preventDefault()
-      // e.stopPropagation()
+    playEasterEgg() {
       if (this.getEasterEgg) {
         document.getElementById('jingle').play().then(console.log).catch(console.error)
         this.playingEaster = true

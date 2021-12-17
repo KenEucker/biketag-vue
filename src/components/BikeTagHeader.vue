@@ -81,8 +81,7 @@ export default defineComponent({
         this.playingEaster = true
       }
     },
-    playingNow(e) {
-      // document.getElementById('biketag-jingle').play()
+    playingNow() {
       this.playingEaster = true
     },
     muteEasterEgg(e) {

@@ -66,6 +66,7 @@ export default defineComponent({
 
   a i {
     font-size: 5em;
+
     &:hover {
       filter: blur(2px);
     }
@@ -93,6 +94,7 @@ footer {
       margin-left: 5px;
       color: white;
     }
+
     .flow {
       max-height: 131px;
       position: absolute;

@@ -59,7 +59,7 @@ const routes: Array<RouteRecordRaw> = [
   },
 ]
 
-let protectedRoutes: Array<RouteRecordRaw> = []
+const protectedRoutes: Array<RouteRecordRaw> = []
 
 // if (process.env.AUTH0_DOMAIN?.length) {
 //   protectedRoutes = [
