@@ -2790,10 +2790,10 @@ better-opn@^2.1.1:
   dependencies:
     open "^7.0.3"
 
-biketag@^1.13.5:
-  version "1.13.5"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.13.5.tgz#088fd9a81842f958ddc63f3cf70d5c2b80205e94"
-  integrity sha512-hhxISf+HH0+Lz8zT9hmxeo8523/ZTo66Icy3DezLWMFB2r1FfaUFQMuzVZTuU/MeqZ4n2HCF7wVaIbx1quBuRw==
+biketag@^1.13.6:
+  version "1.13.6"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.13.6.tgz#b2497d3bc5319669d05f5b572cfdc9055b9f2228"
+  integrity sha512-7msn7hM1zCuJcCZQ4OTzBSQqazUZe0DA+TSeMVjcwYokXSqFI066gd4/sH3YtnHjwbm5wSnKAF1liCOT4LloWw==
   dependencies:
     "@sanity/client" "^2.8.0"
     axios "^0.21.1"
@@ -4097,11 +4097,6 @@ detective-typescript@^7.0.0:
     ast-module-types "^2.7.1"
     node-source-walk "^4.2.0"
     typescript "^3.9.7"
-
-device-uuid@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/device-uuid/-/device-uuid-1.0.4.tgz#f6973e58f19b92a237aeca7b16a395ae7195a883"
-  integrity sha1-9pc+WPGbkqI3rsp7FqOVrnGVqIM=
 
 diff@^4.0.1:
   version "4.0.2"

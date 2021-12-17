@@ -206,7 +206,7 @@ export const store = createStore<State>({
   },
   actions: {
     setGame({ commit, state }) {
-      return client.game(state.gameName, { source: 'sanity' }).then((d) => {
+      return client.game(state.gameName).then((d) => {
         options.imgur = { clientId, hash: (d as Game).mainhash }
         client = new biketag(options)
         return commit('SET_GAME', d)
