@@ -108,7 +108,6 @@ export const parseBody = (body = '') => {
 export const getPayloadOpts = (event: any, base = {}): any => {
   const parsedQuery = parseQuery(event.rawQuery)
   const parsedBody = parseBody(event.body)
-
   return {
     ...base,
     ...parsedQuery,
@@ -118,9 +117,11 @@ export const getPayloadOpts = (event: any, base = {}): any => {
 
 export const getBikeTagClientOpts = (req?: request.Request) => {
   const domainInfo = getDomainInfo(req)
-  console.log({ sub: domainInfo.subdomain, pro: process.env.GAME_NAME })
+  const isAuthenticatedPOST = req?.method === 'POST'
+  const isGET = !isAuthenticatedPOST && req?.method === 'GET'
   return {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
+    cached: isGET || !isAuthenticatedPOST,
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
       hash: process.env.IMGUR_HASH,
