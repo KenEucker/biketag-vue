@@ -10,8 +10,8 @@
       name="queue-mystery-tag"
       action="queue-mystery-tag"
       method="POST"
-      data-netlify-honeypot="bot-field"
       netlify
+      data-netlify-honeypot="bot-field"
       @submit.prevent="onSubmit"
     >
       <input type="hidden" name="form-name" value="queue-mystery-tag" />
@@ -26,10 +26,10 @@
         <!-- <b-button>Switch</b-button> -->
       </div>
       <div class="mt-3">
-        <b-form-input id="input-name" v-model="player" placeholder="Enter your name" />
+        <b-form-input id="name" v-model="player" name="player" placeholder="Enter your name" />
       </div>
       <div>
-        <b-form-input id="input-hint" v-model="hint" placeholder="Enter your hint" />
+        <b-form-input id="hint" v-model="hint" name="hint" placeholder="Enter your hint" />
       </div>
       <div class="mt-3">
         <b-button class="w-100 btn-mystery border-0" @click="onSubmit">
@@ -74,13 +74,15 @@ export default defineComponent({
       e.preventDefault()
       const formAction = this.$refs.mysteryTag.getAttribute('action')
       const formData = new FormData(this.$refs.mysteryTag)
+      const body = new URLSearchParams(formData).toString()
+
       fetch(formAction, {
         method: 'POST',
         headers: {
           Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
         },
-        body: new URLSearchParams(formData).toString(),
+        body,
       }).then((res) => {
         console.log({ formSubmitted: res })
 

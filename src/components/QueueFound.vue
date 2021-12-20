@@ -10,8 +10,8 @@
       name="queue-found-tag"
       action="/queue-found-tag"
       method="POST"
-      data-netlify-honeypot="bot-field"
       netlify
+      data-netlify-honeypot="bot-field"
       @submit.prevent="onSubmit"
     >
       <input type="hidden" name="form-name" value="queue-found-tag" />
@@ -24,10 +24,15 @@
         <input id="file-upload" type="file" class="d-none" accept="image/*" @change="setImage" />
       </div>
       <div>
-        <b-form-input id="input-found" v-model="location" placeholder="Enter found location" />
+        <b-form-input
+          id="found"
+          v-model="location"
+          name="found"
+          placeholder="Enter found location"
+        />
       </div>
       <div class="mt-3">
-        <b-form-input id="input-name" v-model="player" placeholder="Enter your name" />
+        <b-form-input id="name" v-model="player" name="player" placeholder="Enter your name" />
       </div>
       <div class="mt-3">
         <b-button class="w-100 btn-found border-0" type="submit">
@@ -40,6 +45,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'QueueFoundTag',
@@ -66,26 +72,34 @@ export default defineComponent({
   methods: {
     onSubmit(e) {
       e.preventDefault()
-      const formAction = this.$refs.foundTag.getAttribute('action')
       const formData = new FormData(this.$refs.foundTag)
+      const body = new URLSearchParams(formData).toString()
 
-      fetch(formAction, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-        },
-        body: new URLSearchParams(formData).toString(),
-      }).then((res) => {
-        console.log({ formSubmitted: res })
+      const axiosConfig = {
+        header: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }
+      axios
+        .post('/', body, axiosConfig)
+        .then((res) => {
+          console.log({ formSubmitted: res })
 
-        this.$store.dispatch('setQueueFound', {
-          foundImage: this.image,
-          foundLocation: this.location,
-          foundPlayer: this.player,
+          this.$store.dispatch('setQueueFound', {
+            foundImage: this.image,
+            foundLocation: this.location,
+            foundPlayer: this.player,
+          })
+          this.goNextStep()
         })
-        this.goNextStep()
-      })
+        .catch((err) => {
+          console.log(err)
+
+          this.$store.dispatch('setQueueFound', {
+            foundImage: this.image,
+            foundLocation: this.location,
+            foundPlayer: this.player,
+          })
+          this.goNextStep()
+        })
     },
     goNextStep() {
       this.$store.dispatch('incFormStep')
