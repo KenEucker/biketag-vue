@@ -11,7 +11,24 @@
 </head>
 
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <form name="queue-found-tag" action="/queue-found-tag" method="POST" netlify="" data-netlify-honeypot="bot-field"
+      hidden>
+      <input type="hidden" name="form-name" value="queue-found-tag">
+      <input type="hidden" name="playerId">
+      <input type="hidden" name="foundImageUrl">
+      <input name="found" type="text">
+      <input name="player" type="text">
+    </form>
+    <form name="queue-mystery-tag" action="queue-mystery-tag" method="POST" netlify="" data-netlify-honeypot="bot-field"
+      hidden>
+      <input type="hidden" name="form-name" value="queue-mystery-tag">
+      <input type="hidden" name="playerId">
+      <input type="hidden" name="mysteryImageUrl">
+      <input name="player" type="text">
+      <input name="hint" type="text">
+    </form>
+  </div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 

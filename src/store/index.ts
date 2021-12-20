@@ -4,12 +4,15 @@ import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import { getDomainInfo } from '@/common/methods'
+import { DeviceUUID } from '../common/uuid'
 
 export interface State {
   game: Game
   gameName: string
+  playerId: string
   currentBikeTag: Tag
   tags: Tag[]
+  queuedTags: Tag[]
   players: Player[]
   html: string
   formStep: number
@@ -19,6 +22,7 @@ export interface State {
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(undefined, window)
+const playerId = new DeviceUUID().get()
 const gameName = domain.subdomain ?? (process.env.GAME_NAME as string)
 const clientId = process.env.IMGUR_CLIENT_ID
 const options: any = {
@@ -31,7 +35,7 @@ const options: any = {
 }
 const defaultLogo = '/images/BikeTag.svg'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
-console.log('store::init', { subdomain: domain.subdomain, domain, gameName })
+console.log('store::init', { subdomain: domain.subdomain, domain, gameName, playerId })
 
 let client = new biketag(options)
 
@@ -41,6 +45,8 @@ export const store = createStore<State>({
     game: {} as Game,
     currentBikeTag: {} as Tag,
     tags: [] as Tag[],
+    playerId,
+    queuedTags: [] as Tag[],
     players: [] as Player[],
     html: '',
     formStep: 1,
@@ -52,6 +58,9 @@ export const store = createStore<State>({
     },
     getGameSlug(state) {
       return state.game?.slug
+    },
+    getPlayerId(state) {
+      return state.playerId
     },
     getGameSettings(state) {
       return state.game?.settings
@@ -86,6 +95,9 @@ export const store = createStore<State>({
     },
     getTags(state) {
       return state.tags
+    },
+    getQueuedTags(state) {
+      return state.queuedTags
     },
     getPlayers(state) {
       return state.players
@@ -136,6 +148,14 @@ export const store = createStore<State>({
 
       if (oldState?.length !== players?.length) {
         console.log('store::players', { players })
+      }
+    },
+    SET_QUEUED_TAGS(state, queuedTags) {
+      const oldState = state.queuedTags
+      state.queuedTags = queuedTags
+
+      if (oldState?.length !== queuedTags?.length) {
+        console.log('store::tags', { queuedTags })
       }
     },
     SET_QUEUE_FOUND(state, data) {
@@ -206,11 +226,13 @@ export const store = createStore<State>({
   },
   actions: {
     setGame({ commit, state }) {
-      return client.game(state.gameName).then((d) => {
-        options.imgur = { clientId, hash: (d as Game).mainhash }
-        client = new biketag(options)
-        return commit('SET_GAME', d)
-      })
+      if (!options.imgur) {
+        return client.game(state.gameName).then((d) => {
+          options.imgur = { clientId, hash: (d as Game).mainhash }
+          client = new biketag(options)
+          return commit('SET_GAME', d)
+        })
+      }
     },
     setCurrentBikeTag({ commit }) {
       return client.getTag().then((r) => {
@@ -220,6 +242,11 @@ export const store = createStore<State>({
     setTags({ commit }) {
       return client.tags().then((d) => {
         return commit('SET_TAGS', d)
+      })
+    },
+    setQueuedTags({ commit }) {
+      return client.queue().then((d) => {
+        return commit('SET_QUEUED_TAGS', d)
       })
     },
     setPlayers({ commit }) {
