@@ -1896,6 +1896,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/device-uuid@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/device-uuid/-/device-uuid-1.0.0.tgz#8fd7cf11b355fc9b285c2a8dafa238056a9c40ff"
+  integrity sha512-bDhW4mvW9JYuAYV1cj6tNke/2vHSmPfJswXv7hU2RddnBvHRnl3sKGG5UQqWTNc/rRv90ZETo/fX1BnUIZK4wQ==
+
 "@types/download@^8.0.0":
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/@types/download/-/download-8.0.1.tgz#9653e0deb52f1b47f659e8e8be1651c8515bc0a7"
@@ -2836,10 +2841,10 @@ better-opn@^2.1.1:
   dependencies:
     open "^7.0.3"
 
-biketag@^1.13.10:
-  version "1.13.10"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.13.10.tgz#66376e05e39952ffcbe12562b1f09689559aad05"
-  integrity sha512-TaLenl6k01SscZ84WYUeUTmN4Ise6BQE0eJthh8bEeOvu4GDaarXI/LAaIBuf5Ks0J6WtkM5lybhIPvV+NGQ5g==
+biketag@^1.13.11:
+  version "1.13.11"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.13.11.tgz#bd27919d572c3ac3dd9a23de18a4de8bcd11f084"
+  integrity sha512-eKg6j3Cx5qgwNf/+A2hSu8b6MyD7yGhNqyWzKtDNA3FIZu0lekdhBhBUVxDrdfwzBEBc5gAFH90TQnQxnJlhfA==
   dependencies:
     "@sanity/client" "^2.8.0"
     axios "^0.21.1"
@@ -4126,6 +4131,11 @@ detective-typescript@^7.0.0:
     ast-module-types "^2.7.1"
     node-source-walk "^4.2.0"
     typescript "^3.9.7"
+
+device-uuid@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/device-uuid/-/device-uuid-1.0.4.tgz#f6973e58f19b92a237aeca7b16a395ae7195a883"
+  integrity sha1-9pc+WPGbkqI3rsp7FqOVrnGVqIM=
 
 diff@^4.0.1:
   version "4.0.2"

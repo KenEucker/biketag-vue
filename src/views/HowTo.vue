@@ -36,11 +36,6 @@
         <p>
           4) TO COMPLETE A BIKETAG ROUND YOU MUST SUBMIT BOTH A FOUND IMAGE AND A MYSTERY IMAGE.
         </p>
-        <br />
-        <p>
-          5) THE BIKETAG GAME IS FREE TO PLAY AND THE BIKETAG APP DOESN'T REQUIRE YOU TO LOG IN TO
-          ANYTHING.
-        </p>
       </swiper-slide>
       <swiper-slide>
         <p>THE PLACE WHERE THE MOST RECENT BIKETAG WAS MADE IS CALLED THE "MYSTERY LOCATION".</p>

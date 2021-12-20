@@ -7,14 +7,16 @@
       <img class="mystery-img w-75 p-2 mb-3" :src="mysteryImagePreview" />
     </div>
     <div>
-      <b-button class="w-100 btn-post border-0" @click="submit">
-        Post New Tag To Reddit For me &nbsp; <i class="fas fa-check-square" />
-      </b-button>
-      <b-button class="w-100 btn-reset border-0" @click="reset"> Reset Tag Submission </b-button>
-      <span>
-        Uploading to BideTag.Org requires that you agree to the terms and conditions set by the
-        BikeTag Project
-      </span>
+      <form ref="tagForm" name="queueFoundTag" method="POST" data-netlify="true">
+        <b-button class="w-100 btn-post border-0" @click="submit">
+          Post New Tag To Reddit For me &nbsp; <i class="fas fa-check-square" />
+        </b-button>
+        <b-button class="w-100 btn-reset border-0" @click="reset"> Reset Tag Submission </b-button>
+        <span>
+          Uploading to BideTag.Org requires that you agree to the terms and conditions set by the
+          BikeTag Project
+        </span>
+      </form>
     </div>
   </b-container>
 </template>
@@ -32,7 +34,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueuedTag']),
+    ...mapGetters(['getQueue', 'getQueuedTag']),
   },
   mounted() {
     this.setFoundImagePreview(this.getQueuedTag)
@@ -43,6 +45,7 @@ export default defineComponent({
       this.$store.dispatch('incFormStep')
     },
     submit() {
+      this.$refs.tagForm.submit()
       this.$emit('submit')
     },
     reset() {

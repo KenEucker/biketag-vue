@@ -4,12 +4,15 @@ import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import { getDomainInfo } from '@/common/methods'
+import { DeviceUUID } from 'device-uuid'
 
 export interface State {
   game: Game
   gameName: string
+  playerId: string
   currentBikeTag: Tag
   tags: Tag[]
+  queuedTags: Tag[]
   players: Player[]
   html: string
   formStep: number
@@ -41,6 +44,8 @@ export const store = createStore<State>({
     game: {} as Game,
     currentBikeTag: {} as Tag,
     tags: [] as Tag[],
+    playerId: new DeviceUUID().get(),
+    queuedTags: [] as Tag[],
     players: [] as Player[],
     html: '',
     formStep: 1,
@@ -52,6 +57,9 @@ export const store = createStore<State>({
     },
     getGameSlug(state) {
       return state.game?.slug
+    },
+    getPlayerId(state) {
+      return state.playerId
     },
     getGameSettings(state) {
       return state.game?.settings
@@ -86,6 +94,9 @@ export const store = createStore<State>({
     },
     getTags(state) {
       return state.tags
+    },
+    getQueuedTags(state) {
+      return state.queuedTags
     },
     getPlayers(state) {
       return state.players
@@ -136,6 +147,14 @@ export const store = createStore<State>({
 
       if (oldState?.length !== players?.length) {
         console.log('store::players', { players })
+      }
+    },
+    SET_QUEUED_TAGS(state, queuedTags) {
+      const oldState = state.queuedTags
+      state.queuedTags = queuedTags
+
+      if (oldState?.length !== queuedTags?.length) {
+        console.log('store::tags', { queuedTags })
       }
     },
     SET_QUEUE_FOUND(state, data) {
@@ -222,6 +241,11 @@ export const store = createStore<State>({
     setTags({ commit }) {
       return client.tags().then((d) => {
         return commit('SET_TAGS', d)
+      })
+    },
+    setQueuedTags({ commit }) {
+      return client.queue().then((d) => {
+        return commit('SET_QUEUED_TAGS', d)
       })
     },
     setPlayers({ commit }) {
