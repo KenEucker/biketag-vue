@@ -10,8 +10,8 @@
       name="queue-found-tag"
       action="/queue-found-tag"
       method="POST"
-      data-netlify="true"
       data-netlify-honeypot="bot-field"
+      netlify
       @submit.prevent="onSubmit"
     >
       <input type="hidden" name="form-name" value="queue-found-tag" />

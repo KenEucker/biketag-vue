@@ -10,8 +10,8 @@
       name="queue-mystery-tag"
       action="queue-mystery-tag"
       method="POST"
-      data-netlify="true"
       data-netlify-honeypot="bot-field"
+      netlify
       @submit.prevent="onSubmit"
     >
       <input type="hidden" name="form-name" value="queue-mystery-tag" />

@@ -4,7 +4,7 @@ import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import { getDomainInfo } from '@/common/methods'
-import { DeviceUUID } from 'device-uuid'
+import { DeviceUUID } from '../common/uuid'
 
 export interface State {
   game: Game
@@ -22,6 +22,7 @@ export interface State {
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(undefined, window)
+const playerId = new DeviceUUID().get()
 const gameName = domain.subdomain ?? (process.env.GAME_NAME as string)
 const clientId = process.env.IMGUR_CLIENT_ID
 const options: any = {
@@ -34,7 +35,7 @@ const options: any = {
 }
 const defaultLogo = '/images/BikeTag.svg'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
-console.log('store::init', { subdomain: domain.subdomain, domain, gameName })
+console.log('store::init', { subdomain: domain.subdomain, domain, gameName, playerId })
 
 let client = new biketag(options)
 
@@ -44,7 +45,7 @@ export const store = createStore<State>({
     game: {} as Game,
     currentBikeTag: {} as Tag,
     tags: [] as Tag[],
-    playerId: new DeviceUUID().get(),
+    playerId,
     queuedTags: [] as Tag[],
     players: [] as Player[],
     html: '',
