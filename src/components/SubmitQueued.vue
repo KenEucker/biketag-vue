@@ -1,20 +1,21 @@
 <template>
   <b-container>
-    <span>Post Tag</span>
+    <span>{{ $t('pages.queue.submit_title') }}</span>
     <div>
-      <span>This is what your post look like</span>
+      <span>{{ $t('pages.queue.image_label') }}</span>
       <img class="found-img w-75 p-2" :src="foundImagePreview" />
       <img class="mystery-img w-75 p-2 mb-3" :src="mysteryImagePreview" />
     </div>
     <div>
       <form ref="tagForm" name="queueFoundTag" method="POST" data-netlify="true">
         <b-button class="w-100 btn-post border-0" @click="submit">
-          Post New Tag To Reddit For me &nbsp; <i class="fas fa-check-square" />
+          {{ $t('pages.queue.post_new_tag') }} &nbsp; <i class="fas fa-check-square" />
         </b-button>
-        <b-button class="w-100 btn-reset border-0" @click="reset"> Reset Tag Submission </b-button>
+        <b-button class="w-100 btn-reset border-0" @click="reset">
+          {{ $t('pages.queue.reset_tag') }}
+        </b-button>
         <span>
-          Uploading to BideTag.Org requires that you agree to the terms and conditions set by the
-          BikeTag Project
+          {{ $t('pages.queue.user_agree') }}
         </span>
       </form>
     </div>

@@ -10,96 +10,70 @@
     >
       <audio id="jingle" ref="jingle">
         <source id="audioSource" type="audio/mpeg" :src="getEasterEgg" />
-        Your browser does not support the audio element.
+        {{ $t('pages.howto.browser_not_support_audio') }}
       </audio>
       <swiper-slide>
+        <p>{{ $t('pages.howto.swiper1.text1') }}</p>
         <p>
-          BIKETAG IS A PHOTO TAG GAME WHERE YOU FIND A MYSTERY LOCATION IN THE REAL WORLD BY
-          BICYCLE.
-        </p>
-        <p>
-          TO PLAY THE GAME YOU NEED YOU UNDERSTAND A FEW THINGS:
+          {{ $t('pages.howto.swiper1.text2') }}
           <span
             v-if="getEasterEgg && !playingEaster"
             class="fas fa-volume-down"
             @click="playEasterEgg"
           ></span>
         </p>
-
         <br />
-        <p>1) IMAGES OF BIKES AND UNIQUE THINGS TOGETHER ARE WHAT WE CALL "BIKETAGS"</p>
+        <p>{{ $t('pages.howto.swiper1.text3') }}</p>
         <br />
-        <p>2) THE OBJECT OF THE GAME IS TO FIND AND CREATE WHAT WE CALL "MYSTERY LOCATIONS"</p>
+        <p>{{ $t('pages.howto.swiper1.text4') }}</p>
         <br />
-        <p>3) THE GAME NEVER ENDS AND EVERY ROUND IS A NEW CHANCE TO PLAY THE GAME.</p>
+        <p>{{ $t('pages.howto.swiper1.text5') }}</p>
         <br />
-        <p>
-          4) TO COMPLETE A BIKETAG ROUND YOU MUST SUBMIT BOTH A FOUND IMAGE AND A MYSTERY IMAGE.
-        </p>
+        <p>{{ $t('pages.howto.swiper1.text6') }}</p>
       </swiper-slide>
       <swiper-slide>
-        <p>THE PLACE WHERE THE MOST RECENT BIKETAG WAS MADE IS CALLED THE "MYSTERY LOCATION".</p>
-        <p>IN THIS EXAMPLE, AN ORANGE-COLORED BIKE IS SHOWN:</p>
+        <p>{{ $t('pages.howto.swiper2.text1') }}</p>
+        <p>{{ $t('pages.howto.swiper2.text2') }}</p>
         <div><img class="img-fluid w-75" src="@/assets/images/bike1.png" /></div>
       </swiper-slide>
       <swiper-slide>
-        <p>
-          ONCE YOU ARRIVE AT THE MYSTERY LOCATION YOU MUST CREATE A MATCHING BIKETAG IMAGE OF YOUR
-          OWN. IN THIS EXAMPLE, YOU ARE THE BLUE COLORED BIKE:
-        </p>
+        <p>{{ $t('pages.howto.swiper3.text1') }}</p>
         <div class="mb-2"><img class="img-fluid w-50" src="@/assets/images/bike1.png" /></div>
         <div><img class="img-fluid w-50 mb-5" src="@/assets/images/bike2.png" /></div>
       </swiper-slide>
       <swiper-slide>
-        <p>NEXT, IT'S TIME TO RIDE TO A NEW MYSTERY LOCATION AND MAKE A NEW BIKETAG.</p>
+        <p>{{ $t('pages.howto.swiper4.text1') }}</p>
         <div class="mb-3"><img class="img-fluid w-75" src="@/assets/images/bike3.png" /></div>
-        <p>KEEP IN MIND, GOOD MYSTERY LOCATIONS HELP PROGRESS THE GAME.</p>
+        <p>{{ $t('pages.howto.swiper4.text2') }}</p>
       </swiper-slide>
       <swiper-slide>
-        <p>
-          GREAT MYSTERY LOCATIONS HAVE UNIQUE, INTERESTING, AND IDENTIFIABLE THINGS. THINK ABOUT
-          WHERE YOU WANT TO GO AND CHOOSE WISELY TO KEEP THE GAME RUNNING SMOOTHLY.
-        </p>
+        <p>{{ $t('pages.howto.swiper5.text1') }}</p>
         <div class="mb-3">
           <img class="img-fluid w-75" src="@/assets/images/good-examples.png" />
         </div>
-        <p>
-          GREAT EXAMPLES INCLUDE CREATED OBJECTS LIKE MURALS AND BUILDINGS, AND PERMANENT OBJECTS
-          LIKE LANDMARKS AND NATURAL FEATURES.
-        </p>
+        <p>{{ $t('pages.howto.swiper5.text2') }}</p>
       </swiper-slide>
       <swiper-slide>
-        <p>
-          NOT-SO-GREAT MYSTERY LOCATIONS ARE FEATURELESS, OBSCURE, AND ARE INACCESSIBLE. THEY
-          SHOULDN’T BE HARD TO FIND. DON’T CREATE A BIKETAG THAT IS UNSAFE FOR OTHERS.
-        </p>
+        <p>{{ $t('pages.howto.swiper6.text1') }}</p>
         <div class="mb-3">
           <img class="img-fluid w-75" src="@/assets/images/not-so-good-examples.png" />
         </div>
-        <p>
-          NOT-SO-GREAT EXAMPLES INCLUDE TEMPORARY AND MOVING OBJECTS LIKE FOOD TRUCKS AND GRAFFITI,
-          PLAIN OBJECTS LIKE CONCRETE WALLS, AND PRIVATE PROPERTY THAT WOULD REQUIRE TRESPASSING.
-        </p>
+        <p>{{ $t('pages.howto.swiper6.text2') }}</p>
       </swiper-slide>
       <swiper-slide>
-        <p>
-          ONCE YOU HAVE THE IMAGES READY FOR THE CURRENT MYSTERY LOCATION YOU CAN SUBMIT THEM HERE
-        </p>
+        <p>{{ $t('pages.howto.swiper7.text1') }}</p>
         <div class="mb-3">
           <img class="img-fluid w-50" src="@/assets/images/queue-tag.png" />
         </div>
-        <p>PRESS THE PLAY BUTTON AND BEGIN YOUR NEW TAG SUBMISSION</p>
+        <p>{{ $t('pages.howto.swiper7.text2') }}</p>
       </swiper-slide>
       <swiper-slide>
-        <p>
-          AFTER ADDING YOUR FOUND AND NEW MYSTERY IMAGES, YOU CAN SUBMIT THE TAG TO BE POSTED FOR
-          THE NEXT ROUND!
-        </p>
+        <p>{{ $t('pages.howto.swiper8.text1') }}</p>
         <div class="mb-3">
           <img class="img-fluid w-50" src="@/assets/images/submit-tag.png" />
         </div>
-        <p>THE TERMS OF USE OF THE BIKETAG APP ARE OUTLINED IN THE BIKETAG CODE OF CONDUCT</p>
-        <p>IMAGES YOU PROVIDE WILL BE PUBLICLY AVAILABLE ON THE INTERNET</p>
+        <p>{{ $t('pages.howto.swiper8.text2') }}</p>
+        <p>{{ $t('pages.howto.swiper8.text3') }}</p>
       </swiper-slide>
     </swiper>
   </div>

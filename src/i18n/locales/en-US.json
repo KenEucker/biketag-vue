@@ -1,13 +1,20 @@
 {
   "menu": {
     "home": "Home",
+    "bikedex": "BikeDex",
+    "play": "Play",
+    "howto": "How-To",
     "about": "About",
+    "players": "Players",
+    "top10": "Top10",
     "external": "External",
     "language": "Languages"
   },
   "components": {
-    "Foo": "from JSX",
-    "ImportType": "import type should be removed without side-effect"
+    "biketag": {
+      "found_at": "found at",
+      "posted_on": "posted on"
+    }
   },
   "pages": {
     "play": {
@@ -15,8 +22,69 @@
       "nohint": "no hint provided, sorry",
       "mystery": "current mystery location to find"
     },
+    "queue": {
+      "found_title": "Queue Found Location",
+      "mystery_title": "New Mystery Location",
+      "submit_title": "Post Tag",
+      "location_placeholder": "Enter found location",
+      "name_placeholder": "Enter your name",
+      "hint_placeholder": "Enter your hint",
+      "image_label": "This is what your post look like",
+      "queue_found_tag": "Queue Found Tag",
+      "submit_new_tag": "Submit New Tag",
+      "post_new_tag": "Post New Tag To Reddit For me",
+      "reset_tag": "Reset Tag Submission",
+      "user_agree": "Uploading to BideTag. Org requires that you agree to the terms and conditions set by the BikeTag Project"
+    },
+    "howto": {
+      "browser_not_support_audio": "Your browser does not support the audio element.",
+      "swiper1": {
+        "text1": "BIKETAG IS A PHOTO TAG GAME WHERE YOU FIND A MYSTERY LOCATION IN THE REAL WORLD BY BICYCLE.",
+        "text2": "TO PLAY THE GAME YOU NEED YOU UNDERSTAND A FEW THINGS:",
+        "text3": "1) IMAGES OF BIKES AND UNIQUE THINGS TOGETHER ARE WHAT WE CALL 'BIKETAGS'",
+        "text4": "2) THE OBJECT OF THE GAME IS TO FIND AND CREATE WHAT WE CALL 'MYSTERY LOCATIONS'",
+        "text5": "3) THE GAME NEVER ENDS AND EVERY ROUND IS A NEW CHANCE TO PLAY THE GAME.",
+        "text6": "4) TO COMPLETE A BIKETAG ROUND YOU MUST SUBMIT BOTH A FOUND IMAGE AND A MYSTERY IMAGE."
+      },
+      "swiper2": {
+        "text1": "THE PLACE WHERE THE MOST RECENT BIKETAG WAS MADE IS CALLED THE 'MYSTERY LOCATION'.",
+        "text2": "IN THIS EXAMPLE, AN ORANGE-COLORED BIKE IS SHOWN:"
+      },
+      "swiper3": {
+        "text1": "ONCE YOU ARRIVE AT THE MYSTERY LOCATION YOU MUST CREATE A MATCHING BIKETAG IMAGE OF YOUR OWN. IN THIS EXAMPLE, YOU ARE THE BLUE COLORED BIKE:"
+      },
+      "swiper4": {
+        "text1": "NEXT, IT'S TIME TO RIDE TO A NEW MYSTERY LOCATION AND MAKE A NEW BIKETAG.",
+        "text2": "KEEP IN MIND, GOOD MYSTERY LOCATIONS HELP PROGRESS THE GAME."
+      },
+      "swiper5": {
+        "text1": "GREAT MYSTERY LOCATIONS HAVE UNIQUE, INTERESTING, AND IDENTIFIABLE THINGS. THINK ABOUT WHERE YOU WANT TO GO AND CHOOSE WISELY TO KEEP THE GAME RUNNING SMOOTHLY.",
+        "text2": "GREAT EXAMPLES INCLUDE CREATED OBJECTS LIKE MURALS AND BUILDINGS, AND PERMANENT OBJECTS LIKE LANDMARKS AND NATURAL FEATURES."
+      },
+      "swiper6": {
+        "text1": "NOT-SO-GREAT MYSTERY LOCATIONS ARE FEATURELESS, OBSCURE, AND ARE INACCESSIBLE. THEY SHOULDN’T BE HARD TO FIND. DON’T CREATE A BIKETAG THAT IS UNSAFE FOR OTHERS.",
+        "text2": "NOT-SO-GREAT EXAMPLES INCLUDE TEMPORARY AND MOVING OBJECTS LIKE FOOD TRUCKS AND GRAFFITI, PLAIN OBJECTS LIKE CONCRETE WALLS, AND PRIVATE PROPERTY THAT WOULD REQUIRE TRESPASSING."
+      },
+      "swiper7": {
+        "text1": "ONCE YOU HAVE THE IMAGES READY FOR THE CURRENT MYSTERY LOCATION YOU CAN SUBMIT THEM HERE",
+        "text2": "PRESS THE PLAY BUTTON AND BEGIN YOUR NEW TAG SUBMISSION"
+      },
+      "swiper8": {
+        "text1": "AFTER ADDING YOUR FOUND AND NEW MYSTERY IMAGES, YOU CAN SUBMIT THE TAG TO BE POSTED FOR THE NEXT ROUND!",
+        "text2": "THE TERMS OF USE OF THE BIKETAG APP ARE OUTLINED IN THE BIKETAG CODE OF CONDUCT",
+        "text3": "IMAGES YOU PROVIDE WILL BE PUBLICLY AVAILABLE ON THE INTERNET"
+      }
+    },
     "about": {
-      "title": "About"
+      "title": "ABOUT BIKE TAG",
+      "article1": {
+        "title": "The Bike Tag Game",
+        "support_biketag": "Support the BikeTag Project on Patreon"
+      },
+      "article2": {
+        "title": "The Bike Tag App",
+        "become_player": "Become a subscribing player"
+      }
     }
   }
 }

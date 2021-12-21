@@ -1,7 +1,30 @@
 <template>
   <div class="container">
     <div class="about d-flex justify-content-center">
-      <html-content />
+      <h2>{{ $t('pages.about.title') }}</h2>
+      <hr />
+      <h3>{{ $t('pages.about.article1.title') }}</h3>
+      <html-content filename="about-game.html" />
+      <p>
+        <b-button
+          variant="secondary"
+          class="m-1"
+          onclick="window.open('https://patreon.com/biketag')"
+        >
+          {{ $t('pages.about.article1.support_biketag') }}
+        </b-button>
+      </p>
+      <h3>{{ $t('pages.about.article2.title') }}</h3>
+      <html-content filename="about-app.html" />
+      <p>
+        <b-button
+          variant="primary"
+          class="m-1"
+          onclick="window.open('https://patreon.com/biketag')"
+        >
+          {{ $t('pages.about.article2.become_player') }}
+        </b-button>
+      </p>
       <div
         v-masonry
         transition-duration="0.3s"
@@ -323,5 +346,9 @@ export default defineComponent({
 
 .about {
   flex-direction: column;
+}
+
+img {
+  max-width: 10em;
 }
 </style>

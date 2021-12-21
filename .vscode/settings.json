@@ -3,5 +3,8 @@
     "editor.formatOnSave": true,
     "[vue]": {
         "editor.defaultFormatter": "octref.vetur"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
     }
 }
