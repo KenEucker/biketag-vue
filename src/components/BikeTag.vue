@@ -1,58 +1,54 @@
 <template>
   <b-row :class="reverse ? 'reversed' : ''">
-    <ImgComparisonSlider>
-      <b-col slot="first" :md="_foundImageUrl ? 6 : 12" class="mb-3">
-        <b-card class="polaroid">
-          <div class="img-wrapper">
-            <span class="tag-number">#{{ _tagnumber }}</span>
-            <player v-if="mysteryPlayer" class="tag-player" :player="mysteryPlayer" size="txt" />
-            <span v-else class="tag-player">{{ _mysteryPlayer }}</span>
-            <expandable-image
-              :source="getImgurImageSized(_mysteryImageUrl, _foundImageUrl ? 'm' : 'l')"
-              :full-source="_mysteryImageUrl"
-              :alt="_mysteryDescription"
-              @load="tagImageLoaded('mystery')"
-            ></expandable-image>
-          </div>
-          <div class="card-bottom" @click="goTagPage">
-            <span class="description">{{ _mysteryDescription }}</span>
-          </div>
-        </b-card>
-      </b-col>
-      <b-col slot="second" v-show="_foundImageUrl" md="6" class="mb-3">
-        <b-card class="polaroid">
-          <div class="img-wrapper">
-            <span class="tag-number">#{{ _foundTagnumber }}</span>
-            <player v-if="foundPlayer" class="tag-player" :player="foundPlayer" size="txt" />
-            <span v-else class="tag-player">{{ _foundPlayer }}</span>
-            <expandable-image
-              class="image img-fluid"
-              :source="getImgurImageSized(_foundImageUrl)"
-              :full-source="_foundImageUrl"
-              :alt="foundDescription"
-              @load="tagImageLoaded('found')"
-            ></expandable-image>
-          </div>
-          <div class="card-bottom">
-            <span class="description">{{ _foundDescription }}</span>
-          </div>
-        </b-card>
-      </b-col>
-    </ImgComparisonSlider>
+    <b-col :md="_foundImageUrl ? 6 : 12" class="item mb-3" v-masonry-tile>
+      <b-card class="polaroid">
+        <div class="img-wrapper">
+          <span class="tag-number">#{{ _tagnumber }}</span>
+          <player v-if="mysteryPlayer" class="tag-player" :player="mysteryPlayer" size="txt" />
+          <span v-else class="tag-player">{{ _mysteryPlayer }}</span>
+          <expandable-image
+            :source="getImgurImageSized(_mysteryImageUrl, _foundImageUrl ? 'm' : 'l')"
+            :full-source="_mysteryImageUrl"
+            :alt="_mysteryDescription"
+            @load="tagImageLoaded('mystery')"
+          ></expandable-image>
+        </div>
+        <div class="card-bottom" @click="goTagPage">
+          <span class="description">{{ _mysteryDescription }}</span>
+        </div>
+      </b-card>
+    </b-col>
+    <b-col v-show="_foundImageUrl" md="6" class="item mb-3" v-masonry-tile>
+      <b-card class="polaroid">
+        <div class="img-wrapper">
+          <span class="tag-number">#{{ _foundTagnumber }}</span>
+          <player v-if="foundPlayer" class="tag-player" :player="foundPlayer" size="txt" />
+          <span v-else class="tag-player">{{ _foundPlayer }}</span>
+          <expandable-image
+            class="image img-fluid"
+            :source="getImgurImageSized(_foundImageUrl)"
+            :full-source="_foundImageUrl"
+            :alt="foundDescription"
+            @load="tagImageLoaded('found')"
+          ></expandable-image>
+        </div>
+        <div class="card-bottom">
+          <span class="description">{{ _foundDescription }}</span>
+        </div>
+      </b-card>
+    </b-col>
   </b-row>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
 import Player from '@/components/PlayerBicon.vue'
-import { ImgComparisonSlider } from '@img-comparison-slider/vue'
 
 export default defineComponent({
   name: 'BikeTag',
   components: {
     ExpandableImage,
     Player,
-    ImgComparisonSlider,
   },
   props: {
     tag: {

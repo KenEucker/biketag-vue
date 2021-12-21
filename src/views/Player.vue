@@ -15,7 +15,14 @@
         align="center"
         @page-click="changePage"
       ></b-pagination>
-      <ul id="itemList" class="player-tags list-unstyled">
+      <ul
+        id="itemList"
+        class="player-tags list-unstyled m-auto"
+        v-masonry
+        transition-duration="0.3s"
+        item-selector=".item"
+        fit-width="true"
+      >
         <li v-for="tag in tagsForList" :key="tag.tagnumber">
           <bike-tag
             :key="tag.tagnumber"
