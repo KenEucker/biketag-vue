@@ -22,7 +22,9 @@
       <b-button class="m-1" variant="primary" @click="goQueuePage">
         {{ $t('menu.play') }}( <span>{{ getCurrentBikeTag.tagnumber }}</span> )
       </b-button>
-      <b-button class="m-1" variant="primary" @click="goHowPage">How-To</b-button>
+      <b-button class="m-1" variant="primary" @click="goHowPage">
+        {{ $t('menu.howto') }}
+      </b-button>
       <span
         v-if="getEasterEgg && playingEaster"
         class="fas fa-volume-mute"
