@@ -43,6 +43,7 @@
 import { defineComponent } from 'vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
 import Player from '@/components/PlayerBicon.vue'
+import { mapGetters } from 'vuex'
 
 export default defineComponent({
   name: 'BikeTag',
@@ -107,6 +108,7 @@ export default defineComponent({
     }
   },
   computed: {
+    ...mapGetters(['getImgurImageSized']),
     _tagnumber() {
       return this.tagnumber ? this.tagnumber : this.tag?.tagnumber
     },
@@ -146,13 +148,6 @@ export default defineComponent({
     getFoundDescription: (tag) => `#${tag.tagnumber} (found at) ${tag.foundLocation ?? 'unknown'}`,
     getMysteryDescription: (tag) =>
       `#${tag.tagnumber} (posted on) ${new Date(tag.foundTime * 1000).toLocaleDateString()}`,
-    getImgurImageSized(imgurUrl = '') {
-      return imgurUrl
-        .replace('.jpg', `${this.size}.jpg`)
-        .replace('.gif', `${this.size}.gif`)
-        .replace('.png', `${this.size}.png`)
-        .replace('.mp4', `${this.size}.mp4`)
-    },
     tagImageLoaded(type) {
       if (type === 'mystery') {
         this.mysteryImageLoaded = true

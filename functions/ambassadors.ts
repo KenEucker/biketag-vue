@@ -5,7 +5,7 @@ import { getAmbassadorsPayload } from 'biketag/lib/common/payloads'
 import { Game } from 'biketag/lib/common/schema'
 import request from 'request'
 
-const myHandler: Handler = async (event) => {
+const ambassadorsHandler: Handler = async (event) => {
   const biketagOpts = getBikeTagClientOpts({
     ...event,
     method: event.httpMethod,
@@ -36,6 +36,6 @@ const myHandler: Handler = async (event) => {
   }
 }
 
-const handler = builder(myHandler)
+const handler = builder(ambassadorsHandler)
 
 export { handler }

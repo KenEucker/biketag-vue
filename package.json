@@ -47,6 +47,7 @@
     "eslint-formatter-friendly": "^7.0.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.0.3",
+    "got": "^12.0.0",
     "https-localhost": "^4.7.0",
     "netlify-cli": "^8.0.20",
     "postcss": "^8.4.5",

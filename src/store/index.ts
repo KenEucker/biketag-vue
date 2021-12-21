@@ -3,7 +3,7 @@ import { createStore, Store } from 'vuex'
 import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
-import { getDomainInfo } from '@/common/methods'
+import { getDomainInfo, getImgurImageSized } from '@/common/methods'
 import { DeviceUUID } from '../common/uuid'
 
 export interface State {
@@ -37,6 +37,7 @@ const defaultLogo = '/images/BikeTag.svg'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
 console.log('store::init', { subdomain: domain.subdomain, domain, gameName, playerId })
 
+
 let client = new biketag(options)
 
 export const store = createStore<State>({
@@ -53,6 +54,7 @@ export const store = createStore<State>({
     queuedTag: {} as Tag,
   },
   getters: {
+    getImgurImageSized: (state) => getImgurImageSized,
     getGame(state) {
       return state.game
     },
@@ -77,16 +79,16 @@ export const store = createStore<State>({
     },
     getLogoUrl:
       (state) =>
-      (size = '') => {
-        const logoUrl =
-          state.game?.logo?.indexOf('imgur.com') !== -1
-            ? state.game.logo
-            : `${sanityBaseCDNUrl}${state.game.logo
+        (size = '') => {
+          const logoUrl =
+            state.game?.logo?.indexOf('imgur.com') !== -1
+              ? state.game.logo
+              : `${sanityBaseCDNUrl}${state.game.logo
                 .replace('image-', '')
                 .replace('-png', '.png')
                 .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
-        return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
-      },
+          return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
+        },
     getCurrentHint(state) {
       return state.currentBikeTag?.hint
     },

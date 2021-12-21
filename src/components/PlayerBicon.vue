@@ -13,6 +13,7 @@
 
 <script>
 import { defineComponent } from 'vue'
+import { mapGetters } from 'vuex'
 
 export default defineComponent({
   name: 'PlayerBicon',
@@ -33,6 +34,7 @@ export default defineComponent({
     },
   },
   computed: {
+    ...mapGetters(['getImgurImageSized']),
     playerName() {
       if (this.size === 'sm') {
         return this.player.name.substr(0, 1)
@@ -57,14 +59,6 @@ export default defineComponent({
       if (!this.noLink) {
         this.$router.push('/player/' + encodeURIComponent(this.player.name))
       }
-    },
-    getImgurImageSized(imgurUrl = '', size = 'm') {
-      size = size === 't' ? 'm' : size
-      return imgurUrl
-        .replace('.jpg', `${size}.jpg`)
-        .replace('.gif', `${size}.gif`)
-        .replace('.png', `${size}.png`)
-        .replace('.mp4', `${size}.mp4`)
     },
   },
 })

@@ -6,6 +6,13 @@ export type DomainInfo = {
   isSubdomain: boolean
 }
 
+export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
+  imgurUrl
+    .replace('.jpg', `${size}.jpg`)
+    .replace('.gif', `${size}.gif`)
+    .replace('.png', `${size}.png`)
+    .replace('.mp4', `${size}.mp4`)
+
 export const getDomainInfo = (req: request.Request | undefined, win?: Window): DomainInfo => {
   const nonSubdomainHosts = [
     `${process.env.HOST ?? 'biketag.local'}`,
