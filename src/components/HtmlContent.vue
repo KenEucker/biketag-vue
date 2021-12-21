@@ -20,15 +20,8 @@ export default defineComponent({
       html: String,
     }
   },
-  updated() {
-    this.$nextTick(function () {
-      axios.get('./' + this.$route.name + '.html').then((response) => (this.html = response.data))
-    })
-  },
-  created() {
-    this.$nextTick(function () {
-      axios.get('./' + this.$route.name + '.html').then((response) => (this.html = response.data))
-    })
+  mounted() {
+    axios.get('./' + this.filename).then((response) => (this.html = response.data))
   },
 })
 </script>

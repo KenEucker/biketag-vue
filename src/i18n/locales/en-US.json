@@ -77,11 +77,11 @@
       "title": "ABOUT BIKE TAG",
       "article1": {
         "title": "The Bike Tag Game",
-        "text": "BikeTag is a mystery photo tag game played on bicycles. BikeTag.Org is a place for people to see the most recent Bike Tags in their city and participate in the game in an easy and simple way, without needing to login to anything. The origins of the game of BikeTag, as far as we have been able to track, put the game in Minneapolis, Minnesota, in 2007 on a forum called MPLSBikeLove. BikeTag on Reddit was started on in 2011 on /r/BikingATX, that was then adopted by /r/bikeLA, that was then adopted by /r/chibike. The game in /r/CyclePDX was created in 2016 and the website biketag.org was created in 2018 as a tool for the game in Portland, Oregon. In 2022, the BikeTag Project released the new BikeTag App after refining the tool into a user experience that aims to evolve the game of BikeTag for all."
+        "support_biketag": "Support the BikeTag Project on Patreon"
       },
       "article2": {
         "title": "The Bike Tag App",
-        "text": "The BikeTag Project was started in 2018 as a way to make playing the game of BikeTag easy for anyone and everyone to play the game of BikeTag. Since then, our codebase and server infrastructure has grown considerably, in ways that allowed us to scale to offer tens of games all over the world. With the onset of BikeTag 2.0 (the software projects that run BikeTag games), we have sought to offer even more. This App was built to be the last free solution we provide to the communities playing BikeTag while allowing us to open up the opportunity for premium features to be developed on a subscription based platform. We hope you will consider becoming a subscriber."
+        "become_player": "Become a subscribing player"
       }
     }
   }
