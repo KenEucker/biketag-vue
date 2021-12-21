@@ -8,8 +8,8 @@
       align="center"
       @page-click="changePage"
     ></b-pagination>
-    <div>
-      <div v-for="tag in tagsList" :key="tag.tagnumber" v-masonry-tile class="item">
+    <div v-masonry transition-duration="0.3s" item-selector=".item" fit-width="true" class="m-auto">
+      <div v-for="tag in tagsList" :key="tag.tagnumber">
         <bike-tag
           :key="tag.tagnumber"
           :tag="tag"
