@@ -11,6 +11,21 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
 import '@/assets/styles/style.scss'
 
+// const messages = {
+//   en: {
+//     message: {
+//       hello: 'hello world',
+//       about: 'About',
+//     }
+//   },
+//   ru: {
+//     message: {
+//       hello: 'Привет мир',
+//       about: 'Об игре'
+//     }
+//   }
+// }
+
 class BikeTagApp {
   protected emitter
   protected app

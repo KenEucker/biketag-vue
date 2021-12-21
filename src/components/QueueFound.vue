@@ -1,6 +1,6 @@
 <template>
   <b-container class="col-8 col-lg-6">
-    <span>Queue Found Location</span>
+    <span>{{ $t('pages.queue.found_title') }}</span>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
       <img v-else class="img-fluid" src="@/assets/images/blank.png" />
@@ -28,15 +28,20 @@
           id="found"
           v-model="location"
           name="found"
-          placeholder="Enter found location"
+          :placeholder="$t('pages.queue.location_placeholder')"
         />
       </div>
       <div class="mt-3">
-        <b-form-input id="name" v-model="player" name="player" placeholder="Enter your name" />
+        <b-form-input
+          id="name"
+          v-model="player"
+          name="player"
+          :placeholder="$t('pages.queue.name_placeholder')"
+        />
       </div>
       <div class="mt-3">
         <b-button class="w-100 btn-found border-0" type="submit">
-          Queue Found Tag &nbsp; <i class="fas fa-check-square" />
+          {{ $t('pages.queue.queue_found_tag') }} &nbsp; <i class="fas fa-check-square" />
         </b-button>
       </div>
     </form>

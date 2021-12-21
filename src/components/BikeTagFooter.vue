@@ -1,9 +1,15 @@
 <template>
   <div class="container mt-5">
     <div class="footer-buttons">
-      <b-button class="m-1" variant="primary" @click="goAboutPage">About</b-button>
-      <b-button class="m-1" variant="primary" @click="goUsersPage">Players</b-button>
-      <b-button class="m-1" variant="primary" @click="goLeaderboardPage">Top10</b-button>
+      <b-button class="m-1" variant="primary" @click="goAboutPage">
+        {{ $t('menu.about') }}
+      </b-button>
+      <b-button class="m-1" variant="primary" @click="goUsersPage">
+        {{ $t('menu.players') }}
+      </b-button>
+      <b-button class="m-1" variant="primary" @click="goLeaderboardPage">
+        {{ $t('menu.top10') }}
+      </b-button>
     </div>
     <div class="worldwide mt-4 mb-4">
       <a href="https://biketag.org">

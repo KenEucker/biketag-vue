@@ -1,6 +1,7 @@
 <template>
   <div class="container">
     <div class="about d-flex justify-content-center">
+      {{ $t('pages.about.title') }}
       <html-content />
       <div
         v-masonry

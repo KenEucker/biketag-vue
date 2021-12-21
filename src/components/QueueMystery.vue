@@ -1,6 +1,6 @@
 <template>
   <b-container class="col-8 col-lg-6">
-    <span>New Mystery Location</span>
+    <span>{{ $t('pages.queue.mystery_title') }}</span>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
       <img v-else class="img-fluid" src="@/assets/images/blank.png" />
@@ -26,18 +26,27 @@
         <!-- <b-button>Switch</b-button> -->
       </div>
       <div class="mt-3">
-        <b-form-input id="name" v-model="player" name="player" placeholder="Enter your name" />
+        <b-form-input
+          id="name"
+          v-model="player"
+          name="player"
+          :placeholder="$t('pages.queue.name_placeholder')"
+        />
       </div>
       <div>
-        <b-form-input id="hint" v-model="hint" name="hint" placeholder="Enter your hint" />
+        <b-form-input
+          id="hint"
+          v-model="hint"
+          name="hint"
+          :placeholder="$t('pages.queue.hint_placeholder')"
+        />
       </div>
       <div class="mt-3">
         <b-button class="w-100 btn-mystery border-0" @click="onSubmit">
-          Submit New Tag &nbsp; <i class="fas fa-check-square" />
+          {{ $t('pages.queue.submit_new_tag') }} &nbsp; <i class="fas fa-check-square" />
         </b-button>
         <span>
-          Uploading to BideTag. Org requires that you agree to the terms and conditions set by the
-          BikeTag Project
+          {{ $t('pages.queue.user_agree') }}
         </span>
       </div>
     </form>
