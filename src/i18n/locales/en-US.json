@@ -11,8 +11,10 @@
     "language": "Languages"
   },
   "components": {
-    "Foo": "from JSX",
-    "ImportType": "import type should be removed without side-effect"
+    "biketag": {
+      "found_at": "found at",
+      "posted_on": "posted on"
+    }
   },
   "pages": {
     "play": {
