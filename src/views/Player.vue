@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-center">
       <player size="lg" :player="player" :no-link="true" />
     </div>
-    <div class="row">
+    <div>
       <b-pagination
         v-model="currentPage"
         :total-rows="totalCount"
@@ -15,15 +15,14 @@
         align="center"
         @page-click="changePage"
       ></b-pagination>
-      <ul
-        id="itemList"
-        class="player-tags list-unstyled m-auto"
+      <div
+        class="player-tags m-auto"
         v-masonry
         transition-duration="0.3s"
         item-selector=".item"
         fit-width="true"
       >
-        <li v-for="tag in tagsForList" :key="tag.tagnumber">
+        <div v-for="tag in tagsForList" :key="tag.tagnumber">
           <bike-tag
             :key="tag.tagnumber"
             :tag="tag"
@@ -32,8 +31,8 @@
             :found-tagnumber="tag.tagnumber - 1"
             :found-description="getSelfTagFoundDescription(tag)"
           />
-        </li>
-      </ul>
+        </div>
+      </div>
       <b-form-group>
         <select v-model="perPage" class="form-select w-25 m-auto" @change="resetCurrentPage">
           <option v-for="i in 3" :key="Math.pow(10, i)" :value="Math.pow(10, i)">
