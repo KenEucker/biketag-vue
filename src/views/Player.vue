@@ -16,8 +16,8 @@
         @page-click="changePage"
       ></b-pagination>
       <div
-        class="player-tags m-auto"
         v-masonry
+        class="player-tags m-auto"
         transition-duration="0.3s"
         item-selector=".item"
         fit-width="true"

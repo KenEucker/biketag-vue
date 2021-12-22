@@ -1,6 +1,6 @@
 <template>
   <b-row :class="reverse ? 'reversed' : ''">
-    <b-col :md="_foundImageUrl ? 6 : 12" class="item mb-3" v-masonry-tile>
+    <b-col v-masonry-tile :md="_foundImageUrl ? 6 : 12" class="item mb-3">
       <b-card class="polaroid">
         <div class="img-wrapper">
           <span class="tag-number">#{{ _tagnumber }}</span>
@@ -18,7 +18,7 @@
         </div>
       </b-card>
     </b-col>
-    <b-col v-show="_foundImageUrl" md="6" class="item mb-3" v-masonry-tile>
+    <b-col v-show="_foundImageUrl" v-masonry-tile md="6" class="item mb-3">
       <b-card class="polaroid">
         <div class="img-wrapper">
           <span class="tag-number">#{{ _foundTagnumber }}</span>
