@@ -8,6 +8,7 @@ export type DomainInfo = {
 
 export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
   imgurUrl
+    .replace('.jpeg', `${size}.jpg`)
     .replace('.jpg', `${size}.jpg`)
     .replace('.gif', `${size}.gif`)
     .replace('.png', `${size}.png`)

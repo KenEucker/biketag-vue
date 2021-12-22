@@ -7,7 +7,7 @@ import {
 } from '../src/common/methods'
 import { BikeTagClient } from 'biketag'
 import request from 'request'
-import got from 'got'
+import axios from 'axios'
 import { Game } from 'biketag/lib/common/schema'
 
 const currentTagHandler = async (event) => {
@@ -25,6 +25,8 @@ const currentTagHandler = async (event) => {
       hash: game.mainhash,
     },
     game: biketagOpts.game,
+    size: '',
+    data: false,
   })
   const currentTagResponse = await biketag.getTag(biketagPayload)
 
@@ -42,10 +44,19 @@ const currentTagHandler = async (event) => {
       }
     }
 
+    const body = Buffer.from(
+      (
+        await axios.get(data.imageUri, {
+          responseType: 'arraybuffer',
+        })
+      ).data,
+      'utf-8'
+    ).toString('base64')
+
     return {
       statusCode: 200,
       isBase64Encoded: true,
-      body: got.stream(data.imageUri).toString(),
+      body,
     }
   }
 
