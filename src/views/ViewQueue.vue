@@ -5,15 +5,9 @@
   <div class="Round-root">
     <div class="location-btn">
       <div class="order-div">
-        <div class="each-circle1"><i class="fa fa-bicycle" />1</div>
-        -
-        <div class="each-circle" @click="goQueueImg2"><i class="fa fa-bicycle" />2</div>
-        -
-        <div class="each-circle">3</div>
-        -
-        <div class="each-circle">4</div>
-        -
-        <div class="each-circle">5</div>
+        <div v-for="(tag, index) in getQueuedTags" :key="index" class="each-circle1">
+          <i class="fa fa-bicycle" />{{ index + 1 }}
+        </div>
       </div>
     </div>
     <div class="main-img-clock-class"><i class="far fa-clock" /> 14:23</div>
@@ -21,7 +15,7 @@
       <div class="img-all-class">
         <div class="img-title-class">#365</div>
         <div class="each-img-class">
-          <img src="img/Roundback.png" />
+          <img src="" />
           <div class="st-class">1st</div>
         </div>
         <div class="img-title-class">Queued by u/kiriska</div>
@@ -41,21 +35,26 @@ import { useI18n } from 'vue-i18n'
 import type { MessageSchema } from '@/i18n/schemas'
 
 export default defineComponent({
+  name: 'ViewQueue',
+  components: {
+    Loading,
+  },
   data() {
     return {
       tagIsLoading: true,
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags', 'getPlayers']),
+    ...mapGetters(['getQueuedTags']),
   },
   created() {
     this.tagIsLoading = true
   },
+  async mounted() {
+    await this.$store.dispatch('setQueuedTags')
+    this.tagIsLoading = false
+  },
   methods: {
-    gobefore: function () {
-      this.$router.push('/')
-    },
     goQueueImg2: function () {
       this.$router.push('/queueimg2')
     },
