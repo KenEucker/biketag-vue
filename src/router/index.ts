@@ -43,19 +43,9 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/About.vue'),
   },
   {
-    path: '/support',
-    name: 'support',
-    component: () => import('@/components/HtmlContent.vue'),
-  },
-  {
-    path: '/players/:currentPage?',
-    name: 'Players',
-    component: () => import('@/views/Players.vue'),
-  },
-  {
-    path: '/player/:name/:currentPage?',
-    name: 'Player',
-    component: () => import('@/views/Player.vue'),
+    path: '/queued',
+    name: 'queued',
+    component: () => import('@/views/QueuedTag.vue'),
   },
 ]
 

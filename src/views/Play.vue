@@ -13,6 +13,9 @@
       >
         ?
       </b-button>
+      <b-button v-if="getQueuedTags.length" class="btn-clock">
+        <i class="far fa-clock" />
+      </b-button>
       <bike-tag
         v-if="tagnumber === 0"
         :tagnumber="getCurrentBikeTag.tagnumber"
@@ -57,7 +60,13 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags', 'getPlayers']),
+    ...mapGetters([
+      'getCurrentBikeTag',
+      'getCurrentHint',
+      'getTags',
+      'getPlayers',
+      'getQueuedTags',
+    ]),
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
@@ -77,6 +86,7 @@ export default defineComponent({
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setPlayers')
     await this.$store.dispatch('setCurrentBikeTag')
+    await this.$store.dispatch('setQueuedTags')
     this.tagIsLoading = false
   },
   methods: {
@@ -107,5 +117,22 @@ export default defineComponent({
   right: 20px;
   z-index: 99;
   font-size: 1.25em;
+}
+
+.btn-clock {
+  position: absolute;
+  top: 100px;
+  right: 20px;
+  z-index: 99;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  // &:focus {
+
+  // }
+  i {
+    color: forestgreen;
+    cursor: pointer;
+    font-size: 4.5vh;
+  }
 }
 </style>
