@@ -123,12 +123,6 @@ export default {
 </script>
 <style scoped lang="scss">
 .swiper {
-  max-width: 600px;
-}
-
-.swiper-slide {
-  p {
-    line-height: 3vh;
-  }
+  background-color: red !important;
 }
 </style>

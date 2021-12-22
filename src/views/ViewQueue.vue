@@ -3,17 +3,17 @@
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
   <div class="container">
-    <div class="order-div">
-      <div v-for="(tag, index) in getQueuedTags" :key="index" class="each-circle">
+    <div class="bike-pagination">
+      <div v-for="(tag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
         <i class="fa fa-bicycle" />{{ index + 1 }}
       </div>
     </div>
-    <div class="clock-div"><i class="far fa-clock" /> 14:23</div>
-    <span class="tag-number">#{{ _tagnumber }}</span>
-    <swiper :slides-per-view="1" :space-between="10">
+    <div class="clock-div mt-2"><i class="far fa-clock" /> 14:23</div>
+    <span class="tag-number">#489</span>
+    <swiper :pagination="{ clickable: true }" :slides-per-view="1" :space-between="10">
       <swiper-slide v-for="(tag, index) in getQueuedTags" :key="index">
         <queued-tag
-          :tagnumber="tag.tagnumber"
+          :tag-order="index + 1"
           :found-image-url="tag.foundImageUrl"
           :found-player="tag.foundPlayer"
           :player="tag.foundPlayer"
@@ -30,12 +30,12 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
-import SwiperCore from 'swiper'
+import SwiperCore, { Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
 import QueuedTag from '@/components/QueuedTag.vue'
 
-SwiperCore.use()
+SwiperCore.use([Pagination])
 // import { useI18n } from 'vue-i18n'
 // import type { MessageSchema } from '@/i18n/schemas'
 
@@ -79,17 +79,7 @@ export default defineComponent({
   font-size: 25px;
   margin-right: 10px;
 }
-.each-circle {
-  width: 40px;
-  height: 40px;
-  margin: 5px;
-  border-radius: 20px;
-  border: 1px solid #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.order-div {
+.bike-pagination {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,18 +87,47 @@ export default defineComponent({
   /* border: 1px solid red; */
   color: #000;
 }
-.order-div > i {
+.bike-pagination-bullet {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  border-radius: 5rem;
+  border: 1px solid #000;
+  cursor: pointer;
+}
+.bike-pagination > i {
   margin-right: 20px;
   font-size: 25px;
 }
-/* .location-btn {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 10px;
-} */
 i {
   color: #000;
   font-size: 20px;
+}
+.swiper-pagination {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: auto !important;
+  left: auto !important;
+  margin: 0;
+}
+.swiper-pagination-bullet {
+  padding: 5px 10px;
+  border-radius: 0;
+  width: auto;
+  height: 30px;
+  text-align: center;
+  line-height: 30px;
+  font-size: 12px;
+  color: #000;
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.2);
+}
+.swiper-pagination-bullet-active {
+  color: #fff;
+  background: #007aff;
 }
 </style>

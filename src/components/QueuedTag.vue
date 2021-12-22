@@ -3,7 +3,7 @@
     <div v-masonry-tile md="6" class="item mb-3">
       <b-card class="polaroid">
         <div class="img-wrapper">
-          <span class="tag-order">1st</span>
+          <span class="tag-order">{{ tagOrder }}</span>
           <expandable-image
             class="image img-fluid"
             :source="getImgurImageSized(_imageUrl)"
@@ -36,13 +36,9 @@ export default defineComponent({
         return {}
       },
     },
-    size: {
+    tagOrder: {
       type: String,
-      default: 'm',
-    },
-    tagnumber: {
-      type: Number,
-      default: 0,
+      default: '',
     },
     foundImageUrl: {
       type: String,
