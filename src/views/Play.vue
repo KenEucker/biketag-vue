@@ -13,7 +13,7 @@
       >
         ?
       </b-button>
-      <b-button v-if="getQueuedTags.length" class="btn-clock">
+      <b-button v-if="getQueuedTags.length" class="btn-clock" @click="goViewQueue">
         <i class="far fa-clock" />
       </b-button>
       <bike-tag
@@ -96,6 +96,9 @@ export default defineComponent({
     tagLoaded() {
       this.tagIsLoading = false
     },
+    goViewQueue() {
+      this.$router.push('/viewqueue')
+    },
     getPlayer(playerName) {
       const playerList =
         this.getPlayers?.filter((player) => {
@@ -121,7 +124,7 @@ export default defineComponent({
 
 .btn-clock {
   position: absolute;
-  top: 100px;
+  top: 60px;
   right: 20px;
   z-index: 99;
   background-color: transparent !important;

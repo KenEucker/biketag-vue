@@ -43,9 +43,9 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/About.vue'),
   },
   {
-    path: '/queued',
-    name: 'queued',
-    component: () => import('@/views/QueuedTag.vue'),
+    path: '/viewqueue',
+    name: 'viewqueue',
+    component: () => import('@/views/ViewQueue.vue'),
   },
 ]
 
