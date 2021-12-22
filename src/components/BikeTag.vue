@@ -1,6 +1,6 @@
 <template>
   <b-row :class="reverse ? 'reversed' : ''">
-    <b-col v-masonry-tile :md="_foundImageUrl ? 6 : 12" class="item mb-3">
+    <b-col v-show="_mysteryImageUrl" v-masonry-tile :md="_foundImageUrl ? 6 : 12" class="item mb-3">
       <b-card class="polaroid">
         <div class="img-wrapper">
           <span class="tag-number">#{{ _tagnumber }}</span>
@@ -188,7 +188,8 @@ export default defineComponent({
     position: absolute;
     top: -1em;
     transform: rotate(3deg);
-    left: 30%;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 99;
     padding: 0 1.5rem;
   }
