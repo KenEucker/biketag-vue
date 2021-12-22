@@ -37,7 +37,6 @@ const defaultLogo = '/images/BikeTag.svg'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
 console.log('store::init', { subdomain: domain.subdomain, domain, gameName, playerId })
 
-
 let client = new biketag(options)
 
 export const store = createStore<State>({
@@ -54,7 +53,7 @@ export const store = createStore<State>({
     queuedTag: {} as Tag,
   },
   getters: {
-    getImgurImageSized: (state) => getImgurImageSized,
+    getImgurImageSized: () => getImgurImageSized,
     getGame(state) {
       return state.game
     },
