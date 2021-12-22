@@ -1,4 +1,7 @@
 <template>
+  <loading v-if="tagIsLoading" v-model:active="tagIsLoading" :is-full-page="true">
+    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
+  </loading>
   <div class="Round-root">
     <div class="location-btn">
       <div class="order-div">
@@ -30,13 +33,25 @@
 </template>
 
 <script>
-export default {
+import { defineComponent } from 'vue'
+import { mapGetters } from 'vuex'
+import Loading from 'vue-loading-overlay'
+import 'vue-loading-overlay/dist/vue-loading.css'
+import { useI18n } from 'vue-i18n'
+import type { MessageSchema } from '@/i18n/schemas'
+
+export default defineComponent({
   data() {
     return {
-      boolean: true,
+      tagIsLoading: true,
     }
   },
-  computed: {},
+  computed: {
+    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags', 'getPlayers']),
+  },
+  created() {
+    this.tagIsLoading = true
+  },
   methods: {
     gobefore: function () {
       this.$router.push('/')
@@ -48,7 +63,7 @@ export default {
       this.$router.push('/submittag')
     },
   },
-}
+})
 </script>
 <style scoped>
 .logo-img {
