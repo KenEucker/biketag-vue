@@ -3,7 +3,12 @@
     <span>{{ $t('pages.queue.found_title') }}</span>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
-      <img v-else class="img-fluid" src="@/assets/images/blank.png" />
+      <img
+        v-else
+        class="img-fluid click-me"
+        src="@/assets/images/blank.png"
+        @click="$refs.file.click()"
+      />
     </div>
     <form
       ref="foundTag"
@@ -21,7 +26,14 @@
         <label for="file-upload" class="btn-upload custom-file-upload">
           <i class="fa fa-camera" />
         </label>
-        <input id="file-upload" type="file" class="d-none" accept="image/*" @change="setImage" />
+        <input
+          id="file-upload"
+          ref="file"
+          type="file"
+          class="d-none"
+          accept="image/*"
+          @change="setImage"
+        />
       </div>
       <div>
         <b-form-input
@@ -128,6 +140,9 @@ export default defineComponent({
   border-radius: 2rem;
   display: inline-block;
   padding: 6px 12px;
+  cursor: pointer;
+}
+.click-me {
   cursor: pointer;
 }
 </style>
