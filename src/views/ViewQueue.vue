@@ -4,12 +4,18 @@
   </loading>
   <div class="container">
     <div class="bike-pagination">
-      <div v-for="(tag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
-        <i class="fa fa-bicycle" />{{ index + 1 }}
-      </div>
+      <img
+        v-for="(tag, index) in getQueuedTags"
+        :key="index"
+        class="bike-pagination-bullet"
+        :src="tag.foundImageUrl"
+      />
     </div>
-    <div class="clock-div mt-2"><i class="far fa-clock" /> 14:23</div>
-    <span class="tag-number">#489</span>
+    <div class="clock-div mt-2">
+      <i class="far fa-clock" />
+      <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
+    </div>
+    <span class="tag-number">#{{ _tagnumber }}</span>
     <swiper :pagination="{ clickable: true }" :slides-per-view="1" :space-between="10">
       <swiper-slide v-for="(tag, index) in getQueuedTags" :key="index">
         <queued-tag
@@ -26,10 +32,11 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, watchEffect, onMounted } from 'vue'
 import { mapGetters } from 'vuex'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
+import { useTimer } from 'vue-timer-hook'
 import SwiperCore, { Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
@@ -47,27 +54,59 @@ export default defineComponent({
     SwiperSlide,
     QueuedTag,
   },
+  setup() {
+    const time = new Date()
+    time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
+    const timer = useTimer(time)
+    // const restartFive = () => {
+    //   // Restarts to 5 minutes timer
+    //   const time = new Date()
+    //   time.setSeconds(time.getSeconds() + 300)
+    //   timer.restart(time)
+    // }
+    onMounted(() => {
+      watchEffect(async () => {
+        if (timer.isExpired.value) {
+          console.warn('IsExpired')
+        }
+      })
+    })
+    return {
+      timer,
+    }
+  },
   data() {
     return {
+      countDown: 10,
       tagIsLoading: true,
     }
   },
   computed: {
     ...mapGetters(['getQueuedTags']),
+    _tagnumber() {
+      if (this.tagIsLoading) return 0
+      else return this.getQueuedTags[0].tagnumber
+    },
   },
   created() {
     this.tagIsLoading = true
+    this.countDownTimer()
   },
   async mounted() {
     await this.$store.dispatch('setQueuedTags')
     this.tagIsLoading = false
   },
   methods: {
-    goQueueImg2: function () {
-      this.$router.push('/queueimg2')
-    },
     goSubmitPage: function () {
       this.$router.push('/submittag')
+    },
+    countDownTimer() {
+      if (this.countDown > 0) {
+        setTimeout(() => {
+          this.countDown -= 1
+          this.countDownTimer()
+        }, 1000)
+      }
     },
   },
 })
@@ -78,6 +117,15 @@ export default defineComponent({
   cursor: pointer;
   font-size: 25px;
   margin-right: 10px;
+}
+.tag-number {
+  /* position: absolute;
+  top: -1em; */
+  transform: rotate(3deg);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+  padding: 0 1.5rem;
 }
 .bike-pagination {
   display: flex;
@@ -95,7 +143,6 @@ export default defineComponent({
   height: 40px;
   margin: 5px;
   border-radius: 5rem;
-  border: 1px solid #000;
   cursor: pointer;
 }
 .bike-pagination > i {

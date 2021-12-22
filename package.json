@@ -29,6 +29,7 @@
     "vue-loading-overlay": "^4.0.4",
     "vue-masonry": "^0.14.0",
     "vue-router": "^4.0.12",
+    "vue-timer-hook": "^0.0.22",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
