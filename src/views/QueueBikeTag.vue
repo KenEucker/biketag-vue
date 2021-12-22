@@ -10,9 +10,18 @@
       <submit-queued :tag="getQueuedTag" @submit="submit" />
     </div>
     <div>
-      <b-button class="navigation" @click="reset">
+      <b-button id="popover-option-buttons" class="navigation">
         <img class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
       </b-button>
+      <b-popover target="popover-option-buttons" triggers="click" placement="bottom">
+        <!-- <template #title>Popover Title</template> -->
+        <b-button id="popover-view-image" variant="primary">View</b-button>
+        <b-popover target="popover-view-image" triggers="click" placement="top">
+          <template #title>Mystery Image</template>
+          <img class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
+        </b-popover>
+        <b-button variant="danger" class="ms-2" @click="reset">Reset</b-button>
+      </b-popover>
       <img class="navigation" />
       <img class="navigation" />
     </div>
