@@ -124,11 +124,10 @@ export default {
 <style scoped lang="scss">
 .swiper {
   max-width: 600px;
-}
-
-.swiper-slide {
-  p {
-    line-height: 3vh;
+  .swiper-slide {
+    p {
+      line-height: 3vh;
+    }
   }
 }
 </style>
