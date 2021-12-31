@@ -3,14 +3,7 @@
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
   <div class="container">
-    <div class="bike-pagination">
-      <img
-        v-for="(tag, index) in getQueuedTags"
-        :key="index"
-        class="bike-pagination-bullet"
-        :src="tag.foundImageUrl"
-      />
-    </div>
+    <bike-tag-queue />
     <div class="clock-div mt-2">
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
@@ -41,10 +34,9 @@ import SwiperCore, { Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
 import QueuedTag from '@/components/QueuedTag.vue'
+import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
 SwiperCore.use([Pagination])
-// import { useI18n } from 'vue-i18n'
-// import type { MessageSchema } from '@/i18n/schemas'
 
 export default defineComponent({
   name: 'ViewQueue',
@@ -53,6 +45,7 @@ export default defineComponent({
     Swiper,
     SwiperSlide,
     QueuedTag,
+    BikeTagQueue,
   },
   setup() {
     const time = new Date()
@@ -126,28 +119,6 @@ export default defineComponent({
   transform: translateX(-50%);
   z-index: 99;
   padding: 0 1.5rem;
-}
-.bike-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  /* border: 1px solid red; */
-  color: #000;
-}
-.bike-pagination-bullet {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 40px;
-  height: 40px;
-  margin: 5px;
-  border-radius: 5rem;
-  cursor: pointer;
-}
-.bike-pagination > i {
-  margin-right: 20px;
-  font-size: 25px;
 }
 i {
   color: #000;

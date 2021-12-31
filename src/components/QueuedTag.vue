@@ -7,7 +7,7 @@
           <expandable-image
             class="image img-fluid"
             :source="getImgurImageSized(_imageUrl)"
-            :full-source="_foundImageUrl"
+            :full-source="_imageUrl"
             :alt="foundDescription"
             @load="tagImageLoaded('found')"
           ></expandable-image>
@@ -37,15 +37,15 @@ export default defineComponent({
       },
     },
     tagOrder: {
-      type: String,
-      default: '',
+      type: Number,
+      default: 1,
     },
     foundImageUrl: {
       type: String,
       default: null,
     },
     foundPlayer: {
-      type: Object,
+      type: String,
       default: null,
     },
     foundDescription: {
@@ -74,12 +74,6 @@ export default defineComponent({
     _description() {
       return 'Queued by ' + this.foundPlayer
     },
-  },
-  mounted() {
-    const viewportMeta = document.createElement('meta')
-    viewportMeta.name = 'viewport'
-    viewportMeta.content = 'width=device-width, initial-scale=1'
-    document.head.appendChild(viewportMeta)
   },
   methods: {
     getFoundDescription: (tag) => `#${tag.tagnumber} (found at) ${tag.foundLocation ?? 'unknown'}`,

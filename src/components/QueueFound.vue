@@ -124,12 +124,17 @@ export default defineComponent({
     setImage(event) {
       var input = event.target
       if (input.files) {
-        var reader = new FileReader()
-        reader.onload = (e) => {
+        const previewReader = new FileReader()
+        previewReader.onload = (e) => {
           this.preview = e.target.result
         }
-        this.image = input.files[0]
-        reader.readAsDataURL(input.files[0])
+        previewReader.readAsDataURL(input.files[0])
+
+        const imageReader = new FileReader()
+        imageReader.readAsDataURL(input.files[0])
+        imageReader.onload = (e) => {
+          this.image = e.target.result
+        }
       }
     },
   },

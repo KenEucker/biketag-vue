@@ -1,39 +1,31 @@
 <template>
   <div class="container">
-    <div v-if="getFormStep === 1">
+    <div
+      v-if="
+        getFormStep === BiketagFormSteps[BiketagFormSteps.joinQueue] ||
+        getFormStep === BiketagFormSteps[BiketagFormSteps.queueFound]
+      "
+    >
       <queue-found :tag="getQueuedTag" />
     </div>
-    <div v-else-if="getFormStep === 2">
+    <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueMystery]">
       <queue-mystery :tag="getQueuedTag" />
     </div>
-    <div v-else-if="getFormStep === 3">
+    <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.postTag]">
       <submit-queued :tag="getQueuedTag" @submit="submit" />
     </div>
-    <div>
-      <b-button id="popover-option-buttons" class="navigation">
-        <img class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
-      </b-button>
-      <b-popover target="popover-option-buttons" triggers="click" placement="bottom">
-        <!-- <template #title>Popover Title</template> -->
-        <b-button id="popover-view-image" variant="primary">View</b-button>
-        <b-popover target="popover-view-image" triggers="click" placement="top">
-          <template #title>Mystery Image</template>
-          <img class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
-        </b-popover>
-        <b-button variant="danger" class="ms-2" @click="reset">Reset</b-button>
-      </b-popover>
-      <img class="navigation" />
-      <img class="navigation" />
-    </div>
+    <bike-tag-queue :only-mine="true" />
   </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import { BiketagFormSteps } from '@/store/index'
 
 import QueueFound from '@/components/QueueFound.vue'
 import QueueMystery from '@/components/QueueMystery.vue'
 import SubmitQueued from '@/components/SubmitQueued.vue'
+import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
 export default defineComponent({
   name: 'QueueBikeTagView',
@@ -41,9 +33,15 @@ export default defineComponent({
     QueueFound,
     QueueMystery,
     SubmitQueued,
+    BikeTagQueue,
+  },
+  data() {
+    return {
+      BiketagFormSteps,
+    }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getFormStep', 'getQueuedTag']),
+    ...mapGetters(['getFormStep', 'getQueuedTag']),
   },
   methods: {
     prev() {
@@ -56,26 +54,6 @@ export default defineComponent({
       console.log('queueBikeTag::submit', this.getQueuedTag)
       alert('Submit to blah and show blah and etc.')
     },
-    reset() {
-      this.$store.dispatch('setQueuedTag', {})
-      this.$store.dispatch('resetFormStep')
-    },
   },
 })
 </script>
-<style lang="scss" scoped>
-.navigation {
-  width: 40px;
-  height: 40px;
-  margin: 10px;
-  padding: 0;
-  cursor: pointer;
-  border: 0;
-  border-radius: 5rem;
-  img {
-    width: 40px;
-    height: 40px;
-    border-radius: 5rem;
-  }
-}
-</style>

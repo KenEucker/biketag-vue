@@ -3,6 +3,7 @@ import { createStore, Store } from 'vuex'
 import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
+import { BikeTagApiResponse } from 'biketag/lib/common/types'
 import { getDomainInfo, getImgurImageSized } from '@/common/methods'
 import { DeviceUUID } from '../common/uuid'
 
@@ -17,6 +18,13 @@ export interface State {
   html: string
   formStep: number
   queuedTag: Tag
+}
+
+export enum BiketagFormSteps {
+  joinQueue = 1,
+  queueFound = 2,
+  queueMystery = 3,
+  postTag = 4,
 }
 
 // define injection key
@@ -49,7 +57,7 @@ export const store = createStore<State>({
     queuedTags: [] as Tag[],
     players: [] as Player[],
     html: '',
-    formStep: 1,
+    formStep: BiketagFormSteps.joinQueue,
     queuedTag: {} as Tag,
   },
   getters: {
@@ -76,18 +84,18 @@ export const store = createStore<State>({
     getGameTitle(state) {
       return `${state.gameName.toUpperCase()}.BIKETAG`
     },
-    getLogoUrl:
-      (state) =>
-        (size = '') => {
-          const logoUrl =
-            state.game?.logo?.indexOf('imgur.com') !== -1
-              ? state.game.logo
-              : `${sanityBaseCDNUrl}${state.game.logo
+    getLogoUrl(state) {
+      return (size = '') => {
+        const logoUrl =
+          state.game?.logo?.indexOf('imgur.com') !== -1
+            ? state.game.logo
+            : `${sanityBaseCDNUrl}${state.game.logo
                 .replace('image-', '')
                 .replace('-png', '.png')
                 .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
-          return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
-        },
+        return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
+      }
+    },
     getCurrentHint(state) {
       return state.currentBikeTag?.hint
     },
@@ -104,7 +112,7 @@ export const store = createStore<State>({
       return state.players
     },
     getFormStep(state) {
-      return state.formStep
+      return BiketagFormSteps[state.formStep]
     },
     getQueuedTag(state) {
       return state.queuedTag
@@ -156,7 +164,7 @@ export const store = createStore<State>({
       state.queuedTags = queuedTags
 
       if (oldState?.length !== queuedTags?.length) {
-        console.log('store::tags', { queuedTags })
+        console.log('store::queuedTags', { queuedTags })
       }
     },
     SET_QUEUE_FOUND(state, data) {
@@ -216,7 +224,13 @@ export const store = createStore<State>({
       }
     },
     RESET_FORM_STEP(state) {
-      state.formStep = 1
+      state.formStep = BiketagFormSteps.joinQueue
+    },
+    RESET_FORM_STEP_TO_FOUND(state) {
+      state.formStep = BiketagFormSteps.queueFound
+    },
+    RESET_FORM_STEP_TO_MYSTERY(state) {
+      state.formStep = BiketagFormSteps.queueMystery
     },
     INC_FORM_STEP(state) {
       state.formStep++
@@ -228,15 +242,15 @@ export const store = createStore<State>({
   actions: {
     setGame({ commit, state }) {
       if (!options.imgur) {
-        return client.game(state.gameName).then((d) => {
-          options.imgur = { clientId, hash: (d as Game).mainhash }
+        return client.game(state.gameName).then((d: Game) => {
+          options.imgur = { clientId, hash: d.mainhash }
           client = new biketag(options)
           return commit('SET_GAME', d)
         })
       }
     },
     setCurrentBikeTag({ commit }) {
-      return client.getTag().then((r) => {
+      return client.getTag().then((r: BikeTagApiResponse<Tag>) => {
         return commit('SET_CURRENT_TAG', r.data)
       })
     },
@@ -247,6 +261,10 @@ export const store = createStore<State>({
     },
     setQueuedTags({ commit }) {
       return client.queue().then((d) => {
+        const queuedTag = (d as Tag[]).filter((t) => t.playerId === playerId)
+        if (queuedTag) {
+          commit('SET_QUEUED_TAG', queuedTag)
+        }
         return commit('SET_QUEUED_TAGS', d)
       })
     },
@@ -261,6 +279,16 @@ export const store = createStore<State>({
       })
     },
     setQueueFound({ commit }, d) {
+      if (d.foundImage && !d.foundImageUrl) {
+        d.playerId = playerId
+        return client.queueTag(d).then((t) => {
+          if (t.success) {
+            commit('SET_QUEUE_FOUND', t.data)
+          } else {
+            console.log('queue BikeTag failed', t)
+          }
+        })
+      }
       return commit('SET_QUEUE_FOUND', d)
     },
     setQueuedTag({ commit }, d) {
@@ -277,6 +305,12 @@ export const store = createStore<State>({
     },
     resetFormStep({ commit }) {
       return commit('RESET_FORM_STEP')
+    },
+    resetFormStepToFound({ commit }) {
+      return commit('RESET_FORM_STEP_TO_FOUND')
+    },
+    resetFormStepToMystery({ commit }) {
+      return commit('RESET_FORM_STEP_TO_MYSTERY')
     },
     setHtml({ commit }, file) {
       return axios.get('./' + file).then((r) => {

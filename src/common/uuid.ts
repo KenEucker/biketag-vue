@@ -1135,7 +1135,6 @@ export class DeviceUUID {
   parse(source?: string) {
     source = source ?? navigator.userAgent
     const ua = new DeviceUUID()
-    console.log({ ua })
     ua.Agent.source = source.replace(/^\s*/, '').replace(/\s*$/, '')
     ua.Agent.os = this.getOS(ua.Agent.source)
     ua.Agent.platform = this.getPlatform(ua.Agent.source)
