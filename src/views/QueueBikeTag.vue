@@ -1,23 +1,31 @@
 <template>
   <div class="container">
-    <div v-if="getFormStep === 1">
+    <div
+      v-if="
+        getFormStep === BiketagFormSteps[BiketagFormSteps.joinQueue] ||
+        getFormStep === BiketagFormSteps[BiketagFormSteps.queueFound]
+      "
+    >
       <queue-found :tag="getQueuedTag" />
     </div>
-    <div v-else-if="getFormStep === 2">
+    <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueMystery]">
       <queue-mystery :tag="getQueuedTag" />
     </div>
-    <div v-else-if="getFormStep === 3">
+    <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.postTag]">
       <submit-queued :tag="getQueuedTag" @submit="submit" />
     </div>
+    <bike-tag-queue :only-mine="true" />
   </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import { BiketagFormSteps } from '@/store/index'
 
 import QueueFound from '@/components/QueueFound.vue'
 import QueueMystery from '@/components/QueueMystery.vue'
 import SubmitQueued from '@/components/SubmitQueued.vue'
+import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
 export default defineComponent({
   name: 'QueueBikeTagView',
@@ -25,6 +33,12 @@ export default defineComponent({
     QueueFound,
     QueueMystery,
     SubmitQueued,
+    BikeTagQueue,
+  },
+  data() {
+    return {
+      BiketagFormSteps,
+    }
   },
   computed: {
     ...mapGetters(['getFormStep', 'getQueuedTag']),

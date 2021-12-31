@@ -8,10 +8,13 @@
         v-if="tagnumber === 0 && !tagIsLoading"
         v-b-popover.click.left="getHint"
         class="btn-hint"
-        :title="t('pages.play.hint').toLocaleUpperCase()"
+        :title="$t('pages.play.hint').toLocaleUpperCase()"
         variant="primary"
       >
         ?
+      </b-button>
+      <b-button v-if="getQueuedTags.length" class="btn-clock" @click="goViewQueue">
+        <i class="far fa-clock" />
       </b-button>
       <bike-tag
         v-if="tagnumber === 0"
@@ -20,7 +23,7 @@
         :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
         :player="getCurrentBikeTag.mysteryPlayer"
         size="l"
-        :mystery-description="t('pages.play.mystery').toLocaleUpperCase()"
+        :mystery-description="$t('pages.play.mystery').toLocaleUpperCase()"
       />
       <bike-tag v-else :tag="tag" size="l" @load="tagLoaded" />
     </div>
@@ -33,20 +36,12 @@ import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
-import { useI18n } from 'vue-i18n'
-import type { MessageSchema } from '@/i18n/schemas'
 
 export default defineComponent({
   name: 'PlayView',
   components: {
     BikeTag,
     Loading,
-  },
-  setup() {
-    const { t } = useI18n<{ message: MessageSchema }>({
-      useScope: 'global',
-    })
-    return { t }
   },
   data() {
     return {
@@ -57,7 +52,13 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags', 'getPlayers']),
+    ...mapGetters([
+      'getCurrentBikeTag',
+      'getCurrentHint',
+      'getTags',
+      'getPlayers',
+      'getQueuedTags',
+    ]),
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
@@ -66,7 +67,7 @@ export default defineComponent({
       return undefined
     },
     getHint() {
-      return this.getCurrentBikeTag.hint ?? this.t('pages.play.nohint')
+      return this.getCurrentBikeTag.hint ?? this.$t('pages.play.nohint')
     },
   },
   created() {
@@ -77,6 +78,7 @@ export default defineComponent({
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setPlayers')
     await this.$store.dispatch('setCurrentBikeTag')
+    await this.$store.dispatch('setQueuedTags')
     this.tagIsLoading = false
   },
   methods: {
@@ -85,6 +87,9 @@ export default defineComponent({
     },
     tagLoaded() {
       this.tagIsLoading = false
+    },
+    goViewQueue() {
+      this.$router.push('/viewqueue')
     },
     getPlayer(playerName) {
       const playerList =
@@ -107,5 +112,22 @@ export default defineComponent({
   right: 20px;
   z-index: 99;
   font-size: 1.25em;
+}
+
+.btn-clock {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  z-index: 99;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  // &:focus {
+
+  // }
+  i {
+    color: forestgreen;
+    cursor: pointer;
+    font-size: 4.5vh;
+  }
 }
 </style>

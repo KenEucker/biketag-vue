@@ -1,5 +1,5 @@
 import App from './App.vue'
-import { createApp } from 'vue'
+import { createSSRApp, createApp } from 'vue'
 import router from './router'
 import { store } from './store'
 import BootstrapVue3 from 'bootstrap-vue-3'
@@ -17,7 +17,7 @@ class BikeTagApp {
 
   constructor() {
     this.emitter = mitt()
-    this.app = createApp(App)
+    this.app = typeof window === 'undefined' ? createSSRApp(App) : createApp(App)
     this.run()
   }
 
@@ -43,6 +43,8 @@ class BikeTagApp {
         },
       }
       this.app.use(Auth0Plugin, auth0Opts)
+    } else {
+      this.app.config.globalProperties.$auth = () => () => null
     }
   }
   components() {
