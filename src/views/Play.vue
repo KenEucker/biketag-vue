@@ -1,8 +1,8 @@
 <template>
-  <loading v-if="tagIsLoading" v-model:active="tagIsLoading" :is-full-page="true">
-    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
-  </loading>
   <div class="container rel col-lg-6">
+    <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
+      <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
+    </loading>
     <div>
       <b-button
         v-if="tagnumber === 0 && !tagIsLoading"
@@ -13,8 +13,8 @@
       >
         ?
       </b-button>
-      <b-button v-if="getQueuedTags.length" class="btn-clock" @click="goViewQueue">
-        <i class="far fa-clock" />
+      <b-button v-if="getQueuedTags.length" class="btn-clock" @click="goQueue">
+        <img class="queue" src="../assets/images/SpinningBikeV1.svg" />
       </b-button>
       <bike-tag
         v-if="tagnumber === 0"
@@ -30,7 +30,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
@@ -45,10 +45,8 @@ export default defineComponent({
   },
   data() {
     return {
-      tagnumber: this.$route.params?.tagnumber?.length
-        ? parseInt(this.$route.params.tagnumber as string)
-        : 0,
-      tagIsLoading: true,
+      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
+      tagIsLoading: false,
     }
   },
   computed: {
@@ -70,15 +68,11 @@ export default defineComponent({
       return this.getCurrentBikeTag.hint ?? this.$t('pages.play.nohint')
     },
   },
-  created() {
+  async created() {
     this.tagIsLoading = true
-  },
-  async mounted() {
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setTags')
-    await this.$store.dispatch('setPlayers')
     await this.$store.dispatch('setCurrentBikeTag')
-    await this.$store.dispatch('setQueuedTags')
     this.tagIsLoading = false
   },
   methods: {
@@ -88,8 +82,9 @@ export default defineComponent({
     tagLoaded() {
       this.tagIsLoading = false
     },
-    goViewQueue() {
-      this.$router.push('/viewqueue')
+    async goQueue() {
+      await this.$store.dispatch('resetFormStep')
+      this.$router.push('/queue')
     },
     getPlayer(playerName) {
       const playerList =
@@ -106,28 +101,37 @@ export default defineComponent({
   position: relative;
 }
 
+.container {
+  min-height: 350px;
+  background-color: transparent;
+}
+
 .btn-hint {
   position: absolute;
   top: 10px;
-  right: 20px;
+  left: 20px;
   z-index: 99;
   font-size: 1.25em;
 }
 
 .btn-clock {
   position: absolute;
-  top: 60px;
-  right: 20px;
+  top: -15px;
+  right: -25px;
   z-index: 99;
+  font-size: 1.25em;
   background-color: transparent !important;
   border-color: transparent !important;
-  // &:focus {
 
-  // }
   i {
     color: forestgreen;
     cursor: pointer;
     font-size: 4.5vh;
+  }
+
+  .queue {
+    max-height: 3.5em;
+    animation: tronFilter 5s ease-in-out infinite alternate;
   }
 }
 </style>

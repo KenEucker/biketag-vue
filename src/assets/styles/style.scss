@@ -216,6 +216,7 @@ html {
         font-weight: $title-font-weight;
       }
     }
+
     .tag-number {
       color: $tag-number-color;
       background-color: $tag-number-bg-color;
@@ -223,12 +224,17 @@ html {
       font-weight: $tag-number-font-weight;
       font-family: $tag-number-font-family;
     }
+
     .img-wrapper {
       .tag-player {
         color: $tag-text-color;
         font-family: $tag-player-font-family;
         font-size: $tag-player-font-size;
       }
+    }
+
+    .vld-overlay .vld-background {
+      background: transparent;
     }
   }
 }

@@ -1,0 +1,34 @@
+@keyframes tronFilter {
+  0% {
+    filter: drop-shadow(-0.75px 0 6px #31eefd);
+    stroke: #31eefd;
+  }
+
+  22% {
+    filter: drop-shadow(-0.75px 0 6px #1d85bb);
+    stroke: #1d85bb;
+  }
+
+  42% {
+    filter: drop-shadow(-0.75px 0 6px #884173);
+    stroke: #884173;
+  }
+
+  62% {
+    filter: drop-shadow(-0.75px 0 6px #ff0071);
+    stroke: #ff0071;
+  } /* end magenta */
+  82% {
+    filter: drop-shadow(-0.75px 0 6px #009997);
+    stroke: #009997;
+  }
+
+  92% {
+    filter: drop-shadow(-0.75px 0 6px #92ffd7);
+    stroke: #92ffd7;
+  } /* end green */
+  100% {
+    filter: drop-shadow(-0.75px 0 6px #31eefd);
+    stroke: #31eefd;
+  }
+}

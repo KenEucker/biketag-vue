@@ -1,6 +1,6 @@
 <template>
   <b-row :class="reverse ? 'reversed' : ''">
-    <b-col v-masonry-tile :md="_foundImageUrl ? 6 : 12" class="item mb-3">
+    <b-col v-show="_mysteryImageUrl" v-masonry-tile :md="_foundImageUrl ? 6 : 12" class="item mb-3">
       <b-card class="polaroid">
         <div class="img-wrapper">
           <span class="tag-number">#{{ _tagnumber }}</span>
@@ -128,14 +128,10 @@ export default defineComponent({
       return this.tag?.mysteryPlayer ?? ''
     },
     _foundDescription() {
-      return this.foundDescription
-        ? this.foundDescription
-        : this.getFoundDescription(this.tag ?? {})
+      return this.foundDescription ? this.foundDescription : this.getFoundDescription()
     },
     _mysteryDescription() {
-      return this.mysteryDescription
-        ? this.mysteryDescription
-        : this.getMysteryDescription(this.tag ?? {})
+      return this.mysteryDescription ? this.mysteryDescription : this.getMysteryDescription()
     },
   },
   mounted() {
@@ -145,9 +141,14 @@ export default defineComponent({
     document.head.appendChild(viewportMeta)
   },
   methods: {
-    getFoundDescription: (tag) => `#${tag.tagnumber} (found at) ${tag.foundLocation ?? 'unknown'}`,
-    getMysteryDescription: (tag) =>
-      `#${tag.tagnumber} (posted on) ${new Date(tag.foundTime * 1000).toLocaleDateString()}`,
+    getFoundDescription() {
+      return `#${this._foundTagnumber} (found at) ${this.tag.foundLocation ?? 'unknown'}`
+    },
+    getMysteryDescription() {
+      return `#${this._tagnumber} (posted on) ${new Date(
+        this.tag.foundTime * 1000
+      ).toLocaleDateString()}`
+    },
     tagImageLoaded(type) {
       if (type === 'mystery') {
         this.mysteryImageLoaded = true
@@ -187,7 +188,6 @@ export default defineComponent({
   .tag-number {
     position: absolute;
     top: -1em;
-    transform: rotate(3deg);
     left: 50%;
     transform: translateX(-50%);
     z-index: 99;

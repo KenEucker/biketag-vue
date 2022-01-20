@@ -136,7 +136,7 @@ export default defineComponent({
       this.tagsAreLoading = true
       setTimeout(() => {
         this.tagsAreLoading = false
-      }, 2000)
+      }, 500)
     },
     tagLoaded() {
       /// Remove?

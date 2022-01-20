@@ -25,7 +25,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/queue',
     name: 'Queue',
-    component: () => import('@/views/QueueBikeTag.vue'),
+    component: () => import('@/views/Queue.vue'),
   },
   {
     path: '/how',
@@ -41,11 +41,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/about',
     name: 'About',
     component: () => import('@/views/About.vue'),
-  },
-  {
-    path: '/viewqueue',
-    name: 'viewqueue',
-    component: () => import('@/views/ViewQueue.vue'),
   },
 ]
 

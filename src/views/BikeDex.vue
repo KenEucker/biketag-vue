@@ -8,7 +8,7 @@
       align="center"
       @page-click="changePage"
     ></b-pagination>
-    <div v-masonry transition-duration="0.3s" item-selector=".item" fit-width="true" class="m-auto">
+    <div transition-duration="0.3s" item-selector=".item" fit-width="true" class="m-auto">
       <div v-for="tag in tagsList" :key="tag.tagnumber">
         <bike-tag
           :key="tag.tagnumber"
@@ -102,7 +102,7 @@ export default defineComponent({
       this.tagsAreLoading = true
       setTimeout(() => {
         this.tagsAreLoading = false
-      }, 2000)
+      }, 500)
     },
     getPlayer(playerName) {
       const playerList =

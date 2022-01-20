@@ -7,16 +7,21 @@
       <img class="mystery-img w-75 p-2 mb-3" :src="mysteryImagePreview" />
     </div>
     <div>
-      <form ref="tagForm" name="queueFoundTag" method="POST" data-netlify="true">
+      <form
+        ref="submitTag"
+        name="submit-queued-tag"
+        action="submit-queued-tag"
+        method="POST"
+        netlify
+        data-netlify-honeypot="bot-field"
+        @submit.prevent="onSubmit"
+      >
         <b-button class="w-100 btn-post border-0" @click="submit">
           {{ $t('pages.queue.post_new_tag') }} &nbsp; <i class="fas fa-check-square" />
         </b-button>
         <b-button class="w-100 btn-reset border-0" @click="reset">
           {{ $t('pages.queue.reset_tag') }}
         </b-button>
-        <span>
-          {{ $t('pages.queue.user_agree') }}
-        </span>
       </form>
     </div>
   </b-container>
@@ -42,16 +47,29 @@ export default defineComponent({
     this.setMysteryImagePreview(this.getQueuedTag)
   },
   methods: {
-    goNextStep() {
-      this.$store.dispatch('incFormStep')
-    },
-    submit() {
-      this.$refs.tagForm.submit()
-      this.$emit('submit')
+    onSubmit() {
+      const formAction = this.$refs.mysteryTag.getAttribute('action')
+      const formData = new FormData(this.$refs.mysteryTag)
+      const formBody = new URLSearchParams(formData).toString()
+      const submittedTag = {
+        discussionUrl: JSON.stringify({
+          postToReddit: true,
+        }),
+        mentionUrl: JSON.stringify({
+          postToTwitter: false,
+        }),
+      }
+
+      this.$emit('submit', {
+        formAction,
+        formData,
+        formBody,
+        tag: submittedTag,
+        storeAction: 'submitQueuedTag',
+      })
     },
     reset() {
-      this.$store.dispatch('setQueuedTag', {})
-      this.$store.dispatch('resetFormStep')
+      this.$store.dispatch('resetFormStepToFound')
     },
     setMysteryImagePreview(tag) {
       if (tag.mysteryImageUrl?.length) {

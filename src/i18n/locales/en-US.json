@@ -1,4 +1,9 @@
 {
+  "notifications": {
+    "uploading": "Adding your tag information",
+    "error": "ERROR",
+    "success": "successfully completed"
+  },
   "menu": {
     "home": "Home",
     "bikedex": "BikeDex",
@@ -14,6 +19,18 @@
     "biketag": {
       "found_at": "found at",
       "posted_on": "posted on"
+    },
+    "footer": {
+      "sourced": "sourced",
+      "deployed": "deployed",
+      "worldwide": "worldwide"
+    },
+    "queue": {
+      "view_mystery_image": "Queued Mystery Image",
+      "view_found_image": "Queued Found Image",
+      "current_mystery_location": "Current Mystery Location",
+      "view_queue_button": "VIEW",
+      "reset_queue_button": "RESET"
     }
   },
   "pages": {
@@ -23,18 +40,23 @@
       "mystery": "current mystery location to find"
     },
     "queue": {
+      "join_queue": "Join round",
+      "complete_queue": "Complete your tag for round",
+      "submit_queue": "Submit your tag to win round",
       "found_title": "Queue Found Location",
       "mystery_title": "New Mystery Location",
+      "joined_button": "See All Queued Tags",
       "submit_title": "Post Tag",
       "location_placeholder": "Enter found location",
       "name_placeholder": "Enter your name",
       "hint_placeholder": "Enter your hint",
       "image_label": "This is what your post look like",
-      "queue_found_tag": "Queue Found Tag",
-      "submit_new_tag": "Submit New Tag",
-      "post_new_tag": "Post New Tag To Reddit For me",
+      "queue_found_tag": "Add Found Tag",
+      "submit_new_tag": "Add Mystery Tag",
+      "queue_postfix": "To Queue",
+      "post_new_tag": "Submit New Tag",
       "reset_tag": "Reset Tag Submission",
-      "user_agree": "Uploading to BideTag. Org requires that you agree to the terms and conditions set by the BikeTag Project"
+      "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project"
     },
     "howto": {
       "browser_not_support_audio": "Your browser does not support the audio element.",

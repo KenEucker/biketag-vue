@@ -17,7 +17,7 @@ export default defineComponent({
     BikeTagFooter,
     ServiceWorker,
   },
-  async mounted() {
+  async created() {
     await this.$store.dispatch('setGame')
   },
 })

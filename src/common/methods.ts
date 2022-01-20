@@ -132,6 +132,7 @@ export const getBikeTagClientOpts = (req?: request.Request) => {
     cached: isGET || !isAuthenticatedPOST,
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
+      accessToken: process.env.IMGUR_ACCESS_TOKEN,
       hash: process.env.IMGUR_HASH,
     },
     sanity: {
