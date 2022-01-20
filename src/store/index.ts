@@ -96,9 +96,9 @@ export const store = createStore<State>({
           state.game?.logo?.indexOf('imgur.com') !== -1
             ? state.game.logo
             : `${sanityBaseCDNUrl}${state.game.logo
-                .replace('image-', '')
-                .replace('-png', '.png')
-                .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
+              .replace('image-', '')
+              .replace('-png', '.png')
+              .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
         return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
       }
     },
@@ -169,7 +169,7 @@ export const store = createStore<State>({
       const oldState = state.queuedTags
       state.queuedTags = queuedTags
 
-      if (oldState?.length !== queuedTags?.length) {
+      if (oldState?.length !== queuedTags?.length || queuedTags.length === 0) {
         console.log('store::queuedTags', { queuedTags })
       }
     },
@@ -257,11 +257,12 @@ export const store = createStore<State>({
       console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
     },
     SET_FORM_STEP_TO_JOIN(state, d) {
-      state.formStep = d
+      state.formStep = d ?? BiketagFormSteps.queueFound
       console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
     },
     RESET_FORM_STEP(state) {
-      state.formStep = BiketagFormSteps.queueView
+      state.formStep =
+        state.queuedTags?.length > 0 ? BiketagFormSteps.queueView : BiketagFormSteps.queueFound
       console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
     },
     RESET_FORM_STEP_TO_FOUND(state) {
@@ -296,9 +297,12 @@ export const store = createStore<State>({
         return commit('SET_TAGS', d)
       })
     },
-    setQueuedTags({ commit }) {
+    setQueuedTags({ commit, state }) {
       return client.queue().then((d) => {
-        const queuedTag = (d as Tag[]).filter((t) => t.playerId === playerId)
+        const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
+          (t) => t.tagnumber >= state.currentBikeTag.tagnumber
+        )
+        const queuedTag = currentBikeTagQueue.filter((t) => t.playerId === playerId)
         if (queuedTag.length) {
           const fullyQueuedTag = queuedTag[0]
           const queuedMysteryTag = (d as Tag[]).filter(
@@ -310,8 +314,10 @@ export const store = createStore<State>({
             fullyQueuedTag.mysteryPlayer = queuedMysteryTag[0].mysteryPlayer
           }
           commit('SET_QUEUED_TAG', fullyQueuedTag)
+        } else {
+          commit('SET_FORM_STEP_TO_JOIN')
         }
-        return commit('SET_QUEUED_TAGS', d)
+        return commit('SET_QUEUED_TAGS', currentBikeTagQueue)
       })
     },
     setPlayers({ commit }) {
@@ -373,8 +379,8 @@ export const store = createStore<State>({
           state.queuedTag?.mysteryImageUrl?.length > 0
             ? BiketagFormSteps.queueSubmit
             : state.queuedTag?.foundImageUrl?.length > 0
-            ? BiketagFormSteps.queueMystery
-            : BiketagFormSteps.queueFound
+              ? BiketagFormSteps.queueMystery
+              : BiketagFormSteps.queueFound
         )
       }
       return true
