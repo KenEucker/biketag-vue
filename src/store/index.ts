@@ -96,9 +96,9 @@ export const store = createStore<State>({
           state.game?.logo?.indexOf('imgur.com') !== -1
             ? state.game.logo
             : `${sanityBaseCDNUrl}${state.game.logo
-              .replace('image-', '')
-              .replace('-png', '.png')
-              .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
+                .replace('image-', '')
+                .replace('-png', '.png')
+                .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
         return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
       }
     },
@@ -373,8 +373,8 @@ export const store = createStore<State>({
           state.queuedTag?.mysteryImageUrl?.length > 0
             ? BiketagFormSteps.queueSubmit
             : state.queuedTag?.foundImageUrl?.length > 0
-              ? BiketagFormSteps.queueMystery
-              : BiketagFormSteps.queueFound
+            ? BiketagFormSteps.queueMystery
+            : BiketagFormSteps.queueFound
         )
       }
       return true
