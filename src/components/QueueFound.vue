@@ -13,7 +13,7 @@
     <form
       ref="foundTag"
       name="queue-found-tag"
-      action="/queue-found-tag"
+      action="queue-found-tag"
       method="POST"
       netlify
       data-netlify-honeypot="bot-field"
@@ -53,7 +53,8 @@
       </div>
       <div class="mt-3">
         <b-button class="w-100 btn-found border-0" type="submit">
-          {{ $t('pages.queue.queue_found_tag') }} &nbsp; <i class="fas fa-check-square" />
+          {{ `${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}` }} &nbsp;
+          <i class="fas fa-check-square" /> *
         </b-button>
       </div>
     </form>
@@ -62,7 +63,6 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
-import axios from 'axios'
 
 export default defineComponent({
   name: 'QueueFoundTag',
@@ -74,6 +74,7 @@ export default defineComponent({
       },
     },
   },
+  emits: ['submit'],
   data: function () {
     return {
       preview: null,
@@ -81,60 +82,42 @@ export default defineComponent({
       location: this.tag?.foundLocation ?? '',
       player: this.tag?.foundPlayer ?? '',
       foundImageUrl: null,
+      tagNumber: 0,
     }
   },
   computed: {
-    ...mapGetters(['getQueue', 'getQueuedTag', 'getPlayerId']),
+    ...mapGetters(['getQueue', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag']),
   },
   methods: {
     onSubmit(e) {
       e.preventDefault()
+      const formAction = this.$refs.foundTag.getAttribute('action')
       const formData = new FormData(this.$refs.foundTag)
-      const body = new URLSearchParams(formData).toString()
-
-      const axiosConfig = {
-        header: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      const formBody = new URLSearchParams(formData).toString()
+      const foundTag = {
+        foundImage: this.image,
+        foundPlayer: this.player,
+        foundLocation: this.location,
+        tagnumber: this.getCurrentBikeTag.tagnumber,
       }
-      axios
-        .post('/', body, axiosConfig)
-        .then((res) => {
-          console.log({ formSubmitted: res })
 
-          this.$store.dispatch('setQueueFound', {
-            foundImage: this.image,
-            foundLocation: this.location,
-            foundPlayer: this.player,
-          })
-          this.goNextStep()
-        })
-        .catch((err) => {
-          console.log(err)
-
-          this.$store.dispatch('setQueueFound', {
-            foundImage: this.image,
-            foundLocation: this.location,
-            foundPlayer: this.player,
-          })
-          this.goNextStep()
-        })
-    },
-    goNextStep() {
-      this.$store.dispatch('incFormStep')
+      this.$emit('submit', {
+        formAction,
+        formData,
+        formBody,
+        tag: foundTag,
+        storeAction: 'queueFoundTag',
+      })
     },
     setImage(event) {
       var input = event.target
       if (input.files) {
+        this.image = input.files[0]
         const previewReader = new FileReader()
         previewReader.onload = (e) => {
           this.preview = e.target.result
         }
-        previewReader.readAsDataURL(input.files[0])
-
-        const imageReader = new FileReader()
-        imageReader.readAsDataURL(input.files[0])
-        imageReader.onload = (e) => {
-          this.image = e.target.result
-        }
+        previewReader.readAsDataURL(this.image)
       }
     },
   },
@@ -147,6 +130,7 @@ export default defineComponent({
   padding: 6px 12px;
   cursor: pointer;
 }
+
 .click-me {
   cursor: pointer;
 }

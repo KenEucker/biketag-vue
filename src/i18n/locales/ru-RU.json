@@ -1,4 +1,9 @@
 {
+  "notifications": {
+    "uploading": "Adding your tag information",
+    "error": "ERROR",
+    "success": "successfully completed"
+  },
   "menu": {
     "home": "Дом",
     "bikedex": "БикеДекс",
@@ -14,6 +19,18 @@
     "biketag": {
       "found_at": "найдено в",
       "posted_on": "опубликовано"
+    },
+    "footer": {
+      "sourced": "sourced",
+      "deployed": "deployed",
+      "worldwide": "Мировой"
+    },
+    "queue": {
+      "view_mystery_image": "Queued Mystery Image",
+      "view_found_image": "Queued Found Image",
+      "current_mystery_location": "Current Mystery Location",
+      "view_queue_button": "VIEW",
+      "reset_queue_button": "RESET"
     }
   },
   "pages": {
@@ -23,6 +40,9 @@
       "mystery": "текущее загадочное место, которое нужно найти"
     },
     "queue": {
+      "join_queue": "Join the queue!",
+      "complete_queue": "Complete queued tag!",
+      "submit_queue": "Submit queued tag!",
       "found_title": "Местоположение очереди найдено",
       "mystery_title": "Новое загадочное место",
       "submit_title": "Тег публикации",
@@ -34,7 +54,7 @@
       "submit_new_tag": "Отправить новый тег",
       "post_new_tag": "Опубликовать новый тег в Reddit для меня",
       "reset_tag": "Сбросить отправку тега",
-      "user_agree": "Загрузка в BideTag. Организация требует вашего согласия с условиями, установленными проектом BikeTag"
+      "user_agree": "Загрузка в BiKeTag. Организация требует вашего согласия с условиями, установленными проектом BikeTag"
     },
     "howto": {
       "browser_not_support_audio": "Ваш браузер не поддерживает аудиоэлемент.",

@@ -31,9 +31,11 @@ export default defineConfig({
     EnvironmentPlugin({
       GAME_NAME: process.env.GAME_NAME ?? 'test',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,
-      IMGUR_CLIENT_ID: process.env.IMGUR_CLIENT_ID ?? null,
       HOST: process.env.HOST ?? 'biketag.io',
+      IMGUR_CLIENT_ID: process.env.IMGUR_CLIENT_ID ?? null,
       IMGUR_CLIENT_SECRET: process.env.IMGUR_CLIENT_SECRET ?? null,
+      IMGUR_ACCESS_TOKEN: process.env.IMGUR_ACCESS_TOKEN ?? null,
+      IMGUR_REFRESH_TOKEN: process.env.IMGUR_REFRESH_TOKEN ?? null,
       SANITY_PROJECT_ID: process.env.SANITY_PROJECT_ID ?? null,
       SANITY_DATASET: process.env.SANITY_DATASET ?? null,
       SANITY_CDN_URL: process.env.SANITY_CDN_URL ?? 'https://cdn.sanity.io/images/',

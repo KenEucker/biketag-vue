@@ -7,10 +7,12 @@ import mitt from 'mitt'
 import { VueMasonryPlugin } from 'vue-masonry'
 import { Auth0Plugin } from './auth'
 import i18nPlugin from './i18n'
+import VueToast from 'vue-toast-notification'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
 import '@/assets/styles/style.scss'
-
+import '@/assets/styles/flashy.scss'
+import 'vue-toast-notification/dist/theme-sugar.css'
 class BikeTagApp {
   protected emitter
   protected app
@@ -48,6 +50,7 @@ class BikeTagApp {
     }
   }
   components() {
+    this.app.use(VueToast)
     this.app.use(BootstrapVue3).use(VueMasonryPlugin)
   }
 

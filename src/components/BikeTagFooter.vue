@@ -15,7 +15,7 @@
       <a href="https://biketag.org">
         <i class="fa fa-globe" aria-hidden="true"></i>
         <i class="fa fa-globe ghost" aria-hidden="true"></i>
-        <p>worldwide</p>
+        <p>{{ $t('components.footer.worldwide') }}</p>
       </a>
     </div>
     <footer class="container mt-4 pb-5">
@@ -25,9 +25,9 @@
             src="../assets/images/github-mark.png"
             alt="GitHub Mark"
         /></a>
-        <span><sup>0</sup>Sourced</span>
+        <span><sup>0</sup>{{ $t('components.footer.sourced') }}</span>
         <img class="flow" src="../assets/images/bidirectional-flow.svg" />
-        <span>Deployed<sup>1</sup></span>
+        <span>{{ $t('components.footer.deployed') }}<sup>1</sup></span>
         <a href="https://www.netlify.com/"
           ><img src="../assets/images/netlify-logo-dark.svg" alt="Netlify"
         /></a>

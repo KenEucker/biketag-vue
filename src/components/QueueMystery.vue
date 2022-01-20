@@ -40,6 +40,7 @@
           id="name"
           v-model="player"
           name="player"
+          readonly
           :placeholder="$t('pages.queue.name_placeholder')"
         />
       </div>
@@ -53,11 +54,9 @@
       </div>
       <div class="mt-3">
         <b-button class="w-100 btn-mystery border-0" @click="onSubmit">
-          {{ $t('pages.queue.submit_new_tag') }} &nbsp; <i class="fas fa-check-square" />
+          {{ `${$t('pages.queue.submit_new_tag')} ${$t('pages.queue.queue_postfix')}` }} &nbsp;
+          <i class="fas fa-check-square" /> *
         </b-button>
-        <span>
-          {{ $t('pages.queue.user_agree') }}
-        </span>
       </div>
     </form>
   </b-container>
@@ -76,6 +75,7 @@ export default defineComponent({
       },
     },
   },
+  emits: ['submit'],
   data: function () {
     return {
       preview: null,
@@ -86,45 +86,38 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueue', 'getQueuedTag', 'getPlayerId']),
+    ...mapGetters(['getQueue', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag']),
   },
   methods: {
     onSubmit(e) {
       e.preventDefault()
       const formAction = this.$refs.mysteryTag.getAttribute('action')
       const formData = new FormData(this.$refs.mysteryTag)
-      const body = new URLSearchParams(formData).toString()
+      const formBody = new URLSearchParams(formData).toString()
+      const mysteryTag = {
+        mysteryImage: this.image,
+        mysteryPlayer: this.player,
+        hint: this.hint,
+        tagnumber: this.getCurrentBikeTag.tagnumber + 1,
+      }
 
-      fetch(formAction, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-        },
-        body,
-      }).then((res) => {
-        console.log({ formSubmitted: res })
-
-        this.$store.dispatch('setQueueMystery', {
-          mysteryImage: this.image,
-          mysteryPlayer: this.player,
-          hint: this.hint,
-        })
-        this.goNextStep()
+      this.$emit('submit', {
+        formAction,
+        formData,
+        formBody,
+        tag: mysteryTag,
+        storeAction: 'queueMysteryTag',
       })
-    },
-    goNextStep() {
-      this.$store.dispatch('incFormStep')
     },
     setImage(event) {
       var input = event.target
       if (input.files) {
-        var reader = new FileReader()
-        reader.onload = (e) => {
+        this.image = input.files[0]
+        const previewReader = new FileReader()
+        previewReader.onload = (e) => {
           this.preview = e.target.result
         }
-        this.image = input.files[0]
-        reader.readAsDataURL(input.files[0])
+        previewReader.readAsDataURL(this.image)
       }
     },
   },
@@ -137,6 +130,7 @@ export default defineComponent({
   padding: 6px 12px;
   cursor: pointer;
 }
+
 .click-me {
   cursor: pointer;
 }

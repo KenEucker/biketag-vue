@@ -31,8 +31,8 @@
         @click="muteEasterEgg"
       ></span>
       <div v-if="authLoading">
-        <button v-if="!$auth.isAuthenticated.value" @click="login">Log in</button>
-        <button v-if="$auth.isAuthenticated.value" @click="logout">Log out</button>
+        <button v-if="!$auth.isAuthenticated.value" @click="login">{{ $t('menu.login') }}</button>
+        <button v-if="$auth.isAuthenticated.value" @click="logout">{{ $t('menu.logout') }}</button>
       </div>
     </div>
     <audio id="biketag-jingle" ref="jingle">
@@ -67,10 +67,11 @@ export default defineComponent({
       return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
     },
   },
-  async mounted() {
+  async created() {
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setCurrentBikeTag')
+    await this.$store.dispatch('setQueuedTags')
     await this.$store.dispatch('setPlayers')
   },
   methods: {
@@ -105,6 +106,7 @@ export default defineComponent({
       this.$router.push('/bikedex')
     },
     goQueuePage: function () {
+      this.$store.dispatch('setFormStepJoin')
       this.$router.push('/queue')
     },
     goHowPage: function () {
