@@ -1,6 +1,6 @@
 {
   "notifications": {
-    "uploading": "Adding your tag information",
+    "uploading": "Uploading tag information...",
     "error": "ERROR",
     "success": "successfully completed"
   },
@@ -43,10 +43,10 @@
       "join_queue": "Join round",
       "complete_queue": "Complete your tag for round",
       "submit_queue": "Submit your tag to win round",
-      "found_title": "Add Your Found Location",
-      "mystery_title": "New Mystery Location",
+      "found_title": "Now that you've added your found image, you must bike to a new location and take a picture there. The race is on!",
+      "mystery_title": "Complete your pair of images with the new mystery location in order to create a new BikeTag post",
       "joined_button": "See All Tags For Round",
-      "submit_title": "Post Tag",
+      "submit_title": "Post Tag ",
       "location_placeholder": "Enter found location",
       "name_placeholder": "Enter your name",
       "hint_placeholder": "Enter your hint",
