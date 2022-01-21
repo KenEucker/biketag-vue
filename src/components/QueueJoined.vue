@@ -1,6 +1,6 @@
 <template>
   <b-container class="col-8 col-lg-6">
-    <span>{{ $t('pages.queue.found_title') }}</span>
+    <span>{{ $t('pages.queue.queue_joined') }}</span>
     <div class="mt-3">
       <b-button class="w-100 btn-found border-0" @click="viewQueue">
         {{ $t('pages.queue.joined_button') }}

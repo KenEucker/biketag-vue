@@ -7,7 +7,13 @@
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
-    <span v-if="!uploadInProgress && isViewingQueue()" class="tag-number"
+    <span
+      v-if="
+        !uploadInProgress &&
+        getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined] &&
+        isViewingQueue()
+      "
+      class="tag-number"
       >#{{ getCurrentBikeTag.tagnumber }}</span
     >
     <div v-if="!uploadInProgress" class="container">
@@ -121,14 +127,28 @@ export default defineComponent({
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formBody, storeAction } = newTagSubmission
-      this.$toast.open({ message: this.$t('notifications.uploading'), type: 'info' })
+      this.$toast.open({
+        message: this.$t('notifications.uploading'),
+        type: 'info',
+        position: 'top',
+      })
       const errorAction = this.$refs.queueError.getAttribute('action')
 
       this.uploadInProgress = true
       const success = await this.$store.dispatch(storeAction, tag)
       this.uploadInProgress = false
 
-      console.log({ success })
+      /// assign the result of having queued the tag
+      if (this.getQueuedTag.mysteryImageUrl?.length > 0) {
+        if (this.getQueuedTag.foundImageUrl) {
+          console.log('what now?')
+        } else {
+          formBody.mysteryImageUrl = this.getQueuedTag.mysteryImageUrl
+        }
+      } else if (this.getQueuedTag.foundImageUrl?.length > 0) {
+        formBody.foundImageUrl = this.getQueuedTag.foundImageUrl
+      }
+
       if (success === true) {
         return sendNetlifyForm(
           formAction,
@@ -138,6 +158,7 @@ export default defineComponent({
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
               type: 'success',
+              position: 'top',
             })
           },
           (m) => {
@@ -145,6 +166,7 @@ export default defineComponent({
               message: `${this.$t('notifications.error')} ${m}`,
               type: 'error',
               timeout: false,
+              position: 'top',
             })
             return sendNetlifyError(m, undefined, errorAction)
           }
@@ -155,6 +177,7 @@ export default defineComponent({
           message,
           type: 'error',
           timeout: false,
+          position: 'top',
         })
         return sendNetlifyError(message, undefined, errorAction)
       }
