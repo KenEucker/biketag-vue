@@ -1,8 +1,8 @@
 <template>
-  <loading v-if="uploadInProgress" v-model:active="uploadInProgress" :is-full-page="true">
-    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
-  </loading>
-  <div class="conainer">
+  <div class="container col-lg-6">
+    <loading v-if="uploadInProgress" v-model:active="uploadInProgress" :is-full-page="true">
+      <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
+    </loading>
     <div v-if="usingTimer && isViewingQueue()" class="clock-div mt-2">
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
@@ -16,6 +16,7 @@
       class="tag-number"
       >#{{ getCurrentBikeTag.tagnumber }}</span
     >
+    <bike-tag-queue v-if="!isViewingQueue()" :only-mine="true" />
     <div v-if="!uploadInProgress" class="container">
       <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]">
         <queue-view />
@@ -32,10 +33,12 @@
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueSubmit]">
         <queue-submit :tag="getQueuedTag" @submit="onQueueSubmit" />
       </div>
-      <div v-if="!isViewingQueue()">
-        <bike-tag-queue :only-mine="true" />
-        <span> * {{ $t('pages.queue.user_agree') }} </span>
-      </div>
+      <span
+        v-if="!isViewingQueue() && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
+        class="user_agree"
+      >
+        * {{ $t('pages.queue.user_agree') }}
+      </span>
       <form
         ref="queueError"
         name="queue-tag-error"
@@ -120,10 +123,7 @@ export default defineComponent({
       }
     },
     isViewingQueue() {
-      return (
-        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView] ||
-        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined]
-      )
+      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
@@ -140,6 +140,9 @@ export default defineComponent({
       this.uploadInProgress = false
 
       if (success === true) {
+        /// Update the queue
+        this.$store.dispatch('setQueuedTags', true)
+
         formData.set('game', this.getGameName)
         formData.set('tag', JSON.stringify(this.getQueuedTag))
         formData.set(
@@ -200,5 +203,10 @@ export default defineComponent({
   transform: translateX(-50%);
   z-index: 99;
   padding: 0 1.5rem;
+}
+
+.user_agree {
+  font-size: 0.75rem;
+  font-style: italic;
 }
 </style>

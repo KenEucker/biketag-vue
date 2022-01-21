@@ -32,6 +32,7 @@
           type="file"
           class="d-none"
           accept="image/*"
+          required
           @change="setImage"
         />
       </div>

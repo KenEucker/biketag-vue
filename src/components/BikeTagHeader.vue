@@ -106,7 +106,7 @@ export default defineComponent({
       this.$router.push('/biketags')
     },
     goQueuePage: function () {
-      this.$store.dispatch('setFormStepJoin')
+      this.$store.dispatch('setFormStepToJoin', true)
       this.$router.push('/queue')
     },
     goHowPage: function () {

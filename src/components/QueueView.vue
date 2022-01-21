@@ -78,7 +78,7 @@ export default defineComponent({
   },
   methods: {
     goNextQueueStep: function () {
-      this.$store.dispatch('setFormStepJoin', true)
+      this.$store.dispatch('setFormStepToJoin', true)
       // if (this.getQueuedTag?.mysteryImageUrl?.length > 0) {
       //   this.$store.dispatch('resetFormStepToMystery')
       // } else if (this.getQueuedTag?.foundImageUrl?.length > 0) {
