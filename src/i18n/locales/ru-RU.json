@@ -1,6 +1,6 @@
 {
   "notifications": {
-    "uploading": "Adding your tag information",
+    "uploading": "Uploading tag information...",
     "error": "ERROR",
     "success": "successfully completed"
   },

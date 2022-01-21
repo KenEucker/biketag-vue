@@ -1,5 +1,5 @@
 import { builder, Handler } from '@netlify/functions'
-import { getBikeTagClientOpts, getPayloadOpts } from '../src/common/methods'
+import { getBikeTagClientOpts, getPayloadOpts } from '../src/common/utils'
 import { BikeTagClient } from 'biketag'
 import { queueTagPayload } from 'biketag/lib/common/payloads'
 import request from 'request'

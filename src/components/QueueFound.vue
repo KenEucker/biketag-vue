@@ -40,6 +40,7 @@
           id="found"
           v-model="location"
           name="found"
+          required
           :placeholder="$t('pages.queue.location_placeholder')"
         />
       </div>
@@ -48,6 +49,7 @@
           id="name"
           v-model="player"
           name="player"
+          required
           :placeholder="$t('pages.queue.name_placeholder')"
         />
       </div>

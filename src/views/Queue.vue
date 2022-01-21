@@ -30,6 +30,20 @@
         <bike-tag-queue :only-mine="true" />
         <span> * {{ $t('pages.queue.user_agree') }} </span>
       </div>
+      <form
+        ref="queueError"
+        name="queue-tag-error"
+        action="queue-tag-error"
+        method="POST"
+        netlify
+        hidden
+        data-netlify-honeypot="bot-field"
+        @submit.prevent="onSubmit"
+      >
+        <input type="hidden" name="form-name" value="queue-tag-error" />
+        <input type="hidden" name="message" />
+        <input type="hidden" name="ip" value="" />
+      </form>
     </div>
   </div>
 </template>
@@ -38,6 +52,7 @@ import { defineComponent, watchEffect, onMounted } from 'vue'
 import { mapGetters } from 'vuex'
 import { BiketagFormSteps } from '@/store/index'
 import { useTimer } from 'vue-timer-hook'
+import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 
 import QueueView from '@/components/QueueView.vue'
 import QueueFound from '@/components/QueueFound.vue'
@@ -112,27 +127,35 @@ export default defineComponent({
       const success = await this.$store.dispatch(storeAction, tag)
       this.uploadInProgress = false
 
+      console.log({ success })
       if (success === true) {
-        return fetch(formAction, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-          },
+        return sendNetlifyForm(
+          formAction,
           formBody,
-        }).then((res) => {
-          console.log({ formSubmitted: res })
-          /// TODO: check for success, regardless the image has been added to the queue already
-          this.$toast.open({
-            message: `${storeAction} ${this.$t('notifications.success')}`,
-            type: 'success',
-          })
-        })
+          (res) => {
+            console.log({ formSubmitted: res })
+            this.$toast.open({
+              message: `${storeAction} ${this.$t('notifications.success')}`,
+              type: 'success',
+            })
+          },
+          (m) => {
+            this.$toast.open({
+              message: `${this.$t('notifications.error')} ${m}`,
+              type: 'error',
+              timeout: false,
+            })
+            return sendNetlifyError(m)
+          }
+        )
       } else {
+        const message = `${this.$t('notifications.error')}: ${success}`
         this.$toast.open({
-          message: `${this.$t('notifications.error')}: ${success}`,
+          message,
           type: 'error',
+          timeout: false,
         })
+        return sendNetlifyError(message)
       }
     },
   },

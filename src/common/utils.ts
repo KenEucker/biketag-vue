@@ -1,9 +1,39 @@
 import request from 'request'
+import { DeviceUUID } from '../common/uuid'
 
 export type DomainInfo = {
   host: string
   subdomain: string | undefined
   isSubdomain: boolean
+}
+
+const special = [
+  'zeroth',
+  'first',
+  'second',
+  'third',
+  'fourth',
+  'fifth',
+  'sixth',
+  'seventh',
+  'eighth',
+  'ninth',
+  'tenth',
+  'eleventh',
+  'twelfth',
+  'thirteenth',
+  'fourteenth',
+  'fifteenth',
+  'sixteenth',
+  'seventeenth',
+  'eighteenth',
+  'nineteenth',
+]
+const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet']
+export const stringifyNumber = (n: number): string => {
+  if (n < 20) return special[n]
+  if (n % 10 === 0) return deca[Math.floor(n / 10) - 2] + 'ieth'
+  return deca[Math.floor(n / 10) - 2] + 'y-' + special[n % 10]
 }
 
 export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
@@ -140,4 +170,76 @@ export const getBikeTagClientOpts = (req?: request.Request) => {
       dataset: process.env.SANITY_DATASET,
     },
   }
+}
+
+export const getUuid = () => {
+  return new DeviceUUID().get()
+}
+
+export const getIpInformation = () => {
+  return fetch('http://www.geoplugin.net/json.gp', {
+    method: 'GET',
+    mode: 'cors', // no-cors, *cors, same-origin
+    credentials: 'same-origin',
+    redirect: 'follow',
+  })
+    .then(async (req) => {
+      const { geoplugin_status, geoplugin_request, geoplugin_countryName } = await req.json()
+      if (geoplugin_status / 100 >= 2 && geoplugin_status / 100 < 3) {
+        return {
+          ip: geoplugin_request,
+          country: geoplugin_countryName,
+        }
+      } else {
+        return {
+          ip: '0.0.0.0',
+          country: 'unknown',
+        }
+      }
+    })
+    .catch((err) => {
+      return err
+    })
+}
+
+export const sendNetlifyError = function (
+  message: any,
+  then?: (value: Response) => Response | PromiseLike<Response>,
+  action = 'queue-tag-error'
+) {
+  const body = new URLSearchParams({
+    message,
+  }).toString()
+
+  const request = fetch(action, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+    },
+    body,
+  })
+
+  if (then) {
+    request.then(then)
+  }
+  return request
+}
+
+export const sendNetlifyForm = function (
+  action: string,
+  body: any,
+  then: (value: Response) => Response | PromiseLike<Response>,
+  error = sendNetlifyError
+) {
+  return fetch(action, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+    },
+    body,
+  })
+    .then(then)
+    .catch((e) => error(e))
 }
