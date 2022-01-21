@@ -15,7 +15,7 @@
       name="queue-found-tag"
       action="queue-found-tag"
       method="POST"
-      netlify
+      data-netlify="true"
       data-netlify-honeypot="bot-field"
       @submit.prevent="onSubmit"
     >

@@ -20,7 +20,7 @@
         {{ $t('menu.biketags') }}
       </b-button>
       <b-button class="m-1" variant="primary" @click="goQueuePage">
-        {{ $t('menu.play') }}( <span>{{ getCurrentBikeTag.tagnumber }}</span> )
+        {{ $t('menu.play') }} #<span>{{ getCurrentBikeTag.tagnumber }}</span>
       </b-button>
       <b-button class="m-1" variant="primary" @click="goHowPage">
         {{ $t('menu.howto') }}

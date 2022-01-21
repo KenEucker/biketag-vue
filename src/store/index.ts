@@ -41,6 +41,7 @@ const imgurCredentials: ImgurCredentials = {
 }
 const options: any = {
   game: gameName,
+  accessToken: process.env.ACCESS_TOKEN,
   /// TODO: remove these credentials and rely on the "biketag" api backend for retrieving game data (always)
   sanity: {
     projectId: process.env.SANITY_PROJECT_ID,

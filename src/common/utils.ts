@@ -1,5 +1,6 @@
 import request from 'request'
 import { DeviceUUID } from '../common/uuid'
+import md5 from 'md5'
 
 export type DomainInfo = {
   host: string
@@ -43,6 +44,8 @@ export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
     .replace('.gif', `${size}.gif`)
     .replace('.png', `${size}.png`)
     .replace('.mp4', `${size}.mp4`)
+
+export const getBikeTagHash = (key: string): string => md5(`${key}${process.env.HOST_KEY}`)
 
 export const getDomainInfo = (req: request.Request | undefined, win?: Window): DomainInfo => {
   const nonSubdomainHosts = [
@@ -153,6 +156,20 @@ export const getPayloadOpts = (event: any, base = {}): any => {
   }
 }
 
+export const getPayloadAuthorization = (event: any) => {
+  const { authorization } = event.headers
+  const bearer = 'Bearer '
+  const clientId = 'Client-ID '
+
+  if (authorization?.indexOf(bearer) === 0) {
+    return authorization.substr(bearer.length)
+  } else if (authorization?.indexOf(clientId) === 0) {
+    return authorization.substr(clientId.length)
+  } else {
+    return authorization
+  }
+}
+
 export const getBikeTagClientOpts = (req?: request.Request) => {
   const domainInfo = getDomainInfo(req)
   const isAuthenticatedPOST = req?.method === 'POST'
@@ -163,6 +180,7 @@ export const getBikeTagClientOpts = (req?: request.Request) => {
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
       accessToken: process.env.IMGUR_ACCESS_TOKEN,
+      refreshToken: process.env.IMGUR_REFRESH_TOKEN,
       hash: process.env.IMGUR_HASH,
     },
     sanity: {
@@ -209,6 +227,8 @@ export const sendNetlifyError = function (
 ) {
   const body = new URLSearchParams({
     message,
+    ip: '',
+    ///playerId
   }).toString()
 
   const request = fetch(action, {

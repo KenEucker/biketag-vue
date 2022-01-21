@@ -29,20 +29,27 @@ export default defineConfig({
     vue(),
     vueJsx(),
     EnvironmentPlugin({
+      /* BikeTag Configuration */
       GAME_NAME: process.env.GAME_NAME ?? 'test',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,
       HOST: process.env.HOST ?? 'biketag.io',
+      HOST_KEY: process.env.HOST_KEY ?? 'ItsABikeTagGame',
+      ACCESS_TOKEN: process.env.ACCESS_TOKEN ?? '8b4e2b86a724bf3f39d6766de6e67212',
+      /* Imgur Configuration */
       IMGUR_CLIENT_ID: process.env.IMGUR_CLIENT_ID ?? null,
       IMGUR_CLIENT_SECRET: process.env.IMGUR_CLIENT_SECRET ?? null,
       IMGUR_ACCESS_TOKEN: process.env.IMGUR_ACCESS_TOKEN ?? null,
       IMGUR_REFRESH_TOKEN: process.env.IMGUR_REFRESH_TOKEN ?? null,
+      /* Sanity Configuration */
       SANITY_PROJECT_ID: process.env.SANITY_PROJECT_ID ?? null,
       SANITY_DATASET: process.env.SANITY_DATASET ?? null,
       SANITY_CDN_URL: process.env.SANITY_CDN_URL ?? 'https://cdn.sanity.io/images/',
+      /* Reddit Configuration */
       REDDIT_CLIENT_ID: process.env.REDDIT_CLIENT_ID ?? null,
       REDDIT_CLIENT_SECRET: process.env.REDDIT_CLIENT_SECRET ?? null,
       REDDIT_USERNAME: process.env.REDDIT_USERNAME ?? null,
       REDDIT_PASSWORD: process.env.REDDIT_PASSWORD ?? null,
+      /* Auth0 Configuration */
       AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID ?? null,
       AUTH0_DOMAIN: process.env.AUTH0_DOMAIN ?? null,
     }),

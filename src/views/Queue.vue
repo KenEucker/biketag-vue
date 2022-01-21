@@ -35,9 +35,9 @@
         name="queue-tag-error"
         action="queue-tag-error"
         method="POST"
-        netlify
-        hidden
+        data-netlify="true"
         data-netlify-honeypot="bot-field"
+        hidden
         @submit.prevent="onSubmit"
       >
         <input type="hidden" name="form-name" value="queue-tag-error" />
@@ -122,6 +122,7 @@ export default defineComponent({
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formBody, storeAction } = newTagSubmission
       this.$toast.open({ message: this.$t('notifications.uploading'), type: 'info' })
+      const errorAction = this.$refs.queueError.getAttribute('action')
 
       this.uploadInProgress = true
       const success = await this.$store.dispatch(storeAction, tag)
@@ -145,7 +146,7 @@ export default defineComponent({
               type: 'error',
               timeout: false,
             })
-            return sendNetlifyError(m)
+            return sendNetlifyError(m, undefined, errorAction)
           }
         )
       } else {
@@ -155,7 +156,7 @@ export default defineComponent({
           type: 'error',
           timeout: false,
         })
-        return sendNetlifyError(message)
+        return sendNetlifyError(message, undefined, errorAction)
       }
     },
   },

@@ -12,7 +12,7 @@
         name="submit-queued-tag"
         action="submit-queued-tag"
         method="POST"
-        netlify
+        data-netlify="true"
         data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
