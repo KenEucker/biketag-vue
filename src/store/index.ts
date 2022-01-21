@@ -183,12 +183,14 @@ export const store = createStore<State>({
       state.queuedTag.foundImage = data.foundImage
       state.queuedTag.foundLocation = data.foundLocation
       state.queuedTag.foundPlayer = data.foundPlayer
+      state.queuedTag.tagnumber = data.tagnumber
 
       if (
         oldState?.foundImageUrl !== data?.foundImageUrl ||
         oldState?.foundImage !== data?.foundImage ||
         oldState?.foundLocation !== data?.foundImageUrl ||
-        oldState?.foundPlayer !== data?.foundPlayer
+        oldState?.foundPlayer !== data?.foundPlayer ||
+        oldState?.tagnumber !== data?.tagnumber
       ) {
         console.log('store::queuedFoundTag', state.queuedTag)
         state.formStep = BiketagFormSteps.queueJoined
@@ -211,12 +213,14 @@ export const store = createStore<State>({
       state.queuedTag.mysteryImage = data.mysteryImage
       state.queuedTag.hint = data.hint
       state.queuedTag.mysteryPlayer = data.mysteryPlayer ?? state.queuedTag.foundPlayer
+      state.queuedTag.tagnumber = data.tagnumber
 
       if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
         oldState?.mysteryImage !== data?.mysteryImage ||
         oldState?.hint !== data?.hint ||
-        oldState?.mysteryPlayer !== data?.mysteryPlayer
+        oldState?.mysteryPlayer !== data?.mysteryPlayer ||
+        oldState?.tagnumber !== data?.tagnumber
       ) {
         console.log('store::queuedMysteryTag', state.queuedTag)
       }
