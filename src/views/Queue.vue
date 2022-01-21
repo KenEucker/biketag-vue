@@ -102,7 +102,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getFormStep', 'getQueuedTag', 'getCurrentBikeTag']),
+    ...mapGetters(['getFormStep', 'getQueuedTag', 'getCurrentBikeTag', 'getGameName']),
   },
   mounted() {
     this.uploadInProgress = false
@@ -140,6 +140,7 @@ export default defineComponent({
       this.uploadInProgress = false
 
       if (success === true) {
+        formData.set('game', this.getGameName)
         formData.set('tag', JSON.stringify(this.getQueuedTag))
         formData.set(
           'submission',
