@@ -30,9 +30,8 @@ export enum BiketagFormSteps {
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(undefined, window)
-const playerId = await getUuid()
-const ipInfo = await getIpInformation()
-console.log({ ipInfo })
+const playerId = getUuid()
+// const ipInfo = await getIpInformation()
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const imgurCredentials: ImgurCredentials = {
   clientId: process.env.IMGUR_CLIENT_ID ?? '',
