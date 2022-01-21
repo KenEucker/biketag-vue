@@ -49,7 +49,7 @@ import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
 
 export default defineComponent({
-  name: 'BikeDexView',
+  name: 'BikeTagsView',
   components: {
     BikeTag,
     Loading,
@@ -95,7 +95,7 @@ export default defineComponent({
     },
     changePage(event, pageNumber) {
       this.startLoading()
-      this.$router.push('/bikedex/' + pageNumber)
+      this.$router.push('/biketags/' + pageNumber)
     },
     startLoading() {
       this.tagsLoaded = []

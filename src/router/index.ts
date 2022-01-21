@@ -8,9 +8,9 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Play.vue'),
   },
   {
-    path: '/bikedex/:currentPage?',
-    name: 'BikeDex',
-    component: () => import('@/views/BikeDex.vue'),
+    path: '/biketags/:currentPage?',
+    name: 'BikeTags',
+    component: () => import('@/views/BikeTags.vue'),
   },
   {
     path: '/players/:currentPage?',

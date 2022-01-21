@@ -16,8 +16,8 @@
       </div>
     </div>
     <div>
-      <b-button class="m-1" variant="primary" @click="goBikeDexPage">
-        {{ $t('menu.bikedex') }}
+      <b-button class="m-1" variant="primary" @click="goBikeTagsPage">
+        {{ $t('menu.biketags') }}
       </b-button>
       <b-button class="m-1" variant="primary" @click="goQueuePage">
         {{ $t('menu.play') }}( <span>{{ getCurrentBikeTag.tagnumber }}</span> )
@@ -102,8 +102,8 @@ export default defineComponent({
         returnTo: window.location.origin,
       })
     },
-    goBikeDexPage: function () {
-      this.$router.push('/bikedex')
+    goBikeTagsPage: function () {
+      this.$router.push('/biketags')
     },
     goQueuePage: function () {
       this.$store.dispatch('setFormStepJoin')
