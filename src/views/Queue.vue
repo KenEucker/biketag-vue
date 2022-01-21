@@ -140,8 +140,8 @@ export default defineComponent({
       this.uploadInProgress = false
 
       if (success === true) {
-        formData.set('tag', this.getQueuedTag)
-        formData.set('submission', `${this.getQueuedTag.player}${this.getQueuedTag.tagNumber}`)
+        formData.set('tag', JSON.stringify(this.getQueuedTag))
+        formData.set('submission', `${this.getQueuedTag.foundPlayer}${this.getQueuedTag.tagnumber}`)
         return sendNetlifyForm(
           formAction,
           new URLSearchParams(formData).toString(),
