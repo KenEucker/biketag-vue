@@ -3,6 +3,7 @@ import { builder, Handler } from '@netlify/functions'
 const myHandler: Handler = async (event) => {
   /// Send new found image queued notification
   /// Send new queued tag submitted notification
+  /// Send error report notification to admins
   console.log({ event })
 
   return {

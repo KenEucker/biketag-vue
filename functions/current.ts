@@ -4,7 +4,7 @@ import {
   getDomainInfo,
   getImgurImageSized,
   getPayloadOpts,
-} from '../src/common/methods'
+} from '../src/common/utils'
 import { BikeTagClient } from 'biketag'
 import request from 'request'
 import axios from 'axios'

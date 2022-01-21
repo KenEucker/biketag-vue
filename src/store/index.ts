@@ -4,8 +4,7 @@ import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import { BikeTagApiResponse, ImgurCredentials } from 'biketag/lib/common/types'
-import { getDomainInfo, getImgurImageSized } from '@/common/methods'
-import { DeviceUUID } from '../common/uuid'
+import { getDomainInfo, getImgurImageSized, getUuid, getIpInformation } from '@/common/utils'
 
 export interface State {
   game: Game
@@ -31,12 +30,14 @@ export enum BiketagFormSteps {
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(undefined, window)
-const playerId = new DeviceUUID().get()
-const gameName = domain.subdomain ?? (process.env.GAME_NAME as string)
+const playerId = await getUuid()
+const ipInfo = await getIpInformation()
+console.log({ ipInfo })
+const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const imgurCredentials: ImgurCredentials = {
   clientId: process.env.IMGUR_CLIENT_ID ?? '',
   clientSecret: process.env.IMGUR_CLIENT_SECRET,
-  accessToken: process.env.IMGUR_ACCESS_TOKEN as string,
+  accessToken: process.env.IMGUR_ACCESS_TOKEN,
   refreshToken: process.env.IMGUR_REFRESH_TOKEN,
 }
 const options: any = {
@@ -277,13 +278,14 @@ export const store = createStore<State>({
   actions: {
     setGame({ commit, state }) {
       if (!options.imgur) {
-        return client.game(state.gameName).then((d: Game) => {
-          imgurCredentials.hash = d.mainhash ?? imgurCredentials.hash
-          imgurCredentials.queuehash = imgurCredentials.queuehash ?? d.queuehash
+        return client.game(state.gameName).then((d) => {
+          const game = d as Game
+          imgurCredentials.hash = game.mainhash ?? imgurCredentials.hash
+          imgurCredentials.queuehash = imgurCredentials.queuehash ?? game.queuehash
           options.imgur = imgurCredentials
 
           client = new biketag(options)
-          return commit('SET_GAME', d)
+          return commit('SET_GAME', game)
         })
       }
     },
@@ -333,7 +335,8 @@ export const store = createStore<State>({
     setQueuedTag({ commit }, d) {
       return commit('SET_QUEUED_TAG', d)
     },
-    queueFoundTag({ commit }, d) {
+    async queueFoundTag({ commit }, d) {
+      console.log('queueFoundTag')
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = playerId
         return client.queueTag(d).then((t) => {
@@ -341,6 +344,7 @@ export const store = createStore<State>({
             commit('SET_QUEUE_FOUND', t.data)
           } else {
             console.log('queue BikeTag failed', t)
+            console.log('returning', t.error)
             return t.error
           }
           return t.success
@@ -348,7 +352,8 @@ export const store = createStore<State>({
       }
       return commit('SET_QUEUE_FOUND', d)
     },
-    queueMysteryTag({ commit }, d) {
+    async queueMysteryTag({ commit }, d) {
+      console.log('queueMysteryTag')
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = playerId
         return client.queueTag(d).then((t) => {
@@ -356,7 +361,10 @@ export const store = createStore<State>({
             commit('SET_QUEUE_MYSTERY', t.data)
           } else {
             console.log('queue BikeTag failed', t)
+            console.log('returning', t.error)
+            return t.error
           }
+          console.log('NOOOO', t.success)
           return t.success
         })
       }
