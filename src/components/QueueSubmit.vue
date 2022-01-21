@@ -50,7 +50,6 @@ export default defineComponent({
     onSubmit() {
       const formAction = this.$refs.mysteryTag.getAttribute('action')
       const formData = new FormData(this.$refs.mysteryTag)
-      const formBody = new URLSearchParams(formData).toString()
       const submittedTag = {
         discussionUrl: JSON.stringify({
           postToReddit: true,
@@ -63,7 +62,6 @@ export default defineComponent({
       this.$emit('submit', {
         formAction,
         formData,
-        formBody,
         tag: submittedTag,
         storeAction: 'submitQueuedTag',
       })

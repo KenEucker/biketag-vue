@@ -126,7 +126,8 @@ export default defineComponent({
       )
     },
     async onQueueSubmit(newTagSubmission) {
-      const { tag, formAction, formBody, storeAction } = newTagSubmission
+      const { tag, formAction, formData, storeAction } = newTagSubmission
+
       this.$toast.open({
         message: this.$t('notifications.uploading'),
         type: 'info',
@@ -138,21 +139,12 @@ export default defineComponent({
       const success = await this.$store.dispatch(storeAction, tag)
       this.uploadInProgress = false
 
-      /// assign the result of having queued the tag
-      if (this.getQueuedTag.mysteryImageUrl?.length > 0) {
-        if (this.getQueuedTag.foundImageUrl) {
-          console.log('what now?')
-        } else {
-          formBody.mysteryImageUrl = this.getQueuedTag.mysteryImageUrl
-        }
-      } else if (this.getQueuedTag.foundImageUrl?.length > 0) {
-        formBody.foundImageUrl = this.getQueuedTag.foundImageUrl
-      }
-
       if (success === true) {
+        formData.set('tag', this.getQueuedTag)
+        formData.set('submission', `${this.getQueuedTag.player}${this.getQueuedTag.tagNumber}`)
         return sendNetlifyForm(
           formAction,
-          formBody,
+          new URLSearchParams(formData).toString(),
           (res) => {
             console.log({ formSubmitted: res })
             this.$toast.open({

@@ -88,25 +88,24 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueue', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag']),
+    ...mapGetters(['getGameName', 'getQueue', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag']),
   },
   methods: {
     onSubmit(e) {
       e.preventDefault()
       const formAction = this.$refs.foundTag.getAttribute('action')
       const formData = new FormData(this.$refs.foundTag)
-      const formBody = new URLSearchParams(formData).toString()
       const foundTag = {
         foundImage: this.image,
         foundPlayer: this.player,
         foundLocation: this.location,
         tagnumber: this.getCurrentBikeTag.tagnumber,
+        game: this.getGameName,
       }
 
       this.$emit('submit', {
         formAction,
         formData,
-        formBody,
         tag: foundTag,
         storeAction: 'queueFoundTag',
       })

@@ -91,6 +91,9 @@ export const store = createStore<State>({
     getGameTitle(state) {
       return `${state.gameName.toUpperCase()}.BIKETAG`
     },
+    getGameName(state) {
+      return state.gameName
+    },
     getLogoUrl(state) {
       return (size = '') => {
         const logoUrl =

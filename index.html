@@ -12,24 +12,37 @@
 
 <body>
   <div id="app">
-    <form name="queue-found-tag" action="queue-found-tag" method="POST" data-netlify="true"
-      data-netlify-honeypot="bot-field" hidden>
+    <form name="queue-found-tag" action="/queue-found-tag" method="POST" netlify="" data-netlify-honeypot="bot-field"
+      hidden>
       <input type="hidden" name="form-name" value="queue-found-tag">
       <input type="hidden" name="playerId" required>
       <input type="hidden" name="foundImageUrl" required>
-      <input name="found" type="text" required>
+      <input name="submission" type="text" required>
       <input name="player" type="text" required>
+      <input name="found" type="text" required>
     </form>
-    <form name="queue-mystery-tag" action="queue-mystery-tag" method="POST" data-netlify="true"
+    <form name="queue-mystery-tag" action="/queue-mystery-tag" method="POST" netlify=""
       data-netlify-honeypot="bot-field" hidden>
       <input type="hidden" name="form-name" value="queue-mystery-tag">
-      <input type="hidden" name="playerId">
+      <input type="hidden" name="playerId" required>
       <input type="hidden" name="mysteryImageUrl" required>
+      <input name="submission" type="text" required>
       <input name="player" type="text" required>
       <input name="hint" type="text">
     </form>
-    <form name="queue-tag-error" action="queue-tag-error" method="POST" data-netlify="true"
+    <form name="submit-queued-tag" action="submit-queued-tag" method="POST" data-netlify="true"
       data-netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="submit-queued-tag">
+      <input type="hidden" name="playerId" required>
+      <input type="hidden" name="game" required>
+      <input type="hidden" name="tag" required>
+      <input name="submission" type="text" required>
+      <input name="player" type="text" required>
+      <input name="discussionUrl" type="text">
+      <input name="mentionUrl" type="text">
+    </form>
+    <form name="queue-tag-error" action="/queue-tag-error" method="POST" netlify="" data-netlify-honeypot="bot-field"
+      hidden>
       <input type="hidden" name="form-name" value="queue-tag-error">
       <input type="hidden" name="message">
       <input type="hidden" name="ip">
