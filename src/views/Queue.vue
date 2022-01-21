@@ -141,7 +141,10 @@ export default defineComponent({
 
       if (success === true) {
         formData.set('tag', JSON.stringify(this.getQueuedTag))
-        formData.set('submission', `${this.getQueuedTag.foundPlayer}${this.getQueuedTag.tagnumber}`)
+        formData.set(
+          'submission',
+          `${this.getQueuedTag.foundPlayer}-${this.getQueuedTag.tagnumber}`
+        )
 
         if (tag.foundImage) {
           formData.set('foundImageUrl', this.getQueuedTag.foundImageUrl)
