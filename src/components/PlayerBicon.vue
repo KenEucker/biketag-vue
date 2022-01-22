@@ -1,13 +1,13 @@
 <template>
   <div
-    v-if="player.name?.length"
+    v-if="_playerName?.length"
     :class="'player-wrapper avatar-' + size"
     role="button"
     @click="goPlayerPage"
   >
-    <span class="player-name p-1">{{ playerName }}</span>
-    <span v-if="player.tags?.length" class="tag-count p-2">{{ player.tags.length }}</span>
-    <img class="player-bicon" :src="playerBiconUrl" :alt="playerName" />
+    <span class="player-name p-1">{{ _playerName }}</span>
+    <span v-if="player?.tags?.length" class="tag-count p-2">{{ player.tags.length }}</span>
+    <img v-if="playerBiconUrl" class="player-bicon" :src="playerBiconUrl" :alt="_playerName" />
   </div>
 </template>
 
@@ -28,6 +28,10 @@ export default defineComponent({
         return {}
       },
     },
+    playerName: {
+      type: String,
+      default: null,
+    },
     noLink: {
       type: Boolean,
       default: false,
@@ -35,21 +39,26 @@ export default defineComponent({
   },
   computed: {
     ...mapGetters(['getImgurImageSized']),
-    playerName() {
+    _playerName() {
+      if (this.playerName) {
+        return this.playerName
+      }
       if (this.size === 'sm') {
-        return this.player.name.substr(0, 1)
+        return this.player?.name.substr(0, 1)
       } else {
-        return this.player.name
+        return this.player?.name
       }
     },
     playerBiconUrl() {
       let url
-      if (this.player.bicon) {
-        url = this.player.bicon
-      } else if (this.player.tags[this.player.tags.length - 1].mysteryImageUrl) {
-        url = this.player.tags[this.player.tags.length - 1].mysteryImageUrl
-      } else {
-        url = this.player.tags[this.player.tags.length - 1].foundImageUrl
+      if (this.player && typeof this.player === 'object') {
+        if (this.player.bicon) {
+          url = this.player.bicon
+        } else if (this.player.tags[this.player.tags.length - 1].mysteryImageUrl) {
+          url = this.player.tags[this.player.tags.length - 1].mysteryImageUrl
+        } else {
+          url = this.player.tags[this.player.tags.length - 1].foundImageUrl
+        }
       }
       return this.getImgurImageSized(url, this.size[0])
     },
@@ -57,7 +66,7 @@ export default defineComponent({
   methods: {
     goPlayerPage: function () {
       if (!this.noLink) {
-        this.$router.push('/player/' + encodeURIComponent(this.player.name))
+        this.$router.push('/player/' + encodeURIComponent(this.player?.name))
       }
     },
   },
@@ -74,6 +83,7 @@ export default defineComponent({
     filter: invert(1) drop-shadow(2px 4px 6px white);
     transform: rotate(-8deg);
     display: block;
+    animation: fadeIn 2s;
   }
 
   .tag-count {

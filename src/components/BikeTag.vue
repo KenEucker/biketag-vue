@@ -3,9 +3,7 @@
     <b-col v-show="_mysteryImageUrl" v-masonry-tile :md="_foundImageUrl ? 6 : 12" class="item mb-3">
       <b-card class="polaroid">
         <div class="img-wrapper">
-          <span class="tag-number">#{{ _tagnumber }}</span>
-          <player v-if="mysteryPlayer" class="tag-player" :player="mysteryPlayer" size="txt" />
-          <span v-else class="tag-player">{{ _mysteryPlayer }}</span>
+          <span class="tag-number" @click="goTagPage">#{{ _tagnumber }}</span>
           <expandable-image
             :source="getImgurImageSized(_mysteryImageUrl, _foundImageUrl ? 'm' : 'l')"
             :full-source="_mysteryImageUrl"
@@ -13,8 +11,14 @@
             @load="tagImageLoaded('mystery')"
           ></expandable-image>
         </div>
-        <div class="card-bottom" @click="goTagPage">
-          <span class="description">{{ _mysteryDescription }}</span>
+        <div class="card-bottom">
+          <div class="description">
+            <span>{{ _mysteryDescription }}</span>
+            <br />
+            <span>{{ getMysteryPostedDate() }}</span>
+          </div>
+          <player v-if="mysteryPlayer" :player="mysteryPlayer" size="txt" />
+          <span v-else class="player-name">{{ _mysteryPlayer }}</span>
         </div>
       </b-card>
     </b-col>
@@ -22,8 +26,6 @@
       <b-card class="polaroid">
         <div class="img-wrapper">
           <span class="tag-number">#{{ _foundTagnumber }}</span>
-          <player v-if="foundPlayer" class="tag-player" :player="foundPlayer" size="txt" />
-          <span v-else class="tag-player">{{ _foundPlayer }}</span>
           <expandable-image
             class="image img-fluid"
             :source="getImgurImageSized(_foundImageUrl)"
@@ -34,6 +36,7 @@
         </div>
         <div class="card-bottom">
           <span class="description">{{ _foundDescription }}</span>
+          <player class="tag-player" :player="foundPlayer" :player-name="_foundPlayer" size="txt" />
         </div>
       </b-card>
     </b-col>
@@ -145,9 +148,14 @@ export default defineComponent({
       return `#${this._foundTagnumber} (found at) ${this.tag.foundLocation ?? 'unknown'}`
     },
     getMysteryDescription() {
-      return `#${this._tagnumber} (posted on) ${new Date(
-        this.tag.foundTime * 1000
-      ).toLocaleDateString()}`
+      return this.tag?.hint?.length > 0 ? `"${this.tag.hint}"` : ''
+    },
+    getMysteryPostedDate() {
+      return this.tag?.foundTime
+        ? `[${this.$t('components.biketag.posted_on')} ${new Date(
+            this.tag.foundTime * 1000
+          ).toLocaleDateString()}]`
+        : ''
     },
     tagImageLoaded(type) {
       if (type === 'mystery') {
@@ -203,11 +211,16 @@ export default defineComponent({
 }
 
 .card-bottom {
-  padding: 2em;
+  padding: 1rem;
+  min-height: 12rem;
 
   .description {
     position: relative;
-    font-size: 3vh;
+    white-space: pre-wrap;
+    width: 110%;
+    margin-left: -5%;
+    padding: 1em;
+    line-height: 2em;
   }
 }
 </style>

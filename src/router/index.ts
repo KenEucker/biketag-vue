@@ -61,13 +61,7 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes: [...routes, ...protectedRoutes],
   scrollBehavior() {
-    // always scroll to top
     return { top: 0 }
-    //   return new Promise((resolve, reject) => {
-    //     setTimeout(() => {
-    //       resolve({ x: 0, y: 0 })
-    //     }, 500)
-    //   })
   },
 })
 

@@ -190,6 +190,14 @@ export default defineComponent({
   },
 })
 </script>
+<style>
+#app .card.polaroid .player-wrapper .player-name {
+  font-family: MarkerNotes;
+  font-weight: 100;
+  font-size: 3rem;
+  transform: unset;
+}
+</style>
 <style scoped>
 .clock-div > i {
   color: forestgreen;

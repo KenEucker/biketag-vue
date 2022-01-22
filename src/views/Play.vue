@@ -13,8 +13,8 @@
       >
         ?
       </b-button>
-      <b-button v-if="getQueuedTags.length" class="btn-clock" @click="goQueue">
-        <img class="queue" src="../assets/images/SpinningBikeV1.svg" />
+      <b-button v-if="getQueuedTags?.length && tagnumber === 0" class="btn-queue" @click="goQueue">
+        <img class="bicon" src="../assets/images/SpinningBikeV1.svg" />
       </b-button>
       <bike-tag
         v-if="tagnumber === 0"
@@ -25,7 +25,13 @@
         size="l"
         :mystery-description="$t('pages.play.mystery').toLocaleUpperCase()"
       />
-      <bike-tag v-else :tag="tag" size="l" @load="tagLoaded" />
+      <bike-tag
+        v-else
+        :tag="tag"
+        size="l"
+        :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
+        @load="tagLoaded"
+      />
     </div>
   </div>
 </template>
@@ -96,6 +102,11 @@ export default defineComponent({
   },
 })
 </script>
+<style>
+.polaroid img {
+  animation: fadeIn 2s;
+}
+</style>
 <style scoped lang="scss">
 .rel {
   position: relative;
@@ -114,7 +125,7 @@ export default defineComponent({
   font-size: 1.25em;
 }
 
-.btn-clock {
+.btn-queue {
   position: absolute;
   top: -15px;
   right: -25px;
@@ -128,8 +139,10 @@ export default defineComponent({
     cursor: pointer;
     font-size: 4.5vh;
   }
+}
 
-  .queue {
+.btn-queue {
+  .bicon {
     max-height: 3.5em;
     animation: tronFilter 5s ease-in-out infinite alternate;
   }
