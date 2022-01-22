@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="player.name?.length"
-    :class="'player-wrapper avatar-' + size + ' p-1 mw-min'"
+    :class="'player-wrapper avatar-' + size"
     role="button"
     @click="goPlayerPage"
   >
@@ -66,16 +66,14 @@ export default defineComponent({
 <style scoped lang="scss">
 .player-wrapper {
   position: relative;
+  padding-top: 2rem;
 
   .player-name {
-    position: absolute;
-    left: 50%;
     z-index: 99;
     text-shadow: 3px -2px 3px #292828e6;
-    // mix-blend-mode: difference;
-    // filter: invert(1) drop-shadow(2px 4px 6px white);
-    filter: invert(1) drop-shadow(2px 4px 6px white) invert(1);
-    transform: translate(-60%, -80%) rotate(-10deg);
+    filter: invert(1) drop-shadow(2px 4px 6px white);
+    transform: rotate(-8deg);
+    display: block;
   }
 
   .tag-count {
@@ -89,9 +87,6 @@ export default defineComponent({
 }
 
 .avatar-txt {
-  .player-name {
-    transform: translate(-50%, -100%) rotate(-10deg);
-  }
   .tag-count {
     display: none;
     padding: 0;
@@ -168,9 +163,5 @@ export default defineComponent({
   .tag-player {
     display: none;
   }
-}
-
-.mw-min {
-  max-width: min-content;
 }
 </style>

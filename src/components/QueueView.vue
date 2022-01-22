@@ -22,7 +22,7 @@
           :key="tag.tagnumber"
           :tag="tag"
           size="l"
-          :reverse="tag?.mysteryImageUrl?.length > 0"
+          :reverse="!tag?.mysteryImageUrl?.length"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
           :found-description="stringifyNumber(index + 1)"
         />

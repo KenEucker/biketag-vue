@@ -107,6 +107,15 @@ html {
       }
     }
 
+    .tag-number {
+      color: $tag-number-color;
+      background-color: $tag-number-bg-color;
+      font-size: $tag-number-font-size;
+      font-weight: $tag-number-font-weight;
+      font-family: $tag-number-font-family;
+      filter: saturate(0.75);
+    }
+
     .player-name {
       color: $tag-text-color;
       font-family: $tag-player-font-family;
@@ -116,8 +125,11 @@ html {
     }
 
     .description {
+      font-size: $tag-description-font-size;
       font-weight: $tag-description-font-weight;
       font-family: $tag-description-font-family;
+      background-color: $tag-number-bg-color;
+      filter: saturate(0.75);
     }
 
     .player-wrapper {
@@ -217,14 +229,6 @@ html {
         font-size: $title-font-size;
         font-weight: $title-font-weight;
       }
-    }
-
-    .tag-number {
-      color: $tag-number-color;
-      background-color: $tag-number-bg-color;
-      font-size: $tag-number-font-size;
-      font-weight: $tag-number-font-weight;
-      font-family: $tag-number-font-family;
     }
 
     .img-wrapper {

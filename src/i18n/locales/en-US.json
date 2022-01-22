@@ -18,7 +18,7 @@
   "components": {
     "biketag": {
       "found_at": "found at",
-      "posted_on": "posted on"
+      "posted_on": "posted"
     },
     "footer": {
       "sourced": "sourced",
