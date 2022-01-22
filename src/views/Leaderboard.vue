@@ -23,13 +23,13 @@ export default defineComponent({
     Player,
   },
   computed: {
-    ...mapGetters(['getPlayers']),
+    ...mapGetters(['getLeaderboard']),
     playersList() {
-      return this.getPlayers.slice(0, 10)
+      return this.getLeaderboard
     },
   },
-  async mounted() {
-    await this.$store.dispatch('setTopPlayers')
+  async created() {
+    await this.$store.dispatch('setLeaderboard')
   },
 })
 </script>

@@ -14,6 +14,7 @@ export interface State {
   tags: Tag[]
   queuedTags: Tag[]
   players: Player[]
+  leaderboard: Player[]
   html: string
   formStep: number
   queuedTag: Tag
@@ -63,6 +64,7 @@ export const store = createStore<State>({
     playerId,
     queuedTags: [] as Tag[],
     players: [] as Player[],
+    leaderboard: [] as Player[],
     html: '',
     formStep: BiketagFormSteps.queueView,
     queuedTag: {} as Tag,
@@ -121,6 +123,9 @@ export const store = createStore<State>({
     getPlayers(state) {
       return state.players
     },
+    getLeaderboard(state) {
+      return state.leaderboard
+    },
     getFormStep(state) {
       return BiketagFormSteps[state.formStep]
     },
@@ -159,6 +164,14 @@ export const store = createStore<State>({
 
       if (oldState?.length !== html?.length) {
         console.log('store::html', { html })
+      }
+    },
+    SET_LEADERBOARD(state, leaderboard) {
+      const oldState = state.leaderboard
+      state.leaderboard = leaderboard
+
+      if (oldState?.length !== leaderboard?.length) {
+        console.log('store::leaderboard', { leaderboard })
       }
     },
     SET_PLAYERS(state, players) {
@@ -343,9 +356,9 @@ export const store = createStore<State>({
         return commit('SET_PLAYERS', d)
       })
     },
-    setTopPlayers({ commit }) {
-      return client.players({ sort: 'top' }).then((d) => {
-        return commit('SET_PLAYERS', d)
+    setLeaderboard({ commit }) {
+      return client.players({ sort: 'top', limit: 10 }).then((d) => {
+        return commit('SET_LEADERBOARD', d)
       })
     },
     setQueuedTag({ commit }, d) {
