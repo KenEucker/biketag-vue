@@ -110,7 +110,9 @@ html {
     .player-name {
       color: $tag-text-color;
       font-family: $tag-player-font-family;
+      font-weight: $tag-player-font-weight;
       font-size: $tag-player-font-size;
+      line-height: $tag-player-line-height;
     }
 
     .description {
@@ -229,7 +231,10 @@ html {
       .tag-player {
         color: $tag-text-color;
         font-family: $tag-player-font-family;
+        font-weight: $tag-player-font-weight;
         font-size: $tag-player-font-size;
+        text-shadow: 2px 2px #292828e6;
+        filter: invert(1);
       }
     }
 

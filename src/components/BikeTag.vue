@@ -199,7 +199,6 @@ export default defineComponent({
     right: 5rem;
     bottom: 0;
     z-index: 99;
-    text-shadow: 2px 2px #292828e6;
   }
 }
 

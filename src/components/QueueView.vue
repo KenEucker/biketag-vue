@@ -24,6 +24,7 @@
           size="l"
           :reverse="tag?.mysteryImageUrl?.length > 0"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
+          :found-description="stringifyNumber(index + 1)"
         />
       </swiper-slide>
     </swiper>
@@ -39,6 +40,7 @@ import 'vue-loading-overlay/dist/vue-loading.css'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
+import { stringifyNumber } from '@/common/utils'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
@@ -77,6 +79,7 @@ export default defineComponent({
     },
   },
   methods: {
+    stringifyNumber,
     goNextQueueStep: function () {
       this.$store.dispatch('setFormStepToJoin', true)
       // if (this.getQueuedTag?.mysteryImageUrl?.length > 0) {

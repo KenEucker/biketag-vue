@@ -71,8 +71,11 @@ export default defineComponent({
     position: absolute;
     left: 50%;
     z-index: 99;
-    text-shadow: 2px 2px 1px #292828e6;
-    transform: translate(-50%, 50%) rotate(-15deg);
+    text-shadow: 3px -2px 3px #292828e6;
+    // mix-blend-mode: difference;
+    // filter: invert(1) drop-shadow(2px 4px 6px white);
+    filter: invert(1) drop-shadow(2px 4px 6px white) invert(1);
+    transform: translate(-60%, -80%) rotate(-10deg);
   }
 
   .tag-count {
@@ -87,9 +90,8 @@ export default defineComponent({
 
 .avatar-txt {
   .player-name {
-    transform: translate(-50%, -100%) rotate(-15deg);
+    transform: translate(-50%, -100%) rotate(-10deg);
   }
-
   .tag-count {
     display: none;
     padding: 0;
@@ -131,7 +133,8 @@ export default defineComponent({
 
   .player-name {
     font-size: 4vh;
-    bottom: 30%;
+    bottom: 0;
+    right: -22%;
     top: auto;
   }
 
@@ -145,7 +148,7 @@ export default defineComponent({
 .avatar-lg {
   .player-bicon {
     border-radius: 5%;
-    max-width: 50vh;
+    max-width: 90vw;
   }
 
   .player-name {

@@ -1,20 +1,22 @@
 @import 'fonts';
 @import 'colors';
 
-$how-font-family: permanentmarker;
+$how-font-family: MarkerNotes;
 $how-font-size: 3vh;
 $btn-hint-font-weight: 1000;
 $btn-hint-font-family: 'Circular-Loom';
 $btn-hint-font-size: 1.2em;
 $btn-swiper-font-size: 20pt;
-$title-font-family: permanentmarker;
+$title-font-family: MarkerNotes;
 $title-font-size: calc(1.375rem + 1.5vw);
 $title-font-weight: 600;
-$tag-number-font-family: permanentmarker;
+$tag-number-font-family: MarkerNotes;
 $tag-description-font-size: 2rem;
 $tag-description-font-weight: 500;
-$tag-description-font-family: permanentmarker;
+$tag-description-font-family: MarkerNotesItalic;
 $tag-number-font-size: 2rem;
 $tag-number-font-weight: 500;
-$tag-player-font-family: autography;
-$tag-player-font-size: 5vh;
+$tag-player-font-weight: 800;
+$tag-player-font-family: bettergrade;
+$tag-player-font-size: 6rem;
+$tag-player-line-height: calc($tag-player-font-size / 2);

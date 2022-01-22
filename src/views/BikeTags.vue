@@ -100,9 +100,11 @@ export default defineComponent({
     startLoading() {
       this.tagsLoaded = []
       this.tagsAreLoading = true
-      setTimeout(() => {
-        this.tagsAreLoading = false
-      }, 500)
+      if (this.perPage <= 10) {
+        setTimeout(() => {
+          this.tagsAreLoading = false
+        }, 500)
+      }
     },
     getPlayer(playerName) {
       const playerList =

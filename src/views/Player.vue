@@ -110,8 +110,10 @@ export default defineComponent({
     this.startLoading()
   },
   async mounted() {
+    this.tagsAreLoading = true
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setPlayers')
+    this.tagsAreLoading = false
   },
   methods: {
     resetCurrentPage() {
@@ -134,9 +136,11 @@ export default defineComponent({
     startLoading() {
       this.tagsLoaded = []
       this.tagsAreLoading = true
-      setTimeout(() => {
-        this.tagsAreLoading = false
-      }, 500)
+      if (this.perPage <= 10) {
+        setTimeout(() => {
+          this.tagsAreLoading = false
+        }, 500)
+      }
     },
     tagLoaded() {
       /// Remove?
