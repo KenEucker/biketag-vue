@@ -1,11 +1,11 @@
 <template>
   <div class="container">
-    <div v-masonry transition-duration="0.3s" item-selector=".item" fit-width="true" class="m-auto">
+    <div v-masonry transition-duration="0.3s" item-selector=".item" class="m-auto">
       <div
         v-for="player in playersList"
         :key="player.name"
         v-masonry-tile
-        class="item p-lg-3 p-md-2 mb-2"
+        class="item p-lg-1 p-md-1 mb-1"
       >
         <player size="md" :player="player" />
       </div>

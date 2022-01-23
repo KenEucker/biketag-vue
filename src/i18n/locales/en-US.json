@@ -23,7 +23,8 @@
     "footer": {
       "sourced": "sourced",
       "deployed": "deployed",
-      "worldwide": "worldwide"
+      "worldwide": "worldwide",
+      "biketag": "BikeTag"
     },
     "queue": {
       "view_mystery_image": "Queued Mystery Image",
@@ -37,25 +38,28 @@
     "play": {
       "hint": "need a hint?",
       "nohint": "no hint provided, sorry",
-      "mystery": "current mystery location to find"
+      "mystery": "current Mystery Location to find"
     },
     "queue": {
       "join_queue": "Join round",
       "complete_queue": "Complete your tag for round",
-      "submit_queue": "Submit your tag to win round",
-      "found_title": "Did you find the current mystery location? Add your found image now!",
-      "queue_joined": "Now that you've added your found image, you must bike to a new location and take a picture there. The race is on!",
-      "mystery_title": "Complete your pair of images with the new mystery location in order to create a new BikeTag post",
-      "joined_button": "See All Tags For Round",
-      "submit_title": "Post Tag ",
-      "location_placeholder": "Enter found location",
+      "submit_queue": "Submit your completed tag for round",
+      "found_title": "Did you find the current Mystery Location? Add your found image now!",
+      "queue_joined": "Now that you've added your found image, you must bike to a new location and take a picture there. While your found image has been recorded, you haven't completed your BikeTag until you add a new Mystery Location for the next round. The race is on!",
+      "queue_posted": "You did it!",
+      "mystery_title": "Complete your pair of images with the new Mystery Location in order to create a new BikeTag Post",
+      "joined_button": "See all tags in round",
+      "submit_title": "Submit your BikeTag Post to win the round! You can have the BikeTag RoBot post on your behalf or you can choose to post to other platforms on your own. Once you submit your BikeTag the round will come to a close and your BikeTag will become the new round!",
+      "posted_title": "Your BikeTag has been submitted!",
+      "location_placeholder": "Enter Found Location",
       "name_placeholder": "Enter your name",
       "hint_placeholder": "Enter your hint",
-      "image_label": "This is what your post look like",
+      "post_to_reddit": "post to Reddit for me",
+      "post_to_twitter": "post to Twitter for me",
       "queue_found_tag": "Add Your Found Image",
       "submit_new_tag": "Add Your Mystery Image",
       "queue_postfix": "",
-      "post_new_tag": "Submit New BikeTag",
+      "post_new_tag": "Post New BikeTag",
       "reset_tag": "Reset Tag Submission",
       "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project"
     },

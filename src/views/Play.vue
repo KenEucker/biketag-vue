@@ -1,9 +1,9 @@
 <template>
-  <div class="container rel col-lg-6">
+  <div class="container col-lg-6 play-biketag">
     <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
-    <div>
+    <div class="rel">
       <b-button
         v-if="tagnumber === 0 && !tagIsLoading"
         v-b-popover.click.left="getHint"
@@ -102,49 +102,54 @@ export default defineComponent({
   },
 })
 </script>
-<style>
-.polaroid img {
-  animation: fadeIn 2s;
+<style lang="scss">
+.play-biketag {
+  .polaroid img {
+    animation: fadeIn 2s;
+    max-height: 45vh;
+  }
 }
 </style>
 <style scoped lang="scss">
-.rel {
-  position: relative;
-}
-
-.container {
-  min-height: 350px;
-  background-color: transparent;
-}
-
-.btn-hint {
-  position: absolute;
-  top: 10px;
-  left: 20px;
-  z-index: 99;
-  font-size: 1.25em;
-}
-
-.btn-queue {
-  position: absolute;
-  top: -15px;
-  right: -25px;
-  z-index: 99;
-  font-size: 1.25em;
-  background-color: transparent !important;
-  border-color: transparent !important;
-
-  i {
-    color: forestgreen;
-    cursor: pointer;
-    font-size: 4.5vh;
+.play-biketag {
+  .rel {
+    position: relative;
   }
-}
 
-.btn-queue {
-  .bicon {
-    max-height: 3.5em;
-    animation: tronFilter 5s ease-in-out infinite alternate;
+  .container {
+    min-height: 350px;
+    background-color: transparent;
+  }
+
+  .btn-hint {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 99;
+    font-size: 1.25em;
+  }
+
+  .btn-queue {
+    position: absolute;
+    top: 0;
+    right: -25px;
+    z-index: 99;
+    font-size: 1.25em;
+    background-color: transparent !important;
+    border-color: transparent !important;
+
+    i {
+      color: forestgreen;
+      cursor: pointer;
+      font-size: 4.5vh;
+    }
+  }
+
+  .btn-queue {
+    .bicon {
+      max-height: 3.5em;
+      animation: tronFilter 5s ease-in-out infinite alternate;
+    }
   }
 }
 </style>

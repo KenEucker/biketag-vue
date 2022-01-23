@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-5">
+  <div class="container mt-2">
     <div class="footer-buttons">
       <b-button class="m-1" variant="primary" @click="goAboutPage">
         {{ $t('menu.about') }}
@@ -11,26 +11,29 @@
         {{ $t('menu.top10') }}
       </b-button>
     </div>
-    <div class="worldwide mt-4 mb-4">
-      <a href="https://biketag.org">
-        <i class="fa fa-globe" aria-hidden="true"></i>
-        <i class="fa fa-globe ghost" aria-hidden="true"></i>
-        <p>{{ $t('components.footer.worldwide') }}</p>
-      </a>
-    </div>
-    <footer class="container mt-4 pb-5">
+    <footer class="container mt-2 pb-5">
       <div class="row">
-        <a href="https://github.com/KenEucker/biketag-vue"
-          ><img src="../assets/images/github-logo.png" alt="GitHub" /><img
-            src="../assets/images/github-mark.png"
-            alt="GitHub Mark"
-        /></a>
-        <span><sup>0</sup>{{ $t('components.footer.sourced') }}</span>
-        <img class="flow" src="../assets/images/bidirectional-flow.svg" />
-        <span>{{ $t('components.footer.deployed') }}<sup>1</sup></span>
-        <a href="https://www.netlify.com/"
-          ><img src="../assets/images/netlify-logo-dark.svg" alt="Netlify"
-        /></a>
+        <div class="col-md-2">
+          <div class="worldwide">
+            <a href="https://biketag.org">
+              <div>{{ $t('components.footer.biketag') }}</div>
+              <i class="fa fa-globe" aria-hidden="true"></i>
+              <div>{{ $t('components.footer.worldwide') }}</div>
+            </a>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <a href="https://github.com/KenEucker/biketag-vue">
+            <img src="../assets/images/github-logo.png" alt="GitHub" />
+            <img src="../assets/images/github-mark.png" alt="GitHub Mark" />
+          </a>
+          <span><sup>0</sup>{{ $t('components.footer.sourced') }}</span>
+          <img class="flow" src="../assets/images/bidirectional-flow.svg" />
+          <span>{{ $t('components.footer.deployed') }}<sup>1</sup></span>
+          <a href="https://www.netlify.com/">
+            <img src="../assets/images/netlify-logo-dark.svg" alt="Netlify" />
+          </a>
+        </div>
       </div>
     </footer>
   </div>
@@ -65,27 +68,6 @@ export default defineComponent({
   }
 }
 
-.worldwide {
-  p {
-    color: black;
-  }
-
-  a i {
-    font-size: 5em;
-
-    &:hover {
-      filter: blur(2px);
-    }
-  }
-
-  .ghost {
-    color: black;
-    z-index: -1;
-    position: absolute;
-    transform: translate(-103%, 2%);
-  }
-}
-
 footer {
   display: flex;
   flex-flow: wrap;
@@ -94,6 +76,14 @@ footer {
   max-width: 20vw;
 
   .row {
+    > div {
+      font-family: monospace;
+      padding-left: 1px;
+      margin-left: 5px;
+      color: white;
+      position: relative;
+    }
+
     span {
       font-family: monospace;
       padding-left: 1px;
@@ -101,11 +91,30 @@ footer {
       color: white;
     }
 
+    .worldwide {
+      div {
+        color: black;
+        margin: 0;
+      }
+
+      a {
+        text-decoration: none;
+
+        i {
+          font-size: 5em;
+
+          &:hover {
+            filter: blur(2px);
+          }
+        }
+      }
+    }
+
     .flow {
       max-height: 131px;
       position: absolute;
-      left: -50%;
-      right: -50%;
+      top: 0%;
+      right: 15%;
       z-index: -1;
       padding-top: 1px;
     }

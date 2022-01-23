@@ -5,9 +5,19 @@
     role="button"
     @click="goPlayerPage"
   >
-    <span class="player-name p-1">{{ _playerName }}</span>
-    <span v-if="player?.tags?.length" class="tag-count p-2">{{ player.tags.length }}</span>
+    <div>
+      <svg class="svg">
+        <clipPath id="badge-clip" clipPathUnits="objectBoundingBox">
+          <path
+            d="M0,0.051 v0.572 c0,0.025,0.019,0.064,0.05,0.083 l0.404,0.28 c0.025,0.019,0.068,0.019,0.093,0 l0.404,-0.28 c0.025,-0.019,0.05,-0.057,0.05,-0.083 v-0.572 C0.994,0.019,0.963,0,0.925,0 H0.068 C0.031,0,0,0.019,0,0.051 L0,0.051"
+          ></path>
+        </clipPath>
+      </svg>
+      <div class="clipped"></div>
+      <span v-if="player?.tags?.length" class="tag-count p-2">{{ player.tags.length }}</span>
+    </div>
     <img v-if="playerBiconUrl" class="player-bicon" :src="playerBiconUrl" :alt="_playerName" />
+    <span class="player-name p-1">{{ _playerName }}</span>
   </div>
 </template>
 
@@ -84,14 +94,22 @@ export default defineComponent({
     transform: rotate(-8deg);
     display: block;
     animation: fadeIn 2s;
+    // word-break: break-word;
+    // text-decoration-line: underline;
+  }
+
+  .svg {
+    position: absolute;
+    width: 0;
+    height: 0;
   }
 
   .tag-count {
     position: absolute;
     padding: 20px;
-    width: 7vh;
+    width: 6vw;
     text-align: center;
-    clip-path: circle(40%);
+    clip-path: url(#badge-clip);
     z-index: 99;
   }
 }
@@ -137,14 +155,15 @@ export default defineComponent({
   }
 
   .player-name {
-    font-size: 4vh;
+    font-size: 1.5rem;
     bottom: 0;
     right: -22%;
     top: auto;
   }
 
   .tag-count {
-    font-size: 3vh;
+    font-size: 1.5rem;
+    width: 3.5rem;
     top: 43%;
     right: 10px;
   }
@@ -157,14 +176,18 @@ export default defineComponent({
   }
 
   .player-name {
-    font-size: 4vh;
+    position: absolute;
     top: 0;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    transform: unset;
+    font-size: 4vw !important;
+    font-family: markernotes !important;
   }
 
   .tag-count {
-    font-size: 4vh;
-    top: 1rem;
+    font-size: 2rem;
+    top: 2rem;
     right: 1rem;
   }
 }

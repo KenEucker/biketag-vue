@@ -6,7 +6,7 @@
       </b-button>
     </div>
   </div>
-  <div class="container mb-5">
+  <div class="container mt-2 mb-5">
     <div class="header-logo">
       <a href="./">
         <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
@@ -20,7 +20,10 @@
         {{ $t('menu.biketags') }}
       </b-button>
       <b-button class="m-1" variant="primary" @click="goQueuePage">
-        {{ $t('menu.play') }} #<span>{{ getCurrentBikeTag.tagnumber }}</span>
+        {{ $t('menu.play') }}
+        <span>{{
+          !!getCurrentBikeTag?.tagnumber ? `#${getCurrentBikeTag.tagnumber + 1}` : ''
+        }}</span>
       </b-button>
       <b-button class="m-1" variant="primary" @click="goHowPage">
         {{ $t('menu.howto') }}

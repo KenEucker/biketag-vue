@@ -127,7 +127,7 @@ export default {
 
   .swiper-slide {
     p {
-      line-height: 3vh;
+      line-height: 2vh;
     }
   }
 }

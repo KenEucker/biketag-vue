@@ -1,7 +1,7 @@
 <template>
   <b-row :class="reverse ? 'reversed' : ''">
     <b-col v-show="_mysteryImageUrl" v-masonry-tile :md="_foundImageUrl ? 6 : 12" class="item mb-3">
-      <b-card class="polaroid">
+      <b-card class="polaroid mystery-tag">
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _tagnumber }}</span>
           <expandable-image
@@ -23,7 +23,7 @@
       </b-card>
     </b-col>
     <b-col v-show="_foundImageUrl" v-masonry-tile md="6" class="item mb-3">
-      <b-card class="polaroid">
+      <b-card class="polaroid found-tag">
         <div class="img-wrapper">
           <span class="tag-number">#{{ _foundTagnumber }}</span>
           <expandable-image
@@ -107,7 +107,7 @@ export default defineComponent({
     return {
       mysteryImageLoaded: false,
       foundImageLoaded: false,
-      noLink: false,
+      noTagnumberLink: false,
     }
   },
   computed: {
@@ -119,10 +119,18 @@ export default defineComponent({
       return this.foundTagnumber ? this.foundTagnumber : this.tag?.tagnumber
     },
     _foundImageUrl() {
-      return this.foundImageUrl ? this.foundImageUrl : this.tag?.foundImageUrl
+      return this.foundImageUrl
+        ? this.foundImageUrl.length === 0
+          ? null
+          : this.foundImageUrl
+        : this.tag?.foundImageUrl
     },
     _mysteryImageUrl() {
-      return this.mysteryImageUrl ? this.mysteryImageUrl : this.tag?.mysteryImageUrl
+      return this.mysteryImageUrl
+        ? this.mysteryImageUrl.length === 0
+          ? null
+          : this.mysteryImageUrl
+        : this.tag?.mysteryImageUrl
     },
     _foundPlayer() {
       return this.tag?.foundPlayer ?? ''
@@ -148,7 +156,7 @@ export default defineComponent({
       return `#${this._foundTagnumber} (found at) ${this.tag.foundLocation ?? 'unknown'}`
     },
     getMysteryDescription() {
-      return this.tag?.hint?.length > 0 ? `"${this.tag.hint}"` : ''
+      return `#${this._tagnumber} ${this.tag?.hint?.length > 0 ? `"${this.tag.hint}"` : ''}`
     },
     getMysteryPostedDate() {
       return this.tag?.foundTime
@@ -172,7 +180,7 @@ export default defineComponent({
       }
     },
     goTagPage: function () {
-      if (!this.noLink) {
+      if (!this.noTagnumberLink) {
         this.$router.push('/' + encodeURIComponent(this._tagnumber))
       }
     },
@@ -213,6 +221,8 @@ export default defineComponent({
 .card-bottom {
   padding: 1rem;
   min-height: 12rem;
+  max-width: 60vw;
+  margin: 0 auto;
 
   .description {
     position: relative;

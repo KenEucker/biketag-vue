@@ -63,7 +63,7 @@
       }}</b-button>
     </b-popover>
   </div>
-  <div v-if="!onlyMine" class="bike-pagination">
+  <div v-if="!onlyMine" class="bike-pagination mt-3 mb-3">
     <img
       v-for="(tag, index) in getQueuedTags"
       :key="index"
@@ -112,8 +112,8 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .navigation {
-  width: 40px;
-  height: 40px;
+  width: 5rem;
+  height: 5rem;
   margin: 10px;
   padding: 0;
   cursor: pointer;
@@ -121,8 +121,8 @@ export default defineComponent({
   border-radius: 5rem;
 
   img {
-    width: 40px;
-    height: 40px;
+    width: 5rem;
+    height: 5rem;
     border-radius: 5rem;
   }
 }
@@ -146,8 +146,8 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
+  width: 5rem;
+  height: 5rem;
   margin: 5px;
   border-radius: 5rem;
   cursor: pointer;

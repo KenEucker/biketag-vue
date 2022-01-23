@@ -8,11 +8,13 @@ import { VueMasonryPlugin } from 'vue-masonry'
 import { Auth0Plugin } from './auth'
 import i18nPlugin from './i18n'
 import VueToast from 'vue-toast-notification'
+import Markdown from 'vue3-markdown-it'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
 import '@/assets/styles/style.scss'
 import '@/assets/styles/flashy.scss'
 import 'vue-toast-notification/dist/theme-sugar.css'
+import 'highlight.js/styles/monokai.css'
 class BikeTagApp {
   protected emitter
   protected app
@@ -51,7 +53,9 @@ class BikeTagApp {
   }
   components() {
     this.app.use(VueToast)
-    this.app.use(BootstrapVue3).use(VueMasonryPlugin)
+    this.app.use(BootstrapVue3)
+    this.app.use(VueMasonryPlugin)
+    this.app.use(Markdown)
   }
 
   mount() {

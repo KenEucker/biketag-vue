@@ -1,8 +1,13 @@
 <template>
-  <div class="container col-lg-6">
-    <loading v-if="uploadInProgress" v-model:active="uploadInProgress" :is-full-page="true">
-      <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
-    </loading>
+  <loading
+    v-if="uploadInProgress"
+    v-model:active="uploadInProgress"
+    :is-full-page="true"
+    class="realign-spinner"
+  >
+    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
+  </loading>
+  <div class="container col-lg-6 queue-page">
     <div v-if="usingTimer && isViewingQueue()" class="clock-div mt-2">
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
@@ -32,6 +37,9 @@
       </div>
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueSubmit]">
         <queue-submit :tag="getQueuedTag" @submit="onQueueSubmit" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
+        <queue-posted :tag="getQueuedTag" @submit="onQueueSubmit" />
       </div>
       <span
         v-if="!isViewingQueue() && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
@@ -68,6 +76,7 @@ import QueueFound from '@/components/QueueFound.vue'
 import QueueMystery from '@/components/QueueMystery.vue'
 import QueueSubmit from '@/components/QueueSubmit.vue'
 import QueueJoined from '@/components/QueueJoined.vue'
+import QueuePosted from '@/components/QueueJoined.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
 export default defineComponent({
@@ -78,6 +87,7 @@ export default defineComponent({
     QueueMystery,
     QueueSubmit,
     QueueJoined,
+    QueuePosted,
     BikeTagQueue,
   },
   props: {
@@ -123,7 +133,10 @@ export default defineComponent({
       }
     },
     isViewingQueue() {
-      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
+      return (
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView] ||
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]
+      )
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
@@ -190,31 +203,43 @@ export default defineComponent({
   },
 })
 </script>
-<style>
-#app .card.polaroid .player-wrapper .player-name {
-  font-family: MarkerNotes;
-  font-weight: 100;
-  font-size: 3rem;
-  transform: unset;
+<style lang="scss">
+#app {
+  .queue-page {
+    .card.polaroid .player-wrapper .player-name {
+      font-family: MarkerNotes;
+      font-weight: 100;
+      font-size: 3rem;
+      transform: unset;
+    }
+    .queue-title {
+      font-size: 1rem;
+    }
+  }
 }
 </style>
-<style scoped>
-.clock-div > i {
-  color: forestgreen;
-  cursor: pointer;
-  font-size: 25px;
-  margin-right: 10px;
-}
+<style scoped lang="scss">
+.queue-page {
+  .clock-div > i {
+    color: forestgreen;
+    cursor: pointer;
+    font-size: 25px;
+    margin-right: 10px;
+  }
 
-.tag-number {
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 99;
-  padding: 0 1.5rem;
-}
+  .tag-number {
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99;
+    padding: 0 1.5rem;
+  }
 
-.user_agree {
-  font-size: 0.75rem;
-  font-style: italic;
+  .user_agree {
+    font-size: 0.75rem;
+    font-style: italic;
+  }
+  .realign-spinner {
+    margin-left: -30%;
+  }
 }
 </style>

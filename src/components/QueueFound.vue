@@ -1,6 +1,6 @@
 <template>
   <b-container class="col-8 col-lg-6">
-    <span>{{ $t('pages.queue.found_title') }}</span>
+    <span class="queue-title">{{ $t('pages.queue.found_title') }}</span>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
       <img
@@ -55,7 +55,7 @@
         />
       </div>
       <div class="mt-3">
-        <b-button class="w-100 btn-found border-0" type="submit">
+        <b-button class="w-75 btn-found border-0" type="submit">
           {{ `${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}` }} &nbsp;
           <i class="fas fa-check-square" /> *
         </b-button>

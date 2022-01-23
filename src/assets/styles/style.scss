@@ -245,5 +245,11 @@ html {
     .vld-overlay .vld-background {
       background: transparent;
     }
+
+    .queue-title {
+      font-family: $title-font-family;
+      font-size: $title-font-size;
+      font-weight: $title-font-weight;
+    }
   }
 }

@@ -1,12 +1,12 @@
 <template>
-  <div class="container">
+  <div class="container queue-view">
     <swiper
       :modules="[Controller]"
       :pagination="{}"
       :effect="'coverflow'"
       :grab-cursor="true"
       :centered-slides="true"
-      :slides-per-view="'auto'"
+      :slides-per-view="1"
       :coverflow-effect="{
         rotate: 50,
         stretch: 0,
@@ -22,14 +22,14 @@
           :key="tag.tagnumber"
           :tag="tag"
           size="l"
-          :reverse="!tag?.mysteryImageUrl?.length"
+          :mystery-image-url="''"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
           :found-description="stringifyNumber(index + 1)"
         />
       </swiper-slide>
     </swiper>
     <bike-tag-queue :pagination-ref="controlledSwiper" />
-    <b-button @click="goNextQueueStep">{{ goNextQueueStepButtonText }}</b-button>
+    <b-button class="mb-2" @click="goNextQueueStep">{{ goNextQueueStepButtonText }}</b-button>
   </div>
 </template>
 
@@ -92,13 +92,15 @@ export default defineComponent({
   },
 })
 </script>
-<style>
-.card .tag-number {
-  display: none;
-}
+<style lang="scss">
+.queue-view {
+  .card .tag-number {
+    display: none;
+  }
 
-.swiper-pagination {
-  display: none;
+  .swiper-pagination {
+    display: none;
+  }
 }
 </style>
 <style scoped>

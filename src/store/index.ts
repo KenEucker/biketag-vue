@@ -26,6 +26,7 @@ export enum BiketagFormSteps {
   queueJoined = 3,
   queueMystery = 4,
   queueSubmit = 5,
+  queuePosted = 6,
 }
 
 // define injection key
@@ -211,13 +212,15 @@ export const store = createStore<State>({
     },
     SET_QUEUED_SUBMITTED(state, data) {
       const oldState = state.queuedTag
+      state.queuedTag.discussionUrl = data.discussionUrl
+      state.queuedTag.mentionUrl = data.mentionUrl
 
       if (
         oldState?.discussionUrl !== data?.discussionUrl ||
         oldState?.mentionUrl !== data?.mentionUrl
       ) {
         console.log('store::submittedTag', state.queuedTag)
-        // state.formStep = BiketagFormSteps.queueSubmit
+        state.formStep = BiketagFormSteps.queuePosted
       }
     },
     SET_QUEUE_MYSTERY(state, data) {
@@ -261,21 +264,8 @@ export const store = createStore<State>({
         oldState?.foundPlayer !== data?.foundPlayer ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
-        console.log('store::setQueuedTag', state.queuedTag)
-        // if (state.queuedTag.foundImageUrl?.length > 0) {
-        //   if (state.queuedTag.mysteryImageUrl?.length > 0) {
-        //     state.formStep = BiketagFormSteps.queueSubmit
-        //   } else {
-        //     state.formStep = BiketagFormSteps.queueMystery
-        //   }
-        // } else {
-        //   state.formStep = BiketagFormSteps.queueFound
-        // }
+        console.log('store::queuedTag', state.queuedTag)
       }
-    },
-    INCREMENT_FORM_STEP(state) {
-      state.formStep++
-      console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
     },
     SET_FORM_STEP_TO_JOIN(state, force) {
       state.formStep =
@@ -287,20 +277,20 @@ export const store = createStore<State>({
               : BiketagFormSteps.queueFound
           : BiketagFormSteps.queueJoined
 
-      console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+      // console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
     },
     RESET_FORM_STEP(state) {
       state.formStep =
         state.queuedTags?.length > 0 ? BiketagFormSteps.queueView : BiketagFormSteps.queueFound
-      console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+      // console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
     },
     RESET_FORM_STEP_TO_FOUND(state) {
       state.formStep = BiketagFormSteps.queueFound
-      console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+      // console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
     },
     RESET_FORM_STEP_TO_MYSTERY(state) {
       state.formStep = BiketagFormSteps.queueMystery
-      console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+      // console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
     },
   },
   actions: {
@@ -401,9 +391,6 @@ export const store = createStore<State>({
     },
     submitQueuedTag({ commit }, d) {
       return commit('SET_QUEUED_SUBMITTED', d)
-    },
-    incrementFormStep({ commit }) {
-      return commit('INCREMENT_FORM_STEP')
     },
     resetFormStep({ commit }) {
       return commit('RESET_FORM_STEP')

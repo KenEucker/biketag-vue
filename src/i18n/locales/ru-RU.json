@@ -23,7 +23,8 @@
     "footer": {
       "sourced": "sourced",
       "deployed": "deployed",
-      "worldwide": "Мировой"
+      "worldwide": "Мировой",
+      "biketag": "BikeTag"
     },
     "queue": {
       "view_mystery_image": "Queued Mystery Image",
@@ -49,10 +50,11 @@
       "location_placeholder": "Введите найденное местоположение",
       "name_placeholder": "Введите свое имя",
       "hint_placeholder": "Введите подсказку",
-      "image_label": "Так выглядит ваша запись",
+      "post_to_reddit": "Так выглядит ваша запись",
       "queue_found_tag": "Тег найден в очереди",
       "submit_new_tag": "Отправить новый тег",
       "post_new_tag": "Опубликовать новый тег в Reddit для меня",
+      "post_to_twitter": "Опубликовать новый тег в Twitter для меня",
       "reset_tag": "Сбросить отправку тега",
       "user_agree": "Загрузка в BiKeTag. Организация требует вашего согласия с условиями, установленными проектом BikeTag"
     },
