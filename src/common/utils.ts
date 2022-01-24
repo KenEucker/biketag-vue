@@ -170,24 +170,30 @@ export const getPayloadAuthorization = (event: any) => {
   }
 }
 
-export const getBikeTagClientOpts = (req?: request.Request) => {
-  const domainInfo = getDomainInfo(req)
-  const isAuthenticatedPOST = req?.method === 'POST'
+export const getBikeTagClientOpts = (req?: request.Request, win?: Window, authorized?: boolean) => {
+  const domainInfo = getDomainInfo(req, win)
+  const isAuthenticatedPOST = req?.method === 'POST' || authorized
   const isGET = !isAuthenticatedPOST && req?.method === 'GET'
-  return {
+  const opts: any = {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     cached: isGET || !isAuthenticatedPOST,
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
-      accessToken: process.env.IMGUR_ACCESS_TOKEN,
-      refreshToken: process.env.IMGUR_REFRESH_TOKEN,
-      hash: process.env.IMGUR_HASH,
-    },
-    sanity: {
-      projectId: process.env.SANITY_PROJECT_ID,
-      dataset: process.env.SANITY_DATASET,
     },
   }
+
+  if (authorized) {
+    opts.imgur = opts.imgur ?? {}
+    opts.imgur.clientSecret = process.env.IMGUR_CLIENT_SECRET
+    opts.imgur.accessToken = process.env.IMGUR_ACCESS_TOKEN
+    opts.imgur.refreshToken = process.env.IMGUR_REFRESH_TOKEN
+
+    opts.sanity = opts.sanity ?? {}
+    opts.sanity.projectId = process.env.SANITY_PROJECT_ID
+    opts.sanity.dataset = process.env.SANITY_DATASET
+  }
+
+  return opts
 }
 
 export const getUuid = () => {

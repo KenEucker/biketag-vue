@@ -3,7 +3,6 @@ import path from 'path'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import envCompatible from 'vite-plugin-env-compatible'
-import { injectHtml } from 'vite-plugin-html'
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
 import { VitePWA } from 'vite-plugin-pwa'
 import EnvironmentPlugin from 'vite-plugin-environment'
@@ -81,7 +80,6 @@ export default defineConfig({
     }),
     viteCommonjs(),
     envCompatible(),
-    injectHtml(),
   ],
   build: {
     rollupOptions: {},

@@ -10194,14 +10194,7 @@ swiper@^7.4.1:
     dom7 "^4.0.2"
     ssr-window "^4.0.2"
 
-swrv@^0.9.4-2:
-  version "0.9.5"
-  resolved "https://registry.yarnpkg.com/swrv/-/swrv-0.9.5.tgz#052bb85b16facff569eac723083fa2492ee007ca"
-  integrity sha512-SGF9JLmIFadQf+cP49ISCUo9Nd3aUMg22n/FoTyOz4hzwPQy1HBLnJxKjNoO0Ys/LqiUDImSTa5jnKRotFoaQg==
-  dependencies:
-    swrv "^1.0.0-beta.8"
-
-swrv@^1.0.0-beta.8:
+swrv@beta:
   version "1.0.0-beta.8"
   resolved "https://registry.yarnpkg.com/swrv/-/swrv-1.0.0-beta.8.tgz#745723f5ca8a7a7e290e911cf7da34cecaf356d3"
   integrity sha512-MsjaMOvZODfM0cess/HhbSrNbAotYinv4vzipLckKYBo/QmrvjNUPGZSRSqByXy/9AjrMRFWo0YanaVPbqADPQ==

@@ -3,7 +3,7 @@
     <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
-    <div class="rel">
+    <div v-if="getCurrentBikeTag" class="rel">
       <b-button
         v-if="tagnumber === 0 && !tagIsLoading"
         v-b-popover.click.left="getHint"
@@ -33,6 +33,7 @@
         @load="tagLoaded"
       />
     </div>
+    <div v-else>Uh, oh. Does this game not exist?</div>
   </div>
 </template>
 
@@ -42,6 +43,7 @@ import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
+import useSWRV from 'swrv'
 
 export default defineComponent({
   name: 'PlayView',
@@ -50,9 +52,13 @@ export default defineComponent({
     Loading,
   },
   data() {
+    const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
+    console.log({ data, error })
+
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      tagIsLoading: false,
+      tagIsLoading: data,
+      error,
     }
   },
   computed: {

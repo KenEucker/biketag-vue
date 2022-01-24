@@ -98,7 +98,7 @@ export default defineComponent({
         mysteryImage: this.image,
         mysteryPlayer: this.player,
         hint: this.hint,
-        tagnumber: this.getCurrentBikeTag.tagnumber + 1,
+        tagnumber: this.getCurrentBikeTag?.tagnumber + 1 ?? 1,
         game: this.getGameName,
       }
 

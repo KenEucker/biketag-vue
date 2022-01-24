@@ -100,7 +100,7 @@ export default defineComponent({
         foundImage: this.image,
         foundPlayer: this.player,
         foundLocation: this.location,
-        tagnumber: this.getCurrentBikeTag.tagnumber,
+        tagnumber: this.getCurrentBikeTag?.tagnumber ?? 0,
         game: this.getGameName,
       }
 

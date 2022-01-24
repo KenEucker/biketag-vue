@@ -75,7 +75,7 @@ export default defineComponent({
           : this.getQueuedTag?.foundImageUrl?.length > 0
           ? this.$t('pages.queue.complete_queue')
           : this.$t('pages.queue.join_queue')
-      } #${this.getCurrentBikeTag.tagnumber}!`
+      } #${this.getCurrentBikeTag?.tagnumber ?? 1}!`
     },
   },
   methods: {

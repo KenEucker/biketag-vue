@@ -23,7 +23,7 @@
     "querystring": "^0.2.1",
     "register-service-worker": "^1.7.2",
     "swiper": "^7.4.1",
-    "swrv": "^0.9.4-2",
+    "swrv": "beta",
     "vue": "^3.2.21",
     "vue-i18n": "^9.2.0-beta.23",
     "vue-loading-overlay": "^5.0.1",
