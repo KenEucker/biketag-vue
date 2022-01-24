@@ -27,7 +27,7 @@ const tagsHandler: Handler = async (event) => {
   const { success, data } = tagsResponse
   return {
     statusCode: tagsResponse.status,
-    body: JSON.stringify({ data: success ? data : tagsResponse, biketagPayload }),
+    body: JSON.stringify({ data: success ? data : tagsResponse }),
   }
 }
 

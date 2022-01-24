@@ -12,7 +12,7 @@
       >
         <b-tab v-if="supportsReddit">
           <template #title>
-            <img src="public/images/Reddit.svg" class="tab-logo img-fluid" />
+            <img src="../assets/images/Reddit.svg" class="tab-logo img-fluid" />
           </template>
           <div class="reddit-post">
             <Markdown :source="redditPostText" linkify="true" />
@@ -20,7 +20,7 @@
         </b-tab>
         <b-tab v-if="supportsTwitter">
           <template #title>
-            <img src="public/images/Twitter.svg" class="tab-logo img-fluid" />
+            <img src="../assets/images/Twitter.svg" class="tab-logo img-fluid" />
           </template>
           <div class="twitter-post">
             <Markdown :source="twitterPostText" linkify="true" />

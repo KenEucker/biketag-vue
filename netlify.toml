@@ -12,7 +12,7 @@
   package = 'netlify-plugin-contextual-env'
 
 [[headers]]
-  for = "/api/*"
+  for = "/*"
   [headers.values]
     Access-Control-Allow-Credentials = "true"
     Access-Control-Allow-Origin = "*"

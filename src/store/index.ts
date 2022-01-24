@@ -35,16 +35,19 @@ const domain = getDomainInfo(undefined, window)
 const playerId = getUuid()
 // const ipInfo = await getIpInformation()
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
+
 const imgurCredentials: ImgurCredentials = {
   clientId: process.env.IMGUR_CLIENT_ID ?? '',
-  clientSecret: process.env.IMGUR_CLIENT_SECRET,
-  accessToken: process.env.IMGUR_ACCESS_TOKEN,
-  refreshToken: process.env.IMGUR_REFRESH_TOKEN,
+  // clientSecret: process.env.IMGUR_CLIENT_SECRET,
+  // accessToken: process.env.IMGUR_ACCESS_TOKEN,
+  // refreshToken: process.env.IMGUR_REFRESH_TOKEN,
 }
 const options: any = {
   game: gameName,
   accessToken: process.env.ACCESS_TOKEN,
-  /// TODO: remove these credentials and rely on the "biketag" api backend for retrieving game data (always)
+  // imgur: {
+  //   clientId: process.env.IMGUR_CLIENT_ID ?? '',
+  // },
   sanity: {
     projectId: process.env.SANITY_PROJECT_ID,
     dataset: process.env.SANITY_DATASET,
@@ -354,6 +357,15 @@ export const store = createStore<State>({
     setQueuedTag({ commit }, d) {
       return commit('SET_QUEUED_TAG', d)
     },
+    resetFormStep({ commit }) {
+      return commit('RESET_FORM_STEP')
+    },
+    setFormStepToJoin({ commit, state }, d) {
+      if (state.formStep === BiketagFormSteps.queueView || d) {
+        return commit('SET_FORM_STEP_TO_JOIN', d)
+      }
+      return true
+    },
     async queueFoundTag({ commit }, d) {
       console.log('queueFoundTag')
       if (d.foundImage && !d.foundImageUrl) {
@@ -389,18 +401,6 @@ export const store = createStore<State>({
       }
       return commit('SET_QUEUE_MYSTERY', d)
     },
-    submitQueuedTag({ commit }, d) {
-      return commit('SET_QUEUED_SUBMITTED', d)
-    },
-    resetFormStep({ commit }) {
-      return commit('RESET_FORM_STEP')
-    },
-    setFormStepToJoin({ commit, state }, d) {
-      if (state.formStep === BiketagFormSteps.queueView || d) {
-        return commit('SET_FORM_STEP_TO_JOIN', d)
-      }
-      return true
-    },
     async resetFormStepToFound({ commit }) {
       await commit('SET_QUEUED_TAG', {})
       return commit('RESET_FORM_STEP_TO_FOUND')
@@ -428,6 +428,9 @@ export const store = createStore<State>({
         mysteryPlayer: state.queuedTag.mysteryPlayer,
       })
       return commit('RESET_FORM_STEP_TO_POST')
+    },
+    async submitQueuedTag({ commit }, d) {
+      return commit('SET_QUEUED_SUBMITTED', d)
     },
     setHtml({ commit }, file) {
       return axios.get('./' + file).then((r) => {
