@@ -38,9 +38,9 @@ const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 
 const imgurCredentials: ImgurCredentials = {
   clientId: process.env.IMGUR_CLIENT_ID ?? '',
-  // clientSecret: process.env.IMGUR_CLIENT_SECRET,
-  // accessToken: process.env.IMGUR_ACCESS_TOKEN,
-  // refreshToken: process.env.IMGUR_REFRESH_TOKEN,
+  clientSecret: process.env.IMGUR_CLIENT_SECRET,
+  accessToken: process.env.IMGUR_ACCESS_TOKEN,
+  refreshToken: process.env.IMGUR_REFRESH_TOKEN,
 }
 const options: any = {
   game: gameName,
