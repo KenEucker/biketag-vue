@@ -44,7 +44,7 @@ const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const options: any = {
   game: gameName,
   host: `https://${gameName}.biketag.io/api`,
-  ...getBikeTagClientOpts(undefined, window),
+  ...getBikeTagClientOpts(undefined, window, process.env.USE_AUTHENTICATION === 'true'),
 }
 const defaultLogo = '/images/BikeTag.svg'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
