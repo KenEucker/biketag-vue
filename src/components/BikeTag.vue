@@ -25,7 +25,7 @@
     <b-col v-show="_foundImageUrl" md="6" class="mb-3">
       <b-card class="polaroid found-tag">
         <div class="img-wrapper">
-          <span class="tag-number">#{{ _foundTagnumber }}</span>
+          <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
           <expandable-image
             class="image img-fluid"
             :source="getImgurImageSized(_foundImageUrl)"
