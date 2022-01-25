@@ -100,9 +100,6 @@ export default {
     Swiper,
     SwiperSlide,
   },
-  setup() {
-    this.$store.dispatch('setGame')
-  },
   data() {
     return {
       playingEaster: false,
@@ -110,6 +107,9 @@ export default {
   },
   computed: {
     ...mapGetters(['getGameSlug', 'getEasterEgg']),
+  },
+  created() {
+    this.$store.dispatch('setGame')
   },
   methods: {
     playEasterEgg() {

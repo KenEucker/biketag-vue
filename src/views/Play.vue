@@ -43,7 +43,7 @@ import { mapGetters } from 'vuex'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
-import useSWRV from 'swrv'
+// import useSWRV from 'swrv'
 
 export default defineComponent({
   name: 'PlayView',
@@ -52,13 +52,13 @@ export default defineComponent({
     Loading,
   },
   data() {
-    const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
-    console.log({ data, error })
+    // const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
+    // console.log({ data, error })
 
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      tagIsLoading: data,
-      error,
+      tagIsLoading: true,
+      // error,
     }
   },
   computed: {

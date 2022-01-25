@@ -6,6 +6,7 @@ import envCompatible from 'vite-plugin-env-compatible'
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
 import { VitePWA } from 'vite-plugin-pwa'
 import EnvironmentPlugin from 'vite-plugin-environment'
+import { injectHtml } from 'vite-plugin-html'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -80,6 +81,7 @@ export default defineConfig({
     }),
     viteCommonjs(),
     envCompatible(),
+    injectHtml(),
   ],
   build: {
     rollupOptions: {},

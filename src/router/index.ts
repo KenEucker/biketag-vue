@@ -28,9 +28,9 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Queue.vue'),
   },
   {
-    path: '/how',
+    path: '/howtoplay',
     name: 'How',
-    component: () => import('@/views/HowTo.vue'),
+    component: () => import('@/views/HowToPlay.vue'),
   },
   {
     path: '/leaderboard',

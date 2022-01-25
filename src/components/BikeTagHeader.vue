@@ -113,7 +113,7 @@ export default defineComponent({
       this.$router.push('/queue')
     },
     goHowPage: function () {
-      this.$router.push('/how')
+      this.$router.push('/howtoplay')
     },
     goBack: function () {
       this.$router.back()
