@@ -8,7 +8,7 @@
       align="center"
       @page-click="changePage"
     ></b-pagination>
-    <div transition-duration="0.3s" item-selector=".item" fit-width="true" class="m-auto">
+    <div class="m-auto">
       <div v-for="tag in tagsList" :key="tag.tagnumber">
         <bike-tag
           :key="tag.tagnumber"

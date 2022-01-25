@@ -1,12 +1,7 @@
 <template>
   <div class="container">
-    <div v-masonry transition-duration="0.3s" item-selector=".item" class="m-auto">
-      <div
-        v-for="player in playersList"
-        :key="player.name"
-        v-masonry-tile
-        class="item p-lg-1 p-md-1 mb-1"
-      >
+    <div class="player-list">
+      <div v-for="player in playersList" :key="player.name" class="p-lg-1 p-md-1 mb-1">
         <player size="md" :player="player" />
       </div>
     </div>
@@ -33,3 +28,12 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="scss" scoped>
+.player-list {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-bottom: 4em;
+}
+</style>

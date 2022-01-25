@@ -8,13 +8,8 @@
       align="center"
       @page-click="changePage"
     ></b-pagination>
-    <div v-masonry transition-duration="0.3s" item-selector=".item" fit-width="true" class="m-auto">
-      <div
-        v-for="player in playersForList"
-        :key="player.name"
-        v-masonry-tile
-        class="item p-lg-3 p-md-2 mb-2"
-      >
+    <div class="player-list">
+      <div v-for="player in playersForList" :key="player.name" class="p-lg-3 p-md-2 mb-2">
         <player size="md" :player="player" />
       </div>
     </div>
@@ -84,3 +79,12 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="scss" scoped>
+.player-list {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-bottom: 4em;
+}
+</style>

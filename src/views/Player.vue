@@ -15,13 +15,7 @@
         align="center"
         @page-click="changePage"
       ></b-pagination>
-      <div
-        v-masonry
-        class="player-tags m-auto"
-        transition-duration="0.3s"
-        item-selector=".item"
-        fit-width="true"
-      >
+      <div class="player-tags m-auto">
         <div v-for="tag in tagsForList" :key="tag.tagnumber">
           <bike-tag
             :key="tag.tagnumber"

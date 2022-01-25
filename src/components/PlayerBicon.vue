@@ -14,7 +14,11 @@
         </clipPath>
       </svg>
       <div class="clipped"></div>
-      <span v-if="player?.tags?.length" class="tag-count p-2">{{ player.tags.length }}</span>
+      <span
+        v-if="player?.tags?.length"
+        :class="`tag-count tag-count--color-${tagColorNumber(player.tags.length)}`"
+        >{{ player.tags.length }}</span
+      >
     </div>
     <img v-if="playerBiconUrl" class="player-bicon" :src="playerBiconUrl" :alt="_playerName" />
     <span class="player-name p-1">{{ _playerName }}</span>
@@ -79,6 +83,19 @@ export default defineComponent({
         this.$router.push('/player/' + encodeURIComponent(this.player?.name))
       }
     },
+    tagColorNumber(count) {
+      if (count === 1) {
+        return 'one'
+      } else if (count < 10) {
+        return 'lessthanten'
+      } else if (count > 49 && count < 100) {
+        return 'fiftyormore'
+      } else if (count > 100 && count < 500) {
+        return 'onehundredormore'
+      } else {
+        return 'fivehundredormore'
+      }
+    },
   },
 })
 </script>
@@ -106,11 +123,27 @@ export default defineComponent({
 
   .tag-count {
     position: absolute;
-    padding: 20px;
-    width: 6vw;
+    padding: 10px 0 10px 0;
+    width: 4rem;
     text-align: center;
     clip-path: url(#badge-clip);
     z-index: 99;
+  }
+
+  .tag-count--color-one {
+    background-color: rgba(228, 178, 13, 0.9);
+  }
+  .tag-count--color-lessthanten {
+    background-color: rgba(26, 228, 13, 0.9);
+  }
+  .tag-count--color-fiftyormore {
+    background-color: rgba(31, 13, 228, 0.9);
+  }
+  .tag-count--color-onehundredormore {
+    background-color: rgba(228, 13, 219, 0.9);
+  }
+  .tag-count--color-fivehundredormore {
+    background-color: rgba(228, 13, 31, 0.87);
   }
 }
 
@@ -165,7 +198,14 @@ export default defineComponent({
     font-size: 1.5rem;
     width: 3.5rem;
     top: 43%;
-    right: 10px;
+    left: 55%;
+    top: 15%;
+  }
+
+  @media (min-width: 1024px) {
+    .tag-count {
+      left: 52%;
+    }
   }
 }
 
@@ -189,6 +229,7 @@ export default defineComponent({
     font-size: 2rem;
     top: 2rem;
     right: 1rem;
+    padding: 2px 8px 2px 8px;
   }
 }
 

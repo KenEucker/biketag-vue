@@ -25,13 +25,7 @@
           {{ $t('pages.about.article2.become_player') }}
         </b-button>
       </p>
-      <div
-        v-masonry
-        transition-duration="0.3s"
-        item-selector=".item"
-        fit-width="true"
-        class="m-auto games"
-      >
+      <div class="m-auto games">
         <a href="https://portland.biketag.org">
           <img
             src="https://biketag.org/public/img/pdx-bike-tag-small.png"
