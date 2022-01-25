@@ -221,7 +221,7 @@ export default defineComponent({
     left: 0;
     right: 0;
     transform: unset;
-    font-size: 4vw !important;
+    font-size: 3rem !important;
     font-family: markernotes !important;
   }
 

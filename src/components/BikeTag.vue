@@ -219,10 +219,7 @@ export default defineComponent({
 }
 
 .card-bottom {
-  padding: 1rem;
   min-height: 12rem;
-  max-width: 60vw;
-  margin: 0 auto;
 
   .description {
     position: relative;
