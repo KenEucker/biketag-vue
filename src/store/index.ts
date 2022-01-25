@@ -41,11 +41,13 @@ const domain = getDomainInfo(undefined, window)
 const playerId = getUuid()
 // const ipInfo = await getIpInformation()
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
+const useAuth = process.env.USE_AUTHENTICATION === 'true'
 const options: any = {
   game: gameName,
   host: `https://${gameName}.biketag.io/api`,
-  ...getBikeTagClientOpts(undefined, window, process.env.USE_AUTHENTICATION === 'true'),
+  ...getBikeTagClientOpts(undefined, window, useAuth),
 }
+const gameOpts = useAuth ? { source: 'sanity' } : {}
 const defaultLogo = '/images/BikeTag.svg'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
 console.log('store::init', { subdomain: domain.subdomain, domain, gameName, playerId })
@@ -69,7 +71,7 @@ export const store = createStore<State>({
   actions: {
     setGame({ commit, state }) {
       if (!state.game?.mainhash) {
-        return client.game(state.gameName).then((d) => {
+        return client.game(state.gameName, gameOpts as any).then((d) => {
           const game = d as Game
           options.imgur.hash = game.mainhash
           options.imgur.queuehash = game.queuehash

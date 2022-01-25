@@ -29,6 +29,8 @@ export default defineConfig({
     vue(),
     vueJsx(),
     EnvironmentPlugin({
+      /* Application Configuration */
+      USE_AUTHENTICATION: process.env.USE_AUTHENTICATION,
       /* BikeTag Configuration */
       GAME_NAME: process.env.GAME_NAME ?? 'test',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,
@@ -88,7 +90,7 @@ export default defineConfig({
   },
   // root: './public',
   server: {
-    host: 'seattle.localhost',
+    host: 'vancouver.localhost',
     port: 8080,
   },
   preview: {
