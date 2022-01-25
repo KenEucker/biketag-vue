@@ -217,11 +217,12 @@ export default defineComponent({
 
   .player-name {
     position: absolute;
-    top: 0;
+    top: -5%;
     left: 0;
     right: 0;
     transform: unset;
     font-size: 3rem !important;
+    line-height: 3rem !important;
     font-family: markernotes !important;
   }
 

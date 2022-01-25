@@ -27,9 +27,10 @@
       />
       <bike-tag
         v-else
-        :tag="tag"
         size="l"
-        :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
+        :tag="tag"
+        :found-player="getPlayer(tag.foundPlayer)"
+        :mystery-player="getPlayer(tag.mysteryPlayer)"
         @load="tagLoaded"
       />
     </div>
