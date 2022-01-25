@@ -5,10 +5,14 @@ import { getGamePayload } from 'biketag/lib/common/payloads'
 import request from 'request'
 
 const gameHandler: Handler = async (event) => {
-  const biketagOpts = getBikeTagClientOpts({
-    ...event,
-    method: event.httpMethod,
-  } as unknown as request.Request)
+  const biketagOpts = getBikeTagClientOpts(
+    {
+      ...event,
+      method: event.httpMethod,
+    } as unknown as request.Request,
+    undefined,
+    true
+  )
   const biketagPayload = getPayloadOpts(event, { game: biketagOpts.game })
   const biketag = new BikeTagClient(biketagOpts)
   const gameResponse = await biketag.getGame(biketagPayload as getGamePayload, { source: 'sanity' })

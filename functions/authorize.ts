@@ -18,10 +18,14 @@ const authorizeHandler: Handler = async (event) => {
   console.log({ clientKey, clientToken, accessToken, grantType, controlCheck, self })
   if (clientKey?.length > 0 && clientToken?.length > 0 && accessToken?.length > 0) {
     if (getBikeTagHash(clientKey) === clientToken && controlCheck === clientToken) {
-      const biketagOpts = getBikeTagClientOpts({
-        ...event,
-        method: event.httpMethod,
-      } as unknown as request.Request)
+      const biketagOpts = getBikeTagClientOpts(
+        {
+          ...event,
+          method: event.httpMethod,
+        } as unknown as request.Request,
+        undefined,
+        true
+      )
       const biketag = new BikeTagClient(biketagOpts)
       const config = biketag.config()
       const isValidAccessToken =

@@ -9,10 +9,14 @@ const authorizeHandler: Handler = async (event) => {
   let statusCode = 401
 
   if (authorization) {
-    const biketagOpts = getBikeTagClientOpts({
-      ...event,
-      method: event.httpMethod,
-    } as unknown as request.Request)
+    const biketagOpts = getBikeTagClientOpts(
+      {
+        ...event,
+        method: event.httpMethod,
+      } as unknown as request.Request,
+      undefined,
+      true
+    )
     const biketag = new BikeTagClient(biketagOpts)
     const config = biketag.config()
     const controlCheck = getBikeTagHash(new URL(`http://${event.headers.host}`).hostname)

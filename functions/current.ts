@@ -11,10 +11,14 @@ import axios from 'axios'
 import { Game } from 'biketag/lib/common/schema'
 
 const currentTagHandler = async (event) => {
-  const biketagOpts = getBikeTagClientOpts({
-    ...event,
-    method: event.httpMethod,
-  } as unknown as request.Request)
+  const biketagOpts = getBikeTagClientOpts(
+    {
+      ...event,
+      method: event.httpMethod,
+    } as unknown as request.Request,
+    undefined,
+    true
+  )
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game(biketagOpts.game, {
     source: 'sanity',

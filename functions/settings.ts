@@ -6,10 +6,14 @@ import { Game } from 'biketag/lib/common/schema'
 import request from 'request'
 
 const setttingsHandler: Handler = async (event) => {
-  const biketagOpts = getBikeTagClientOpts({
-    ...event,
-    method: event.httpMethod,
-  } as unknown as request.Request)
+  const biketagOpts = getBikeTagClientOpts(
+    {
+      ...event,
+      method: event.httpMethod,
+    } as unknown as request.Request,
+    undefined,
+    true
+  )
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game(biketagOpts.game, {
     source: 'sanity',
@@ -22,7 +26,7 @@ const setttingsHandler: Handler = async (event) => {
     game: biketagOpts.game,
   })
   const settingsResponse = await biketag.getSettings(biketagPayload as getSettingsPayload, {
-    source: 'imgur',
+    source: 'sanity',
   })
   const { success, data } = settingsResponse
 
