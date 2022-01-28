@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import path from 'path'
 import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
 import envCompatible from 'vite-plugin-env-compatible'
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -27,7 +26,6 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    vueJsx(),
     EnvironmentPlugin({
       /* Application Configuration */
       USE_AUTHENTICATION: process.env.USE_AUTHENTICATION,
@@ -90,7 +88,7 @@ export default defineConfig({
   },
   // root: './public',
   server: {
-    host: 'vancouver.localhost',
+    host: 'portland.localhost',
     port: 8080,
   },
   preview: {

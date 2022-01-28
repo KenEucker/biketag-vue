@@ -4,7 +4,6 @@ import router from './router'
 import { store } from './store'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import mitt from 'mitt'
-import { VueMasonryPlugin } from 'vue-masonry'
 import { Auth0Plugin } from './auth'
 import i18nPlugin from './i18n'
 import VueToast from 'vue-toast-notification'
@@ -54,7 +53,6 @@ class BikeTagApp {
   components() {
     this.app.use(VueToast)
     this.app.use(BootstrapVue3)
-    this.app.use(VueMasonryPlugin)
     this.app.use(Markdown)
   }
 

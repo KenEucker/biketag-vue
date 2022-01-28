@@ -1,6 +1,7 @@
 <template>
   <b-container class="col-8 col-lg-6">
-    <span class="queue-title">{{ $t('pages.queue.mystery_title') }}</span>
+    <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
       <img

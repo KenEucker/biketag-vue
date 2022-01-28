@@ -1,10 +1,18 @@
 <template>
   <b-container class="submit-queue">
     <div>
-      <p class="queue-title">{{ $t('pages.queue.submit_title') }}</p>
+      <h3 class="queue-title">{{ $t('pages.queue.submit_title') }}</h3>
+      <p v-if="supportsReddit || supportsTwitter" class="queue-text">
+        {{ $t('pages.queue.submit_text') }}
+      </p>
+      <p v-else class="queue-text">
+        Once you submit your new BikeTag Post, a BikeTag Ambassador will approve the next round and
+        then your new post will be live!
+      </p>
     </div>
     <div>
       <b-tabs
+        v-if="supportsReddit || supportsTwitter"
         :options="{ useUrlFragment: false }"
         nav-item-class="nav-item"
         @clicked="tabClicked"
@@ -45,7 +53,7 @@
           <label for="postToTwitter">{{ $t('pages.queue.post_to_twitter') }}</label>
           <input v-model="postToTwitter" name="postToTwitter" type="checkbox" />
         </fieldset>
-        <b-button class="w-75 btn-post mt-2 mb-2 border-0" @click="submit">
+        <b-button class="w-75 btn-post mt-2 mb-2 border-0" @click="onSubmit">
           {{ $t('pages.queue.post_new_tag') }} &nbsp;
         </b-button>
       </form>
@@ -67,17 +75,18 @@ export default defineComponent({
     return {
       foundImagePreview: '',
       mysteryImagePreview: '',
-      postToReddit: true,
-      postToTwitter: true,
-      supportsTwitter: true,
-      supportsReddit: true,
+      postToReddit: false,
+      postToTwitter: false,
     }
   },
   computed: {
-    ...mapGetters(['getQueue', 'getQueuedTag', 'getCurrentBikeTag', 'getGameName']),
-    // supportsReddit: function () {
-    //   return this.redditPostText?.length > 0
-    // },
+    ...mapGetters(['getQueue', 'getQueuedTag', 'getCurrentBikeTag', 'getGameName', 'getGame']),
+    supportsReddit() {
+      return !!this.getGame.subreddit
+    },
+    supportsTwitter() {
+      return false
+    },
     twitterPostText() {
       return `
   Seattle BikeTag!
@@ -101,22 +110,18 @@ See all BikeTags and more, for ${this.getGameName}:
         `
     },
   },
-  mounted() {
-    this.setFoundImagePreview(this.getQueuedTag)
-    this.setMysteryImagePreview(this.getQueuedTag)
-  },
   methods: {
     onSubmit() {
-      const formAction = this.$refs.mysteryTag.getAttribute('action')
-      const formData = new FormData(this.$refs.mysteryTag)
-      const submittedTag = {
-        discussionUrl: JSON.stringify({
-          postToReddit: true,
-        }),
-        mentionUrl: JSON.stringify({
-          postToTwitter: false,
-        }),
-      }
+      const formAction = this.$refs.submitTag.getAttribute('action')
+      const formData = new FormData(this.$refs.submitTag)
+      const submittedTag = this.getQueuedTag
+
+      submittedTag.discussionUrl = JSON.stringify({
+        postToReddit: true,
+      })
+      submittedTag.mentionUrl = JSON.stringify({
+        postToTwitter: false,
+      })
 
       this.$emit('submit', {
         formAction,
@@ -124,31 +129,6 @@ See all BikeTags and more, for ${this.getGameName}:
         tag: submittedTag,
         storeAction: 'submitQueuedTag',
       })
-    },
-    reset() {
-      this.$store.dispatch('resetFormStepToFound')
-    },
-    setMysteryImagePreview(tag) {
-      if (tag.mysteryImageUrl?.length) {
-        this.mysteryImagePreview = tag.mysteryImageUrl
-      } else if (tag.mysteryImage) {
-        var reader = new FileReader()
-        reader.onload = (e) => {
-          this.mysteryImagePreview = e.target.result
-        }
-        reader.readAsDataURL(tag.mysteryImage)
-      }
-    },
-    setFoundImagePreview(tag) {
-      if (tag.foundImageUrl?.length) {
-        this.foundImagePreview = tag.foundImageUrl
-      } else if (tag.foundImage) {
-        var reader = new FileReader()
-        reader.onload = (e) => {
-          this.foundImagePreview = e.target.result
-        }
-        reader.readAsDataURL(tag.foundImage)
-      }
     },
   },
 })

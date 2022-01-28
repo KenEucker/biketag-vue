@@ -41,10 +41,7 @@
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
         <queue-posted :tag="getQueuedTag" @submit="onQueueSubmit" />
       </div>
-      <span
-        v-if="!isViewingQueue() && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
-        class="user_agree"
-      >
+      <span v-if="isSubmittingData()" class="user_agree">
         * {{ $t('pages.queue.user_agree') }}
       </span>
       <form
@@ -76,7 +73,7 @@ import QueueFound from '@/components/QueueFound.vue'
 import QueueMystery from '@/components/QueueMystery.vue'
 import QueueSubmit from '@/components/QueueSubmit.vue'
 import QueueJoined from '@/components/QueueJoined.vue'
-import QueuePosted from '@/components/QueueJoined.vue'
+import QueuePosted from '@/components/QueuePosted.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
 export default defineComponent({
@@ -132,11 +129,17 @@ export default defineComponent({
         }, 500)
       }
     },
-    isViewingQueue() {
+    isSubmittingData() {
       return (
-        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView] ||
-        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]
+        !this.isViewingQueue() &&
+        !(
+          this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
+          this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]
+        )
       )
+    },
+    isViewingQueue() {
+      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
@@ -213,7 +216,10 @@ export default defineComponent({
       transform: unset;
     }
     .queue-title {
-      font-size: 1rem;
+      font-size: 2rem;
+    }
+    .queue-text {
+      font-size: 1.5rem;
     }
   }
 }

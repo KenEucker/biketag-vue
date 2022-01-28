@@ -31,7 +31,7 @@
           <img class="img-fluid" :src="getQueuedTag.foundImageUrl" />
         </b-popover>
         <b-button
-          v-if="!getQueuedTag?.mysteryImageUrl?.length > 0"
+          v-if="getQueuedTag?.foundImageUrl?.length > 0"
           variant="danger"
           class="ms-2"
           @click="resetToFound"
@@ -95,9 +95,6 @@ export default defineComponent({
     ...mapGetters(['getQueuedTags', 'getCurrentBikeTag', 'getQueuedTag', 'getImgurImageSized']),
   },
   methods: {
-    reset() {
-      this.$store.dispatch('resetFormStep')
-    },
     resetToFound() {
       this.$store.dispatch('resetFormStepToFound')
     },

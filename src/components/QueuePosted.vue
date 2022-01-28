@@ -1,7 +1,7 @@
 <template>
   <b-container>
-    <span class="queue-title">{{ $t('pages.queue.posted_title') }}</span>
-    <span class="queue-title">{{ $t('pages.queue.queue_posted') }}</span>
+    <h3 class="queue-title">{{ $t('pages.queue.posted_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.queue.posted_text') }}</p>
   </b-container>
 </template>
 <script>

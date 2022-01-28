@@ -1,9 +1,8 @@
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
-import axios from 'axios'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
-import { BikeTagApiResponse, ImgurCredentials } from 'biketag/lib/common/types'
+import { BikeTagApiResponse } from 'biketag/lib/common/types'
 import {
   getDomainInfo,
   getImgurImageSized,
@@ -50,6 +49,12 @@ const options: any = {
 const gameOpts = useAuth ? { source: 'sanity' } : {}
 const defaultLogo = '/images/BikeTag.svg'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
+const getSanityImageUrl = (logo: string, size = '') => {
+  return `${sanityBaseCDNUrl}${logo
+    .replace('image-', '')
+    .replace('-png', '.png')
+    .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
+}
 console.log('store::init', { subdomain: domain.subdomain, domain, gameName, playerId })
 
 let client = new biketag(options)
@@ -141,7 +146,6 @@ export const store = createStore<State>({
       return true
     },
     async queueFoundTag({ commit }, d) {
-      console.log('queueFoundTag')
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = playerId
         return client.queueTag(d).then((t) => {
@@ -149,7 +153,6 @@ export const store = createStore<State>({
             commit('SET_QUEUE_FOUND', t.data)
           } else {
             console.log('queue BikeTag failed', t)
-            console.log('returning', t.error)
             return t.error
           }
           return t.success
@@ -158,7 +161,6 @@ export const store = createStore<State>({
       return commit('SET_QUEUE_FOUND', d)
     },
     async queueMysteryTag({ commit }, d) {
-      console.log('queueMysteryTag')
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = playerId
         return client.queueTag(d).then((t) => {
@@ -166,14 +168,27 @@ export const store = createStore<State>({
             commit('SET_QUEUE_MYSTERY', t.data)
           } else {
             console.log('queue BikeTag failed', t)
-            console.log('returning', t.error)
             return t.error
           }
-          console.log('NOOOO', t.success)
           return t.success
         })
       }
       return commit('SET_QUEUE_MYSTERY', d)
+    },
+    async submitQueuedTag({ commit }, d) {
+      console.log('submitQueuedTag', d)
+      if (d.mysteryImageUrl && d.foundImageUrl) {
+        d.playerId = playerId
+        return client.queueTag(d).then((t) => {
+          if (t.success) {
+            commit('SET_QUEUED_SUBMITTED', t.data)
+          } else {
+            console.log('submit BikeTag failed', t)
+            return t.error
+          }
+          return t.success
+        })
+      }
     },
     async resetFormStep({ commit }) {
       return commit('RESET_FORM_STEP')
@@ -205,9 +220,6 @@ export const store = createStore<State>({
         mysteryPlayer: state.queuedTag.mysteryPlayer,
       })
       return commit('RESET_FORM_STEP_TO_POST')
-    },
-    async submitQueuedTag({ commit }, d) {
-      return commit('SET_QUEUED_SUBMITTED', d)
     },
   },
   mutations: {
@@ -320,6 +332,8 @@ export const store = createStore<State>({
       state.queuedTag.foundLocation = data.foundLocation
       state.queuedTag.foundPlayer = data.foundPlayer
       state.queuedTag.tagnumber = data.tagnumber
+      state.queuedTag.discussionUrl = data.discussionUrl
+      state.queuedTag.mentionUrl = data.mentionUrl
 
       if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
@@ -330,22 +344,40 @@ export const store = createStore<State>({
         oldState?.foundImage !== data?.foundImage ||
         oldState?.foundLocation !== data?.foundImageUrl ||
         oldState?.foundPlayer !== data?.foundPlayer ||
+        oldState?.discussionUrl !== data?.discussionUrl ||
+        oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
         console.log('store::queuedTag', state.queuedTag)
       }
     },
     SET_FORM_STEP_TO_JOIN(state, force) {
-      state.formStep =
-        state.formStep !== BiketagFormSteps.queueJoined || force
-          ? state.queuedTag?.mysteryImageUrl?.length > 0
-            ? BiketagFormSteps.queueSubmit
-            : state.queuedTag?.foundImageUrl?.length > 0
-              ? BiketagFormSteps.queueMystery
-              : BiketagFormSteps.queueFound
-          : BiketagFormSteps.queueJoined
+      const setQueudState = state.formStep !== BiketagFormSteps.queueJoined || force
+      const oldState = state.formStep
+      if (setQueudState && state.queuedTag) {
+        const mysteryImageSet = state.queuedTag.mysteryImageUrl?.length > 0
+        const foundImageSet = state.queuedTag.foundImageUrl?.length > 0
+        if (mysteryImageSet && foundImageSet) {
+          const discussionUrlIsSet =
+            state.queuedTag.discussionUrl && state.queuedTag.discussionUrl.length > 0
+          const mentionUrlIsSet =
+            state.queuedTag.mentionUrl && state.queuedTag.mentionUrl.length > 0
+          state.formStep =
+            discussionUrlIsSet || mentionUrlIsSet
+              ? BiketagFormSteps.queuePosted
+              : BiketagFormSteps.queueSubmit
+        } else {
+          state.formStep = foundImageSet
+            ? BiketagFormSteps.queueMystery
+            : BiketagFormSteps.queueFound
+        }
+      } else {
+        state.formStep = BiketagFormSteps.queueJoined
+      }
 
-      // console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+      if (oldState !== state.formStep) {
+        console.log(`queue state joined :: ${BiketagFormSteps[state.formStep]}`)
+      }
     },
     RESET_FORM_STEP(state) {
       state.formStep =
@@ -393,10 +425,7 @@ export const store = createStore<State>({
         const logoUrl =
           state.game?.logo?.indexOf('imgur.com') !== -1
             ? state.game.logo
-            : `${sanityBaseCDNUrl}${state.game.logo
-              .replace('image-', '')
-              .replace('-png', '.png')
-              .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
+            : getSanityImageUrl(state.game.logo, size)
         return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
       }
     },
