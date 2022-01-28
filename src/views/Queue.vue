@@ -165,6 +165,7 @@ export default defineComponent({
           'submission',
           `${this.getQueuedTag.foundPlayer}-${this.getQueuedTag.tagnumber}`
         )
+        formData.set('player', this.getQueuedTag.playerId)
 
         if (tag.foundImage) {
           formData.set('foundImageUrl', this.getQueuedTag.foundImageUrl)

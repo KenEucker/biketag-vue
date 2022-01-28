@@ -123,6 +123,9 @@ See all BikeTags and more, for ${this.getGameName}:
         postToTwitter: false,
       })
 
+      formData.append('discussionUrl', submittedTag.discussionUrl)
+      formData.append('mentionUrl', submittedTag.mentionUrl)
+
       this.$emit('submit', {
         formAction,
         formData,
