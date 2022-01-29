@@ -39,7 +39,7 @@
       </div>
       <div class="mt-3">
         <b-form-input
-          id="name"
+          id="player"
           v-model="player"
           name="player"
           readonly

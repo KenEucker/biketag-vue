@@ -30,7 +30,7 @@
         <queue-found :tag="getQueuedTag" @submit="onQueueSubmit" />
       </div>
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined]">
-        <queue-joined :tag="getQueuedTag" @submit="onQueueSubmit" />
+        <queue-joined :tag="getQueuedTag" />
       </div>
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueMystery]">
         <queue-mystery :tag="getQueuedTag" @submit="onQueueSubmit" />
@@ -39,7 +39,7 @@
         <queue-submit :tag="getQueuedTag" @submit="onQueueSubmit" />
       </div>
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
-        <queue-posted :tag="getQueuedTag" @submit="onQueueSubmit" />
+        <queue-posted :tag="getQueuedTag" />
       </div>
       <span v-if="isSubmittingData()" class="user_agree">
         * {{ $t('pages.queue.user_agree') }}
@@ -55,6 +55,8 @@
         @submit.prevent="onSubmit"
       >
         <input type="hidden" name="form-name" value="queue-tag-error" />
+        <input type="hidden" name="submission" />
+        <input type="hidden" name="playerId" :value="getPlayerId" />
         <input type="hidden" name="message" />
         <input type="hidden" name="ip" value="" />
       </form>
@@ -112,7 +114,13 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getFormStep', 'getQueuedTag', 'getCurrentBikeTag', 'getGameName']),
+    ...mapGetters([
+      'getFormStep',
+      'getQueuedTag',
+      'getCurrentBikeTag',
+      'getGameName',
+      'getPlayerId',
+    ]),
   },
   mounted() {
     this.uploadInProgress = false
@@ -165,7 +173,6 @@ export default defineComponent({
           'submission',
           `${this.getQueuedTag.foundPlayer}-${this.getQueuedTag.tagnumber}`
         )
-        formData.set('player', this.getQueuedTag.playerId)
 
         if (tag.foundImage) {
           formData.set('foundImageUrl', this.getQueuedTag.foundImageUrl)

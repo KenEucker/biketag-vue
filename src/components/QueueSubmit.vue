@@ -45,6 +45,7 @@
         data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
+        <input type="hidden" name="playerId" :value="getPlayerId" />
         <fieldset v-if="supportsReddit">
           <label for="postToReddit">{{ $t('pages.queue.post_to_reddit') }}</label>
           <input v-model="postToReddit" name="postToReddit" type="checkbox" />
@@ -80,7 +81,14 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueue', 'getQueuedTag', 'getCurrentBikeTag', 'getGameName', 'getGame']),
+    ...mapGetters([
+      'getQueue',
+      'getQueuedTag',
+      'getCurrentBikeTag',
+      'getPlayerId',
+      'getGameName',
+      'getGame',
+    ]),
     supportsReddit() {
       return !!this.getGame.subreddit
     },

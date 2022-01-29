@@ -52,6 +52,12 @@ export default defineConfig({
       /* Auth0 Configuration */
       AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID ?? null,
       AUTH0_DOMAIN: process.env.AUTH0_DOMAIN ?? null,
+      /* Google Configuration */
+      GOOGLE_EMAIL_ADDRESS: process.env.GOOGLE_EMAIL_ADDRESS ?? null,
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? null,
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? null,
+      GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN ?? null,
+      GOOGLE_PASSWORD: process.env.GOOGLE_PASSWORD ?? null,
     }),
     VitePWA({
       strategies: 'injectManifest',
