@@ -37,7 +37,7 @@ export const sendEmail = async (
   return info
 }
 
-const myHandler: Handler = async (event) => {
+const handler = async (event) => {
   /// Send new found image queued notification
   const emailSent = await sendEmail(
     'keneucker@gmail.com',
@@ -54,6 +54,6 @@ const myHandler: Handler = async (event) => {
   }
 }
 
-const handler = builder(myHandler)
+// const handler = builder(myHandler)
 
 export { handler }
