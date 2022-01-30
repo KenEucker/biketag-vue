@@ -45,6 +45,7 @@
         data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
+        <input type="hidden" name="form-name" value="submit-queued-tag" />
         <input type="hidden" name="playerId" :value="getPlayerId" />
         <fieldset v-if="supportsReddit">
           <label for="postToReddit">{{ $t('pages.queue.post_to_reddit') }}</label>
