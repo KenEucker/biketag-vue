@@ -8,6 +8,7 @@ import { Auth0Plugin } from './auth'
 import i18nPlugin from './i18n'
 import VueToast from 'vue-toast-notification'
 import Markdown from 'vue3-markdown-it'
+import VueCookies from 'vue3-cookies'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
 import '@/assets/styles/style.scss'
@@ -29,6 +30,9 @@ class BikeTagApp {
   }
   internationalization() {
     this.app.use(i18nPlugin)
+  }
+  cookies() {
+    this.app.use(VueCookies)
   }
   router() {
     this.app.use(router).use(store)
@@ -62,6 +66,7 @@ class BikeTagApp {
 
   run() {
     this.init()
+    this.cookies()
     this.internationalization()
     this.router()
     this.authentication()

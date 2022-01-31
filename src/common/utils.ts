@@ -1,6 +1,7 @@
 import request from 'request'
 import { DeviceUUID } from '../common/uuid'
 import md5 from 'md5'
+import { useCookies } from 'vue3-cookies'
 
 export type DomainInfo = {
   host: string
@@ -79,57 +80,6 @@ export const getDomainInfo = (req: request.Request | undefined, win?: Window): D
   }
 }
 
-// export const parseMultipartForm = async (event: any): Promise<any> => {
-//   return new Promise((resolve) => {
-//     // we'll store all form fields inside of this
-//     const fields: any = {}
-
-//     // let's instantiate our busboy instance!
-//     const busboy = new Busboy({
-//       // it uses request headers
-//       // to extract the form boundary value (the ----WebKitFormBoundary thing)
-//       headers: event.headers, //{ ...event.headers, 'content-type': event.headers['Content-Type'] },
-//     })
-
-//     // before parsing anything, we need to set up some handlers.
-//     // whenever busboy comes across a file ...
-//     busboy.on(
-//       'file',
-//       (
-//         fieldname: string | number,
-//         filestream: { on: (arg0: string, arg1: (data: any) => void) => void },
-//         filename: any,
-//         transferEncoding: any,
-//         mimeType: any
-//       ) => {
-//         // ... we take a look at the file's data ...
-//         filestream.on('data', (data) => {
-//           // ... and write the file's name, type and content into `fields`.
-//           fields[fieldname] = {
-//             filename,
-//             type: mimeType,
-//             content: data,
-//           }
-//         })
-//       }
-//     )
-
-//     // whenever busboy comes across a normal field ...
-//     busboy.on('field', (fieldName: string | number, value: any) => {
-//       // ... we write its value into `fields`.
-//       fields[fieldName] = value
-//     })
-
-//     // once busboy is finished, we resolve the promise with the resulted fields.
-//     busboy.on('finish', () => {
-//       resolve(fields)
-//     })
-
-//     // now that all handlers are set up, we can finally start processing our request!
-//     busboy.write(event.body)
-//   })
-// }
-
 export const parseQuery = (query = '') => {
   const params: any = new URLSearchParams(query) ?? []
   return Object.fromEntries(params)
@@ -196,34 +146,17 @@ export const getBikeTagClientOpts = (req?: request.Request, win?: Window, author
   return opts
 }
 
-export const getUuid = () => {
-  return new DeviceUUID().get()
-}
+export const getUuid = (playerIdCookieKey = 'playerId'): string => {
+  const { cookies } = useCookies()
+  const existingPlayerId = cookies.get(playerIdCookieKey)
 
-export const getIpInformation = () => {
-  return fetch('http://www.geoplugin.net/json.gp', {
-    method: 'GET',
-    mode: 'cors', // no-cors, *cors, same-origin
-    credentials: 'same-origin',
-    redirect: 'follow',
-  })
-    .then(async (req) => {
-      const { geoplugin_status, geoplugin_request, geoplugin_countryName } = await req.json()
-      if (geoplugin_status / 100 >= 2 && geoplugin_status / 100 < 3) {
-        return {
-          ip: geoplugin_request,
-          country: geoplugin_countryName,
-        }
-      } else {
-        return {
-          ip: '0.0.0.0',
-          country: 'unknown',
-        }
-      }
-    })
-    .catch((err) => {
-      return err
-    })
+  if (existingPlayerId) {
+    return existingPlayerId
+  }
+  const playerId = new DeviceUUID().get()
+  cookies.set(playerIdCookieKey, playerId)
+
+  return playerId
 }
 
 export const sendNetlifyError = function (
@@ -233,7 +166,6 @@ export const sendNetlifyError = function (
 ) {
   const body = new URLSearchParams({
     message,
-    ip: '',
   }).toString()
 
   const request = fetch(action, {

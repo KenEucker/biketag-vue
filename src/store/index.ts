@@ -3,13 +3,7 @@ import { createStore, Store } from 'vuex'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import { BikeTagApiResponse } from 'biketag/lib/common/types'
-import {
-  getDomainInfo,
-  getImgurImageSized,
-  getUuid,
-  getIpInformation,
-  getBikeTagClientOpts,
-} from '@/common/utils'
+import { getDomainInfo, getImgurImageSized, getUuid, getBikeTagClientOpts } from '@/common/utils'
 
 export interface State {
   game: Game
