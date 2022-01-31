@@ -3,12 +3,19 @@ import { createStore, Store } from 'vuex'
 import biketag from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import { BikeTagApiResponse } from 'biketag/lib/common/types'
-import { getDomainInfo, getImgurImageSized, getUuid, getBikeTagClientOpts } from '@/common/utils'
+import {
+  getDomainInfo,
+  getImgurImageSized,
+  getUuid,
+  getBikeTagClientOpts,
+  getAmbassadorUuid,
+} from '@/common/utils'
 
 export interface State {
   game: Game
   gameName: string
   playerId: string
+  ambassadorId: string
   currentBikeTag: Tag
   tags: Tag[]
   queuedTags: Tag[]
@@ -17,6 +24,7 @@ export interface State {
   html: string
   formStep: number
   queuedTag: Tag
+  isBikeTagAmbassador: boolean
 }
 
 export enum BiketagFormSteps {
@@ -26,19 +34,21 @@ export enum BiketagFormSteps {
   queueMystery = 4,
   queueSubmit = 5,
   queuePosted = 6,
+  queueApprove = 7,
 }
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
-const domain = getDomainInfo(undefined, window)
+const domain = getDomainInfo(window)
 const playerId = getUuid()
+const ambassadorId = getAmbassadorUuid(window)
 // const ipInfo = await getIpInformation()
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
 const options: any = {
   game: gameName,
   host: `https://${gameName}.biketag.io/api`,
-  ...getBikeTagClientOpts(undefined, window, useAuth),
+  ...getBikeTagClientOpts(window, useAuth),
 }
 const gameOpts = useAuth ? { source: 'sanity' } : {}
 const defaultLogo = '/images/BikeTag.svg'
@@ -60,12 +70,14 @@ export const store = createStore<State>({
     currentBikeTag: {} as Tag,
     tags: [] as Tag[],
     playerId,
+    ambassadorId,
     queuedTags: [] as Tag[],
     players: [] as Player[],
     leaderboard: [] as Player[],
     html: '',
     formStep: BiketagFormSteps.queueView,
     queuedTag: {} as Tag,
+    isBikeTagAmbassador: false,
   },
   actions: {
     setGame({ commit, state }) {
@@ -138,6 +150,27 @@ export const store = createStore<State>({
         return commit('SET_FORM_STEP_TO_JOIN', d)
       }
       return true
+    },
+    setFormStepToApprove({ commit, state }) {
+      if (state.isBikeTagAmbassador) {
+        return commit('SET_FORM_STEP_TO_APPROVE')
+      }
+      return false
+    },
+    async dequeueTag({ commit }, d) {
+      if (d.ambassadorId === ambassadorId) {
+        /// TODO: check for privileges to delete?
+        return client.deleteTag(d.tag).then((t) => {
+          if (t.success) {
+            console.log('tag dequeued', d.tag)
+          } else {
+            console.log('queue BikeTag failed', t)
+            return t.error
+          }
+          return t.success
+        })
+      }
+      return false
     },
     async queueFoundTag({ commit }, d) {
       if (d.foundImage && !d.foundImageUrl) {
@@ -214,6 +247,13 @@ export const store = createStore<State>({
         mysteryPlayer: state.queuedTag.mysteryPlayer,
       })
       return commit('RESET_FORM_STEP_TO_POST')
+    },
+    async getAmbassadorPermission({ state }, d) {
+      if (d.ambassadorId === state.ambassadorId) {
+        /// TODO: check for privileges to delete?
+        return true
+      }
+      return false
     },
   },
   mutations: {
@@ -386,6 +426,10 @@ export const store = createStore<State>({
       state.formStep = BiketagFormSteps.queueMystery
       // console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
     },
+    SET_FORM_STEP_TO_APPROVE(state) {
+      state.formStep = BiketagFormSteps.queueApprove
+      console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+    },
   },
   getters: {
     getImgurImageSized: () => getImgurImageSized,
@@ -397,6 +441,9 @@ export const store = createStore<State>({
     },
     getPlayerId(state) {
       return state.playerId
+    },
+    getAmbassadorId(state) {
+      return state.ambassadorId
     },
     getGameSettings(state) {
       return state.game?.settings

@@ -1,5 +1,5 @@
 import { builder, Handler } from '@netlify/functions'
-import { getBikeTagClientOpts, getPayloadOpts } from '../src/common/utils'
+import { getBikeTagClientOpts, getPayloadOpts } from './common/utils'
 import { BikeTagClient } from 'biketag'
 import { getAmbassadorsPayload } from 'biketag/lib/common/payloads'
 import { Game } from 'biketag/lib/common/schema'
@@ -11,7 +11,6 @@ const ambassadorsHandler: Handler = async (event) => {
       ...event,
       method: event.httpMethod,
     } as unknown as request.Request,
-    undefined,
     true
   )
   const biketag = new BikeTagClient(biketagOpts)

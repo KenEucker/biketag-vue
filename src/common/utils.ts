@@ -1,6 +1,4 @@
-import request from 'request'
 import { DeviceUUID } from '../common/uuid'
-import md5 from 'md5'
 import { useCookies } from 'vue3-cookies'
 
 export type DomainInfo = {
@@ -46,16 +44,20 @@ export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
     .replace('.png', `${size}.png`)
     .replace('.mp4', `${size}.mp4`)
 
-export const getBikeTagHash = (key: string): string => md5(`${key}${process.env.HOST_KEY}`)
-
-export const getDomainInfo = (req: request.Request | undefined, win?: Window): DomainInfo => {
+export const getDomainInfo = (req: any): DomainInfo => {
   const nonSubdomainHosts = [
     `${process.env.HOST ?? 'biketag.local'}`,
     'biketag.dev',
     '0.0.0.0',
     'localhost',
   ]
-  let host = (req ? req.headers.host : win ? win.location.host : '')
+  let host = (
+    req.headers?.host?.length
+      ? req.headers.host
+      : req.location?.host?.length
+        ? req.location.host
+        : ''
+  )
     .toLowerCase()
     .replace(/www./g, '')
   let port = null
@@ -80,53 +82,10 @@ export const getDomainInfo = (req: request.Request | undefined, win?: Window): D
   }
 }
 
-export const parseQuery = (query = '') => {
-  const params: any = new URLSearchParams(query) ?? []
-  return Object.fromEntries(params)
-}
-
-export const parseBody = (body = '') => {
-  let parsed = {}
-  try {
-    parsed = JSON.parse(body)
-  } catch (e) {
-    parsed = parseQuery(body)
-  }
-
-  return parsed
-}
-
-export const getPayloadOpts = (event: any, base = {}): any => {
-  const parsedQuery = parseQuery(event.rawQuery)
-  const parsedBody = parseBody(event.body)
-  return {
-    ...base,
-    ...parsedQuery,
-    ...parsedBody,
-  }
-}
-
-export const getPayloadAuthorization = (event: any) => {
-  const { authorization } = event.headers
-  const bearer = 'Bearer '
-  const clientId = 'Client-ID '
-
-  if (authorization?.indexOf(bearer) === 0) {
-    return authorization.substr(bearer.length)
-  } else if (authorization?.indexOf(clientId) === 0) {
-    return authorization.substr(clientId.length)
-  } else {
-    return authorization
-  }
-}
-
-export const getBikeTagClientOpts = (req?: request.Request, win?: Window, authorized?: boolean) => {
-  const domainInfo = getDomainInfo(req, win)
-  const isAuthenticatedPOST = req?.method === 'POST' || authorized
-  const isGET = !isAuthenticatedPOST && req?.method === 'GET'
+export const getBikeTagClientOpts = (win?: Window, authorized?: boolean) => {
+  const domainInfo = getDomainInfo(win)
   const opts: any = {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
-    cached: isGET || !isAuthenticatedPOST,
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
     },
@@ -157,6 +116,30 @@ export const getUuid = (playerIdCookieKey = 'playerId'): string => {
   cookies.set(playerIdCookieKey, playerId)
 
   return playerId
+}
+
+export const getAmbassadorUuid = (req?: any, ambassadorIdCookieKey = 'ambassadorId'): string => {
+  const { cookies } = useCookies()
+  const existingAmbassadorId = cookies.get(ambassadorIdCookieKey)
+
+  if (existingAmbassadorId) {
+    return existingAmbassadorId
+  }
+
+  if (req) {
+    const ambassadorId = req.headers?.btaId?.length
+      ? req.headers.btaId
+      : req.location?.btaId?.length
+        ? req.location.btaId
+        : ''
+
+    if (ambassadorId) {
+      cookies.set(ambassadorIdCookieKey, ambassadorId)
+      return ambassadorId
+    }
+  }
+
+  return ''
 }
 
 export const sendNetlifyError = function (

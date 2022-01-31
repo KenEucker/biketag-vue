@@ -1,10 +1,6 @@
 import { builder, Handler } from '@netlify/functions'
-import {
-  getBikeTagClientOpts,
-  getDomainInfo,
-  getImgurImageSized,
-  getPayloadOpts,
-} from '../src/common/utils'
+import { getBikeTagClientOpts, getPayloadOpts } from './common/utils'
+import { getDomainInfo, getImgurImageSized } from '../src/common/utils'
 import { BikeTagClient } from 'biketag'
 import request from 'request'
 import axios from 'axios'
@@ -16,7 +12,6 @@ const currentTagHandler = async (event) => {
       ...event,
       method: event.httpMethod,
     } as unknown as request.Request,
-    undefined,
     true
   )
   const biketag = new BikeTagClient(biketagOpts)
@@ -37,7 +32,7 @@ const currentTagHandler = async (event) => {
   if (currentTagResponse.success) {
     const currentTag = currentTagResponse.data
     const data: any = currentTag
-    const domainInfo = getDomainInfo(event as unknown as request.Request)
+    const domainInfo = getDomainInfo(event)
     data.host = domainInfo.host
     data.imageUri = getImgurImageSized(data.mysteryImageUrl, biketagPayload.size)
 

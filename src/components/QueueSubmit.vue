@@ -126,10 +126,10 @@ See all BikeTags and more, for ${this.getGameName}:
       const submittedTag = this.getQueuedTag
 
       submittedTag.discussionUrl = JSON.stringify({
-        postToReddit: true,
+        postToReddit: this.postToReddit,
       })
       submittedTag.mentionUrl = JSON.stringify({
-        postToTwitter: false,
+        postToTwitter: this.postToTwitter,
       })
 
       formData.append('discussionUrl', submittedTag.discussionUrl)

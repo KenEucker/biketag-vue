@@ -5,7 +5,7 @@ import { getQueuePayload } from 'biketag/lib/common/payloads'
 import { Game } from 'biketag/lib/common/schema'
 import request from 'request'
 
-const queueHandler: Handler = async (event) => {
+const cronHandler: Handler = async (event) => {
   const biketagOpts = getBikeTagClientOpts(
     {
       ...event,
@@ -35,6 +35,6 @@ const queueHandler: Handler = async (event) => {
   }
 }
 
-const handler = builder(queueHandler)
+const handler = builder(cronHandler)
 
 export { handler }

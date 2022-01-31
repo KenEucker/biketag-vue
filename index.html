@@ -51,6 +51,15 @@
       <input name="mentionUrl" type="text">
       <input name="tag" type="text" required>
     </form>
+    <form name="approve-queued-tag" action="approve-queued-tag" method="POST" data-netlify="true"
+      data-netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="approve-queued-tag">
+      <input type="hidden" name="game" required>
+      <input type="hidden" name="ambassadorId" required>
+      <input name="submission" type="text" required>
+      <input name="game" type="text" required>
+      <input name="tag" type="text" required>
+    </form>
     <form name="queue-tag-error" action="queue-tag-error" method="POST" data-netlify="true"
       data-netlify-honeypot="bot-field" hidden>
       <input type="hidden" name="form-name" value="queue-tag-error">

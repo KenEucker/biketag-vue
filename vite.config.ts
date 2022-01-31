@@ -40,6 +40,11 @@ export default defineConfig({
       IMGUR_CLIENT_SECRET: process.env.IMGUR_CLIENT_SECRET ?? null,
       IMGUR_ACCESS_TOKEN: process.env.IMGUR_ACCESS_TOKEN ?? null,
       IMGUR_REFRESH_TOKEN: process.env.IMGUR_REFRESH_TOKEN ?? null,
+      /* Imgur Admin Configuration */
+      IMGUR_ADMIN_CLIENT_ID: process.env.IMGUR_ADMIN_CLIENT_ID ?? null,
+      IMGUR_ADMIN_CLIENT_SECRET: process.env.IMGUR_ADMIN_CLIENT_SECRET ?? null,
+      IMGUR_ADMIN_ACCESS_TOKEN: process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? null,
+      IMGUR_ADMIN_REFRESH_TOKEN: process.env.IMGUR_ADMIN_REFRESH_TOKEN ?? null,
       /* Sanity Configuration */
       SANITY_PROJECT_ID: process.env.SANITY_PROJECT_ID ?? null,
       SANITY_DATASET: process.env.SANITY_DATASET ?? null,

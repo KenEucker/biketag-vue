@@ -41,6 +41,9 @@
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
         <queue-posted :tag="getQueuedTag" />
       </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueApprove]">
+        <queue-approve :tag="getQueuedTag" />
+      </div>
       <span v-if="isSubmittingData()" class="user_agree">
         * {{ $t('pages.queue.user_agree') }}
       </span>
@@ -76,6 +79,7 @@ import QueueMystery from '@/components/QueueMystery.vue'
 import QueueSubmit from '@/components/QueueSubmit.vue'
 import QueueJoined from '@/components/QueueJoined.vue'
 import QueuePosted from '@/components/QueuePosted.vue'
+import QueueApprove from '@/components/QueueApprove.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
 export default defineComponent({
@@ -87,6 +91,7 @@ export default defineComponent({
     QueueSubmit,
     QueueJoined,
     QueuePosted,
+    QueueApprove,
     BikeTagQueue,
   },
   props: {
@@ -151,6 +156,11 @@ export default defineComponent({
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual'
+      }
+      // This is needed if the user scrolls down during page load and you want to make sure the page is scrolled to the top once it's fully loaded. This has Cross-browser support.
+      window.scrollTo(0, 0)
 
       this.$toast.open({
         message: this.$t('notifications.uploading'),

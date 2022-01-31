@@ -1,28 +1,28 @@
 import { builder, Handler } from '@netlify/functions'
 import { getBikeTagClientOpts, getPayloadOpts } from './common/utils'
 import { BikeTagClient } from 'biketag'
-import { getGamePayload } from 'biketag/lib/common/payloads'
+import { queueTagPayload } from 'biketag/lib/common/payloads'
 import request from 'request'
 
-const gameHandler: Handler = async (event) => {
+const approveHandler: Handler = async (event) => {
   const biketagOpts = getBikeTagClientOpts(
     {
       ...event,
       method: event.httpMethod,
     } as unknown as request.Request,
+    true,
     true
   )
   const biketagPayload = getPayloadOpts(event, { game: biketagOpts.game })
-  const biketag = new BikeTagClient(biketagOpts)
-  const gameResponse = await biketag.getGame(biketagPayload as getGamePayload, { source: 'sanity' })
-  const { success, data } = gameResponse
+  console.log({ biketagOpts, biketagPayload })
+  // const biketag = new BikeTagClient(biketagOpts)
 
   return {
-    statusCode: gameResponse.status,
-    body: JSON.stringify(success ? data : gameResponse),
+    statusCode: 200,
+    body: 'hi',
   }
 }
 
-const handler = builder(gameHandler)
+const handler = builder(approveHandler)
 
 export { handler }

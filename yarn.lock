@@ -6860,6 +6860,11 @@ linkify-it@^3.0.1:
   dependencies:
     uc.micro "^1.0.1"
 
+liquidjs@^9.34.0:
+  version "9.34.0"
+  resolved "https://registry.yarnpkg.com/liquidjs/-/liquidjs-9.34.0.tgz#b1a9cca1267aacce7ece13f8036751ca8f1664ee"
+  integrity sha512-LIOqPT3hvnmJQKwhJwBLcEwaEthdWJH2uvNjC9Q6K/n25+tuXQuvd/bwH1WwWBtBpzvESjcDWdM2SHpRlTLvqg==
+
 listr-silent-renderer@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/listr-silent-renderer/-/listr-silent-renderer-1.1.1.tgz#924b5a3757153770bf1a8e3fbf74b8bbf3f9242e"

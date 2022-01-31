@@ -56,6 +56,8 @@
       "submit_text": "You can have the BikeTag RoBot post on your behalf or you can choose to post to other platforms on your own. Once you submit your BikeTag the round will come to a close and your BikeTag will become the new round!",
       "posted_title": "Your BikeTag for this round has been submitted!",
       "posted_text": "Please allow time for the BikeTag Ambassador of the game to approve your BikeTag Post, which can take up to 15 minutes. Thanks for playing BikeTag!",
+      "approve_title": "Hello, BikeTag Ambassador!",
+      "approve_text": "Please select the winning tag for the round so the game can continue on! This action will save all found images for each player in their BikeDex and will select the mystery image of the winner as the new Mystery Location.",
       "location_placeholder": "Enter Found Location",
       "name_placeholder": "Enter your name",
       "hint_placeholder": "Enter your hint",
@@ -65,6 +67,8 @@
       "submit_new_tag": "Add Your Mystery Image",
       "queue_postfix": "",
       "post_new_tag": "Post New BikeTag",
+      "approve_new_tag": "Approve This BikeTag Post",
+      "dequeue_queued_tag": "Delete This BikeTag Post",
       "reset_tag": "Reset Tag Submission",
       "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project"
     },
