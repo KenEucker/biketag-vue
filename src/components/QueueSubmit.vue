@@ -2,13 +2,6 @@
   <b-container class="submit-queue">
     <div>
       <h3 class="queue-title">{{ $t('pages.queue.submit_title') }}</h3>
-      <p v-if="supportsReddit || supportsTwitter" class="queue-text">
-        {{ $t('pages.queue.submit_text') }}
-      </p>
-      <p v-else class="queue-text">
-        Once you submit your new BikeTag Post, a BikeTag Ambassador will approve the next round and
-        then your new post will be live!
-      </p>
     </div>
     <div>
       <b-tabs
@@ -35,6 +28,13 @@
           </div>
         </b-tab>
       </b-tabs>
+      <p v-if="supportsReddit || supportsTwitter" class="queue-text">
+        {{ $t('pages.queue.submit_text') }}
+      </p>
+      <p v-else class="queue-text">
+        Once you submit your new BikeTag Post, a BikeTag Ambassador will approve the next round and
+        then your new post will be live!
+      </p>
 
       <form
         ref="submitTag"

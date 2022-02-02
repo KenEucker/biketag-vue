@@ -2826,10 +2826,10 @@ better-opn@^3.0.0:
   dependencies:
     open "^8.0.4"
 
-biketag@^1.14.6:
-  version "1.14.6"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-1.14.6.tgz#c6d54d35acf50f45b9677cb26e54ef862256d3d7"
-  integrity sha512-iA9mVF8y3VT3sCMoz1LEVsvdu9glfA1bJBr5/jkf6cGv613dDm6xaH6U6Wa2Bu9sxk3KgwoTY/UIEg413naqnQ==
+biketag@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-2.0.0.tgz#5cb103df035e1f5e00b122f13719bdec890f65a8"
+  integrity sha512-KTQUyp2BI6XzoU3uB84vzZSwIsGrUdYqtuZfGLhB1clbwqUDwPdzoYQqbiIfPQa6FzPavEbcHqYgcAF4DwxGxw==
   dependencies:
     "@sanity/client" "^2.23.2"
     axios "^0.21.1"

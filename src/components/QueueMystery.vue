@@ -1,7 +1,6 @@
 <template>
   <b-container class="col-8 col-lg-6">
     <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3>
-    <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
       <img
@@ -37,6 +36,7 @@
           @change="setImage"
         />
       </div>
+      <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
       <div class="mt-3">
         <b-form-input
           id="player"

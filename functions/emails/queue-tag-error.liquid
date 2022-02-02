@@ -9,40 +9,10 @@
         }
         
         @media only screen and (max-width: 480px) {
-            #templateColumns {
-                width: 100% !important;
+            .biketagIcon {
+                text-align: center;
+                max-width: 15em;
             }
-            .templateColumnContainer {
-                display: block !important;
-                width: 100% !important;
-            }
-            .columnImage {
-                height: auto !important;
-                max-width: 480px !important;
-                width: 100% !important;
-            }
-            .leftColumnContent {
-                font-size: 16px !important;
-                line-height: 125% !important;
-            }
-            .rightColumnContent {
-                font-size: 16px !important;
-                line-height: 125% !important;
-            }
-        }
-        
-        a.approveTagButton {
-            background-color: rgb(27, 94, 32);
-            color: white;
-            padding: 1em;
-            border-radius: 3px;
-            text-decoration: none;
-            font-size: 1.1em;
-        }
-        
-        .biketagIcon {
-            text-align: center;
-            max-width: 15em;
         }
     </style>
 </head>
@@ -58,43 +28,8 @@
         {% endif %}
         <tr>
             <td align="center" width="50%" valign="bottom" class="middleColumnContent">
-                <h4>Hello BikeTag Ambassador! A new BikeTag has been posted by <strong>{{ tag.credit }}</strong> in {{ region }}!</h4>
-                <p>You are getting this email because you are listed as an admin on the site (<a href="https://{{ host }}">{{ host }}</a>).</p>
-            </td>
-        </tr>
-    </table>
-
-    <table border="0" cellpadding="0" cellspacing="0" width="600" id="templateColumns">
-        <tr>
-            <td align="center" valign="top" width="50%" class="templateColumnContainer">
-                <table border="0" cellpadding="10" cellspacing="0" width="100%">
-                    <tr>
-                        <td valign="top" class="leftColumnContent">
-                            <h1>Proof for #{{ tag.mysteryTagNumber }}</h1>
-                            Found Tag
-                        </td>
-                    </tr>
-                    <tr>
-                        <td valign="bottom" class="leftColumnContent">
-                            <img src="{{ currentTag.foundImageUrl }}" width="280" style="max-width:280px;" class="columnImage" />
-                        </td>
-                    </tr>
-                </table>
-            </td>
-            <td align="center" valign="top" width="50%" class="templateColumnContainer">
-                <table border="0" cellpadding="10" cellspacing="0" width="100%">
-                    <tr>
-                        <td valign="top" class="rightColumnContent">
-                            <h1>Mystery Tag #{{ tag.mysteryTagNumber }}</h1>
-                            Previous Mystery Tag
-                        </td>
-                    </tr>
-                    <tr>
-                        <td valign="bottom" class="rightColumnContent">
-                            <img src="{{ tag.mysteryTag.link }}" width="280" style="max-width:280px;" class="columnImage" />
-                        </td>
-                    </tr>
-                </table>
+                <h4> An Error has occured for the {{ game }} game.</h4>
+                <p> You are getting this email because you are listed as an admin on the site (<a href="https://{{ host }}">{{ host }}</a>).</p>
             </td>
         </tr>
     </table>
@@ -102,24 +37,11 @@
     <table border="0" cellpadding="10" cellspacing="0" width="600">
         <tr>
             <td align="center" width="50%" valign="top" class="middleColumnContent">
-                <p>
-                    Is the new tag ready to be posted? Click below to automatigically create the post on behalf of user {{ tag.credit }}.
-                </p>
-                <a class="approveTagButton" href="{{ ambassadorsUrl }}/?expiry={{ expiryHash }}&game={{ subdomain }}">Approve</a>
-                <h1>Tag #{{ tag.currentTagNumber }}</h1>
-                <span>New Mystery Tag</span>
-            </td>
-        </tr>
-        <tr>
-            <td align="center" width="50%" valign="bottom" class="middleColumnContent">
-                <img src="{{ tag.mysteryImageUrl }}" width="280" style="max-width:280px;" class="columnImage" />
-                <p>To post this tag to Reddit manually, go to <a href="https://{{ host }}/get/reddit?flushcache=true">{{ host }}/get/reddit</a> to get the reddit post template. The subreddit for this game is <a href="https://reddit.com/r/{{reddit}}">r/{{reddit}}</a>
-                </p>
-            </td>
-        </tr>
-        <tr>
-            <td align="center" width="50%" valign="top" class="middleColumnContent">
-                If you are not in the ambassador program or no longer want to receive these emails, reply to this email.
+                The Player who submitted the error has an IP address of ({{ playerIp }})
+                <br>
+                This was the payload sent with the error
+                <br>
+                <pre>({{ payload }})<pre>
             </td>
         </tr>
     </table>

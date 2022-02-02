@@ -2,6 +2,10 @@ import request from 'request'
 import { getDomainInfo } from '../../src/common/utils'
 import md5 from 'md5'
 import crypto from 'crypto'
+import nodemailer from 'nodemailer'
+import { Liquid } from 'liquidjs'
+import { join, extname } from 'path'
+import { readFileSync, existsSync } from 'fs'
 
 export const getBikeTagHash = (key: string): string => md5(`${key}${process.env.HOST_KEY}`)
 
@@ -33,10 +37,10 @@ export const getBikeTagClientOpts = (
 
     if (admin) {
       opts.imgur = opts.imgur ?? {}
-      opts.imgur.clientId = process.env.IMGUR_ADMIN_CLIENT_ID
-      opts.imgur.clientSecret = process.env.IMGUR_ADMIN_CLIENT_SECRET
-      opts.imgur.accessToken = process.env.IMGUR_ADMIN_ACCESS_TOKEN
-      opts.imgur.refreshToken = process.env.IMGUR_ADMIN_REFRESH_TOKEN
+      opts.imgur.clientId = process.env.IMGUR_ADMIN_CLIENT_ID ?? opts.imgur.clientId
+      opts.imgur.clientSecret = process.env.IMGUR_ADMIN_CLIENT_SECRET ?? opts.imgur.clientSecret
+      opts.imgur.accessToken = process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? ''
+      opts.imgur.refreshToken = process.env.IMGUR_ADMIN_REFRESH_TOKEN ?? opts.imgur.refreshToken
     }
   }
 
@@ -122,4 +126,103 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
     /// swallow exception
     return null
   }
+}
+
+export const sendEmailNotification = async (to: string, subject: string, locals: any) => {
+  const liquidOpts = {
+    dynamicPartials: true,
+    strict_filters: true,
+    extname: '.liquid',
+    root: [join('src', 'emails')],
+    customFilters: {
+      biketag_image: (url, size = '') => {
+        const ext = extname(url)
+        /// Make sure the image type is supported
+        if (['.jpg', '.jpeg', '.png', '.bmp'].indexOf(ext) === -1) return url
+
+        switch (size) {
+          default:
+          case 'original':
+          case '':
+            break
+
+          case 's':
+          case 'm':
+          case 'small':
+          case 'medium':
+            size = 's'
+            break
+
+          case 'l':
+          case 'large':
+            size = 'l'
+            break
+        }
+
+        return url.replace(ext, `${size}${ext}`)
+      },
+    },
+  }
+  let html = ''
+  let text = ''
+
+  const liquid = new Liquid(liquidOpts)
+
+  Object.keys(liquidOpts.customFilters).forEach((filter) => {
+    const filterMethod = liquidOpts.customFilters[filter]
+    liquid.registerFilter(filter, filterMethod)
+  })
+  const templateFilePath = join('functions', 'emails', subject)
+  const htmlTemplateFilePath = `${templateFilePath}.liquid`
+  const textTemplateFilePath = `${templateFilePath}--text.liquid`
+
+  if (existsSync(htmlTemplateFilePath)) {
+    const htmlTemplate = readFileSync(htmlTemplateFilePath).toString()
+    html = liquid.parseAndRenderSync(htmlTemplate, locals)
+    console.log({ html })
+  } else {
+    console.log({ htmlTemplateFilePath })
+  }
+  if (existsSync(textTemplateFilePath)) {
+    const textTemplate = readFileSync(textTemplateFilePath).toString()
+    text = liquid.parseAndRenderSync(textTemplate, locals)
+    console.log({ text })
+  } else {
+    console.log({ textTemplateFilePath })
+  }
+  const emailOpts = {
+    from: process.env.GOOGLE_EMAIL_ADDRESS, // sender address
+    to, // list of receivers
+    subject: subject.replace(/^(.)|[\s-](.)/g, (match) =>
+      match[1] !== undefined ? match[1].toUpperCase() : match[0].toUpperCase()
+    ),
+    text, // plain text body
+    html, // html body
+  }
+
+  const transporterOpts: any = {
+    auth: {
+      user: process.env.GOOGLE_EMAIL_ADDRESS,
+      pass: process.env.GOOGLE_PASSWORD,
+    },
+    service: 'gmail',
+  }
+
+  // const transporter = nodemailer.createTransport(transporterOpts)
+
+  // const info = await transporter.sendMail(emailOpts)
+
+  /// TODO: formulate the response into something usable
+  return { info: true }
+}
+
+export const getEncodedExpiry = (data = {}, days = 2) => {
+  const expiryData = {
+    ...data,
+    expiry: new Date(
+      /// Expiry is now plus  Ms     s    h    days  x (default 2)
+      new Date().getTime() + 1000 * 60 * 60 * 24 * days
+    ),
+  }
+  return encodeURIComponent(encrypt(expiryData))
 }
