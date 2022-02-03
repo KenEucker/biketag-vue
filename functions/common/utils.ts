@@ -208,12 +208,12 @@ export const sendEmailNotification = async (to: string, subject: string, locals:
     service: 'gmail',
   }
 
-  // const transporter = nodemailer.createTransport(transporterOpts)
+  const transporter = nodemailer.createTransport(transporterOpts)
 
-  // const info = await transporter.sendMail(emailOpts)
+  const info = await transporter.sendMail(emailOpts)
 
   /// TODO: formulate the response into something usable
-  return { info: true }
+  return info
 }
 
 export const getEncodedExpiry = (data = {}, days = 2) => {

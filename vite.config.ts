@@ -29,6 +29,7 @@ export default defineConfig({
     EnvironmentPlugin({
       /* Application Configuration */
       USE_AUTHENTICATION: process.env.USE_AUTHENTICATION,
+      SUPER_ADMIN: process.env.SUPER_ADMIN ?? 'biketag@biketag.org',
       /* BikeTag Configuration */
       GAME_NAME: process.env.GAME_NAME ?? 'test',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,

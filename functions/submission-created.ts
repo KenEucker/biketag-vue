@@ -11,7 +11,7 @@ export const handler = async (event) => {
   let success = false
   if (payload) {
     console.log({ payload })
-    const superAdmin = 'keneucker@gmail.com'
+    const superAdmin = process.env.SUPER_ADMIN
     const formName = payload.form_name
     const playerIP = payload.data?.playerId
     const host = payload.data?.host
@@ -113,7 +113,7 @@ export const handler = async (event) => {
     }
 
     if (successfulEmailsSent.length) {
-      console.log({ successfulEmailsSent })
+      console.log('success sending notifications and emails', successfulEmailsSent)
       success = true
     } else if (rejectedEmails.length) {
       console.log('error sending emails', rejectedEmails)
