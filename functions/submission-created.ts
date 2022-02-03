@@ -10,7 +10,6 @@ export const handler = async (event) => {
   const payload = body.payload
   let success = false
   if (payload) {
-    console.log({ payload })
     const superAdmin = process.env.SUPER_ADMIN
     const formName = payload.form_name
     const playerIP = payload.data?.playerId
@@ -23,6 +22,7 @@ export const handler = async (event) => {
     let game
 
     if (formName !== 'queue-found-tag' || formName !== 'queue-mystery-tag') {
+      console.log({ formName })
       const biketagOpts = getBikeTagClientOpts(
         {
           ...event,
@@ -53,8 +53,9 @@ export const handler = async (event) => {
         break
       case 'submit-queued-tag':
         // send app notification
-        thisGamesAmbassadors.forEach(async (ambassador) => {
+        for (const ambassador of thisGamesAmbassadors) {
           if (ambassador.email) {
+            console.log(`sending ${formName} ambassador email to: ${ambassador.email}`)
             emailSent = await sendEmailNotification(ambassador.email, formName, {
               tag,
               host,
@@ -70,6 +71,7 @@ export const handler = async (event) => {
             successfulEmailsSent.concat(emailSent.accepted)
             rejectedEmails.concat(emailSent.rejected)
             if (superAdmin) {
+              console.log(`sending ${formName} superAdmin email to: ${superAdmin}`)
               emailSent = await sendEmailNotification(superAdmin, formName, {
                 payload: JSON.stringify(payload),
                 game: game.name,
@@ -80,15 +82,16 @@ export const handler = async (event) => {
               rejectedEmails.concat(emailSent.rejected)
             }
           }
-        })
+        }
         break
       case 'approve-queued-tag':
         // send app notification
         break
       default:
       case 'queue-tag-error':
-        thisGamesAmbassadors.forEach(async (ambassador) => {
+        for (const ambassador of thisGamesAmbassadors) {
           if (ambassador.email) {
+            console.log(`sending ${formName} ambassador email to: ${ambassador.email}`)
             emailSent = await sendEmailNotification(ambassador.email, 'queue-tag-error', {
               payload: JSON.stringify(payload),
               host,
@@ -98,8 +101,9 @@ export const handler = async (event) => {
             successfulEmailsSent.concat(emailSent.accepted)
             rejectedEmails.concat(emailSent.rejected)
           }
-        })
+        }
         if (superAdmin) {
+          console.log(`sending 'queue-tag-error' superAdmin email to: ${superAdmin}`)
           emailSent = await sendEmailNotification(superAdmin, 'queue-tag-error', {
             payload: JSON.stringify(payload),
             game: game.name,
