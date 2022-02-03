@@ -157,20 +157,56 @@ export const store = createStore<State>({
       }
       return false
     },
-    async dequeueTag({ commit }, d) {
+    async dequeueTag({ commit, state }, d) {
+      // Check ambassador permissions?
       if (d.ambassadorId === ambassadorId) {
-        /// TODO: check for privileges to delete?
+        d.hash = state.game.queuehash
         return client.deleteTag(d.tag).then((t) => {
           if (t.success) {
             console.log('tag dequeued', d.tag)
           } else {
-            console.log('queue BikeTag failed', t)
+            console.log('dequeue BikeTag failed', t)
             return t.error
           }
           return t.success
         })
       }
       return false
+    },
+    async dequeueFoundTag({ commit, state }) {
+      if (state.queuedTag?.playerId === playerId) {
+        const queuedTag: any = state.queuedTag
+        queuedTag.hash = state.game.queuehash
+        return client.deleteTag(queuedTag).then(async (t) => {
+          if (t.success) {
+            console.log('tag dequeued', queuedTag)
+            await commit('SET_QUEUED_TAG', {})
+
+            return commit('RESET_FORM_STEP_TO_FOUND')
+          } else {
+            console.log('dequeue BikeTag failed', t)
+            return t.error
+          }
+        })
+      }
+    },
+    async dequeueMysteryTag({ commit, state }, d) {
+      if (state.queuedTag?.playerId === playerId) {
+        const queuedFoundTag: any = biketag.getters.getOnlyFoundTagFromTagData(state.queuedTag)
+        const queuedMysteryTag: any = biketag.getters.getOnlyMysteryTagFromTagData(state.queuedTag)
+        queuedMysteryTag.hash = state.game.queuehash
+        return client.deleteTag(queuedMysteryTag).then(async (t) => {
+          if (t.success) {
+            console.log('mystery tag dequeued')
+            await commit('SET_QUEUED_TAG', queuedFoundTag)
+
+            return commit('RESET_FORM_STEP_TO_FOUND')
+          } else {
+            console.log('dequeue BikeTag failed', t)
+            return t.error
+          }
+        })
+      }
     },
     async queueFoundTag({ commit }, d) {
       if (d.foundImage && !d.foundImageUrl) {
@@ -249,7 +285,7 @@ export const store = createStore<State>({
       return commit('RESET_FORM_STEP_TO_POST')
     },
     async getAmbassadorPermission({ state }, d) {
-      if (d.ambassadorId === state.ambassadorId) {
+      if (d.ambassadorId === ambassadorId) {
         /// TODO: check for privileges to delete?
         return true
       }

@@ -69,8 +69,21 @@ export const handler = async (event) => {
             })
             successfulEmailsSent.concat(emailSent.accepted)
             rejectedEmails.concat(emailSent.rejected)
+            if (superAdmin) {
+              emailSent = await sendEmailNotification(superAdmin, formName, {
+                payload: JSON.stringify(payload),
+                game: game.name,
+                host,
+                playerIP,
+              })
+              successfulEmailsSent.concat(emailSent.accepted)
+              rejectedEmails.concat(emailSent.rejected)
+            }
           }
         })
+        break
+      case 'approve-queued-tag':
+        // send app notification
         break
       default:
       case 'queue-tag-error':

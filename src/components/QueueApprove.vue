@@ -118,8 +118,24 @@ export default defineComponent({
   },
   methods: {
     dequeueTag() {
-      /// TODO: pop confirmation modal?
-      this.$store.dispatch('dequeueTag', true)
+      const tagToDequeue = {}
+      return this.$store.dispatch('dequeueTag', tagToDequeue).then((dequeueSuccessful) => {
+        if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
+          return this.$toast.open({
+            message: `dequeue tag error: ${dequeueSuccessful}`,
+            type: 'error',
+            timeout: false,
+            position: 'bottom',
+          })
+        } else {
+          return this.$toast.open({
+            message: 'tag successfully dequeued',
+            type: 'success',
+            timeout: false,
+            position: 'top',
+          })
+        }
+      })
     },
     onSubmit() {
       const formAction = this.$refs.approveTag.getAttribute('action')

@@ -205,7 +205,7 @@ export default defineComponent({
               message: `${this.$t('notifications.error')} ${m}`,
               type: 'error',
               timeout: false,
-              position: 'top',
+              position: 'bottom',
             })
             return sendNetlifyError(m, undefined, errorAction)
           }
@@ -216,7 +216,7 @@ export default defineComponent({
           message,
           type: 'error',
           timeout: false,
-          position: 'top',
+          position: 'bottom',
         })
         return sendNetlifyError(message, undefined, errorAction)
       }

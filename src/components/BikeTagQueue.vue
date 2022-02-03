@@ -96,10 +96,32 @@ export default defineComponent({
   },
   methods: {
     resetToFound() {
-      this.$store.dispatch('resetFormStepToFound')
+      return this.$store.dispatch('dequeueFoundTag', true).then((dequeueSuccessful) => {
+        if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
+          return this.$toast.open({
+            message: `dequeue tag error: ${dequeueSuccessful}`,
+            type: 'error',
+            timeout: false,
+            position: 'bottom',
+          })
+        } else {
+          return this.$store.dispatch('resetFormStepToFound')
+        }
+      })
     },
     resetToMystery() {
-      this.$store.dispatch('resetFormStepToMystery')
+      return this.$store.dispatch('dequeueMysteryTag', true).then((dequeueSuccessful) => {
+        if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
+          return this.$toast.open({
+            message: `dequeue tag error: ${dequeueSuccessful}`,
+            type: 'error',
+            timeout: false,
+            position: 'bottom',
+          })
+        } else {
+          return this.$store.dispatch('resetFormStepToFound')
+        }
+      })
     },
     paginationClick(key) {
       if (this.paginationRef) {
