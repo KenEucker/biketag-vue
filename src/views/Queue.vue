@@ -13,13 +13,9 @@
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
     <span
-      v-if="
-        !uploadInProgress &&
-        getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined] &&
-        isViewingQueue()
-      "
+      v-if="!uploadInProgress && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
       class="tag-number"
-      >{{ $t('pages.queue.tape_title') }} #{{ getCurrentBikeTag?.tagnumber + 1 }}</span
+      >#{{ getCurrentBikeTag?.tagnumber }}</span
     >
     <bike-tag-queue v-if="!isViewingQueue()" :only-mine="true" />
     <div v-if="!uploadInProgress" class="container">

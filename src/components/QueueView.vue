@@ -29,9 +29,9 @@
       </swiper-slide>
     </swiper>
     <bike-tag-queue :pagination-ref="controlledSwiper" />
-    <b-button v-if="showGoNextButton()" class="mb-2" @click="goNextQueueStep"
-      >{{ goNextQueueStepButtonText }} {{ getCurrentBikeTag?.tagnumber }}</b-button
-    >
+    <b-button v-if="showGoNextButton()" class="mb-2" @click="goNextQueueStep">{{
+      goNextQueueStepButtonText
+    }}</b-button>
   </div>
 </template>
 

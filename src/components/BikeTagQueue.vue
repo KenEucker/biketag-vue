@@ -132,8 +132,8 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .navigation {
-  width: 5rem;
-  height: 5rem;
+  width: 8rem;
+  height: 8rem;
   margin: 10px;
   padding: 0;
   cursor: pointer;
@@ -142,8 +142,8 @@ export default defineComponent({
 
   img {
     background-color: white;
-    width: 5rem;
-    height: 5rem;
+    width: 8rem;
+    height: 8rem;
     border-radius: 5rem;
   }
 }

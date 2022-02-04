@@ -29,7 +29,7 @@
         </b-tab>
       </b-tabs>
       <p v-if="supportsReddit || supportsTwitter" class="queue-text">
-        {{ $t('pages.queue.submit_text') }} {{ getCurrentBikeTag?.tagnumber }}
+        {{ $t('pages.queue.submit_text') }} #{{ getCurrentBikeTag?.tagnumber + 1 }}!
       </p>
       <p v-else class="queue-text">
         Once you submit your new BikeTag Post, a BikeTag Ambassador will approve the next round and
