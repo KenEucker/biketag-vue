@@ -19,11 +19,18 @@
       <b-button class="m-1" variant="primary" @click="goBikeTagsPage">
         {{ $t('menu.biketags') }}
       </b-button>
-      <b-button class="m-1" variant="primary" @click="goQueuePage">
+      <b-button class="m-1" variant="primary" @click="goQueuePlay">
         {{ $t('menu.play') }}
         <span>{{
           !!getCurrentBikeTag?.tagnumber ? `#${getCurrentBikeTag.tagnumber + 1}` : ''
         }}</span>
+      </b-button>
+      <b-button
+        v-if="getQueuedTags?.length && tagnumber === 0"
+        class="btn-queue"
+        @click="goQueueView"
+      >
+        <img class="bicon" src="../assets/images/SpinningBikeV1.svg" />
       </b-button>
       <b-button class="m-1" variant="primary" @click="goHowPage">
         {{ $t('menu.howto') }}
@@ -60,13 +67,20 @@ export default defineComponent({
   data() {
     return {
       playingEaster: false,
+      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
     }
   },
   computed: {
     isShow() {
       return this.$route.name === 'Play' && !this.$route.params?.tagnumber?.length ? false : true
     },
-    ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag', 'getEasterEgg']),
+    ...mapGetters([
+      'getGameTitle',
+      'getLogoUrl',
+      'getCurrentBikeTag',
+      'getQueuedTags',
+      'getEasterEgg',
+    ]),
     authLoading() {
       return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
     },
@@ -115,8 +129,12 @@ export default defineComponent({
     goBikeTagsPage: function () {
       this.$router.push('/biketags')
     },
-    goQueuePage: function () {
+    goQueuePlay: function () {
       this.$store.dispatch('setFormStepToJoin', true)
+      this.$router.push('/queue')
+    },
+    async goQueueView() {
+      await this.$store.dispatch('resetFormStep')
       this.$router.push('/queue')
     },
     goHowPage: function () {
@@ -128,7 +146,7 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .header-logo .logo {
   width: auto;
   height: 8rem;
@@ -153,5 +171,28 @@ export default defineComponent({
 
 .menu-btn {
   position: absolute;
+}
+
+.btn-queue {
+  position: absolute;
+  top: 0;
+  right: -25px;
+  z-index: 99;
+  font-size: 1.25em;
+  background-color: transparent !important;
+  border-color: transparent !important;
+
+  i {
+    color: forestgreen;
+    cursor: pointer;
+    font-size: 4.5vh;
+  }
+}
+
+.btn-queue {
+  .bicon {
+    max-height: 3.5em;
+    animation: tronFilter 5s ease-in-out infinite alternate;
+  }
 }
 </style>

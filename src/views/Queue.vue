@@ -19,7 +19,7 @@
         isViewingQueue()
       "
       class="tag-number"
-      >#{{ getCurrentBikeTag?.tagnumber }}</span
+      >{{ $t('pages.queue.tape_title') }} #{{ getCurrentBikeTag?.tagnumber + 1 }}</span
     >
     <bike-tag-queue v-if="!isViewingQueue()" :only-mine="true" />
     <div v-if="!uploadInProgress" class="container">

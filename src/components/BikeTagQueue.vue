@@ -78,7 +78,7 @@ export default defineComponent({
     },
     showNumber: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     paginationRef: {
       type: Object,

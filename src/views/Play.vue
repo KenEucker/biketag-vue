@@ -13,9 +13,6 @@
       >
         ?
       </b-button>
-      <b-button v-if="getQueuedTags?.length && tagnumber === 0" class="btn-queue" @click="goQueue">
-        <img class="bicon" src="../assets/images/SpinningBikeV1.svg" />
-      </b-button>
       <bike-tag
         v-if="tagnumber === 0"
         :tagnumber="getCurrentBikeTag.tagnumber"
@@ -63,13 +60,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters([
-      'getCurrentBikeTag',
-      'getCurrentHint',
-      'getTags',
-      'getPlayers',
-      'getQueuedTags',
-    ]),
+    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags', 'getPlayers']),
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
@@ -94,10 +85,6 @@ export default defineComponent({
     },
     tagLoaded() {
       this.tagIsLoading = false
-    },
-    async goQueue() {
-      await this.$store.dispatch('resetFormStep')
-      this.$router.push('/queue')
     },
     getPlayer(playerName) {
       const playerList =
@@ -134,29 +121,6 @@ export default defineComponent({
     left: 20px;
     z-index: 99;
     font-size: 1.25em;
-  }
-
-  .btn-queue {
-    position: absolute;
-    top: 0;
-    right: -25px;
-    z-index: 99;
-    font-size: 1.25em;
-    background-color: transparent !important;
-    border-color: transparent !important;
-
-    i {
-      color: forestgreen;
-      cursor: pointer;
-      font-size: 4.5vh;
-    }
-  }
-
-  .btn-queue {
-    .bicon {
-      max-height: 3.5em;
-      animation: tronFilter 5s ease-in-out infinite alternate;
-    }
   }
 }
 </style>

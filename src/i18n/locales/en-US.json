@@ -42,6 +42,7 @@
     },
     "queue": {
       "join_queue": "Join round",
+      "tape_title": "Round",
       "complete_queue": "Complete your tag for round",
       "submit_queue": "Submit your completed tag for round",
       "found_title": "Did you find the current Mystery Location?",

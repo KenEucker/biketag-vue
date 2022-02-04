@@ -29,9 +29,9 @@
       </swiper-slide>
     </swiper>
     <bike-tag-queue :pagination-ref="controlledSwiper" />
-    <b-button v-if="showGoNextButton()" class="mb-2" @click="goNextQueueStep">{{
-      goNextQueueStepButtonText
-    }}</b-button>
+    <b-button v-if="showGoNextButton()" class="mb-2" @click="goNextQueueStep"
+      >{{ goNextQueueStepButtonText }} {{ getCurrentBikeTag?.tagnumber }}</b-button
+    >
   </div>
 </template>
 
@@ -93,13 +93,18 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-.queue-view {
-  .card .tag-number {
-    display: none;
-  }
+#app {
+  .queue-view {
+    .card .tag-number {
+      display: none;
+    }
 
-  .swiper-pagination {
-    display: none;
+    .swiper-pagination {
+      display: none;
+    }
+    .player-name {
+      line-height: 75%;
+    }
   }
 }
 </style>

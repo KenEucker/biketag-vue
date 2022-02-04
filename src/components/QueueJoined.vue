@@ -4,7 +4,7 @@
     <p class="queue-text">{{ $t('pages.queue.joined_text') }}</p>
     <div class="mt-3">
       <b-button class="w-75 btn-found border-0" @click="goViewQueue">
-        {{ $t('pages.queue.joined_button') }}
+        {{ $t('pages.queue.joined_button') }} {{ getCurrentBikeTag?.tagnumber }}
       </b-button>
     </div>
   </b-container>
@@ -29,7 +29,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueue', 'getQueuedTag']),
+    ...mapGetters(['getQueue', 'getQueuedTag', 'getCurrentBikeTag']),
   },
   methods: {
     goViewQueue() {
