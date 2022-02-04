@@ -48,6 +48,7 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { mapGetters } from 'vuex'
+import { GetQueryString } from '@/common/utils'
 
 export default defineComponent({
   name: 'BikeTagHeader',
@@ -71,6 +72,12 @@ export default defineComponent({
     },
   },
   async created() {
+    const btaId = GetQueryString(window, 'btaId')
+    const expiry = GetQueryString(window, 'expiry')
+    if (btaId && expiry) {
+      this.$store.dispatch('setFormStepToApprove')
+      this.$router.push('/queue')
+    }
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setCurrentBikeTag')

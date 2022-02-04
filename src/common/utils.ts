@@ -1,5 +1,7 @@
-import { DeviceUUID } from '../common/uuid'
+import { DeviceUUID } from '@/common/uuid'
+import { Tag } from 'biketag/lib/common/schema'
 import { useCookies } from 'vue3-cookies'
+import { BiketagFormSteps } from './types'
 
 export type DomainInfo = {
   host: string
@@ -55,8 +57,8 @@ export const getDomainInfo = (req: any): DomainInfo => {
     req.headers?.host?.length
       ? req.headers.host
       : req.location?.host?.length
-        ? req.location.host
-        : ''
+      ? req.location.host
+      : ''
   )
     .toLowerCase()
     .replace(/www./g, '')
@@ -118,25 +120,18 @@ export const getUuid = (playerIdCookieKey = 'playerId'): string => {
   return playerId
 }
 
-export const getAmbassadorUuid = (req?: any, ambassadorIdCookieKey = 'ambassadorId'): string => {
+export const getAmbassadorUuid = (win: Window, ambassadorIdCookieKey = 'ambassadorId'): string => {
   const { cookies } = useCookies()
-  const existingAmbassadorId = cookies.get(ambassadorIdCookieKey)
+  const existingAmbassadorId = cookies.get('ambassadorId')
 
   if (existingAmbassadorId) {
     return existingAmbassadorId
   }
+  const ambassadorId = GetQueryString(win, 'btaId')
 
-  if (req) {
-    const ambassadorId = req.headers?.btaId?.length
-      ? req.headers.btaId
-      : req.location?.btaId?.length
-        ? req.location.btaId
-        : ''
-
-    if (ambassadorId) {
-      cookies.set(ambassadorIdCookieKey, ambassadorId)
-      return ambassadorId
-    }
+  if (ambassadorId) {
+    cookies.set(ambassadorIdCookieKey, ambassadorId)
+    return ambassadorId
   }
 
   return ''
@@ -182,4 +177,30 @@ export const sendNetlifyForm = function (
   })
     .then(then)
     .catch((e) => error(e))
+}
+
+export const GetQueryString = (win: Window, name: string): string | null => {
+  const after = win.location.hash.split('?')[1]
+  if (after) {
+    const reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)')
+    const r = after.match(reg)
+    if (r != null) {
+      return decodeURIComponent(r[2])
+    }
+  }
+  return null
+}
+
+export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
+  const mysteryImageSet = queuedTag.mysteryImageUrl?.length > 0
+  const foundImageSet = queuedTag.foundImageUrl?.length > 0
+  if (mysteryImageSet && foundImageSet) {
+    const discussionUrlIsSet = queuedTag.discussionUrl && queuedTag.discussionUrl.length > 0
+    const mentionUrlIsSet = queuedTag.mentionUrl && queuedTag.mentionUrl.length > 0
+    return discussionUrlIsSet || mentionUrlIsSet
+      ? BiketagFormSteps.queuePosted
+      : BiketagFormSteps.queueSubmit
+  } else {
+    return foundImageSet ? BiketagFormSteps.queueMystery : BiketagFormSteps.queueFound
+  }
 }

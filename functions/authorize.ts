@@ -1,5 +1,5 @@
 import { builder, Handler } from '@netlify/functions'
-import BikeTagClient from 'biketag'
+import { BikeTagClient } from 'biketag'
 import request from 'request'
 import { getBikeTagClientOpts, getBikeTagHash, getPayloadOpts } from './common/utils'
 
@@ -15,7 +15,7 @@ const authorizeHandler: Handler = async (event) => {
   let body = 'missing client key and token information'
   let statusCode = 401
 
-  console.log({ clientKey, clientToken, accessToken, grantType, controlCheck, self })
+  // console.log({ clientKey, clientToken, accessToken, grantType, controlCheck, self })
   if (clientKey?.length > 0 && clientToken?.length > 0 && accessToken?.length > 0) {
     if (getBikeTagHash(clientKey) === clientToken && controlCheck === clientToken) {
       const biketagOpts = getBikeTagClientOpts(

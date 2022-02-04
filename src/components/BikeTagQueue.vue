@@ -4,14 +4,14 @@
       <b-button id="current-mystery-popover" class="navigation">
         <img class="img-fluid" :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')" />
       </b-button>
-      <b-popover target="current-mystery-popover" triggers="hover focus" placement="bottom">
-        <b-button id="popover-view-mystery" variant="primary">{{
-          $t('components.queue.view_queue_button')
-        }}</b-button>
-        <b-popover target="popover-view-mystery" triggers="focus click" placement="top">
-          <template #title>{{ $t('components.queue.current_mystery_location') }}</template>
-          <img class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
-        </b-popover>
+      <b-popover
+        target="current-mystery-popover"
+        class="current-mystery"
+        triggers="hover focus"
+        placement="bottom"
+      >
+        <template #title>{{ $t('components.queue.current_mystery_location') }}</template>
+        <img class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
       </b-popover>
 
       <b-button v-if="getQueuedTag.foundImageUrl" id="queued-found-popover" class="navigation">
@@ -20,23 +20,17 @@
       <b-popover
         v-if="getQueuedTag.foundImageUrl?.length > 0"
         target="queued-found-popover"
-        triggers="focus"
+        triggers="hover focus"
         placement="bottom"
+        class="queued-found"
       >
-        <b-button id="popover-view-found" variant="primary">{{
-          $t('components.queue.view_queue_button')
-        }}</b-button>
-        <b-popover target="popover-view-found" triggers="focus click" placement="top">
-          <template #title>{{ $t('components.queue.view_found_image') }}</template>
-          <img class="img-fluid" :src="getQueuedTag.foundImageUrl" />
-        </b-popover>
-        <b-button
-          v-if="getQueuedTag?.foundImageUrl?.length > 0"
-          variant="danger"
-          class="ms-2"
-          @click="resetToFound"
-          >{{ $t('components.queue.reset_queue_button') }}</b-button
-        >
+        <template #title>{{ $t('components.queue.view_found_image') }}</template>
+        <img class="img-fluid" :src="getQueuedTag.foundImageUrl" />
+        <div v-if="canReset()" class="row">
+          <b-button class="col" variant="danger" @click="resetToFound">{{
+            $t('components.queue.reset_queue_button')
+          }}</b-button>
+        </div>
       </b-popover>
 
       <b-button
@@ -49,40 +43,40 @@
       <b-popover
         v-if="getQueuedTag.mysteryImageUrl?.length > 0"
         target="queued-mystery-popover"
-        triggers="focus"
+        triggers="hover focus"
         placement="bottom"
+        class="queued-mystery"
       >
-        <b-button id="popover-view-mystery" variant="primary">{{
-          $t('components.queue.view_queue_button')
-        }}</b-button>
-        <b-popover target="popover-view-mystery" triggers="focus click" placement="top">
-          <template #title>{{ $t('components.queue.view_mystery_image') }}</template>
-          <img class="img-fluid" :src="getQueuedTag.mysteryImageUrl" />
-        </b-popover>
-        <b-button variant="danger" class="ms-2" @click="resetToMystery">{{
-          $t('components.queue.reset_queue_button')
-        }}</b-button>
+        <template #title>{{ $t('components.queue.view_mystery_image') }}</template>
+        <img class="img-fluid" :src="getQueuedTag.mysteryImageUrl" />
+        <div v-if="canReset()" class="row">
+          <b-button class="col" variant="danger" @click="resetToMystery">{{
+            $t('components.queue.reset_queue_button')
+          }}</b-button>
+        </div>
       </b-popover>
     </div>
     <div v-if="!onlyMine" class="bike-pagination mt-3 mb-3">
-      <img
-        v-for="(tag, index) in getQueuedTags"
-        :key="index"
-        class="bike-pagination-bullet"
-        :src="tag.foundImageUrl"
-        @click="paginationClick(index)"
-      />
+      <div v-for="(tag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
+        <img :src="tag.foundImageUrl" @click="paginationClick(index)" />
+        <span v-if="showNumber">{{ index + 1 }}</span>
+      </div>
     </div>
   </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import { BiketagFormSteps } from '@/common/types'
 
 export default defineComponent({
   name: 'BikeTagQueue',
   props: {
     onlyMine: {
+      type: Boolean,
+      default: false,
+    },
+    showNumber: {
       type: Boolean,
       default: false,
     },
@@ -92,11 +86,20 @@ export default defineComponent({
     },
   },
   computed: {
-    ...mapGetters(['getQueuedTags', 'getCurrentBikeTag', 'getQueuedTag', 'getImgurImageSized']),
+    ...mapGetters([
+      'getQueuedTags',
+      'getCurrentBikeTag',
+      'getQueuedTag',
+      'getImgurImageSized',
+      'getQueuedTagState',
+    ]),
   },
   methods: {
+    canReset() {
+      return this.getQueuedTagState !== BiketagFormSteps.queuePosted
+    },
     resetToFound() {
-      return this.$store.dispatch('dequeueFoundTag', true).then((dequeueSuccessful) => {
+      return this.$store.dispatch('dequeueFoundTag').then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
           return this.$toast.open({
             message: `dequeue tag error: ${dequeueSuccessful}`,
@@ -104,13 +107,11 @@ export default defineComponent({
             timeout: false,
             position: 'bottom',
           })
-        } else {
-          return this.$store.dispatch('resetFormStepToFound')
         }
       })
     },
     resetToMystery() {
-      return this.$store.dispatch('dequeueMysteryTag', true).then((dequeueSuccessful) => {
+      return this.$store.dispatch('dequeueMysteryTag').then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
           return this.$toast.open({
             message: `dequeue tag error: ${dequeueSuccessful}`,
@@ -118,8 +119,6 @@ export default defineComponent({
             timeout: false,
             position: 'bottom',
           })
-        } else {
-          return this.$store.dispatch('resetFormStepToFound')
         }
       })
     },
@@ -142,6 +141,7 @@ export default defineComponent({
   border-radius: 5rem;
 
   img {
+    background-color: white;
     width: 5rem;
     height: 5rem;
     border-radius: 5rem;
@@ -163,14 +163,30 @@ export default defineComponent({
   }
 }
 
+.current-mystery,
+.queued-found,
+.queued-mystery {
+}
+
 .bike-pagination-bullet {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 5rem;
-  height: 5rem;
-  margin: 5px;
-  border-radius: 5rem;
-  cursor: pointer;
+  position: relative;
+  img {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 5rem;
+    height: 5rem;
+    margin: 5px;
+    border-radius: 5rem;
+    cursor: pointer;
+  }
+  span {
+    position: absolute;
+    top: 75%;
+    left: 25%;
+    right: 25%;
+    font-size: 2rem;
+    color: white;
+  }
 }
 </style>

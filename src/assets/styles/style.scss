@@ -72,6 +72,16 @@ html {
       }
     }
 
+    button.btn-approve {
+      color: $btn-approve-text-color;
+      background-color: $btn-approve-color;
+      border-color: $btn-approve-color;
+
+      &:focus {
+        box-shadow: 0 0 0 0.25rem $btn-approve-shadow-color;
+      }
+    }
+
     .btn-upload {
       color: $btn-upload-text-color;
       background-color: $btn-upload-color;
@@ -249,6 +259,10 @@ html {
       font-family: $title-font-family;
       font-size: $title-font-size;
       font-weight: $title-font-weight;
+    }
+    .user-agree {
+      font-size: 0.75rem;
+      font-style: italic;
     }
   }
 }

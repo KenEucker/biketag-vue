@@ -29,7 +29,9 @@
       </swiper-slide>
     </swiper>
     <bike-tag-queue :pagination-ref="controlledSwiper" />
-    <b-button class="mb-2" @click="goNextQueueStep">{{ goNextQueueStepButtonText }}</b-button>
+    <b-button v-if="showGoNextButton()" class="mb-2" @click="goNextQueueStep">{{
+      goNextQueueStepButtonText
+    }}</b-button>
   </div>
 </template>
 
@@ -43,6 +45,7 @@ import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
+import { BiketagFormSteps } from '@/common/types'
 
 SwiperCore.use([Pagination])
 
@@ -67,7 +70,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueuedTags', 'getQueuedTag', 'getCurrentBikeTag']),
+    ...mapGetters(['getQueuedTags', 'getQueuedTag', 'getCurrentBikeTag', 'getQueuedTagState']),
     goNextQueueStepButtonText() {
       return `${
         this.getQueuedTag?.mysteryImageUrl?.length > 0
@@ -82,12 +85,9 @@ export default defineComponent({
     stringifyNumber,
     goNextQueueStep: function () {
       this.$store.dispatch('setFormStepToJoin', true)
-      // if (this.getQueuedTag?.mysteryImageUrl?.length > 0) {
-      //   this.$store.dispatch('resetFormStepToMystery')
-      // } else if (this.getQueuedTag?.foundImageUrl?.length > 0) {
-      //   this.$store.dispatch('resetFormStepToFound')
-      // } else {
-      // }
+    },
+    showGoNextButton() {
+      return this.getQueuedTagState !== BiketagFormSteps.queuePosted
     },
   },
 })

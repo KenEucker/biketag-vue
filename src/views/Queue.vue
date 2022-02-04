@@ -42,9 +42,9 @@
         <queue-posted :tag="getQueuedTag" />
       </div>
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueApprove]">
-        <queue-approve :tag="getQueuedTag" />
+        <queue-approve />
       </div>
-      <span v-if="isSubmittingData()" class="user_agree">
+      <span v-if="isSubmittingData()" class="user-agree">
         * {{ $t('pages.queue.user_agree') }}
       </span>
       <form
@@ -69,7 +69,7 @@
 <script>
 import { defineComponent, watchEffect, onMounted } from 'vue'
 import { mapGetters } from 'vuex'
-import { BiketagFormSteps } from '@/store/index'
+import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 
@@ -152,7 +152,10 @@ export default defineComponent({
       )
     },
     isViewingQueue() {
-      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
+      return (
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView] ||
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueApprove]
+      )
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
@@ -256,11 +259,6 @@ export default defineComponent({
     transform: translateX(-50%);
     z-index: 99;
     padding: 0 1.5rem;
-  }
-
-  .user_agree {
-    font-size: 0.75rem;
-    font-style: italic;
   }
   .realign-spinner {
     margin-left: -30%;

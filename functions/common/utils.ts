@@ -179,17 +179,12 @@ export const sendEmailNotification = async (to: string, subject: string, locals:
   if (existsSync(htmlTemplateFilePath)) {
     const htmlTemplate = readFileSync(htmlTemplateFilePath).toString()
     html = liquid.parseAndRenderSync(htmlTemplate, locals)
-    console.log({ html })
-  } else {
-    console.log({ htmlTemplateFilePath })
   }
   if (existsSync(textTemplateFilePath)) {
     const textTemplate = readFileSync(textTemplateFilePath).toString()
     text = liquid.parseAndRenderSync(textTemplate, locals)
-    console.log({ text })
-  } else {
-    console.log({ textTemplateFilePath })
   }
+
   const emailOpts = {
     from: process.env.GOOGLE_EMAIL_ADDRESS, // sender address
     to, // list of receivers

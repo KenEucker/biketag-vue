@@ -5,7 +5,11 @@
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _tagnumber }}</span>
           <expandable-image
-            :source="getImgurImageSized(_mysteryImageUrl, _foundImageUrl ? 'm' : 'l')"
+            :source="
+              sizedMysteryImage
+                ? getImgurImageSized(_mysteryImageUrl, _foundImageUrl ? 'm' : 'l')
+                : _mysteryImageUrl
+            "
             :full-source="_mysteryImageUrl"
             :alt="_mysteryDescription"
             @load="tagImageLoaded('mystery')"
@@ -15,7 +19,8 @@
           <div class="description">
             <span>{{ _mysteryDescription }}</span>
             <br />
-            <span>{{ getMysteryPostedDate() }}</span>
+            <span v-if="showPostedDate">{{ getMysteryPostedDate() }}</span>
+            <span v-if="showPostedDateTime">{{ getMysteryPostedDate(true) }}</span>
           </div>
           <player v-if="mysteryPlayer" :player="mysteryPlayer" size="txt" />
           <span v-else class="player-name">{{ _mysteryPlayer }}</span>
@@ -28,7 +33,7 @@
           <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
           <expandable-image
             class="image img-fluid"
-            :source="getImgurImageSized(_foundImageUrl)"
+            :source="sizedFoundImage ? getImgurImageSized(_foundImageUrl) : _foundImageUrl"
             :full-source="_foundImageUrl"
             :alt="foundDescription"
             @load="tagImageLoaded('found')"
@@ -64,6 +69,22 @@ export default defineComponent({
     size: {
       type: String,
       default: 'm',
+    },
+    showPostedDate: {
+      type: Boolean,
+      default: true,
+    },
+    showPostedDateTime: {
+      type: Boolean,
+      default: false,
+    },
+    sizedMysteryImage: {
+      type: Boolean,
+      default: true,
+    },
+    sizedFoundImage: {
+      type: Boolean,
+      default: true,
     },
     tagnumber: {
       type: Number,
@@ -158,11 +179,13 @@ export default defineComponent({
     getMysteryDescription() {
       return `#${this._tagnumber} ${this.tag?.hint?.length > 0 ? `"${this.tag.hint}"` : ''}`
     },
-    getMysteryPostedDate() {
+    getMysteryPostedDate(timeOnly = false) {
+      const datetime = timeOnly
+        ? new Date(this.tag.foundTime * 1000).toLocaleTimeString()
+        : new Date(this.tag.foundTime * 1000).toLocaleDateString()
+
       return this.tag?.foundTime
-        ? `[${this.$t('components.biketag.posted_on')} ${new Date(
-            this.tag.foundTime * 1000
-          ).toLocaleDateString()}]`
+        ? `${timeOnly ? ' @ ' : this.$t('components.biketag.posted_on')} ${datetime}`
         : ''
     },
     tagImageLoaded(type) {

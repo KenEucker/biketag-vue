@@ -1,5 +1,5 @@
 import { builder, Handler } from '@netlify/functions'
-import BikeTagClient from 'biketag'
+import { BikeTagClient } from 'biketag'
 import request from 'request'
 import { getBikeTagClientOpts, getBikeTagHash, getPayloadAuthorization } from './common/utils'
 

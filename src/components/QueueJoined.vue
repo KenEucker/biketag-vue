@@ -3,7 +3,7 @@
     <h3 class="queue-title">{{ $t('pages.queue.joined_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.joined_text') }}</p>
     <div class="mt-3">
-      <b-button class="w-75 btn-found border-0" @click="viewQueue">
+      <b-button class="w-75 btn-found border-0" @click="goViewQueue">
         {{ $t('pages.queue.joined_button') }}
       </b-button>
     </div>
@@ -32,7 +32,7 @@ export default defineComponent({
     ...mapGetters(['getQueue', 'getQueuedTag']),
   },
   methods: {
-    viewQueue() {
+    goViewQueue() {
       this.$store.dispatch('resetFormStep')
     },
   },

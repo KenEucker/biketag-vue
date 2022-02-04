@@ -1,48 +1,23 @@
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
-import biketag from 'biketag'
+import BikeTagClient from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
-import { BikeTagApiResponse } from 'biketag/lib/common/types'
 import {
   getDomainInfo,
   getImgurImageSized,
   getUuid,
   getBikeTagClientOpts,
   getAmbassadorUuid,
+  getQueuedTagState,
 } from '@/common/utils'
-
-export interface State {
-  game: Game
-  gameName: string
-  playerId: string
-  ambassadorId: string
-  currentBikeTag: Tag
-  tags: Tag[]
-  queuedTags: Tag[]
-  players: Player[]
-  leaderboard: Player[]
-  html: string
-  formStep: number
-  queuedTag: Tag
-  isBikeTagAmbassador: boolean
-}
-
-export enum BiketagFormSteps {
-  queueView = 1,
-  queueFound = 2,
-  queueJoined = 3,
-  queueMystery = 4,
-  queueSubmit = 5,
-  queuePosted = 6,
-  queueApprove = 7,
-}
+import { BiketagFormSteps, State } from '@/common/types'
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(window)
 const playerId = getUuid()
 const ambassadorId = getAmbassadorUuid(window)
-// const ipInfo = await getIpInformation()
+console.log({ ambassadorId })
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
 const options: any = {
@@ -61,7 +36,7 @@ const getSanityImageUrl = (logo: string, size = '') => {
 }
 console.log('store::init', { subdomain: domain.subdomain, domain, gameName, playerId })
 
-let client = new biketag(options)
+let client = new BikeTagClient(options)
 
 export const store = createStore<State>({
   state: {
@@ -77,7 +52,7 @@ export const store = createStore<State>({
     html: '',
     formStep: BiketagFormSteps.queueView,
     queuedTag: {} as Tag,
-    isBikeTagAmbassador: false,
+    isBikeTagAmbassador: ambassadorId?.length > 0,
   },
   actions: {
     setGame({ commit, state }) {
@@ -86,14 +61,14 @@ export const store = createStore<State>({
           const game = d as Game
           options.imgur.hash = game.mainhash
           options.imgur.queuehash = game.queuehash
-          client = new biketag(options)
+          client = new BikeTagClient(options)
 
           return commit('SET_GAME', game)
         })
       }
     },
     setCurrentBikeTag({ commit }) {
-      return client.getTag().then((r: BikeTagApiResponse<Tag>) => {
+      return client.getTag().then((r) => {
         return commit('SET_CURRENT_TAG', r.data)
       })
     },
@@ -157,15 +132,15 @@ export const store = createStore<State>({
       }
       return false
     },
-    async dequeueTag({ commit, state }, d) {
+    async dequeueTag({ state }, d) {
       // Check ambassador permissions?
       if (d.ambassadorId === ambassadorId) {
         d.hash = state.game.queuehash
         return client.deleteTag(d.tag).then((t) => {
           if (t.success) {
-            console.log('tag dequeued', d.tag)
+            console.log('store::tag dequeued', d.tag)
           } else {
-            console.log('dequeue BikeTag failed', t)
+            console.log('error::dequeue BikeTag failed', t)
             return t.error
           }
           return t.success
@@ -179,30 +154,36 @@ export const store = createStore<State>({
         queuedTag.hash = state.game.queuehash
         return client.deleteTag(queuedTag).then(async (t) => {
           if (t.success) {
-            console.log('tag dequeued', queuedTag)
-            await commit('SET_QUEUED_TAG', {})
+            console.log('store::found tag dequeued')
+            await commit('SET_QUEUED_TAG')
+            await commit('RESET_FORM_STEP_TO_FOUND')
 
-            return commit('RESET_FORM_STEP_TO_FOUND')
+            return true
           } else {
-            console.log('dequeue BikeTag failed', t)
+            console.log('error::dequeue BikeTag failed', t)
             return t.error
           }
         })
       }
     },
-    async dequeueMysteryTag({ commit, state }, d) {
+    async dequeueMysteryTag({ commit, state }) {
       if (state.queuedTag?.playerId === playerId) {
-        const queuedFoundTag: any = biketag.getters.getOnlyFoundTagFromTagData(state.queuedTag)
-        const queuedMysteryTag: any = biketag.getters.getOnlyMysteryTagFromTagData(state.queuedTag)
+        const queuedFoundTag: any = BikeTagClient.getters.getOnlyFoundTagFromTagData(
+          state.queuedTag
+        )
+        const queuedMysteryTag: any = BikeTagClient.getters.getOnlyMysteryTagFromTagData(
+          state.queuedTag
+        )
         queuedMysteryTag.hash = state.game.queuehash
         return client.deleteTag(queuedMysteryTag).then(async (t) => {
           if (t.success) {
-            console.log('mystery tag dequeued')
+            console.log('store::mystery tag dequeued')
             await commit('SET_QUEUED_TAG', queuedFoundTag)
+            await commit('RESET_FORM_STEP_TO_MYSTERY')
 
-            return commit('RESET_FORM_STEP_TO_FOUND')
+            return true
           } else {
-            console.log('dequeue BikeTag failed', t)
+            console.log('error::dequeue BikeTag failed', t)
             return t.error
           }
         })
@@ -215,7 +196,7 @@ export const store = createStore<State>({
           if (t.success) {
             commit('SET_QUEUE_FOUND', t.data)
           } else {
-            console.log('queue BikeTag failed', t)
+            console.log('error::queue (Found) BikeTag failed', t)
             return t.error
           }
           return t.success
@@ -230,7 +211,7 @@ export const store = createStore<State>({
           if (t.success) {
             commit('SET_QUEUE_MYSTERY', t.data)
           } else {
-            console.log('queue BikeTag failed', t)
+            console.log('error::queue (Mystery) BikeTag failed', t)
             return t.error
           }
           return t.success
@@ -239,14 +220,13 @@ export const store = createStore<State>({
       return commit('SET_QUEUE_MYSTERY', d)
     },
     async submitQueuedTag({ commit }, d) {
-      console.log('submitQueuedTag', d)
       if (d.mysteryImageUrl && d.foundImageUrl) {
         d.playerId = playerId
         return client.queueTag(d).then((t) => {
           if (t.success) {
             commit('SET_QUEUED_SUBMITTED', t.data)
           } else {
-            console.log('submit BikeTag failed', t)
+            console.log('error::submit BikeTag failed', t)
             return t.error
           }
           return t.success
@@ -257,7 +237,7 @@ export const store = createStore<State>({
       return commit('RESET_FORM_STEP')
     },
     async resetFormStepToFound({ commit }) {
-      await commit('SET_QUEUED_TAG', {})
+      await commit('SET_QUEUED_TAG')
       return commit('RESET_FORM_STEP_TO_FOUND')
     },
     async resetFormStepToMystery({ commit, state }) {
@@ -343,39 +323,62 @@ export const store = createStore<State>({
     },
     SET_QUEUE_FOUND(state, data) {
       const oldState = state.queuedTag
-      state.queuedTag.foundImageUrl = data.foundImageUrl
-      state.queuedTag.foundImage = data.foundImage
-      state.queuedTag.foundLocation = data.foundLocation
-      state.queuedTag.foundPlayer = data.foundPlayer
-      state.queuedTag.tagnumber = data.tagnumber
+      state.queuedTag = BikeTagClient.createTagObject(data, state.queuedTag)
+
+      // state.queuedTag.foundImageUrl = data.foundImageUrl
+      // state.queuedTag.foundImage = data.foundImage
+      // state.queuedTag.foundLocation = data.foundLocation
+      // state.queuedTag.foundPlayer = data.foundPlayer
+      // state.queuedTag.tagnumber = data.tagnumber
+      // state.queuedTag.playerId = data.playerId
 
       if (
         oldState?.foundImageUrl !== data?.foundImageUrl ||
         oldState?.foundImage !== data?.foundImage ||
         oldState?.foundLocation !== data?.foundImageUrl ||
         oldState?.foundPlayer !== data?.foundPlayer ||
-        oldState?.tagnumber !== data?.tagnumber
+        oldState?.tagnumber !== data?.tagnumber ||
+        /// In case of a reset to this step
+        oldState?.mysteryPlayer !== data?.foundPlayer
       ) {
         console.log('store::queuedFoundTag', state.queuedTag)
-        state.formStep = BiketagFormSteps.queueJoined
+        if (oldState?.mysteryPlayer !== data?.foundPlayer) {
+          state.formStep = BiketagFormSteps.queueJoined
+        } else {
+          state.formStep = BiketagFormSteps.queueFound
+        }
       }
     },
     SET_QUEUE_MYSTERY(state, data) {
       const oldState = state.queuedTag
-      state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
-      state.queuedTag.mysteryImage = data.mysteryImage
-      state.queuedTag.hint = data.hint
-      state.queuedTag.mysteryPlayer = data.mysteryPlayer ?? state.queuedTag.foundPlayer
-      state.queuedTag.tagnumber = data.tagnumber
+      state.queuedTag = BikeTagClient.createTagObject(data, state.queuedTag)
+
+      // state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
+      // state.queuedTag.mysteryImage = data.mysteryImage
+      // state.queuedTag.hint = data.hint
+      // state.queuedTag.mysteryPlayer = data.mysteryPlayer ?? state.queuedTag.foundPlayer
+      // state.queuedTag.tagnumber = data.tagnumber
+      // state.queuedTag.playerId = data.playerId
+      // state.queuedTag.game = data.game ?? state.game.name
 
       if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
         oldState?.mysteryImage !== data?.mysteryImage ||
         oldState?.hint !== data?.hint ||
         oldState?.mysteryPlayer !== data?.mysteryPlayer ||
+        oldState?.discussionUrl !== data?.discussionUrl ||
+        oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
         console.log('store::queuedMysteryTag', state.queuedTag)
+        if (
+          oldState?.discussionUrl !== data?.discussionUrl ||
+          oldState?.mentionUrl !== data?.mentionUrl
+        ) {
+          state.formStep = BiketagFormSteps.queueSubmit
+        } else {
+          state.formStep = BiketagFormSteps.queueMystery
+        }
       }
     },
     SET_QUEUED_SUBMITTED(state, data) {
@@ -391,19 +394,9 @@ export const store = createStore<State>({
         state.formStep = BiketagFormSteps.queuePosted
       }
     },
-    SET_QUEUED_TAG(state, data) {
+    SET_QUEUED_TAG(state, data?: any) {
       const oldState = state.queuedTag
-      state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
-      state.queuedTag.mysteryImage = data.mysteryImage
-      state.queuedTag.hint = data.hint
-      state.queuedTag.mysteryPlayer = data.mysteryPlayer
-      state.queuedTag.foundImageUrl = data.foundImageUrl
-      state.queuedTag.foundImage = data.foundImage
-      state.queuedTag.foundLocation = data.foundLocation
-      state.queuedTag.foundPlayer = data.foundPlayer
-      state.queuedTag.tagnumber = data.tagnumber
-      state.queuedTag.discussionUrl = data.discussionUrl
-      state.queuedTag.mentionUrl = data.mentionUrl
+      state.queuedTag = BikeTagClient.createTagObject(data, data ? state.queuedTag : {})
 
       if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
@@ -425,50 +418,38 @@ export const store = createStore<State>({
       const setQueudState = state.formStep !== BiketagFormSteps.queueJoined || force
       const oldState = state.formStep
       if (setQueudState && state.queuedTag) {
-        const mysteryImageSet = state.queuedTag.mysteryImageUrl?.length > 0
-        const foundImageSet = state.queuedTag.foundImageUrl?.length > 0
-        if (mysteryImageSet && foundImageSet) {
-          const discussionUrlIsSet =
-            state.queuedTag.discussionUrl && state.queuedTag.discussionUrl.length > 0
-          const mentionUrlIsSet =
-            state.queuedTag.mentionUrl && state.queuedTag.mentionUrl.length > 0
-          state.formStep =
-            discussionUrlIsSet || mentionUrlIsSet
-              ? BiketagFormSteps.queuePosted
-              : BiketagFormSteps.queueSubmit
-        } else {
-          state.formStep = foundImageSet
-            ? BiketagFormSteps.queueMystery
-            : BiketagFormSteps.queueFound
-        }
+        state.formStep = getQueuedTagState(state.queuedTag)
       } else {
         state.formStep = BiketagFormSteps.queueJoined
       }
 
       if (oldState !== state.formStep) {
-        console.log(`queue state joined :: ${BiketagFormSteps[state.formStep]}`)
+        console.log('state::queue', BiketagFormSteps[state.formStep])
       }
     },
     RESET_FORM_STEP(state) {
       state.formStep =
         state.queuedTags?.length > 0 ? BiketagFormSteps.queueView : BiketagFormSteps.queueFound
-      // console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+      // console.log('state::queue', BiketagFormSteps[state.formStep])
     },
     RESET_FORM_STEP_TO_FOUND(state) {
       state.formStep = BiketagFormSteps.queueFound
-      // console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+      // console.log('state::queue', BiketagFormSteps[state.formStep])
     },
     RESET_FORM_STEP_TO_MYSTERY(state) {
       state.formStep = BiketagFormSteps.queueMystery
-      // console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+      // console.log('state::queue', BiketagFormSteps[state.formStep])
     },
     SET_FORM_STEP_TO_APPROVE(state) {
       state.formStep = BiketagFormSteps.queueApprove
-      console.log(`queue state:: ${BiketagFormSteps[state.formStep]}`)
+      console.log('state::queue', BiketagFormSteps[state.formStep])
     },
   },
   getters: {
     getImgurImageSized: () => getImgurImageSized,
+    getQueuedTagState: (state) => {
+      return getQueuedTagState(state.queuedTag)
+    },
     getGame(state) {
       return state.game
     },

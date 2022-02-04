@@ -1,12 +1,10 @@
-import BikeTagClient from 'biketag'
+import { BikeTagClient } from 'biketag'
 import { Ambassador, Game } from 'biketag/lib/common/schema'
 import request from 'request'
 import { getBikeTagClientOpts, getEncodedExpiry, sendEmailNotification } from './common/utils'
 
 export const handler = async (event) => {
-  console.log(event.body)
   const body = JSON.parse(event.body)
-  console.log({ body })
   const payload = body.payload
   let success = false
   if (payload) {

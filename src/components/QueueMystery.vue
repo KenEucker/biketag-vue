@@ -81,10 +81,12 @@ export default defineComponent({
   data: function () {
     return {
       preview: null,
-      image: this.tag?.mysteryImage,
-      hint: this.tag?.hint ?? '',
-      player: this.tag?.mysteryPlayer ?? this.tag?.foundPlayer ?? '',
       mysteryImageUrl: null,
+      player: this.tag?.mysteryPlayer?.length
+        ? this.tag.mysteryPlayer
+        : this.tag?.foundPlayer ?? '',
+      hint: this.tag?.hint ?? '',
+      image: this.tag?.mysteryImage,
     }
   },
   computed: {

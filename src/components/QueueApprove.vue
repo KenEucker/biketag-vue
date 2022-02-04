@@ -1,7 +1,11 @@
 <template>
-  <div class="container queue-approve">
-    <h3 class="queue-title">{{ $t('pages.queue.posted_title') }}</h3>
-    <p class="queue-text">{{ $t('pages.queue.posted_text') }}</p>
+  <div v-if="!getQueuedTags.length">
+    <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.queue.empty_text') }}</p>
+  </div>
+  <div v-else class="container queue-approve">
+    <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.queue.approve_text') }}</p>
 
     <swiper
       :modules="[Controller]"
@@ -22,46 +26,78 @@
     >
       <swiper-slide v-for="(tag, index) in getQueuedTags" :key="index">
         <bike-tag
+          v-if="tag.mysteryImageUrl?.length && tag.foundImageUrl?.length"
           :key="tag.tagnumber"
+          :reverse="true"
+          :show-posted-date-time="true"
           :tag="tag"
           size="l"
-          :mystery-image-url="''"
+          :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
+          :found-description="`found at (${tag.foundLocation})`"
+          :mystery-description="mysteryDescription(tag)"
+        />
+        <bike-tag
+          v-else
+          :key="tag.tagnumber"
+          :reverse="true"
+          :tag="tag"
+          size="l"
+          :show-posted-date="false"
+          :sized-mystery-image="false"
+          mystery-image-url="@/assets/images/blank.png"
+          mystery-description="Mystery image not yet uploaded"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
           :found-description="stringifyNumber(index + 1)"
         />
       </swiper-slide>
     </swiper>
-    <bike-tag-queue :pagination-ref="controlledSwiper" />
-    <form
-      ref="approveTag"
-      name="approve-queued-tag"
-      action="approve-queued-tag"
-      method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="bot-field"
-      @submit.prevent="onSubmit"
-    >
-      <input type="hidden" name="form-name" value="approve-queued-tag" />
-      <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
-      <b-button class="w-75 btn-post mt-2 mb-2 border-0" @click="onSubmit">
-        {{ $t('pages.queue.approve_new_tag') }} &nbsp;
-      </b-button>
-    </form>
-    <form
-      ref="dequeueTag"
-      name="dequeue-queued-tag"
-      action="dequeue-queued-tag"
-      method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="bot-field"
-      @submit.prevent="dequeueTag"
-    >
-      <input type="hidden" name="form-name" value="dequeue-queued-tag" />
-      <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
-      <b-button class="w-75 btn-post mt-2 mb-2 border-0" @click="dequeueTag">
-        {{ $t('pages.queue.dequeue_queued_tag') }} &nbsp;
-      </b-button>
-    </form>
+    <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" />
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <form
+            ref="approveTag"
+            name="approve-queued-tag"
+            action="approve-queued-tag"
+            method="POST"
+            data-netlify="true"
+            data-netlify-honeypot="bot-field"
+            @submit.prevent="onSubmit"
+          >
+            <input type="hidden" name="form-name" value="approve-queued-tag" />
+            <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
+            <b-button
+              class="w-75 btn-approve mt-2 mb-2 border-0"
+              variant="primary"
+              @click="onSubmit"
+            >
+              {{ $t('pages.queue.approve_new_tag') }}&nbsp;
+              {{ $t('pages.queue.approve_new_tag_from') }}&nbsp;#{{ selectedTagPlayer() }}&nbsp;({{
+                mysteryPlayer()
+              }})
+            </b-button>
+          </form>
+        </div>
+        <div class="col-md-6">
+          <form
+            ref="dequeueTag"
+            name="dequeue-queued-tag"
+            action="dequeue-queued-tag"
+            method="POST"
+            data-netlify="true"
+            data-netlify-honeypot="bot-field"
+            @submit.prevent="dequeueTag"
+          >
+            <input type="hidden" name="form-name" value="dequeue-queued-tag" />
+            <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
+            <b-button class="w-75 mt-2 mb-2 border-0" variant="danger" @click="dequeueTag">
+              {{ $t('pages.queue.dequeue_queued_tag') }} &nbsp;
+            </b-button>
+          </form>
+        </div>
+        <span class="user-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -88,11 +124,6 @@ export default defineComponent({
   },
   emits: ['submit'],
   setup() {
-    if (!this.getAmbassadorId?.length > 0) {
-      /// kick it sideways
-      this.$router.push('/')
-    }
-
     const controlledSwiper = ref(null)
     const setControlledSwiper = (swiper) => {
       controlledSwiper.value = swiper
@@ -105,28 +136,33 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueuedTags', 'getQueuedTag', 'getCurrentBikeTag', 'getExpiry']),
-    goNextQueueStepButtonText() {
-      return `${
-        this.getQueuedTag?.mysteryImageUrl?.length > 0
-          ? this.$t('pages.queue.submit_queue')
-          : this.getQueuedTag?.foundImageUrl?.length > 0
-          ? this.$t('pages.queue.complete_queue')
-          : this.$t('pages.queue.join_queue')
-      } #${this.getCurrentBikeTag?.tagnumber ?? 1}!`
-    },
+    ...mapGetters([
+      'getQueuedTags',
+      'setQueuedTags',
+      'getQueuedTag',
+      'getCurrentBikeTag',
+      'getAmbassadorId',
+      'getExpiry',
+    ]),
+  },
+  mounted() {
+    if (!this.getAmbassadorId?.length > 0) {
+      /// kick it sideways
+      this.$router.push('/')
+    }
   },
   methods: {
     dequeueTag() {
       const tagToDequeue = {}
       return this.$store.dispatch('dequeueTag', tagToDequeue).then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-          return this.$toast.open({
+          this.$toast.open({
             message: `dequeue tag error: ${dequeueSuccessful}`,
             type: 'error',
             timeout: false,
             position: 'bottom',
           })
+          return this.$store.dispatch('setQueuedTags')
         } else {
           return this.$toast.open({
             message: 'tag successfully dequeued',
@@ -144,7 +180,6 @@ export default defineComponent({
         ambassadorId: this.getAmbassadorId,
         expiry: window.location.expiry,
       }
-      console.log({ controlledSwiper: this.controlledSwiper })
 
       this.$emit('submit', {
         formAction,
@@ -152,6 +187,15 @@ export default defineComponent({
         tag: approvedTag,
         storeAction: 'getAmbassadorPermission',
       })
+    },
+    mysteryDescription(tag) {
+      return `"${tag?.hint}"`
+    },
+    mysteryPlayer() {
+      return 'ken'
+    },
+    selectedTagPlayer() {
+      return 1
     },
     stringifyNumber,
   },
@@ -168,7 +212,7 @@ export default defineComponent({
   }
 }
 </style>
-<style scoped>
+<style lang="scss" scoped>
 i {
   color: #000;
   font-size: 20px;
