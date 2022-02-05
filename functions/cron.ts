@@ -5,6 +5,7 @@ import { Ambassador, Game } from 'biketag/lib/common/schema'
 import request from 'request'
 
 const cronHandler: Handler = async (event) => {
+  console.log('cron: running biketag default job')
   const biketagOpts = getBikeTagClientOpts(
     {
       ...event,
@@ -266,14 +267,18 @@ const cronHandler: Handler = async (event) => {
         }
       }
     }
+  } else {
+    console.log('couldnt get games', gamesResponse)
   }
 
   if (results.length) {
+    console.log({ results })
     return {
       statusCode: errors ? 400 : 200,
       body: JSON.stringify(results),
     }
   } else {
+    console.log('nothing to report')
     return {
       statusCode: errors ? 400 : 200,
       body: '',
