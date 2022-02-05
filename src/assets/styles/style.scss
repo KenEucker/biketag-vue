@@ -260,6 +260,14 @@ html {
       font-size: $title-font-size;
       font-weight: $title-font-weight;
     }
+
+    .body-text {
+      font-family: MarkerNotes;
+      font-weight: 100;
+      font-size: 1.5rem;
+      transform: unset;
+    }
+
     .user-agree {
       font-size: 0.75rem;
       font-style: italic;

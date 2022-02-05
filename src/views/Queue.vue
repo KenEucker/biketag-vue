@@ -1,13 +1,13 @@
 <template>
   <loading
-    v-if="uploadInProgress"
+    v-show="uploadInProgress"
     v-model:active="uploadInProgress"
     :is-full-page="true"
     class="realign-spinner"
   >
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
-  <div class="container col-lg-6 queue-page">
+  <div class="container col-md-8 col-lg-8 queue-page">
     <div v-if="usingTimer && isViewingQueue()" class="clock-div mt-2">
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
@@ -15,7 +15,10 @@
     <span
       v-if="!uploadInProgress && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
       class="tag-number"
-      >#{{ getCurrentBikeTag?.tagnumber }}</span
+      >#{{
+        getCurrentBikeTag?.tagnumber +
+        (BiketagFormSteps[getFormStep] > BiketagFormSteps.queueFound ? 1 : 0)
+      }}</span
     >
     <bike-tag-queue v-if="!isViewingQueue()" :only-mine="true" />
     <div v-if="!uploadInProgress" class="container">
@@ -123,10 +126,12 @@ export default defineComponent({
       'getPlayerId',
     ]),
   },
-  mounted() {
+  async mounted() {
     this.uploadInProgress = false
   },
-  created() {
+  async created() {
+    await this.$store.dispatch('setCurrentBikeTag')
+    await this.$store.dispatch('setQueuedTags', true)
     this.countDownTimer()
   },
   methods: {
@@ -256,8 +261,8 @@ export default defineComponent({
     z-index: 99;
     padding: 0 1.5rem;
   }
-  .realign-spinner {
-    margin-left: -30%;
-  }
+}
+.realign-spinner {
+  margin-left: -15%;
 }
 </style>

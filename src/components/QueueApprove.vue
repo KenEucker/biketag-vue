@@ -162,7 +162,7 @@ export default defineComponent({
             timeout: false,
             position: 'bottom',
           })
-          return this.$store.dispatch('setQueuedTags')
+          return this.$store.dispatch('setQueuedTags', true)
         } else {
           return this.$toast.open({
             message: 'tag successfully dequeued',

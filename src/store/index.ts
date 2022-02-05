@@ -1,7 +1,7 @@
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
 import BikeTagClient from 'biketag'
-import { Game, Tag, Player } from 'biketag/lib/common/schema'
+import { Game, Tag, Player, Setting } from 'biketag/lib/common/schema'
 import {
   getDomainInfo,
   getImgurImageSized,
@@ -17,7 +17,6 @@ export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(window)
 const playerId = getUuid()
 const ambassadorId = getAmbassadorUuid(window)
-console.log({ ambassadorId })
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
 const options: any = {
@@ -27,6 +26,7 @@ const options: any = {
 }
 const gameOpts = useAuth ? { source: 'sanity' } : {}
 const defaultLogo = '/images/BikeTag.svg'
+const defaultJingle = 'media/biketag-jingle-1.mp3'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
 const getSanityImageUrl = (logo: string, size = '') => {
   return `${sanityBaseCDNUrl}${logo
@@ -50,7 +50,7 @@ export const store = createStore<State>({
     players: [] as Player[],
     leaderboard: [] as Player[],
     html: '',
-    formStep: BiketagFormSteps.queueView,
+    formStep: BiketagFormSteps.queueFound,
     queuedTag: {} as Tag,
     isBikeTagAmbassador: ambassadorId?.length > 0,
   },
@@ -154,8 +154,8 @@ export const store = createStore<State>({
         queuedTag.hash = state.game.queuehash
         return client.deleteTag(queuedTag).then(async (t) => {
           if (t.success) {
-            console.log('store::found tag dequeued')
-            await commit('SET_QUEUED_TAG')
+            console.log('store::found tag dequeued', state.queuedTag)
+            await commit('SET_QUEUED_TAG', {})
             await commit('RESET_FORM_STEP_TO_FOUND')
 
             return true
@@ -468,9 +468,12 @@ export const store = createStore<State>({
     getEasterEgg(state) {
       if (state.game?.settings) {
         const jingle = state.game?.settings['easter::jingle']
-        return jingle ? `https://biketag.org/public/${jingle}` : null
+        if (jingle) {
+          return `https://biketag.org/public/${jingle}`
+        }
       }
-      return null
+
+      return `https://biketag.org/public/${defaultJingle}`
     },
     getGameTitle(state) {
       return `${state.gameName.toUpperCase()}.BIKETAG`

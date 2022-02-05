@@ -90,7 +90,7 @@ export default defineComponent({
     const expiry = GetQueryString(window, 'expiry')
     if (btaId && expiry) {
       this.$store.dispatch('setFormStepToApprove')
-      this.$router.push('/queue')
+      this.$router.push('/play')
     }
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setTags')
@@ -131,11 +131,11 @@ export default defineComponent({
     },
     goQueuePlay: function () {
       this.$store.dispatch('setFormStepToJoin', true)
-      this.$router.push('/queue')
+      this.$router.push('/play')
     },
     async goQueueView() {
       await this.$store.dispatch('resetFormStep')
-      this.$router.push('/queue')
+      this.$router.push('/play')
     },
     goHowPage: function () {
       this.$router.push('/howtoplay')

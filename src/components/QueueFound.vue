@@ -1,5 +1,5 @@
 <template>
-  <b-container class="col-8 col-lg-6">
+  <b-container class="col-md-8 col-lg-8">
     <h3 class="queue-title">{{ $t('pages.queue.found_title') }}</h3>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />

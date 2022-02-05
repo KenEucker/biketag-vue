@@ -1,5 +1,5 @@
 <template>
-  <div class="container col-lg-6 play-biketag">
+  <div class="container col-lg-8 play-biketag">
     <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
@@ -31,7 +31,10 @@
         @load="tagLoaded"
       />
     </div>
-    <div v-else>Uh, oh. Does this game not exist?</div>
+    <div v-else>
+      <span>{{ $t('pages.play.game_not_exists') }}</span>
+      <span>{{ $t('pages.play.send_hello_email') }}</span>
+    </div>
   </div>
 </template>
 

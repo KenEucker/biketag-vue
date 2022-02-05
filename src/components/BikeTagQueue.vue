@@ -107,6 +107,10 @@ export default defineComponent({
             timeout: false,
             position: 'bottom',
           })
+        } else {
+          this.$nextTick(() => {
+            this.$router.go()
+          })
         }
       })
     },
@@ -118,6 +122,10 @@ export default defineComponent({
             type: 'error',
             timeout: false,
             position: 'bottom',
+          })
+        } else {
+          this.$nextTick(() => {
+            this.$router.go()
           })
         }
       })

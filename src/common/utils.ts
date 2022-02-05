@@ -194,13 +194,17 @@ export const GetQueryString = (win: Window, name: string): string | null => {
 export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
   const mysteryImageSet = queuedTag.mysteryImageUrl?.length > 0
   const foundImageSet = queuedTag.foundImageUrl?.length > 0
+  let queuedTagState = BiketagFormSteps.queueFound
   if (mysteryImageSet && foundImageSet) {
     const discussionUrlIsSet = queuedTag.discussionUrl && queuedTag.discussionUrl.length > 0
     const mentionUrlIsSet = queuedTag.mentionUrl && queuedTag.mentionUrl.length > 0
-    return discussionUrlIsSet || mentionUrlIsSet
-      ? BiketagFormSteps.queuePosted
-      : BiketagFormSteps.queueSubmit
+    queuedTagState =
+      discussionUrlIsSet || mentionUrlIsSet
+        ? BiketagFormSteps.queuePosted
+        : BiketagFormSteps.queueSubmit
   } else {
-    return foundImageSet ? BiketagFormSteps.queueMystery : BiketagFormSteps.queueFound
+    queuedTagState = foundImageSet ? BiketagFormSteps.queueMystery : BiketagFormSteps.queueFound
   }
+
+  return queuedTagState
 }

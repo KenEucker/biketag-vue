@@ -38,7 +38,9 @@
     "play": {
       "hint": "need a hint?",
       "nohint": "no hint provided, sorry",
-      "mystery": "current Mystery Location to find"
+      "mystery": "current Mystery Location to find",
+      "send_hello_email": "Send an email to <a href=\"mailto:hello@biketag.org\">hello@biketag.org</a> to ask about how you can start one!",
+      "game_not_exists": "Uh, oh. Does this game not exist.. yet?"
     },
     "queue": {
       "join_queue": "Join round",

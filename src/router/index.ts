@@ -23,7 +23,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Player.vue'),
   },
   {
-    path: '/queue',
+    path: '/play',
     name: 'Queue',
     component: () => import('@/views/Queue.vue'),
   },

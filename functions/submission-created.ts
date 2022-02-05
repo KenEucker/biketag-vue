@@ -59,7 +59,7 @@ export const handler = async (event) => {
               host,
               region: game.name,
               playerIP,
-              ambassadorsUrl: `${host}/#/queue?btaId=${ambassador.id}`,
+              ambassadorsUrl: `${host}/#/play?btaId=${ambassador.id}`,
               expiryHash: getEncodedExpiry({
                 btaId: ambassador.id,
                 game: game.name,

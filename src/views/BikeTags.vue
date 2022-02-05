@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div v-if="totalCount > 1" class="container">
     <b-pagination
       v-model="currentPage"
       :total-rows="totalCount"
@@ -35,6 +35,11 @@
       align="center"
       @page-click="changePage"
     ></b-pagination>
+  </div>
+  <div v-else class="container mt-4 mb-5">
+    <span class="body-text">
+      completed BikeTag Posts will show up here once round #1 has been found!
+    </span>
   </div>
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
