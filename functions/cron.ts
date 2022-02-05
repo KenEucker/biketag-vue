@@ -23,6 +23,7 @@ const cronHandler: Handler = async (event) => {
 
   if (gamesResponse.success) {
     const games = gamesResponse.data as unknown as Game[]
+    console.log('cron: checking games for active queued tags')
 
     for (const game of games) {
       const autoPostSetting =
@@ -51,6 +52,11 @@ const cronHandler: Handler = async (event) => {
         })
         const activeQueue = getQueueResponse.success ? getQueueResponse.data : []
         if (activeQueue?.length) {
+          console.log(
+            `cron: [${game.name}] game has autoPost setting of [${autoPostSetting} minutes] and actively queued tags`,
+            activeQueue
+          )
+
           const completedTags = activeQueue.filter(
             (t) =>
               t.foundImageUrl?.length &&
@@ -72,6 +78,10 @@ const cronHandler: Handler = async (event) => {
               )
               const winnerWinnerChickenDinner = orderedTimedOutTags[0] // the "first" completed tag in the queue
               const { data: currentBikeTag } = await biketag.getTag() // the "current" mystery tag to be updated
+              console.log(
+                `cron: [${game.name}] game has a winning tag that was posted longer than [${autoPostSetting} minutes] ago.`,
+                winnerWinnerChickenDinner
+              )
 
               if (currentBikeTag.tagnumber !== winnerWinnerChickenDinner.tagnumber - 1) {
                 results.push({
@@ -239,6 +249,7 @@ const cronHandler: Handler = async (event) => {
       }
     }
   }
+  console.log({ cronResults: results })
   return {
     statusCode: errors ? 400 : 200,
     body: results.length ? JSON.stringify(results) : '',
