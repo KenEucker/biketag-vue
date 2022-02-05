@@ -72,7 +72,9 @@ export default defineComponent({
       return undefined
     },
     getHint() {
-      return this.getCurrentBikeTag.hint ?? this.$t('pages.play.nohint')
+      return this.getCurrentBikeTag?.hint?.length
+        ? this.getCurrentBikeTag.hint
+        : this.$t('pages.play.nohint')
     },
   },
   async created() {
@@ -104,6 +106,14 @@ export default defineComponent({
   .polaroid img {
     animation: fadeIn 2s;
     max-height: 45vh;
+  }
+}
+@media (min-width: 1024px) {
+  .play-biketag {
+    .polaroid img {
+      animation: fadeIn 2s;
+      max-height: 60vh;
+    }
   }
 }
 </style>

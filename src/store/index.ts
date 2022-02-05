@@ -50,7 +50,7 @@ export const store = createStore<State>({
     players: [] as Player[],
     leaderboard: [] as Player[],
     html: '',
-    formStep: BiketagFormSteps.queueFound,
+    formStep: BiketagFormSteps.queueView,
     queuedTag: {} as Tag,
     isBikeTagAmbassador: ambassadorId?.length > 0,
   },

@@ -249,14 +249,16 @@ export const sendEmailsToAmbassadors = async (
     }
   }
   if (sendToSuperAdmin) {
-    const superAdmin = process.env.SUPER_ADMIN
-    console.log(`sending ${emailName} superAdmin email to: ${superAdmin}`)
-    emailSent = await sendEmail(superAdmin, emailName, {
-      ...defaultEmailData,
-      ...getEmailData(),
-    })
-    accepted.concat(emailSent.accepted)
-    rejected.concat(emailSent.rejected)
+    const superAdmin = process.env.SUPER_ADMIN ?? ''
+    if (superAdmin?.length) {
+      console.log(`sending ${emailName} superAdmin email to: ${superAdmin}`)
+      emailSent = await sendEmail(superAdmin, emailName, {
+        ...defaultEmailData,
+        ...getEmailData(),
+      })
+      accepted.concat(emailSent.accepted)
+      rejected.concat(emailSent.rejected)
+    }
   }
 
   return { accepted, rejected }
