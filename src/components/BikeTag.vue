@@ -19,10 +19,8 @@
           <div class="description">
             <span>{{ _mysteryDescription }}</span>
             <br />
-            <span v-if="showPostedDate">{{ getMysteryPostedDate() }}</span>
-            <span v-if="showMysteryPostedDateTime">{{
-              getMysteryPostedDate(tag.mysteryTime, true)
-            }}</span>
+            <span v-if="showPostedDate">{{ getPostedDate() }}</span>
+            <span v-if="showMysteryPostedDateTime">{{ getPostedDate(tag.mysteryTime, true) }}</span>
           </div>
           <player v-if="mysteryPlayer" :player="mysteryPlayer" size="txt" />
           <span v-else class="player-name">{{ _mysteryPlayer }}</span>
