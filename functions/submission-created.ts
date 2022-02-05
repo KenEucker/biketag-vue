@@ -1,14 +1,13 @@
 import { BikeTagClient } from 'biketag'
 import { Ambassador, Game } from 'biketag/lib/common/schema'
 import request from 'request'
-import { getBikeTagClientOpts, getEncodedExpiry, sendEmailNotification } from './common/utils'
+import { getBikeTagClientOpts, getEncodedExpiry, sendEmailsToAmbassadors } from './common/utils'
 
 export const handler = async (event) => {
   const body = JSON.parse(event.body)
   const payload = body.payload
   let success = false
   if (payload) {
-    const superAdmin = process.env.SUPER_ADMIN
     const formName = payload.form_name
     const playerIP = payload.data?.playerId
     const host = payload.data?.host
@@ -51,66 +50,47 @@ export const handler = async (event) => {
         break
       case 'submit-queued-tag':
         // send app notification
-        for (const ambassador of thisGamesAmbassadors) {
-          if (ambassador.email) {
-            console.log(`sending ${formName} ambassador email to: ${ambassador.email}`)
-            emailSent = await sendEmailNotification(ambassador.email, formName, {
+        emailSent = await sendEmailsToAmbassadors(formName, thisGamesAmbassadors, (a) => {
+          if (a) {
+            return {
               tag,
               host,
               region: game.name,
               playerIP,
-              ambassadorsUrl: `${host}/#/play?btaId=${ambassador.id}`,
+              ambassadorsUrl: `${host}/#/play?btaId=${a.id}`,
               expiryHash: getEncodedExpiry({
-                btaId: ambassador.id,
+                btaId: a.id,
                 game: game.name,
                 tagnumber: tag.tagnumber,
               }),
-            })
-            successfulEmailsSent.concat(emailSent.accepted)
-            rejectedEmails.concat(emailSent.rejected)
-            if (superAdmin) {
-              console.log(`sending ${formName} superAdmin email to: ${superAdmin}`)
-              emailSent = await sendEmailNotification(superAdmin, formName, {
-                payload: JSON.stringify(payload),
-                game: game.name,
-                host,
-                playerIP,
-              })
-              successfulEmailsSent.concat(emailSent.accepted)
-              rejectedEmails.concat(emailSent.rejected)
+            }
+          } else {
+            return {
+              payload: JSON.stringify(payload),
+              game: game.name,
+              host,
+              playerIP,
             }
           }
-        }
+        })
+        successfulEmailsSent.concat(emailSent.accepted)
+        rejectedEmails.concat(emailSent.rejected)
         break
       case 'approve-queued-tag':
         // send app notification
         break
       default:
       case 'queue-tag-error':
-        for (const ambassador of thisGamesAmbassadors) {
-          if (ambassador.email) {
-            console.log(`sending ${formName} ambassador email to: ${ambassador.email}`)
-            emailSent = await sendEmailNotification(ambassador.email, 'queue-tag-error', {
-              payload: JSON.stringify(payload),
-              host,
-              game: game.name,
-              playerIP,
-            })
-            successfulEmailsSent.concat(emailSent.accepted)
-            rejectedEmails.concat(emailSent.rejected)
-          }
-        }
-        if (superAdmin) {
-          console.log(`sending 'queue-tag-error' superAdmin email to: ${superAdmin}`)
-          emailSent = await sendEmailNotification(superAdmin, 'queue-tag-error', {
+        emailSent = await sendEmailsToAmbassadors(formName, thisGamesAmbassadors, () => {
+          return {
             payload: JSON.stringify(payload),
-            game: game.name,
             host,
+            game: game.name,
             playerIP,
-          })
-          successfulEmailsSent.concat(emailSent.accepted)
-          rejectedEmails.concat(emailSent.rejected)
-        }
+          }
+        })
+        successfulEmailsSent.concat(emailSent.accepted)
+        rejectedEmails.concat(emailSent.rejected)
         break
     }
 

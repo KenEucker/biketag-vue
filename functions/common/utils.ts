@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer'
 import { Liquid } from 'liquidjs'
 import { join, extname } from 'path'
 import { readFileSync, existsSync } from 'fs'
+import { Ambassador } from 'biketag/lib/common/schema'
 
 export const getBikeTagHash = (key: string): string => md5(`${key}${process.env.HOST_KEY}`)
 
@@ -128,7 +129,7 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
   }
 }
 
-export const sendEmailNotification = async (to: string, subject: string, locals: any) => {
+export const sendEmail = async (to: string, subject: string, locals: any) => {
   const liquidOpts = {
     dynamicPartials: true,
     strict_filters: true,
@@ -220,4 +221,43 @@ export const getEncodedExpiry = (data = {}, days = 2) => {
     ),
   }
   return encodeURIComponent(encrypt(expiryData))
+}
+
+export const sendEmailsToAmbassadors = async (
+  emailName: string,
+  ambassadors: Ambassador[],
+  getEmailData: (a?: Ambassador) => any,
+  sendToSuperAdmin = true
+): Promise<{ accepted: any[]; rejected: any[] }> => {
+  let emailSent
+  const accepted = []
+  const rejected = []
+  const defaultEmailData = {
+    host: 'eh?',
+    subdomainIcon: '/images/BikeTag.svg',
+  }
+
+  for (const ambassador of ambassadors) {
+    if (ambassador.email) {
+      console.log(`sending ${emailName} ambassador email to: ${ambassador.email}`)
+      emailSent = await sendEmail(ambassador.email, emailName, {
+        ...defaultEmailData,
+        ...getEmailData(ambassador),
+      })
+      accepted.concat(emailSent.accepted)
+      rejected.concat(emailSent.rejected)
+    }
+  }
+  if (sendToSuperAdmin) {
+    const superAdmin = process.env.SUPER_ADMIN
+    console.log(`sending ${emailName} superAdmin email to: ${superAdmin}`)
+    emailSent = await sendEmail(superAdmin, emailName, {
+      ...defaultEmailData,
+      ...getEmailData(),
+    })
+    accepted.concat(emailSent.accepted)
+    rejected.concat(emailSent.rejected)
+  }
+
+  return { accepted, rejected }
 }

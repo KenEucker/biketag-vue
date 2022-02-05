@@ -1,7 +1,7 @@
 import { builder, Handler } from '@netlify/functions'
-import { getBikeTagClientOpts } from './common/utils'
+import { getBikeTagClientOpts, sendEmailsToAmbassadors } from './common/utils'
 import { BikeTagClient } from 'biketag'
-import { Game } from 'biketag/lib/common/schema'
+import { Ambassador, Game } from 'biketag/lib/common/schema'
 import request from 'request'
 
 const cronHandler: Handler = async (event) => {
@@ -164,6 +164,24 @@ const cronHandler: Handler = async (event) => {
                   }
 
                   if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
+                    const ambassadors = (await biketag.ambassadors(undefined, {
+                      source: 'sanity',
+                    })) as Ambassador[]
+                    const thisGamesAmbassadors = ambassadors.filter(
+                      (a) => game.ambassadors.indexOf(a.name) !== -1
+                    )
+                    await sendEmailsToAmbassadors(
+                      'biketag-auto-posted',
+                      thisGamesAmbassadors,
+                      () => {
+                        return {
+                          currentBikeTag,
+                          newBikeTagPost,
+                          game: game.name,
+                        }
+                      }
+                    )
+
                     /************** CLEAR EXISTING QUEUE BY ARCHIVING/DELETING TAG IMAGES *****************/
                     const nonAdminBikeTagOpts = getBikeTagClientOpts(
                       {
@@ -249,10 +267,17 @@ const cronHandler: Handler = async (event) => {
       }
     }
   }
-  console.log({ cronResults: results })
-  return {
-    statusCode: errors ? 400 : 200,
-    body: results.length ? JSON.stringify(results) : '',
+
+  if (results.length) {
+    return {
+      statusCode: errors ? 400 : 200,
+      body: JSON.stringify(results),
+    }
+  } else {
+    return {
+      statusCode: errors ? 400 : 200,
+      body: '',
+    }
   }
 }
 
