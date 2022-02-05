@@ -20,7 +20,9 @@
             <span>{{ _mysteryDescription }}</span>
             <br />
             <span v-if="showPostedDate">{{ getMysteryPostedDate() }}</span>
-            <span v-if="showPostedDateTime">{{ getMysteryPostedDate(true) }}</span>
+            <span v-if="showMysteryPostedDateTime">{{
+              getMysteryPostedDate(tag.mysteryTime, true)
+            }}</span>
           </div>
           <player v-if="mysteryPlayer" :player="mysteryPlayer" size="txt" />
           <span v-else class="player-name">{{ _mysteryPlayer }}</span>
@@ -42,6 +44,7 @@
         <div class="card-bottom">
           <span class="description">{{ _foundDescription }}</span>
           <player class="tag-player" :player="foundPlayer" :player-name="_foundPlayer" size="txt" />
+          <span v-if="showFoundPostedDateTime">{{ getPostedDate(tag.foundTime, true) }}</span>
         </div>
       </b-card>
     </b-col>
@@ -74,7 +77,11 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
-    showPostedDateTime: {
+    showMysteryPostedDateTime: {
+      type: Boolean,
+      default: false,
+    },
+    showFoundPostedDateTime: {
       type: Boolean,
       default: false,
     },
@@ -179,14 +186,15 @@ export default defineComponent({
     getMysteryDescription() {
       return `#${this._tagnumber} ${this.tag?.hint?.length > 0 ? `"${this.tag.hint}"` : ''}`
     },
-    getMysteryPostedDate(timeOnly = false) {
+    getPostedDate(timestamp, timeOnly = false) {
+      if (!timestamp) {
+        return ''
+      }
       const datetime = timeOnly
-        ? new Date(this.tag.foundTime * 1000).toLocaleTimeString()
-        : new Date(this.tag.foundTime * 1000).toLocaleDateString()
+        ? new Date(timestamp * 1000).toLocaleTimeString()
+        : new Date(timestamp * 1000).toLocaleDateString()
 
-      return this.tag?.foundTime
-        ? `${timeOnly ? ' @ ' : this.$t('components.biketag.posted_on')} ${datetime}`
-        : ''
+      return `${timeOnly ? ' @ ' : this.$t('components.biketag.posted_on')} ${datetime}`
     },
     tagImageLoaded(type) {
       if (type === 'mystery') {

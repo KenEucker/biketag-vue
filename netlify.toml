@@ -3,6 +3,9 @@
   command = "yarn build"
   functions = "functions/"
 
+[functions."cron-background"]
+  schedule = "*/15 * * * *"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"

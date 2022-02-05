@@ -24,6 +24,7 @@
           size="l"
           :mystery-image-url="''"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
+          :show-found-posted-date-time="true"
           :found-description="stringifyNumber(index + 1)"
         />
       </swiper-slide>
@@ -95,15 +96,26 @@ export default defineComponent({
 <style lang="scss">
 #app {
   .queue-view {
-    .card .tag-number {
-      display: none;
+    .card {
+      .tag-number {
+        display: none;
+      }
+      .player-name {
+        line-height: 75%;
+      }
+
+      &.polaroid.found-tag {
+        margin-top: -175px;
+        transform: rotate(-1deg);
+      }
+
+      &.polaroid.mystery-tag {
+        transform: rotate(1deg);
+      }
     }
 
     .swiper-pagination {
       display: none;
-    }
-    .player-name {
-      line-height: 75%;
     }
   }
 }
