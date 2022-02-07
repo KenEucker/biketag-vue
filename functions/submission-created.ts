@@ -7,12 +7,13 @@ export const handler = async (event) => {
   const body = JSON.parse(event.body)
   const payload = body.payload
   let success = false
+
   if (payload) {
     const formName = payload.form_name
+    const host = payload.site_url
     const playerIP = payload.data?.playerId
     const tag = JSON.parse(payload.data?.tag ?? '{}')
-    const host = payload.site_url
-    const gameName = payload.data?.game ?? null
+    const gameName = payload.data?.game ?? tag.game ?? null
     const successfulEmailsSent: any = []
     const rejectedEmails: any = []
     let thisGamesAmbassadors = []
@@ -55,7 +56,7 @@ export const handler = async (event) => {
           // send app notification
           emailSent = await sendEmailsToAmbassadors(
             formName,
-            `[${gameName}] A new BikeTag has been submitted for round #${tag.tagnumber}`,
+            `A new BikeTag has been submitted for round #${tag.tagnumber} in [${gameName}]`,
             thisGamesAmbassadors,
             (a) => {
               if (a) {
@@ -128,13 +129,13 @@ export const handler = async (event) => {
       } else if (rejectedEmails.length) {
         console.log('error sending emails', rejectedEmails)
       }
-
-      return {
-        data: success,
-        statusCode: success ? 200 : 400,
-      }
     } else {
       console.log('no game to work with', payload)
+    }
+
+    return {
+      data: success,
+      statusCode: success ? 200 : 400,
     }
   }
 }
