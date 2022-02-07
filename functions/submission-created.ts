@@ -11,39 +11,38 @@ export const handler = async (event) => {
     const formName = payload.form_name
     const playerIP = payload.data?.playerId
     const host = payload.site_url
-    const tag = JSON.parse(payload.data?.tag ?? '{}')
+    const gameName = JSON.parse(payload.data?.game ?? null)
     const successfulEmailsSent: any = []
     const rejectedEmails: any = []
     let thisGamesAmbassadors = []
     let emailSent
     let game
 
-    if (formName !== 'queue-found-tag' || formName !== 'queue-mystery-tag') {
-      const biketagOpts = getBikeTagClientOpts(
-        {
-          ...event,
-          method: event.httpMethod,
-        } as unknown as request.Request,
-        true,
-        true
-      )
-      const biketag = new BikeTagClient(biketagOpts)
-      game = (await biketag.game(tag.game, {
-        source: 'sanity',
-      })) as Game
-      const ambassadors = (await biketag.ambassadors(undefined, {
-        source: 'sanity',
-      })) as Ambassador[]
-      thisGamesAmbassadors = ambassadors.length
-        ? ambassadors.filter((a) => game.ambassadors.indexOf(a?.name) !== -1)
-        : []
-    } else {
-      /// doing nothing, eh?
-      success = true
-    }
+    if (gameName) {
+      if (formName !== 'queue-found-tag' || formName !== 'queue-mystery-tag') {
+        const biketagOpts = getBikeTagClientOpts(
+          {
+            ...event,
+            method: event.httpMethod,
+          } as unknown as request.Request,
+          true,
+          true
+        )
+        const biketag = new BikeTagClient(biketagOpts)
+        game = (await biketag.game(gameName, {
+          source: 'sanity',
+        })) as Game
+        const ambassadors = (await biketag.ambassadors(undefined, {
+          source: 'sanity',
+        })) as Ambassador[]
+        thisGamesAmbassadors = ambassadors.length
+          ? ambassadors.filter((a) => game.ambassadors.indexOf(a?.name) !== -1)
+          : []
+      } else {
+        /// doing nothing, eh?
+        success = true
+      }
 
-    if (game) {
-      const gameName = game.name
       switch (formName) {
         case 'queue-found-tag':
           // send app notification
