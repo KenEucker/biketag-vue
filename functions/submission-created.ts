@@ -10,6 +10,7 @@ export const handler = async (event) => {
   if (payload) {
     const formName = payload.form_name
     const playerIP = payload.data?.playerId
+    const tag = JSON.parse(payload.data?.tag ?? '{}')
     const host = payload.site_url
     const gameName = payload.data?.game ?? null
     const successfulEmailsSent: any = []
