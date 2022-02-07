@@ -266,7 +266,7 @@ export const sendEmailsToAmbassadors = async (
           ...defaultEmailData,
           ...getEmailData(),
         },
-        template ?? emailName
+        emailName
       )
       accepted.concat(emailSent.accepted)
       rejected.concat(emailSent.rejected)
