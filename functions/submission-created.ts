@@ -11,7 +11,7 @@ export const handler = async (event) => {
     const formName = payload.form_name
     const playerIP = payload.data?.playerId
     const host = payload.site_url
-    const gameName = JSON.parse(payload.data?.game ?? null)
+    const gameName = payload.data?.game ?? null
     const successfulEmailsSent: any = []
     const rejectedEmails: any = []
     let thisGamesAmbassadors = []
