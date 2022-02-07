@@ -66,6 +66,7 @@ export const handler = async (event) => {
                   gameHost: `${host.replace('://', `://${gameName}`)}`,
                   region: gameName,
                   playerIP,
+                  mysteryImageUrl: tag?.mysteryImageUrl?.length ? tag.mysteryImageUrl : '',
                   goCurrentMystery: 'SEE CURRENT MYSTERY',
                   currentMysteryHint: tag?.hint,
                   footerText: 'BikeTag is an OpenSource project that you can contribute to anytime',

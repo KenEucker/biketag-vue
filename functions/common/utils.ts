@@ -139,7 +139,7 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     extname: '.liquid',
     root: [join('src', 'emails')],
     customFilters: {
-      biketag_image: (url, size = '') => {
+      biketag_image: (url = '', size = '') => {
         const ext = extname(url)
         /// Make sure the image type is supported
         if (['.jpg', '.jpeg', '.png', '.bmp'].indexOf(ext) === -1) return url
