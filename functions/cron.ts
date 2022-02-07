@@ -169,9 +169,13 @@ const cronHandler: Handler = async (event) => {
 
                   if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
                     /// TODO: REMOVE LEGACY HACK
-                    axios.get(
-                      `https://${game.name}.biketag.org?flushCache=true&resendNotification=true`
-                    )
+                    axios
+                      .get(
+                        `https://${game.name}.biketag.org?flushCache=true&resendNotification=true`
+                      )
+                      .catch((e) => {
+                        /// Unimportant
+                      })
                     const ambassadors = (await biketag.ambassadors(undefined, {
                       source: 'sanity',
                     })) as Ambassador[]
@@ -207,8 +211,12 @@ const cronHandler: Handler = async (event) => {
                           btaDashboardButton: 'BikeTag Ambassador dashboard',
                           host,
                           game: game.name,
-                          redditLink: `https://reddit.com/r/${game.subreddit ?? 'biketag'}`,
-                          twitterLink: `https://twitter.com/${game.twitter ?? 'biketag'}`,
+                          redditLink: `https://reddit.com/r/${
+                            game.subreddit?.length ? game.subreddit : 'biketag'
+                          }`,
+                          twitterLink: `https://twitter.com/${
+                            game.twitter?.length ? game.twitter : 'biketag'
+                          }`,
                           // instagramLink: `https://www.reddit.com/r/${game. ?? 'biketag'}`,
                         }
                       }

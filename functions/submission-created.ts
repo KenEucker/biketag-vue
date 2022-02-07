@@ -19,7 +19,7 @@ export const handler = async (event) => {
     let game
 
     if (formName !== 'queue-found-tag' || formName !== 'queue-mystery-tag') {
-      console.log({ formName })
+      console.log({ formName, payload })
       const biketagOpts = getBikeTagClientOpts(
         {
           ...event,
