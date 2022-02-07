@@ -1,7 +1,7 @@
 import { DeviceUUID } from '@/common/uuid'
 import { Tag } from 'biketag/lib/common/schema'
 import { useCookies } from 'vue3-cookies'
-import { BiketagFormSteps } from './types'
+import { BiketagFormSteps } from '../../src/common/types'
 
 export type DomainInfo = {
   host: string
@@ -207,4 +207,15 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
   }
 
   return queuedTagState
+}
+
+export const getSanityImageUrl = (
+  logo: string,
+  size = '',
+  sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/'
+) => {
+  return `${sanityBaseCDNUrl}${logo
+    .replace('image-', '')
+    .replace('-png', '.png')
+    .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
 }

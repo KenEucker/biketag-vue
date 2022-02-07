@@ -88,6 +88,8 @@ export const getPayloadAuthorization = (event: any) => {
   }
 }
 
+export const defaultLogo = '/images/BikeTag.svg'
+
 const noKey = 'BikeTag'
 export const createMd5 = (text: string): Buffer => {
   return crypto.createHash('md5').update(text).digest()
@@ -129,7 +131,8 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
   }
 }
 
-export const sendEmail = async (to: string, subject: string, locals: any) => {
+export const sendEmail = async (to: string, subject: string, locals: any, template?: string) => {
+  template = template ?? subject
   const liquidOpts = {
     dynamicPartials: true,
     strict_filters: true,
@@ -173,7 +176,7 @@ export const sendEmail = async (to: string, subject: string, locals: any) => {
     const filterMethod = liquidOpts.customFilters[filter]
     liquid.registerFilter(filter, filterMethod)
   })
-  const templateFilePath = join('functions', 'emails', subject)
+  const templateFilePath = join('functions', 'emails', template)
   const htmlTemplateFilePath = `${templateFilePath}.liquid`
   const textTemplateFilePath = `${templateFilePath}--text.liquid`
 
@@ -189,9 +192,7 @@ export const sendEmail = async (to: string, subject: string, locals: any) => {
   const emailOpts = {
     from: process.env.GOOGLE_EMAIL_ADDRESS, // sender address
     to, // list of receivers
-    subject: subject.replace(/^(.)|[\s-](.)/g, (match) =>
-      match[1] !== undefined ? match[1].toUpperCase() : match[0].toUpperCase()
-    ),
+    subject, // subject
     text, // plain text body
     html, // html body
   }
@@ -225,9 +226,11 @@ export const getEncodedExpiry = (data = {}, days = 2) => {
 
 export const sendEmailsToAmbassadors = async (
   emailName: string,
+  emailSubject: string,
   ambassadors: Ambassador[],
   getEmailData: (a?: Ambassador) => any,
-  sendToSuperAdmin = true
+  sendToSuperAdmin = true,
+  template?: string
 ): Promise<{ accepted: any[]; rejected: any[] }> => {
   let emailSent
   const accepted = []
@@ -240,10 +243,15 @@ export const sendEmailsToAmbassadors = async (
   for (const ambassador of ambassadors) {
     if (ambassador.email) {
       console.log(`sending ${emailName} ambassador email to: ${ambassador.email}`)
-      emailSent = await sendEmail(ambassador.email, emailName, {
-        ...defaultEmailData,
-        ...getEmailData(ambassador),
-      })
+      emailSent = await sendEmail(
+        ambassador.email,
+        emailSubject,
+        {
+          ...defaultEmailData,
+          ...getEmailData(ambassador),
+        },
+        template ?? emailName
+      )
       accepted.concat(emailSent.accepted)
       rejected.concat(emailSent.rejected)
     }
@@ -252,14 +260,28 @@ export const sendEmailsToAmbassadors = async (
     const superAdmin = process.env.SUPER_ADMIN ?? ''
     if (superAdmin?.length) {
       console.log(`sending ${emailName} superAdmin email to: ${superAdmin}`)
-      emailSent = await sendEmail(superAdmin, emailName, {
-        ...defaultEmailData,
-        ...getEmailData(),
-      })
+      emailSent = await sendEmail(
+        superAdmin,
+        emailSubject,
+        {
+          ...defaultEmailData,
+          ...getEmailData(),
+        },
+        template ?? emailName
+      )
       accepted.concat(emailSent.accepted)
       rejected.concat(emailSent.rejected)
     }
   }
 
   return { accepted, rejected }
+}
+
+export const getSanityImageUrl = (
+  logo: string,
+  size = '',
+  sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/'
+) => {
+  const properFilePath = logo.replace('image-', '').replace('-png', '.png').replace('-jpg', '.jpg')
+  return `${sanityBaseCDNUrl}${properFilePath}${size.length ? `?${size}` : ''}`
 }

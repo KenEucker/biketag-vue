@@ -1,7 +1,7 @@
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
 import BikeTagClient from 'biketag'
-import { Game, Tag, Player, Setting } from 'biketag/lib/common/schema'
+import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import {
   getDomainInfo,
   getImgurImageSized,
@@ -9,6 +9,7 @@ import {
   getBikeTagClientOpts,
   getAmbassadorUuid,
   getQueuedTagState,
+  getSanityImageUrl,
 } from '@/common/utils'
 import { BiketagFormSteps, State } from '@/common/types'
 
@@ -28,12 +29,6 @@ const gameOpts = useAuth ? { source: 'sanity' } : {}
 const defaultLogo = '/images/BikeTag.svg'
 const defaultJingle = 'media/biketag-jingle-1.mp3'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
-const getSanityImageUrl = (logo: string, size = '') => {
-  return `${sanityBaseCDNUrl}${logo
-    .replace('image-', '')
-    .replace('-png', '.png')
-    .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
-}
 console.log('store::init', { subdomain: domain.subdomain, domain, gameName, playerId })
 
 let client = new BikeTagClient(options)
@@ -486,7 +481,7 @@ export const store = createStore<State>({
         const logoUrl =
           state.game?.logo?.indexOf('imgur.com') !== -1
             ? state.game.logo
-            : getSanityImageUrl(state.game.logo, size)
+            : getSanityImageUrl(state.game.logo, size, sanityBaseCDNUrl)
         return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
       }
     },

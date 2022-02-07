@@ -57,6 +57,8 @@
       "joined_button": "See all tags in round",
       "submit_title": "Submit your BikeTag Post to win the round!",
       "submit_text": "You can have the BikeTag RoBot post on your behalf or you can choose to post to other platforms on your own. Once you submit your BikeTag Post the round will come to a close and your new BikeTag Post (when approved) will become the new Mystery Location for round",
+      "submit_text_no_autopost": "Once you submit your new BikeTag Post, a BikeTag Ambassador will approve the next round and then your new post will be live!",
+      "submit_text_manual_social": "You can also post your BikeTag to any of the supported platforms from the tabs above, by copying the text within.",
       "posted_title": "Your BikeTag for this round has been submitted!",
       "posted_text": "Please allow time for the BikeTag Ambassador of the game to approve your BikeTag Post, which can take up to 15 minutes. Thanks for playing BikeTag!",
       "approve_title": "Hello, BikeTag Ambassador!",

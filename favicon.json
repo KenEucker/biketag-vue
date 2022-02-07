@@ -1,5 +1,5 @@
 {
-  "masterPicture": "public/images/BikeTag.svg",
+  "masterPicture": "images/BikeTag.svg",
   "iconsPath": "dist/",
   "design": {
     "ios": {

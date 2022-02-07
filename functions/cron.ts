@@ -1,8 +1,14 @@
 import { builder, Handler } from '@netlify/functions'
-import { getBikeTagClientOpts, sendEmailsToAmbassadors } from './common/utils'
+import {
+  getBikeTagClientOpts,
+  sendEmailsToAmbassadors,
+  getSanityImageUrl,
+  defaultLogo,
+} from './common/utils'
 import { BikeTagClient } from 'biketag'
-import { Ambassador, Game } from 'biketag/lib/common/schema'
+import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
 import request from 'request'
+import axios from 'axios'
 
 const cronHandler: Handler = async (event) => {
   console.log('cron: running biketag default job')
@@ -52,6 +58,7 @@ const cronHandler: Handler = async (event) => {
           source: 'imgur',
         })
         const activeQueue = getQueueResponse.success ? getQueueResponse.data : []
+
         if (activeQueue?.length) {
           console.log(
             `cron: [${game.name}] game has autoPost setting of [${autoPostSetting} minutes] and actively queued tags`,
@@ -59,16 +66,12 @@ const cronHandler: Handler = async (event) => {
           )
 
           const completedTags = activeQueue.filter(
-            (t) =>
-              t.foundImageUrl?.length &&
-              t.mysteryImageUrl?.length &&
-              t.discussionUrl?.length &&
-              t.playerId?.length
+            (t) => t.foundImageUrl?.length && t.mysteryImageUrl?.length
           )
 
           if (completedTags.length) {
             const now = Date.now()
-            const tagAutoPostTimer = 1000 * 60 * autoPostSetting
+            const tagAutoPostTimer = 1000 * 60 * 1 //autoPostSetting
             const timedOutTags = completedTags.filter(
               (t) => now - t.mysteryTime * 1000 > tagAutoPostTimer
             )
@@ -152,7 +155,7 @@ const cronHandler: Handler = async (event) => {
                     results.push({
                       message: 'new BikeTag posted',
                       game: game.name,
-                      tag: newBikeTagPost,
+                      tag: newBikeTagUpdateResult.data,
                     })
                   } else {
                     results.push({
@@ -165,20 +168,48 @@ const cronHandler: Handler = async (event) => {
                   }
 
                   if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
+                    /// TODO: REMOVE LEGACY HACK
+                    axios.get(
+                      `https://${game.name}.biketag.org?flushCache=true&resendNotification=true`
+                    )
                     const ambassadors = (await biketag.ambassadors(undefined, {
                       source: 'sanity',
                     })) as Ambassador[]
                     const thisGamesAmbassadors = ambassadors.filter(
                       (a) => game.ambassadors.indexOf(a.name) !== -1
                     )
+                    const winningTagnumber = (newBikeTagUpdateResult.data as unknown as Tag)
+                      .tagnumber
+                    const host = `https://${game.name}.biketag.io`
+                    const logo = game.logo?.length
+                      ? game.logo.indexOf('imgur.co') !== -1
+                        ? game.logo
+                        : getSanityImageUrl(game.logo)
+                      : `${host}${defaultLogo}`
                     await sendEmailsToAmbassadors(
                       'biketag-auto-posted',
+                      `New BikeTag Round (#${winningTagnumber}) Auto-Posted for [${game.name}]`,
                       thisGamesAmbassadors,
-                      () => {
+                      (a) => {
                         return {
-                          currentBikeTag,
-                          newBikeTagPost,
+                          currentBikeTag: currentBikeTagUpdateResult.data,
+                          newBikeTagPost: newBikeTagUpdateResult.data,
+                          logo,
+                          ambassadorsUrl: `${host}/#/queue?btaId=${a?.id}`,
+                          tagAutoApprovedText:
+                            'This tag was auto-approved by the AutoPost feature for being the first, completed, BikeTag Post to be submitted. If there is a problem with this tag, please click the button below to address the issue.',
+                          newBikeTagRoundTitle: ``,
+                          newBikeTagRoundText: `BikeTag Round #${winningTagnumber} was just auto-posted!`,
+                          tosText: 'Terms & Conditions',
+                          replyToRemoveLink:
+                            'reply to this email to request that these emails no longer be sent to you',
+                          newBikeTagRoundFooter: 'Thank you for being a BikeTag Ambassador!',
+                          btaDashboardButton: 'BikeTag Ambassador dashboard',
+                          host,
                           game: game.name,
+                          redditLink: `https://reddit.com/r/${game.subreddit ?? 'biketag'}`,
+                          twitterLink: `https://twitter.com/${game.twitter ?? 'biketag'}`,
+                          // instagramLink: `https://www.reddit.com/r/${game. ?? 'biketag'}`,
                         }
                       }
                     )
@@ -207,6 +238,7 @@ const cronHandler: Handler = async (event) => {
                             tag: nonWinningTag,
                           })
                         } else {
+                          console.log({ archiveTagResult })
                           results.push({
                             message: 'error archiving non-winning found image',
                             game: game.name,
@@ -225,11 +257,13 @@ const cronHandler: Handler = async (event) => {
                             tag: nonWinningTag,
                           })
                         } else {
+                          console.log({ deleteArchivedTagFromQueueResult })
                           results.push({
                             message: 'error deleting non-winning tag from the queue',
                             game: game.name,
                             tag: nonWinningTag,
                           })
+                          /// No error here?
                         }
                       }
                     }
@@ -244,12 +278,13 @@ const cronHandler: Handler = async (event) => {
                         tag: winnerWinnerChickenDinner,
                       })
                     } else {
-                      errors = true
+                      console.log({ deleteQueuedTagResult })
                       results.push({
                         message: 'error deleting winning tag from queue',
                         game: game.name,
                         tag: winnerWinnerChickenDinner,
                       })
+                      errors = true
                     }
                   }
                 } catch (e) {

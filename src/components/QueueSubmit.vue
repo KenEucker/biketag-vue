@@ -4,36 +4,60 @@
       <h3 class="queue-title">{{ $t('pages.queue.submit_title') }}</h3>
     </div>
     <div>
-      <b-tabs
-        v-if="supportsReddit || supportsTwitter"
-        :options="{ useUrlFragment: false }"
-        nav-item-class="nav-item"
-        @clicked="tabClicked"
-        @changed="tabChanged"
-      >
-        <b-tab v-if="supportsReddit">
+      <b-tabs nav-item-class="nav-item">
+        <b-tab v-if="!!getGame?.subreddit?.length">
           <template #title>
-            <img src="../assets/images/Reddit.svg" class="tab-logo img-fluid" />
+            <img
+              v-b-popover.click.blur.top="'Copied!'"
+              src="../assets/images/Reddit.svg"
+              class="tab-logo img-fluid"
+              @click="copyTabContents(redditPostText)"
+            />
           </template>
           <div class="reddit-post">
-            <Markdown :source="redditPostText" linkify="true" />
+            <Markdown v-if="supportsReddit && showReddit" :source="redditPostText" linkify="true" />
+            <pre v-if="!showReddit">{{ redditPostText }}</pre>
           </div>
         </b-tab>
-        <b-tab v-if="supportsTwitter">
+        <b-tab v-if="!!getGame?.account?.length">
           <template #title>
-            <img src="../assets/images/Twitter.svg" class="tab-logo img-fluid" />
+            <img
+              v-b-popover.click.blur.top="'Copied!'"
+              src="../assets/images/Twitter.svg"
+              class="tab-logo img-fluid"
+              @click="copyTabContents(twitterPostText)"
+            />
           </template>
-          <div class="twitter-post">
+          <div v-if="supportsTwitter && showTwitter" class="twitter-post">
             <Markdown :source="twitterPostText" linkify="true" />
+            <pre v-if="!showTwitter">{{ twitterPostText }}</pre>
+          </div>
+        </b-tab>
+        <b-tab v-if="!!getGame?.page?.length">
+          <template #title>
+            <img
+              v-b-popover.click.blur.top="'Copied!'"
+              src="../assets/images/Instagram.svg"
+              class="tab-logo img-fluid"
+              @click="copyTabContents(instagramPostText)"
+            />
+          </template>
+          <div class="instagram-post">
+            <Markdown
+              v-if="supportsInstagram && showInstagram"
+              :source="instagramPostText"
+              linkify="true"
+            />
+            <pre v-if="!showInstagram">{{ instagramPostText }}</pre>
           </div>
         </b-tab>
       </b-tabs>
-      <p v-if="supportsReddit || supportsTwitter" class="queue-text">
+      <p v-if="supportsReddit || supportsTwitter || supportsInstagram" class="queue-text">
         {{ $t('pages.queue.submit_text') }} #{{ getCurrentBikeTag?.tagnumber + 1 }}!
       </p>
       <p v-else class="queue-text">
-        Once you submit your new BikeTag Post, a BikeTag Ambassador will approve the next round and
-        then your new post will be live!
+        {{ $t('pages.queue.submit_text_no_autopost') }}
+        {{ $t('pages.queue.submit_text_manual_social') }}
       </p>
 
       <form
@@ -49,11 +73,30 @@
         <input type="hidden" name="playerId" :value="getPlayerId" />
         <fieldset v-if="supportsReddit">
           <label for="postToReddit">{{ $t('pages.queue.post_to_reddit') }}</label>
-          <input v-model="postToReddit" name="postToReddit" type="checkbox" />
+          <input
+            v-model="postToReddit"
+            name="postToReddit"
+            type="checkbox"
+            @click="showReddit = !showReddit"
+          />
         </fieldset>
         <fieldset v-if="supportsTwitter">
           <label for="postToTwitter">{{ $t('pages.queue.post_to_twitter') }}</label>
-          <input v-model="postToTwitter" name="postToTwitter" type="checkbox" />
+          <input
+            v-model="postToTwitter"
+            name="postToTwitter"
+            type="checkbox"
+            @click="showTwitter = !showTwitter"
+          />
+        </fieldset>
+        <fieldset v-if="supportsInstagram">
+          <label for="postToInstagram">{{ $t('pages.queue.post_to_instagram') }}</label>
+          <input
+            v-model="postToInstagram"
+            name="postToInstagram"
+            type="checkbox"
+            @click="showInstagram = !showInstagram"
+          />
         </fieldset>
         <b-button class="w-75 btn-post mt-2 mb-2 border-0" @click="onSubmit">
           {{ $t('pages.queue.post_new_tag') }} &nbsp;
@@ -66,6 +109,7 @@
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import Markdown from 'vue3-markdown-it'
+import { Settings } from '@/common/types'
 
 export default defineComponent({
   name: 'QueueSubmit',
@@ -79,6 +123,9 @@ export default defineComponent({
       mysteryImagePreview: '',
       postToReddit: false,
       postToTwitter: false,
+      showReddit: false,
+      showTwitter: false,
+      showInstagram: false,
     }
   },
   computed: {
@@ -91,19 +138,13 @@ export default defineComponent({
       'getGame',
     ]),
     supportsReddit() {
-      return !!this.getGame.subreddit
+      return !!this.getGame?.settings[Settings.SupportsReddit]
     },
     supportsTwitter() {
-      return false
+      return !!this.getGame?.settings[Settings.SupportsTwitter]
     },
-    twitterPostText() {
-      return `
-  Seattle BikeTag!
-  
-  This is bike tag number ${this.getQueuedTag.tagnumber} by ${this.getQueuedTag.foundPlayer}.
-  Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
-  
-  #SeattleBikeTag #SeaBikes #BikeSeattle`
+    supportsInstagram() {
+      return !!this.getGame?.settings[Settings.SupportsInstagram]
     },
     redditPostText() {
       return `
@@ -118,8 +159,38 @@ See all BikeTags and more, for ${this.getGameName}:
 [biketag.io](https://https://biketag.io) | [Leaderboard](https://https://biketag.io/leaderboard) | [Rules](https://https://biketag.io/#howto)
         `
     },
+    twitterPostText() {
+      return `
+  Seattle BikeTag!
+  
+  This is bike tag number ${this.getQueuedTag.tagnumber} by ${this.getQueuedTag.foundPlayer}.
+  Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
+  
+  #SeattleBikeTag #SeaBikes #BikeSeattle`
+    },
+    instgramPostText() {
+      return `
+[#${this.getQueuedTag.tagnumber} tag by ${this.getQueuedTag.foundPlayer}](https://biketag.io/#/${this.getQueuedTag.tagnumber})
+
+Credit goes to ${this.getQueuedTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
+
+"[${this.getQueuedTag.foundLocation}](https://biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
+
+See all BikeTags and more, for ${this.getGameName}:
+
+[biketag.io](https://https://biketag.io) | [Leaderboard](https://https://biketag.io/leaderboard) | [Rules](https://https://biketag.io/#howto)
+        `
+    },
+  },
+  mounted() {
+    this.postToReddit = this.showReddit = this.supportsReddit
+    this.postToTwitter = this.showTwitter = this.supportsTwitter
+    this.postToInstagram = this.showInstagram = this.supportsInstagram
   },
   methods: {
+    copyTabContents(text) {
+      navigator.clipboard.writeText(text)
+    },
     onSubmit() {
       const formAction = this.$refs.submitTag.getAttribute('action')
       const formData = new FormData(this.$refs.submitTag)
@@ -131,9 +202,13 @@ See all BikeTags and more, for ${this.getGameName}:
       submittedTag.mentionUrl = JSON.stringify({
         postToTwitter: this.postToTwitter,
       })
+      submittedTag.shareUrl = JSON.stringify({
+        postToInstagram: this.postToInstagram,
+      })
 
       formData.append('discussionUrl', submittedTag.discussionUrl)
       formData.append('mentionUrl', submittedTag.mentionUrl)
+      // formData.append('shareUrl', submittedTag.shareUrl)
 
       this.$emit('submit', {
         formAction,

@@ -106,6 +106,7 @@ export default defineComponent({
 
       &.polaroid.found-tag {
         margin-top: -175px;
+        padding-top: 175px;
         transform: rotate(-1deg);
       }
 

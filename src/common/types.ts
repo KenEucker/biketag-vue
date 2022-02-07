@@ -55,3 +55,11 @@ export enum BiketagFormSteps {
   queuePosted = 6,
   queueApprove = 7,
 }
+
+export enum Settings {
+  AutoPost = 'queue::autoPost',
+  Jingle = 'easter::jingle',
+  SupportsReddit = 'social::reddit',
+  SupportsTwitter = 'social::twitter',
+  SupportsInstagram = 'social::instagram',
+}
