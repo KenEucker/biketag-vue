@@ -8,6 +8,7 @@ export const handler = async (event) => {
   const payload = body.payload
   let success = false
 
+  console.log({ payload })
   if (payload) {
     const formName = payload.form_name
     const host = payload.site_url
