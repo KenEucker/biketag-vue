@@ -229,8 +229,7 @@ export const sendEmailsToAmbassadors = async (
   emailSubject: string,
   ambassadors: Ambassador[],
   getEmailData: (a?: Ambassador) => any,
-  sendToSuperAdmin = true,
-  template?: string
+  sendToSuperAdmin = true
 ): Promise<{ accepted: any[]; rejected: any[] }> => {
   let emailSent
   const accepted = []
@@ -250,7 +249,7 @@ export const sendEmailsToAmbassadors = async (
           ...defaultEmailData,
           ...getEmailData(ambassador),
         },
-        template ?? emailName
+        emailName
       )
       accepted.concat(emailSent.accepted)
       rejected.concat(emailSent.rejected)

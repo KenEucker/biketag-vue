@@ -55,7 +55,7 @@ export const handler = async (event) => {
         case 'submit-queued-tag':
           // send app notification
           emailSent = await sendEmailsToAmbassadors(
-            formName,
+            'submit-queued-tag',
             `A new BikeTag has been submitted for round #${tag.tagnumber} in [${gameName}]`,
             thisGamesAmbassadors,
             (a) => {
@@ -67,6 +67,7 @@ export const handler = async (event) => {
                   region: gameName,
                   playerIP,
                   goCurrentMystery: 'SEE CURRENT MYSTERY',
+                  currentMysteryHint: tag?.hint,
                   footerText: 'BikeTag is an OpenSource project that you can contribute to anytime',
                   goToQueueButton: 'GO TO QUEUE',
                   newBikeTagPlayedText: 'A new round of BikeTag has been played!',
@@ -76,6 +77,7 @@ export const handler = async (event) => {
                   goToApproveButton: 'Go to the Queue now to approve/dequeue this submission',
                   goToWebsiteLink: 'or go to portland.biketag.org now',
                   comparisonText: 'FOUND TAG COMPARED TO CURRENT MYSTERY LOCATION',
+                  foundLocation: 'FOUND HERE',
                   foundTagBlurb:
                     'This is what the player [Ken] submitted as the found location image and information. If there is a problem with this submission, please go to the Queue to resolve the issue.',
                   currentMysteryBlurb:
@@ -106,7 +108,7 @@ export const handler = async (event) => {
         default:
         case 'queue-tag-error':
           emailSent = await sendEmailsToAmbassadors(
-            formName,
+            'queue-tag-error',
             `An error has occured for [${game.name}] BikeTag`,
             thisGamesAmbassadors,
             () => {
