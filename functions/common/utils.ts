@@ -180,47 +180,45 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
   const htmlTemplateFilePath = `${templateFilePath}.liquid`
   const textTemplateFilePath = `${templateFilePath}--text.liquid`
 
-  if (existsSync(htmlTemplateFilePath)) {
+  try {
+    // if (existsSync(htmlTemplateFilePath)) {
     const htmlTemplate = readFileSync(htmlTemplateFilePath).toString()
     html = liquid.parseAndRenderSync(htmlTemplate, locals)
-  }
-  if (existsSync(textTemplateFilePath)) {
+    // }
+    // if (existsSync(textTemplateFilePath)) {
     const textTemplate = readFileSync(textTemplateFilePath).toString()
     text = liquid.parseAndRenderSync(textTemplate, locals)
+    // }
+  } catch (e) {
+    console.log({ e })
   }
 
   if (!html.length) {
     console.log({ templateFilePath, htmlTemplateFilePath })
   }
 
-  try {
-    const emailOpts = {
-      from: process.env.GOOGLE_EMAIL_ADDRESS, // sender address
-      to, // list of receivers
-      subject, // subject
-      text, // plain text body
-      html, // html body
-    }
-
-    const transporterOpts: any = {
-      auth: {
-        user: process.env.GOOGLE_EMAIL_ADDRESS,
-        pass: process.env.GOOGLE_PASSWORD,
-      },
-      service: 'gmail',
-    }
-
-    const transporter = nodemailer.createTransport(transporterOpts)
-
-    const info = await transporter.sendMail(emailOpts)
-
-    /// TODO: formulate the response into something usable
-    return info
-  } catch (e) {
-    console.log({ e })
+  const emailOpts = {
+    from: process.env.GOOGLE_EMAIL_ADDRESS, // sender address
+    to, // list of receivers
+    subject, // subject
+    text, // plain text body
+    html, // html body
   }
 
-  return Promise.resolve(false)
+  const transporterOpts: any = {
+    auth: {
+      user: process.env.GOOGLE_EMAIL_ADDRESS,
+      pass: process.env.GOOGLE_PASSWORD,
+    },
+    service: 'gmail',
+  }
+
+  const transporter = nodemailer.createTransport(transporterOpts)
+
+  const info = await transporter.sendMail(emailOpts)
+
+  /// TODO: formulate the response into something usable
+  return info
 }
 
 export const getEncodedExpiry = (data = {}, days = 2) => {
