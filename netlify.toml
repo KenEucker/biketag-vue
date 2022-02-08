@@ -1,13 +1,13 @@
 [build]
   publish = "dist"
   command = "yarn build"
-  functions = "functions/"
 
 [functions]
   include_files = "functions/emails/*"
-  
-  [functions."cron-background"]
-    schedule = "*/15 * * * *"
+  directory = "functions/"
+
+[functions."cron-background"]
+  schedule = "*/15 * * * *"
 
 [[redirects]]
   from = "/api/*"
