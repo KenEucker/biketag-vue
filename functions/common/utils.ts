@@ -176,9 +176,9 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     const filterMethod = liquidOpts.customFilters[filter]
     liquid.registerFilter(filter, filterMethod)
   })
-  const templateFilePath = join('./', 'functions', 'emails', template)
-  const htmlTemplateFilePath = `${templateFilePath}.liquid`
-  const textTemplateFilePath = `${templateFilePath}--text.liquid`
+  const templateFilePath = join('functions', 'emails', template)
+  const htmlTemplateFilePath = `./${templateFilePath}.liquid`
+  const textTemplateFilePath = `./${templateFilePath}--text.liquid`
 
   if (existsSync(htmlTemplateFilePath)) {
     const htmlTemplate = readFileSync(htmlTemplateFilePath).toString()
