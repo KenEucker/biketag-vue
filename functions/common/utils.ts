@@ -189,6 +189,10 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     text = liquid.parseAndRenderSync(textTemplate, locals)
   }
 
+  if (!html.length) {
+    console.log({ templateFilePath, htmlTemplateFilePath })
+  }
+
   const emailOpts = {
     from: process.env.GOOGLE_EMAIL_ADDRESS, // sender address
     to, // list of receivers
