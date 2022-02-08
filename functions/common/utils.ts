@@ -177,8 +177,8 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     liquid.registerFilter(filter, filterMethod)
   })
   const templateFilePath = join('functions', 'emails', template)
-  const htmlTemplateFilePath = `./${templateFilePath}.liquid`
-  const textTemplateFilePath = `./${templateFilePath}--text.liquid`
+  const htmlTemplateFilePath = `../${templateFilePath}.liquid`
+  const textTemplateFilePath = `../${templateFilePath}--text.liquid`
 
   try {
     // if (existsSync(htmlTemplateFilePath)) {
