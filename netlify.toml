@@ -5,6 +5,13 @@
 
 [functions."cron-background"]
   schedule = "*/15 * * * *"
+  include_files="functions/emails/*"
+
+[functions."cron"]
+  include_files="functions/emails/*"
+
+[functions."submission-created"]
+  include_files="functions/emails/*"
 
 [[redirects]]
   from = "/api/*"
