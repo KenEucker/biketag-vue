@@ -193,28 +193,34 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     console.log({ templateFilePath, htmlTemplateFilePath })
   }
 
-  const emailOpts = {
-    from: process.env.GOOGLE_EMAIL_ADDRESS, // sender address
-    to, // list of receivers
-    subject, // subject
-    text, // plain text body
-    html, // html body
+  try {
+    const emailOpts = {
+      from: process.env.GOOGLE_EMAIL_ADDRESS, // sender address
+      to, // list of receivers
+      subject, // subject
+      text, // plain text body
+      html, // html body
+    }
+
+    const transporterOpts: any = {
+      auth: {
+        user: process.env.GOOGLE_EMAIL_ADDRESS,
+        pass: process.env.GOOGLE_PASSWORD,
+      },
+      service: 'gmail',
+    }
+
+    const transporter = nodemailer.createTransport(transporterOpts)
+
+    const info = await transporter.sendMail(emailOpts)
+
+    /// TODO: formulate the response into something usable
+    return info
+  } catch (e) {
+    console.log({ e })
   }
 
-  const transporterOpts: any = {
-    auth: {
-      user: process.env.GOOGLE_EMAIL_ADDRESS,
-      pass: process.env.GOOGLE_PASSWORD,
-    },
-    service: 'gmail',
-  }
-
-  const transporter = nodemailer.createTransport(transporterOpts)
-
-  const info = await transporter.sendMail(emailOpts)
-
-  /// TODO: formulate the response into something usable
-  return info
+  return Promise.resolve(false)
 }
 
 export const getEncodedExpiry = (data = {}, days = 2) => {
