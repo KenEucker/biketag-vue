@@ -3,11 +3,11 @@
   command = "yarn build"
   functions = "functions/"
 
-[functions."cron-background"]
-  schedule = "*/15 * * * *"
-
 [functions]
   include_files = "functions/emails/*"
+
+[functions."cron-background"]
+  schedule = "*/15 * * * *"
 
 [[redirects]]
   from = "/api/*"
