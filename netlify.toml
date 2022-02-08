@@ -6,9 +6,6 @@
   include_files = "functions/emails/*"
   directory = "functions/"
 
-[functions."cron-background"]
-  schedule = "*/15 * * * *"
-
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
