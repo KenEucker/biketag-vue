@@ -140,7 +140,7 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     dynamicPartials: true,
     strict_filters: true,
     extname: '.liquid',
-    root: [join('src', 'emails')],
+    // root: [join('functions', 'emails')],
     customFilters: {
       biketag_image: (url = '', size = '') => {
         const ext = extname(url)
