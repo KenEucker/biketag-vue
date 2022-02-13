@@ -113,7 +113,7 @@ export default defineComponent({
     return {
       timer,
       BiketagFormSteps,
-      uploadInProgress: false,
+      uploadInProgress: true,
       countDown: 10,
     }
   },
@@ -127,7 +127,7 @@ export default defineComponent({
     ]),
   },
   async mounted() {
-    this.uploadInProgress = false
+    this.uploadInProgress = true
   },
   async created() {
     await this.$store.dispatch('setCurrentBikeTag')
@@ -262,7 +262,10 @@ export default defineComponent({
     padding: 0 1.5rem;
   }
 }
-.realign-spinner {
-  margin-left: -15%;
+
+@media (max-width: 620px) {
+  .realign-spinner {
+    margin-left: -15%;
+  }
 }
 </style>

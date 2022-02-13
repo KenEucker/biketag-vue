@@ -1,5 +1,5 @@
 import { builder, Handler } from '@netlify/functions'
-import { getBikeTagClientOpts, getPayloadOpts } from './common/utils'
+import { getBikeTagClientOpts, getPayloadOpts } from './common/methods'
 import { getDomainInfo, getImgurImageSized } from '../src/common/utils'
 import { BikeTagClient } from 'biketag'
 import request from 'request'

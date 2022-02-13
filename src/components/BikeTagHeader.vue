@@ -44,6 +44,7 @@
         <button v-if="!$auth.isAuthenticated.value" @click="login">{{ $t('menu.login') }}</button>
         <button v-if="$auth.isAuthenticated.value" @click="logout">{{ $t('menu.logout') }}</button>
       </div>
+      <netlify-identity-widget />
     </div>
     <audio id="biketag-jingle" ref="jingle">
       <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
@@ -56,9 +57,13 @@
 import { defineComponent, ref } from 'vue'
 import { mapGetters } from 'vuex'
 import { GetQueryString } from '@/common/utils'
+import NetlifyIdentityWidget from '@/components/NetlifyIdentityWidget.vue'
 
 export default defineComponent({
   name: 'BikeTagHeader',
+  components: {
+    NetlifyIdentityWidget,
+  },
   setup() {
     return {
       jingle: ref(null),
@@ -80,10 +85,15 @@ export default defineComponent({
       'getCurrentBikeTag',
       'getQueuedTags',
       'getEasterEgg',
+      'getMostRecentlyViewedTagnumber',
+      'getGameName',
     ]),
     authLoading() {
       return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
     },
+  },
+  mounted() {
+    this.checkForNewBikeTagPost()
   },
   async created() {
     const btaId = GetQueryString(window, 'btaId')
@@ -97,8 +107,22 @@ export default defineComponent({
     await this.$store.dispatch('setCurrentBikeTag')
     await this.$store.dispatch('setQueuedTags')
     await this.$store.dispatch('setPlayers')
+    this.checkForNewBikeTagPost()
   },
   methods: {
+    checkForNewBikeTagPost() {
+      if (
+        this.getCurrentBikeTag.tagnumber > this.getMostRecentlyViewedTagnumber &&
+        this.getMostRecentlyViewedTagnumber !== 0
+      ) {
+        console.log('ui::new biketag posted!!')
+        this.$toast.open({
+          message: `Round #${this.getCurrentBikeTag.tagnumber} of BikeTag ${this.getGameName} has been posted!`,
+          type: 'default',
+          position: 'top',
+        })
+      }
+    },
     login() {
       this.$auth.loginWithRedirect()
     },

@@ -1,7 +1,7 @@
 import { builder, Handler } from '@netlify/functions'
 import { BikeTagClient } from 'biketag'
 import request from 'request'
-import { getBikeTagClientOpts, getBikeTagHash, getPayloadAuthorization } from './common/utils'
+import { getBikeTagClientOpts, getBikeTagHash, getPayloadAuthorization } from './common/methods'
 
 const authorizeHandler: Handler = async (event) => {
   const authorization = getPayloadAuthorization(event)

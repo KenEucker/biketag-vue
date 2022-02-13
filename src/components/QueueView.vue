@@ -39,7 +39,6 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { mapGetters } from 'vuex'
-import 'vue-loading-overlay/dist/vue-loading.css'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'

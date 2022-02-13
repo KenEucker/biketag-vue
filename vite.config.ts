@@ -28,7 +28,7 @@ export default defineConfig({
     vue(),
     EnvironmentPlugin({
       /* Application Configuration */
-      USE_AUTHENTICATION: process.env.USE_AUTHENTICATION,
+      USE_AUTHENTICATION: process.env.USE_AUTHENTICATION ?? null,
       SUPER_ADMIN: process.env.SUPER_ADMIN ?? 'biketag@biketag.org',
       /* BikeTag Configuration */
       GAME_NAME: process.env.GAME_NAME ?? 'test',
@@ -96,7 +96,13 @@ export default defineConfig({
     injectHtml(),
   ],
   build: {
-    rollupOptions: {},
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/biketag.js`,
+        chunkFileNames: `assets/vendor.js`,
+        assetFileNames: `assets/[name].[ext]`,
+      },
+    },
   },
   // root: './public',
   server: {

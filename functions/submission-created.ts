@@ -1,7 +1,7 @@
 import { BikeTagClient } from 'biketag'
 import { Ambassador, Game } from 'biketag/lib/common/schema'
 import request from 'request'
-import { getBikeTagClientOpts, getEncodedExpiry, sendEmailsToAmbassadors } from './common/utils'
+import { getBikeTagClientOpts, getEncodedExpiry, sendEmailsToAmbassadors } from './common/methods'
 
 export const handler = async (event) => {
   const body = JSON.parse(event.body)

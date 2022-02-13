@@ -40,9 +40,16 @@
           ></expandable-image>
         </div>
         <div class="card-bottom">
-          <span class="description">{{ _foundDescription }}</span>
-          <player class="tag-player" :player="foundPlayer" :player-name="_foundPlayer" size="txt" />
-          <span v-if="showFoundPostedDateTime">{{ getPostedDate(tag.foundTime, true) }}</span>
+          <div class="description">
+            <span>{{ _foundDescription }}</span>
+            <player
+              class="tag-player"
+              :player="foundPlayer"
+              :player-name="_foundPlayer"
+              size="txt"
+            />
+            <span v-if="showFoundPostedDateTime">{{ getPostedDate(tag.foundTime, true) }}</span>
+          </div>
         </div>
       </b-card>
     </b-col>
@@ -216,7 +223,15 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped lang="scss">
+<style lang="scss">
+.polaroid.mystery-tag,
+.polaroid.found-tag {
+  .player-name {
+    margin-top: -1rem;
+  }
+}
+</style>
+<style lang="scss" scoped>
 .reversed {
   flex-flow: row-reverse;
 }

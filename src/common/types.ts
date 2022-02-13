@@ -32,6 +32,7 @@ export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight'
 
 export interface State {
   game: Game
+  allGames: Game[]
   gameName: string
   playerId: string
   ambassadorId: string
@@ -44,6 +45,7 @@ export interface State {
   formStep: number
   queuedTag: Tag
   isBikeTagAmbassador: boolean
+  mostRecentlyViewedTagnumber: number
 }
 
 export enum BiketagFormSteps {

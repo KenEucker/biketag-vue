@@ -120,6 +120,31 @@ export const getUuid = (playerIdCookieKey = 'playerId'): string => {
   return playerId
 }
 
+export const getMostRecentlyViewedBikeTagTagnumber = (
+  currentTagnumber: number,
+  mostRecentCookieKey = 'recentTagnumber'
+): number => {
+  const { cookies } = useCookies()
+  const existingMostRecent = cookies.get(mostRecentCookieKey)
+  let existingMostRecentNumber = 0
+
+  if (existingMostRecent) {
+    existingMostRecentNumber = parseInt(existingMostRecent)
+  }
+
+  if (currentTagnumber > 0) {
+    const currentTagnumberIsNewer =
+      (existingMostRecentNumber > 0 && currentTagnumber > existingMostRecentNumber) ||
+      existingMostRecentNumber === 0
+    cookies.set(mostRecentCookieKey, currentTagnumber.toString())
+
+    /// Return the numnber that was currently set, if it was set previously, regardless of what the most current tagnumber is
+    return currentTagnumberIsNewer ? existingMostRecentNumber : currentTagnumber
+  }
+
+  return 0
+}
+
 export const getAmbassadorUuid = (win: Window, ambassadorIdCookieKey = 'ambassadorId'): string => {
   const { cookies } = useCookies()
   const existingAmbassadorId = cookies.get('ambassadorId')

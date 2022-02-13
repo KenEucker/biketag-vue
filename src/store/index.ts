@@ -10,6 +10,7 @@ import {
   getAmbassadorUuid,
   getQueuedTagState,
   getSanityImageUrl,
+  getMostRecentlyViewedBikeTagTagnumber,
 } from '@/common/utils'
 import { BiketagFormSteps, State } from '@/common/types'
 
@@ -18,6 +19,7 @@ export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(window)
 const playerId = getUuid()
 const ambassadorId = getAmbassadorUuid(window)
+const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
 const options: any = {
@@ -37,6 +39,7 @@ export const store = createStore<State>({
   state: {
     gameName,
     game: {} as Game,
+    allGames: [] as Game[],
     currentBikeTag: {} as Tag,
     tags: [] as Tag[],
     playerId,
@@ -48,6 +51,7 @@ export const store = createStore<State>({
     formStep: BiketagFormSteps.queueView,
     queuedTag: {} as Tag,
     isBikeTagAmbassador: ambassadorId?.length > 0,
+    mostRecentlyViewedTagnumber,
   },
   actions: {
     setGame({ commit, state }) {
@@ -61,6 +65,23 @@ export const store = createStore<State>({
           return commit('SET_GAME', game)
         })
       }
+    },
+    setAllGames({ commit }) {
+      const biketagClient = new BikeTagClient({ ...options, game: undefined })
+      return biketagClient
+        .getGame(undefined, {
+          source: 'sanity',
+        })
+        .then((d) => {
+          if (d.success) {
+            const games = d.data as unknown as Game[]
+            const supportedGames = games.filter(
+              (g: Game) =>
+                g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length
+            )
+            return commit('SET_ALL_GAMES', supportedGames)
+          }
+        })
     },
     setCurrentBikeTag({ commit }) {
       return client.getTag().then((r) => {
@@ -276,6 +297,14 @@ export const store = createStore<State>({
         console.log('store::game', { game })
       }
     },
+    SET_ALL_GAMES(state, allGames) {
+      const oldState = state.allGames
+      state.allGames = allGames
+
+      if (oldState?.length !== allGames?.length) {
+        console.log('store::allGames', { allGames })
+      }
+    },
     SET_CURRENT_TAG(state, tag) {
       const oldState = state.currentBikeTag
       state.currentBikeTag = tag
@@ -448,6 +477,9 @@ export const store = createStore<State>({
     getGame(state) {
       return state.game
     },
+    getAllGames(state) {
+      return state.allGames
+    },
     getGameSlug(state) {
       return state.game?.slug
     },
@@ -477,12 +509,11 @@ export const store = createStore<State>({
       return state.gameName
     },
     getLogoUrl(state) {
-      return (size = '') => {
-        const logoUrl =
-          state.game?.logo?.indexOf('imgur.com') !== -1
-            ? state.game.logo
-            : getSanityImageUrl(state.game.logo, size, sanityBaseCDNUrl)
-        return logoUrl ? logoUrl : Promise.resolve(defaultLogo)
+      return (size = '', logo?: string) => {
+        logo = logo ? logo : state.game?.logo?.length ? state.game?.logo : defaultLogo
+        return logo?.indexOf('imgur.com') !== -1
+          ? logo
+          : getSanityImageUrl(logo, size, sanityBaseCDNUrl)
       }
     },
     getCurrentHint(state) {
@@ -508,6 +539,9 @@ export const store = createStore<State>({
     },
     getQueuedTag(state) {
       return state.queuedTag
+    },
+    getMostRecentlyViewedTagnumber(state) {
+      return getMostRecentlyViewedBikeTagTagnumber(state.currentBikeTag.tagnumber)
     },
   },
   modules: {},
