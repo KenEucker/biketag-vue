@@ -113,7 +113,7 @@ export default defineComponent({
     return {
       timer,
       BiketagFormSteps,
-      uploadInProgress: true,
+      uploadInProgress: false,
       countDown: 10,
     }
   },
@@ -127,7 +127,7 @@ export default defineComponent({
     ]),
   },
   async mounted() {
-    this.uploadInProgress = true
+    this.uploadInProgress = false
   },
   async created() {
     await this.$store.dispatch('setCurrentBikeTag')
