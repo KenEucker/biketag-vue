@@ -1,9 +1,9 @@
 <template>
   <div class="container align-self-center">
     <div v-if="isShow" class="menu-btn p-2">
-      <b-button class="btn-circle" variant="primary" @click="goBack">
+      <bike-tag-button class="btn-circle" variant="circle" @click="goBack">
         <i class="fa fa-long-arrow-alt-left" />
-      </b-button>
+      </bike-tag-button>
     </div>
   </div>
   <div class="container mt-2 mb-5">
@@ -15,34 +15,34 @@
         <span class="game-title">{{ getGameTitle }}</span>
       </div>
     </div>
-    <div>
-      <b-button class="m-1" variant="primary" @click="goBikeTagsPage">
-        {{ $t('menu.biketags') }}
-      </b-button>
-      <b-button class="m-1" variant="primary" @click="goQueuePlay">
-        {{ $t('menu.play') }}
-        <span>{{
-          !!getCurrentBikeTag?.tagnumber ? `#${getCurrentBikeTag.tagnumber + 1}` : ''
-        }}</span>
-      </b-button>
-      <b-button
+    <div class="nav-buttons align-center mt-4">
+      <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />
+      <bike-tag-button variant="bold" :text="$t('menu.play')" @click="goQueuePlay" />
+      <bike-tag-button :text="$t('menu.howto')" @click="goHowPage" />
+      <bike-tag-button
         v-if="getQueuedTags?.length && tagnumber === 0"
         class="btn-queue"
+        variant="circle"
         @click="goQueueView"
       >
-        <img class="bicon" src="../assets/images/SpinningBikeV1.svg" />
-      </b-button>
-      <b-button class="m-1" variant="primary" @click="goHowPage">
-        {{ $t('menu.howto') }}
-      </b-button>
+        <img class="spinning-bike" src="../assets/images/SpinningBikeV2.svg" />
+      </bike-tag-button>
       <span
         v-if="getEasterEgg && playingEaster"
         class="fas fa-volume-mute"
         @click="muteEasterEgg"
       ></span>
       <div v-if="authLoading">
-        <button v-if="!$auth.isAuthenticated.value" @click="login">{{ $t('menu.login') }}</button>
-        <button v-if="$auth.isAuthenticated.value" @click="logout">{{ $t('menu.logout') }}</button>
+        <bike-tag-button
+          v-if="!$auth.isAuthenticated.value"
+          :text="$t('menu.login')"
+          @click="login"
+        />
+        <bike-tag-button
+          v-if="$auth.isAuthenticated.value"
+          :text="$t('menu.logout')"
+          @click="logout"
+        />
       </div>
       <netlify-identity-widget />
     </div>
@@ -58,11 +58,13 @@ import { defineComponent, ref } from 'vue'
 import { mapGetters } from 'vuex'
 import { GetQueryString } from '@/common/utils'
 import NetlifyIdentityWidget from '@/components/NetlifyIdentityWidget.vue'
+import BikeTagButton from '@/components/BikeTagButton.vue'
 
 export default defineComponent({
   name: 'BikeTagHeader',
   components: {
     NetlifyIdentityWidget,
+    BikeTagButton,
   },
   setup() {
     return {
@@ -178,15 +180,18 @@ export default defineComponent({
   margin: auto;
 }
 
+.nav-buttons {
+}
+
 .bt-bicycle {
   background-size: cover;
   background-position: center;
 }
 
 .btn-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 30px;
+  // width: 40px;
+  // height: 40px;
+  // border-radius: 30px;
   display: flex;
   cursor: pointer;
   justify-content: center;
@@ -214,9 +219,9 @@ export default defineComponent({
 }
 
 .btn-queue {
-  .bicon {
+  animation: tronFilter 5s ease-in-out infinite alternate;
+  .spinning-bike {
     max-height: 3.5em;
-    animation: tronFilter 5s ease-in-out infinite alternate;
   }
 }
 </style>

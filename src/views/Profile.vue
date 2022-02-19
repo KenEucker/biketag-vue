@@ -1,6 +1,6 @@
 <template>
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
-    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
+    <img class="spinner" src="../assets/images/SpinningBikeV2.svg" />
   </loading>
   <div class="container">
     YOU MADE IT!

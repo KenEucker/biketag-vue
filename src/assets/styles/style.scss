@@ -9,6 +9,15 @@ html {
   min-height: 100vh;
   color: $app-color;
   background: $app-bg;
+  
+  .align-center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .flex-columns {
+    flex-direction: column;
+  }
 
   .spinner {
     animation-name: spin;

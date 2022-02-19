@@ -6,24 +6,24 @@
       <h3>{{ $t('pages.about.article1.title') }}</h3>
       <html-content filename="about-game.html" />
       <p>
-        <b-button
+        <bike-tag-button
           variant="secondary"
           class="m-1"
           onclick="window.open('https://patreon.com/biketag')"
         >
           {{ $t('pages.about.article1.support_biketag') }}
-        </b-button>
+        </bike-tag-button>
       </p>
       <h3>{{ $t('pages.about.article2.title') }}</h3>
       <html-content filename="about-app.html" />
       <p>
-        <b-button
+        <bike-tag-button
           variant="primary"
           class="m-1"
           onclick="window.open('https://patreon.com/biketag')"
         >
           {{ $t('pages.about.article2.become_player') }}
-        </b-button>
+        </bike-tag-button>
       </p>
       <div class="m-auto games">
         <div v-for="(game, index) in getAllGames" :key="index" class="biketag-game">
@@ -39,11 +39,13 @@
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import HtmlContent from '@/components/HtmlContent.vue'
+import BikeTagButton from '@/components/BikeTagButton.vue'
 
 export default defineComponent({
   name: 'AboutView',
   components: {
     HtmlContent,
+    BikeTagButton,
   },
   computed: {
     ...mapGetters(['getAllGames', 'getLogoUrl']),
@@ -67,6 +69,6 @@ export default defineComponent({
 }
 
 img {
-  max-width: 10em;
+  max-width: fit-content;
 }
 </style>

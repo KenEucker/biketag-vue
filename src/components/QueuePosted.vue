@@ -3,18 +3,22 @@
     <h3 class="queue-title">{{ $t('pages.queue.posted_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.posted_text') }}</p>
     <div class="mt-3">
-      <b-button class="w-75 btn-found border-0" @click="goViewQueue">
+      <bike-tag-button @click="goViewQueue">
         {{ $t('pages.queue.joined_button') }} #{{ getCurrentBikeTag?.tagnumber }}
-      </b-button>
+      </bike-tag-button>
     </div>
   </b-container>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import BikeTagButton from '@/components/BikeTagButton.vue'
 
 export default defineComponent({
   name: 'QueuePosted',
+  components: {
+    BikeTagButton,
+  },
   computed: {
     ...mapGetters(['getCurrentBikeTag']),
   },

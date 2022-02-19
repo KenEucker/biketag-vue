@@ -53,7 +53,7 @@
         </b-tab>
       </b-tabs>
       <p v-if="supportsReddit || supportsTwitter || supportsInstagram" class="queue-text">
-        {{ $t('pages.queue.submit_text') }} #{{ getCurrentBikeTag?.tagnumber + 1 }}!
+        {{ $t('pages.queue.submit_text') }}
       </p>
       <p v-else class="queue-text">
         {{ $t('pages.queue.submit_text_no_autopost') }}
@@ -98,9 +98,9 @@
             @click="showInstagram = !showInstagram"
           />
         </fieldset>
-        <b-button class="w-75 btn-post mt-2 mb-2 border-0" @click="onSubmit">
+        <bike-tag-button class="w-75 btn-post mt-2 mb-2 border-0" @click="onSubmit">
           {{ $t('pages.queue.post_new_tag') }} &nbsp;
-        </b-button>
+        </bike-tag-button>
       </form>
     </div>
   </b-container>
@@ -110,11 +110,13 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import Markdown from 'vue3-markdown-it'
 import { Settings } from '@/common/types'
+import BikeTagButton from '@/components/BikeTagButton.vue'
 
 export default defineComponent({
   name: 'QueueSubmit',
   components: {
     Markdown,
+    BikeTagButton,
   },
   emits: ['submit'],
   data() {

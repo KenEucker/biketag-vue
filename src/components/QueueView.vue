@@ -29,10 +29,15 @@
         />
       </swiper-slide>
     </swiper>
-    <bike-tag-queue :pagination-ref="controlledSwiper" />
-    <b-button v-if="showGoNextButton()" class="mb-2" @click="goNextQueueStep">{{
-      goNextQueueStepButtonText
-    }}</b-button>
+    <div class="container align-center">
+      <bike-tag-queue :pagination-ref="controlledSwiper" />
+      <bike-tag-button
+        v-if="showGoNextButton()"
+        class="go-next-button"
+        :text="goNextQueueStepButtonText"
+        @click="goNextQueueStep"
+      />
+    </div>
   </div>
 </template>
 
@@ -46,6 +51,7 @@ import { stringifyNumber } from '@/common/utils'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import { BiketagFormSteps } from '@/common/types'
+import BikeTagButton from '@/components/BikeTagButton.vue'
 
 SwiperCore.use([Pagination])
 
@@ -56,6 +62,7 @@ export default defineComponent({
     SwiperSlide,
     BikeTag,
     BikeTagQueue,
+    BikeTagButton,
   },
   setup() {
     const controlledSwiper = ref(null)
@@ -112,6 +119,14 @@ export default defineComponent({
       &.polaroid.mystery-tag {
         transform: rotate(1deg);
       }
+    }
+
+    .container.align-center {
+      flex-flow: wrap;
+    }
+    
+    .go-next-button span {
+      min-width: 12em;
     }
 
     .swiper-pagination {

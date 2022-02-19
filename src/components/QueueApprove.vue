@@ -66,7 +66,7 @@
           >
             <input type="hidden" name="form-name" value="approve-queued-tag" />
             <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
-            <b-button
+            <bike-tag-button
               class="w-75 btn-approve mt-2 mb-2 border-0"
               variant="primary"
               @click="onSubmit"
@@ -75,7 +75,7 @@
               {{ $t('pages.queue.approve_new_tag_from') }}&nbsp;#{{ selectedTagPlayer() }}&nbsp;({{
                 mysteryPlayer()
               }})
-            </b-button>
+            </bike-tag-button>
           </form>
         </div>
         <div class="col-md-6">
@@ -90,9 +90,9 @@
           >
             <input type="hidden" name="form-name" value="dequeue-queued-tag" />
             <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
-            <b-button class="w-75 mt-2 mb-2 border-0" variant="danger" @click="dequeueTag">
+            <bike-tag-button class="w-75 mt-2 mb-2 border-0" variant="danger" @click="dequeueTag">
               {{ $t('pages.queue.dequeue_queued_tag') }} &nbsp;
-            </b-button>
+            </bike-tag-button>
           </form>
         </div>
         <span class="user-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
@@ -110,6 +110,7 @@ import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
+import BikeTagButton from '@/components/BikeTagButton.vue'
 
 SwiperCore.use([Pagination])
 
@@ -120,6 +121,7 @@ export default defineComponent({
     SwiperSlide,
     BikeTag,
     BikeTagQueue,
+    BikeTagButton,
   },
   emits: ['submit'],
   setup() {

@@ -38,7 +38,7 @@
       </div>
       <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
       <div class="mt-3">
-        <b-form-input
+        <bike-tag-input
           id="player"
           v-model="player"
           name="player"
@@ -47,7 +47,7 @@
         />
       </div>
       <div>
-        <b-form-input
+        <bike-tag-input
           id="hint"
           v-model="hint"
           name="hint"
@@ -55,10 +55,10 @@
         />
       </div>
       <div class="mt-3">
-        <b-button class="w-75 btn-mystery border-0" @click="onSubmit">
+        <bike-tag-button class="w-75 btn-mystery border-0" @click="onSubmit">
           {{ `${$t('pages.queue.submit_new_tag')} ${$t('pages.queue.queue_postfix')}` }} &nbsp;
           <i class="fas fa-check-square" /> *
-        </b-button>
+        </bike-tag-button>
       </div>
     </form>
   </b-container>
@@ -66,9 +66,15 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagInput from '@/components/BikeTagInput.vue'
 
 export default defineComponent({
   name: 'QueueMysteryTag',
+  components: {
+    BikeTagButton,
+    BikeTagInput,
+  },
   props: {
     tag: {
       type: Object,

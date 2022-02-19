@@ -399,7 +399,7 @@ export const store = createStore<State>({
           oldState?.discussionUrl !== data?.discussionUrl ||
           oldState?.mentionUrl !== data?.mentionUrl
         ) {
-          state.formStep = BiketagFormSteps.queueSubmit
+          state.formStep = BiketagFormSteps.queuePostedShare
         } else {
           state.formStep = BiketagFormSteps.queueMystery
         }

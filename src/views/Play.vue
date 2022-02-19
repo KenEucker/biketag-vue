@@ -1,7 +1,7 @@
 <template>
   <div class="container col-lg-8 play-biketag">
     <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
-      <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
+      <img class="spinner" src="../assets/images/SpinningBikeV2.svg" />
     </loading>
     <div v-if="getCurrentBikeTag" class="rel">
       <b-button

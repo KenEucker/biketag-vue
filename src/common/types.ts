@@ -55,6 +55,7 @@ export enum BiketagFormSteps {
   queueMystery = 4,
   queueSubmit = 5,
   queuePosted = 6,
+  queuePostedShare = 6.5,
   queueApprove = 7,
 }
 

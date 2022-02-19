@@ -37,17 +37,15 @@
         />
       </div>
       <p class="queue-text">{{ $t('pages.queue.found_text') }}</p>
-      <div>
-        <b-form-input
+      <div class="mt-3">
+        <bike-tag-input
           id="found"
           v-model="location"
           name="found"
           required
           :placeholder="$t('pages.queue.location_placeholder')"
         />
-      </div>
-      <div class="mt-3">
-        <b-form-input
+        <bike-tag-input
           id="player"
           v-model="player"
           name="player"
@@ -56,10 +54,10 @@
         />
       </div>
       <div class="mt-3">
-        <b-button class="w-75 btn-found border-0" type="submit">
+        <bike-tag-button type="submit">
           {{ `${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}` }} &nbsp;
           <i class="fas fa-check-square" /> *
-        </b-button>
+        </bike-tag-button>
       </div>
     </form>
   </b-container>
@@ -67,9 +65,15 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagInput from '@/components/BikeTagInput.vue'
 
 export default defineComponent({
   name: 'QueueFoundTag',
+  components: {
+    BikeTagButton,
+    BikeTagInput,
+  },
   props: {
     tag: {
       type: Object,
