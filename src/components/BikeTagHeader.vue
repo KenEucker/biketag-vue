@@ -6,7 +6,7 @@
       </bike-tag-button>
     </div>
   </div>
-  <div class="container mt-2 mb-5 resp">
+  <div class="container mt-2 mb-5">
     <div class="header-logo">
       <a href="./">
         <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
