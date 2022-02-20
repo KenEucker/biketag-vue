@@ -76,6 +76,11 @@ export default defineComponent({
     line-height: 1.5em;
     max-width: fit-content;
     min-width: 10em;
+
+    @media (max-width : 1200px) {
+      font-size: 1em;
+      min-width: 8em;
+    }
   }
   .button--children {
     z-index: 1;
@@ -101,6 +106,10 @@ export default defineComponent({
     // .scribble-text--inner {
     color: white;
     // }
+
+    @media (max-width : 600px) {
+      font-size: 1em;
+    }
   }
 
   &.cirlce {

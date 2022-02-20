@@ -42,7 +42,7 @@ export default defineComponent({
   input {
     border: none;
     position: absolute;
-    top: 2em;
+    top: calc(100% / 3);
     margin-left: 2em;
     width: 80%;
   }
@@ -52,10 +52,12 @@ export default defineComponent({
 .biketag-input {
   max-width: 25em;
   position: relative;
+  margin: 0 auto;
 
   img {
     z-index: -1;
     width: 100%;
+    min-width: 280px;
   }
 
   .svg {

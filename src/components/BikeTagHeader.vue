@@ -181,6 +181,18 @@ export default defineComponent({
 }
 
 .nav-buttons {
+  @media (max-width: 490px){
+    flex-flow: column;
+    justify-content: space-between!important;
+    align-items: center;
+    height: 250px;
+  }
+}
+
+.container.mb-5.mt-2 {
+  @media (max-width: 490px){
+    margin-bottom: 0!important;
+  }
 }
 
 .bt-bicycle {
