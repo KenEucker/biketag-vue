@@ -5,6 +5,11 @@ html {
   height: 100%;
 }
 
+body {
+  background: $app-bg;
+  color: $app-color;
+}
+
 #app {
   min-height: 100vh;
   color: $app-color;

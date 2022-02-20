@@ -1007,6 +1007,11 @@
   resolved "https://registry.yarnpkg.com/@bugsnag/safe-json-stringify/-/safe-json-stringify-6.0.0.tgz#22abdcd83e008c369902976730c34c150148a758"
   integrity sha512-htzFO1Zc57S8kgdRK9mLcPVTW1BY2ijfH7Dk2CeZmspTWKdKqSo1iwmqrq2WtRjFlo8aRZYgLX0wFrDXF/9DLA==
 
+"@croquet/croquet@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@croquet/croquet/-/croquet-1.0.5.tgz#67fb16b6d261904540efbd3986b53e601146a970"
+  integrity sha512-BM6sIan7EBs13q/fBG5HvHBR1r5gZtD2nAN5tx0WZnnvCr/iIxMzgYg3XcJqOKooA7sRfzMDtMZSyCA8MaSWVw==
+
 "@cspotcode/source-map-consumer@0.8.0":
   version "0.8.0"
   resolved "https://registry.yarnpkg.com/@cspotcode/source-map-consumer/-/source-map-consumer-0.8.0.tgz#33bf4b7b39c178821606f669bbc447a6a629786b"

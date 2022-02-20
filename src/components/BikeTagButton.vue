@@ -73,7 +73,8 @@ export default defineComponent({
   .scribble-text--inner {
     z-index: 2;
     background: transparent;
-    font-size: 1rem;
+    font-size: 2rem;
+    min-width: 6rem;
 
     @media (min-width: 500px) {
       font-size: 2.5rem;
@@ -110,6 +111,10 @@ export default defineComponent({
     margin-top: 1em;
     font-size: 2rem;
     color: white;
+
+    .scribble-text--inner {
+      min-width: 8rem;
+    }
 
     @media (min-width: 500px) {
       font-size: 3rem;

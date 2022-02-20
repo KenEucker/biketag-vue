@@ -35,16 +35,27 @@ export const getBikeTagClientOpts = (
     opts.imgur.accessToken = process.env.IMGUR_ACCESS_TOKEN
     opts.imgur.refreshToken = process.env.IMGUR_REFRESH_TOKEN
 
+    opts.reddit = opts.reddit ?? {}
+    opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
+    opts.reddit.clientSecret = process.env.REDDIT_CLIENT_SECRET
+    /// TODO: comes from sanity game settings
+    // opts.reddit.username = process.env.REDDIT_USERNAME
+    // opts.reddit.password = process.env.REDDIT_PASSWORD
+
     opts.sanity = opts.sanity ?? {}
     opts.sanity.projectId = process.env.SANITY_PROJECT_ID
     opts.sanity.dataset = process.env.SANITY_DATASET
 
     if (admin) {
-      opts.imgur = opts.imgur ?? {}
       opts.imgur.clientId = process.env.IMGUR_ADMIN_CLIENT_ID ?? opts.imgur.clientId
       opts.imgur.clientSecret = process.env.IMGUR_ADMIN_CLIENT_SECRET ?? opts.imgur.clientSecret
       opts.imgur.accessToken = process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? ''
       opts.imgur.refreshToken = process.env.IMGUR_ADMIN_REFRESH_TOKEN ?? opts.imgur.refreshToken
+
+      opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
+      opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
+      opts.reddit.username = process.env.REDDIT_ADMIN_USERNAME
+      opts.reddit.password = process.env.REDDIT_ADMIN_PASSWORD
     }
   }
 
@@ -515,20 +526,42 @@ export const setNewBikeTagPost = async (
     }
 
     if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
-      /// TODO: REMOVE LEGACY HACK
-      axios
-        .get(`https://${game.name}.biketag.org?flushCache=true&resendNotification=true`)
-        .catch((e) => {
-          /// Unimportant
-        })
-      ////
+      const newPostedBikeTag = newBikeTagUpdateResult.data as unknown as Tag
+      const postToReddit = true
+      if (postToReddit) {
+        const postedToRedditResult = await biketag.updateTag(newPostedBikeTag, { source: 'reddit' })
+        if (postedToRedditResult.success) {
+          results.push({
+            message: 'new BikeTag posted to Reddit',
+            game: game.name,
+            tag: postedToRedditResult.data,
+          })
+        } else {
+          results.push({
+            message: 'new BikeTag was not posted to Reddit',
+            error: postedToRedditResult.error,
+            game: game.name,
+            tag: newPostedBikeTag,
+          })
+          errors = true
+        }
+      } else {
+        /// TODO: REMOVE LEGACY HACK
+        axios
+          .get(`https://${game.name}.biketag.org?flushCache=true&resendNotification=true`)
+          .catch((e) => {
+            /// Unimportant
+          })
+        ////
+      }
+
       const ambassadors = (await biketag.ambassadors(undefined, {
         source: 'sanity',
       })) as Ambassador[]
       const thisGamesAmbassadors = ambassadors.filter(
         (a) => game.ambassadors.indexOf(a.name) !== -1
       )
-      const winningTagnumber = (newBikeTagUpdateResult.data as unknown as Tag).tagnumber
+      const winningTagnumber = newPostedBikeTag.tagnumber
       const host = `https://${game.name}.biketag.io`
       const logo = game.logo?.length
         ? game.logo.indexOf('imgur.co') !== -1

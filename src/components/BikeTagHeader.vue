@@ -1,6 +1,6 @@
 <template>
   <div class="biketag-header">
-    <div class="container align-self-center">
+    <div class="container mt-2 mb-5">
       <div v-if="isShow" class="menu-btn p-2">
         <bike-tag-button class="btn-circle" variant="circle" @click="goBack">
           <img
@@ -10,8 +10,6 @@
           <!-- <i class="fa back-button fa-long-arrow-alt-left" /> -->
         </bike-tag-button>
       </div>
-    </div>
-    <div class="container mt-2 mb-5">
       <div class="header-logo">
         <a href="./">
           <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
@@ -24,14 +22,6 @@
         <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />
         <bike-tag-button variant="bold" :text="$t('menu.play')" @click="goQueuePlay" />
         <bike-tag-button :text="$t('menu.howto')" @click="goHowPage" />
-        <bike-tag-button
-          v-if="getQueuedTags?.length && tagnumber === 0"
-          class="btn-queue"
-          variant="circle"
-          @click="goQueueView"
-        >
-          <img class="spinning-bike" src="../assets/images/SpinningBikeV1.svg" />
-        </bike-tag-button>
         <span
           v-if="getEasterEgg && playingEaster"
           class="fas fa-volume-mute"
@@ -55,6 +45,14 @@
         <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
         Your browser does not support the audio element.
       </audio>
+      <bike-tag-button
+        v-if="getQueuedTags?.length && tagnumber === 0"
+        class="btn-queue"
+        variant="circle"
+        @click="goQueueView"
+      >
+        <img class="spinning-bike" src="../assets/images/SpinningBikeV1.svg" />
+      </bike-tag-button>
     </div>
   </div>
 </template>
@@ -198,12 +196,11 @@ export default defineComponent({
   }
 
   .nav-buttons {
-    @media (max-width: 490px) {
-      flex-flow: column;
-      justify-content: space-between !important;
-      align-items: center;
-      height: 250px;
-    }
+    // @media (min-width: 490px) {
+    //   flex-flow: column;
+    //   justify-content: space-between !important;
+    //   align-items: center;
+    // }
   }
 
   .bt-bicycle {
@@ -212,9 +209,6 @@ export default defineComponent({
   }
 
   .btn-circle {
-    // width: 40px;
-    // height: 40px;
-    // border-radius: 30px;
     display: flex;
     cursor: pointer;
     justify-content: center;
@@ -232,12 +226,13 @@ export default defineComponent({
   .btn-queue {
     position: absolute;
     top: 0;
-    right: -25px;
     z-index: 99;
+    left: 70%;
     font-size: 1.25em;
     background-color: transparent !important;
     border-color: transparent !important;
     animation: tronFilter 5s ease-in-out infinite alternate;
+    // right: -2em;
 
     .scribble-svg {
       height: 72% !important;
@@ -252,6 +247,12 @@ export default defineComponent({
     .spinning-bike {
       max-height: 3.5em;
       max-width: fit-content;
+    }
+  }
+
+  @media (min-width: 500px) {
+    .btn-queue {
+      // right: 2em;
     }
   }
 }
