@@ -106,7 +106,7 @@ export default defineConfig({
   },
   // root: './public',
   server: {
-    host: 'portland.localhost',
+    host: 'localhost',
     port: 8080,
   },
   preview: {

@@ -6,7 +6,7 @@
       </bike-tag-button>
     </div>
   </div>
-  <div class="container mt-2 mb-5">
+  <div class="container mt-2 mb-5 resp">
     <div class="header-logo">
       <a href="./">
         <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
@@ -181,6 +181,18 @@ export default defineComponent({
 }
 
 .nav-buttons {
+  @media (max-width: 490px){
+    flex-flow: column;
+    justify-content: space-between!important;
+    align-items: center;
+    height: 250px;
+  }
+}
+
+.container.mb-5.mt-2 {
+  @media (max-width: 490px){
+    margin-bottom: 0!important;
+  }
 }
 
 .bt-bicycle {

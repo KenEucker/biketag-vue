@@ -53,7 +53,7 @@
           :placeholder="$t('pages.queue.name_placeholder')"
         />
       </div>
-      <div class="mt-3">
+      <div class="mt-3 mb-3">
         <bike-tag-button type="submit">
           {{ `${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}` }} &nbsp;
           <i class="fas fa-check-square" /> *
@@ -130,12 +130,34 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="scss">
+div.mt-3.mb-3 {
+  button.scribble-button{
+    div.button--children.scribble-text{
+      width: 235px;
+    }
+  }
+
+}
+</style>
 <style scoped lang="scss">
 .custom-file-upload {
   border-radius: 2rem;
   display: inline-block;
   padding: 6px 12px;
   cursor: pointer;
+}
+
+div.mt-3.mb-3 {
+  display: flex;
+  justify-content: center;
+
+  button.scribble-button{
+    div.button--children.scribble-text{
+      width: 235px;
+    }
+  }
+
 }
 
 .click-me {
