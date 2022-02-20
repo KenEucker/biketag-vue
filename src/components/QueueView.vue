@@ -124,7 +124,7 @@ export default defineComponent({
     .container.align-center {
       flex-flow: wrap;
     }
-    
+
     .go-next-button span {
       min-width: 12em;
     }

@@ -275,7 +275,7 @@ export const sendEmailsToAmbassadors = async (
         emailSubject,
         {
           ...defaultEmailData,
-          ...getEmailData(),
+          ...getEmailData({ id: superAdmin } as unknown as Ambassador),
         },
         emailName
       )
@@ -540,6 +540,7 @@ export const setNewBikeTagPost = async (
         `New BikeTag Round (#${winningTagnumber}) Auto-Posted for [${game.name}]`,
         thisGamesAmbassadors,
         (a) => {
+          console.log({ a })
           return {
             currentBikeTag: currentBikeTagUpdateResult.data,
             newBikeTagPost: newBikeTagUpdateResult.data,

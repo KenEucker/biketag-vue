@@ -439,7 +439,10 @@ export const store = createStore<State>({
       }
     },
     SET_FORM_STEP_TO_JOIN(state, force) {
-      const setQueudState = state.formStep !== BiketagFormSteps.queueJoined || force
+      const setQueudState =
+        (state.formStep !== BiketagFormSteps.queueJoined &&
+          state.formStep !== BiketagFormSteps.queueApprove) ||
+        force
       const oldState = state.formStep
       if (setQueudState && state.queuedTag) {
         state.formStep = getQueuedTagState(state.queuedTag)
