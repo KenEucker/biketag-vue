@@ -27,7 +27,8 @@
       </p>
       <div class="m-auto games">
         <div v-for="(game, index) in getAllGames" :key="index" class="biketag-game">
-          <a :href="`https://${game.name}.biketag.io`"> <img :src="getLogoUrl('s', game.logo)" /> </a
+          <a :href="`https://${game.name}.biketag.io`">
+            <img :src="getLogoUrl('s', game.logo)" /> </a
           ><br />
         </div>
       </div>
@@ -66,9 +67,11 @@ export default defineComponent({
 
 .about {
   flex-direction: column;
-}
 
-img {
-  max-width: fit-content;
+  .biketag-game {
+    img {
+      max-width: 12em;
+    }
+  }
 }
 </style>
