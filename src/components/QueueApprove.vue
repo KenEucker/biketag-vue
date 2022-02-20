@@ -1,9 +1,9 @@
 <template>
-  <div v-if="!getQueuedTags.length">
+  <div v-if="!getQueuedTags.length" class="queue-approve-tag container">
     <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.empty_text') }}</p>
   </div>
-  <div v-else class="container queue-approve">
+  <div v-else class="queue-approve-tag container queue-approve">
     <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.approve_text') }}</p>
 

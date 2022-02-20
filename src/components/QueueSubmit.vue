@@ -1,5 +1,5 @@
 <template>
-  <b-container class="submit-queue">
+  <b-container class="queue-submit">
     <div>
       <h3 class="queue-title">{{ $t('pages.queue.submit_title') }}</h3>
     </div>
@@ -98,9 +98,11 @@
             @click="showInstagram = !showInstagram"
           />
         </fieldset>
-        <bike-tag-button class="w-75 btn-post mt-2 mb-2 border-0" @click="onSubmit">
-          {{ $t('pages.queue.post_new_tag') }} &nbsp;
-        </bike-tag-button>
+        <bike-tag-button
+          variant="medium"
+          :text="$t('pages.queue.post_new_tag')"
+          @click="onSubmit"
+        />
       </form>
     </div>
   </b-container>
@@ -223,7 +225,7 @@ See all BikeTags and more, for ${this.getGameName}:
 })
 </script>
 <style lang="scss">
-.submit-queue {
+.queue-submit {
   .nav-tabs {
     margin-bottom: -6px;
 
@@ -235,7 +237,7 @@ See all BikeTags and more, for ${this.getGameName}:
 }
 </style>
 <style scoped lang="scss">
-.submit-queue {
+.queue-submit {
   .tab-logo {
     max-width: 2em;
   }

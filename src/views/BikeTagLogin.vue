@@ -273,7 +273,7 @@ export default {
   height: 296.1539001464844px;
   display: flex;
   position: absolute;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) ;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
   align-items: flex-start;
   flex-shrink: 1;
@@ -515,7 +515,7 @@ export default {
   height: 55.000003814697266px;
   display: flex;
   position: absolute;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) ;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
   align-items: flex-start;
   flex-shrink: 1;
@@ -561,7 +561,7 @@ export default {
   height: 73px;
   display: flex;
   position: absolute;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) ;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
   align-items: flex-start;
   flex-shrink: 1;
@@ -607,7 +607,7 @@ export default {
   height: 55.000003814697266px;
   display: flex;
   position: absolute;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) ;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
   align-items: flex-start;
   flex-shrink: 1;
@@ -862,7 +862,7 @@ export default {
   height: 48px;
   display: flex;
   position: absolute;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) ;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
   align-items: flex-start;
   flex-shrink: 1;

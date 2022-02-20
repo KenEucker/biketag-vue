@@ -1,5 +1,5 @@
 <template>
-  <b-container class="submit-queue">
+  <b-container class="queue-posted-share">
     <h3 class="queue-title">{{ $t('pages.queue.posted_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.posted_text') }}</p>
     <div>
@@ -99,6 +99,7 @@
         </fieldset>
         <div class="mt-3 align-center">
           <bike-tag-button
+            variant="medium"
             class="mt-2 mb-2 border-0"
             :text="$t('pages.queue.post_new_tag')"
             @click="onSubmit"
@@ -237,7 +238,7 @@ See all BikeTags and more, for ${this.getGameName}:
 })
 </script>
 <style lang="scss">
-.submit-queue {
+.queue-posted-share {
   .nav-tabs {
     margin-bottom: -6px;
 
@@ -249,7 +250,7 @@ See all BikeTags and more, for ${this.getGameName}:
 }
 </style>
 <style scoped lang="scss">
-.submit-queue {
+.queue-posted-share {
   .tab-logo {
     max-width: 2em;
   }

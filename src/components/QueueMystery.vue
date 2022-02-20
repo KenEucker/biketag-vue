@@ -1,5 +1,5 @@
 <template>
-  <b-container class="col-md-8 col-lg-8">
+  <b-container class="queue-mystery-tag col-md-8 col-lg-8">
     <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3>
     <div>
       <img v-if="preview" :src="preview" class="img-fluid" />
@@ -10,57 +10,60 @@
         @click="$refs.file.click()"
       />
     </div>
-    <form
-      ref="mysteryTag"
-      name="queue-mystery-tag"
-      action="queue-mystery-tag"
-      method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="bot-field"
-      @submit.prevent="onSubmit"
-    >
-      <input type="hidden" name="form-name" value="queue-mystery-tag" />
-      <input type="hidden" name="playerId" :value="getPlayerId" />
-      <input v-model="mysteryImageUrl" type="hidden" name="mysteryImageUrl" />
-      <div class="p-3">
-        <label for="file-upload" class="btn-upload custom-file-upload">
-          <i class="fa fa-camera" />
-        </label>
-        <input
-          id="file-upload"
-          ref="file"
-          type="file"
-          class="d-none"
-          accept="image/*"
-          required
-          @change="setImage"
-        />
-      </div>
-      <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
-      <div class="mt-3">
-        <bike-tag-input
-          id="player"
-          v-model="player"
-          name="player"
-          readonly
-          :placeholder="$t('pages.queue.name_placeholder')"
-        />
-      </div>
-      <div>
-        <bike-tag-input
-          id="hint"
-          v-model="hint"
-          name="hint"
-          :placeholder="$t('pages.queue.hint_placeholder')"
-        />
-      </div>
-      <div class="mt-3">
-        <bike-tag-button class="w-75 btn-mystery border-0" @click="onSubmit">
-          {{ `${$t('pages.queue.submit_new_tag')} ${$t('pages.queue.queue_postfix')}` }} &nbsp;
-          <i class="fas fa-check-square" /> *
-        </bike-tag-button>
-      </div>
-    </form>
+    <div class="container biketag-tagit-form">
+      <form
+        ref="mysteryTag"
+        name="queue-mystery-tag"
+        action="queue-mystery-tag"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+        @submit.prevent="onSubmit"
+      >
+        <input type="hidden" name="form-name" value="queue-mystery-tag" />
+        <input type="hidden" name="playerId" :value="getPlayerId" />
+        <input v-model="mysteryImageUrl" type="hidden" name="mysteryImageUrl" />
+        <div class="p-3">
+          <label for="file-upload" class="btn-upload custom-file-upload">
+            <i class="fa fa-camera" />
+          </label>
+          <input
+            id="file-upload"
+            ref="file"
+            type="file"
+            class="d-none"
+            accept="image/*"
+            required
+            @change="setImage"
+          />
+        </div>
+        <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
+        <div class="mt-3">
+          <bike-tag-input
+            id="player"
+            v-model="player"
+            name="player"
+            readonly
+            :placeholder="$t('pages.queue.name_placeholder')"
+          />
+        </div>
+        <div>
+          <bike-tag-input
+            id="hint"
+            v-model="hint"
+            name="hint"
+            :placeholder="$t('pages.queue.hint_placeholder')"
+          />
+        </div>
+        <div class="mt-3">
+          <bike-tag-button
+            variant="medium"
+            :text="`${$t('pages.queue.submit_new_tag')} ${$t('pages.queue.queue_postfix')}`"
+            @click="onSubmit"
+          />
+        </div>
+      </form>
+    </div>
   </b-container>
 </template>
 <script>
@@ -132,6 +135,13 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="scss">
+.queue-mystery-tag {
+  .biketag-button {
+    width: 100%;
+  }
+}
+</style>
 <style scoped lang="scss">
 .custom-file-upload {
   border-radius: 2rem;

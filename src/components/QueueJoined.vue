@@ -1,12 +1,12 @@
 <template>
-  <b-container class="col-md-8 col-lg-8">
+  <b-container class="queue-joined col-md-8 col-lg-8">
     <h3 class="queue-title">{{ $t('pages.queue.joined_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.joined_text') }}</p>
     <div class="mt-3">
       <bike-tag-button @click="goMysteryQueue">
         {{ $t('pages.queue.mystery_button') }}
       </bike-tag-button>
-      <bike-tag-button @click="goViewQueue">
+      <bike-tag-button variant="medium" @click="goViewQueue">
         {{ $t('pages.queue.joined_button') }} {{ getCurrentBikeTag?.tagnumber }}
       </bike-tag-button>
     </div>

@@ -5,7 +5,7 @@
     :is-full-page="true"
     class="realign-spinner"
   >
-    <img class="spinner" src="../assets/images/SpinningBikeV2.svg" />
+    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
   <div class="container col-md-8 col-lg-8 queue-page">
     <div v-if="usingTimer && isViewingQueue()" class="clock-div mt-2">

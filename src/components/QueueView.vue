@@ -34,6 +34,7 @@
       <bike-tag-button
         v-if="showGoNextButton()"
         class="go-next-button"
+        variant="medium"
         :text="goNextQueueStepButtonText"
         @click="goNextQueueStep"
       />

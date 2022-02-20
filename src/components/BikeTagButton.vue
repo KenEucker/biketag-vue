@@ -1,5 +1,5 @@
 <template>
-  <button :class="`scribble-button ${variant}`">
+  <button :class="`biketag-button scribble-button ${variant} mb-4 mt-5`">
     <img alt="biketag-button" :src="backgroundSrc" class="scribble-svg" />
     <span v-if="text" class="scribble-text"
       ><span class="scribble-text--inner">{{ text }}</span></span
@@ -32,6 +32,8 @@ export default defineComponent({
         case 'underline-reverse':
         case 'underline':
           return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTMwJyBoZWlnaHQ9JzIxJyB2aWV3Qm94PScwIDAgMTMwIDIxJyBmaWxsPSdub25lJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPgo8ZyBmaWx0ZXI9J3VybCgjZmlsdGVyMF9kXzQzXzg2MSknPgo8cGF0aCBkPSdNMTI1IDIuMTY3ODVDMTAwLjM4NiAyLjE2Nzg1IDc1LjY1NjYgMS40NjA3NSA1MS4wOTA0IDMuMDY3NTJDMzguNTc3NCAzLjg4NTk0IDI1Ljk4MzYgNC4xOTIzNyAxMy41MDI5IDUuMzE2NzFDMTIuOTc3NSA1LjM2NDA0IDMuNDIzMjcgNS42Nzk0IDUuMjI2MTEgNy4zNzMxQzcuMDI5ODcgOS4wNjc2OCAxMC42MDgzIDkuNzg4NzggMTIuOTU1NyAxMC4yNjQ5QzE4Ljg5OTQgMTEuNDcwNSAyNC41Mzg5IDEyIDMwLjYzNzkgMTJDNTUuODMwNSAxMiA3OS44Njk0IDMuNDM0MjUgMTA0Ljg1NSAxLjMwMDNDMTA2LjYwNyAxLjE1MDcyIDExMS44ODEgMS4wMTExMiAxMTAuMTIyIDEuMDExMTJDMTA0LjUwMiAxLjAxMTEyIDk4Ljg4MTEgMC45ODYwOTggOTMuMjYwOSAxLjAxMTEyQzgzLjU4MDEgMS4wNTQyMyA3My43ODM2IDEuNjM0MjIgNjQuMjU4IDMuMzI0NTdDNjAuODUzOSAzLjkyODY1IDUzLjU5MzMgMy45NjEzOSA1MC45MTk0IDYuNDczNDNDNTAuNDYwOCA2LjkwNDI1IDUyLjE4NjIgNi43OTQ3NCA1Mi44MzQ3IDYuNzk0NzRDNTUuNDU2OCA2Ljc5NDc0IDU4LjA3ODkgNi43OTQ3NCA2MC43MDExIDYuNzk0NzRDNzEuMDQyNiA2Ljc5NDc0IDgxLjQ5NTIgNy4yMDUzMyA5MS44MjQ1IDYuNjY2MjJDOTYuNzQ0MyA2LjQwOTQ0IDEwMS42MDUgNi4yMTYzOCAxMDYuNTMxIDYuMjE2MzgnIHN0cm9rZT0nYmxhY2snIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgc2hhcGUtcmVuZGVyaW5nPSdjcmlzcEVkZ2VzJy8+CjwvZz4KPGRlZnM+CjxmaWx0ZXIgaWQ9J2ZpbHRlcjBfZF80M184NjEnIHg9JzAuNScgeT0nMC41JyB3aWR0aD0nMTI5JyBoZWlnaHQ9JzIwJyBmaWx0ZXJVbml0cz0ndXNlclNwYWNlT25Vc2UnIGNvbG9yLWludGVycG9sYXRpb24tZmlsdGVycz0nc1JHQic+CjxmZUZsb29kIGZsb29kLW9wYWNpdHk9JzAnIHJlc3VsdD0nQmFja2dyb3VuZEltYWdlRml4Jy8+CjxmZUNvbG9yTWF0cml4IGluPSdTb3VyY2VBbHBoYScgdHlwZT0nbWF0cml4JyB2YWx1ZXM9JzAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDEyNyAwJyByZXN1bHQ9J2hhcmRBbHBoYScvPgo8ZmVPZmZzZXQgZHk9JzQnLz4KPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0nMicvPgo8ZmVDb21wb3NpdGUgaW4yPSdoYXJkQWxwaGEnIG9wZXJhdG9yPSdvdXQnLz4KPGZlQ29sb3JNYXRyaXggdHlwZT0nbWF0cml4JyB2YWx1ZXM9JzAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAuMjUgMCcvPgo8ZmVCbGVuZCBtb2RlPSdub3JtYWwnIGluMj0nQmFja2dyb3VuZEltYWdlRml4JyByZXN1bHQ9J2VmZmVjdDFfZHJvcFNoYWRvd180M184NjEnLz4KPGZlQmxlbmQgbW9kZT0nbm9ybWFsJyBpbj0nU291cmNlR3JhcGhpYycgaW4yPSdlZmZlY3QxX2Ryb3BTaGFkb3dfNDNfODYxJyByZXN1bHQ9J3NoYXBlJy8+CjwvZmlsdGVyPgo8L2RlZnM+Cjwvc3ZnPgo='
+        case 'circle-clean':
+          return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nNjInIGhlaWdodD0nNjInIHZpZXdCb3g9JzAgMCA2MiA2MicgZmlsbD0nbm9uZScgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz4KPHBhdGggZD0nTTUwLjMyOTIgOC4wNTA3QzQzLjkxIDUuMjk4MTUgMzguNDEzMyAxLjcwNTA3IDMxLjE0NTYgMS43MDUwN0MyNC42MTc4IDEuNzA1MDcgMTYuMzcwNiA0LjYwODAzIDExLjU3MDYgOS4yMjU4MkM1Ljk4NzE3IDE0LjU5NzIgMSAyMC43MDY4IDEgMjguODUwM0MxIDM5LjQzIDExLjQ4OTkgNTAuOTY0NSAyMS4yNzk4IDU0LjQyODZDMjUuNjA4OSA1NS45NjA1IDMwLjcyNDQgNTUuNDAwMSAzNS4xMzkgNTQuNTg1M0M0Mi44NjgxIDUzLjE1ODggNDYuNzgyNSA0Ni45NDM3IDUwLjg3NzMgNDAuNjQwNkM1My43MjQgMzYuMjU4OCA1Ni41OTcxIDMyLjEzOSA1Ni42NzE2IDI2Ljc3NDJDNTYuNzcyNiAxOS40OTk3IDU1LjA2OTEgMTcuMzE5MSA0OS43MDI4IDEyLjY3MjhDNDIuMTM3OSA2LjEyMjg0IDMwLjg4NTUgMS43MjA5MiAyMC43MzE3IDUuMjMwNDJDMTYuMjg3OCA2Ljc2NjM3IDExLjc2OTYgMTIuNjU1NiA5LjA2NDk0IDE2LjE5ODJDNS4wMzgwOSAyMS40NzI0IDMuODE4ODEgMjUuODg5OSAzLjgxODgxIDMyLjYxMDZDMy44MTg4MSA0Ny4zOTA5IDE0LjkzNDEgNTguNjAxMyAyOS4zMDU2IDYwLjgxMzRDNDQuODEzOSA2My4yMDA2IDU0LjA4OCA0Mi4xMjAxIDU0LjU1NzUgMjkuNjcyOEM1NS4wMDczIDE3Ljc0NiA0OC4xNzg5IDUuMTk0OTYgMzYuMTU2OSAyLjA5Njc4QzI2Ljk0MjYgLTAuMjc3ODI0IDE0LjgwMzIgMy41NjI4NiA3Ljk2ODczIDEwLjQwMDlDMC4zOTUzNCAxNy45NzgzIDAuMTI3OTU2IDMwLjUzNDUgNS44OTM3NyAzOC45OTU0QzkuMTUwNzEgNDMuNzc0OCAxMy4xMDYzIDUwLjc4ODcgMTguOTY5OSA1Mi43NDQzQzIzLjc5MSA1NC4zNTIxIDMwLjAyNTYgNTQuOTQ0MyAzNS4xMzkgNTQuNTg1M0M0MS40NDQzIDU0LjE0MjYgNDUuMzAzNyA0Ny4yNzEgNDkuNjI0NSA0My40NjA5QzU0LjYzMjcgMzkuMDQ0NiA1Ny45OTM3IDM0LjU0NzMgNjAuMTk1MSAyOC4zODAyQzYyLjA1NDYgMjMuMTcwNyA2MC42MjA2IDE3LjYwMzcgNTYuNjMyNCAxMy45NjU1QzQ5Ljk1MzcgNy44NzI4NiA0Ni4xNDA2IDIuNjczNzMgMzYuOTM5OSAxJyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8L3N2Zz4K'
         case 'circle':
           return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nNTQnIGhlaWdodD0nNTAnIHZpZXdCb3g9JzAgMCA1NCA1MCcgZmlsbD0nbm9uZScgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz4KPHBhdGggZD0nTTE3Ljg3NjYgMTEuNzQ3NUMxMS4yNTQ5IDEzLjUzMDIgNy4wNTIwNCAxNi4zMjA3IDYuMTU2NzQgMjMuNTA3OEM1LjcxMTQyIDI3LjA4MjYgMS43ODg5MyAzMi4xODkzIDMuODEyNzYgMzUuNDU2M0M5Ljg1MDQxIDQ1LjIwMjUgMzQuMzg0OCA0OS41Mjc3IDQwLjE5MTIgMzguMDkwNkM0Ni40NzM5IDI1LjcxNTMgNDQuMzg2IDguODI5NzEgMjkuMTI3NiA1LjM0OTkzQzIyLjI0NjUgMy43ODA2NCAxMC4xMjc0IDMuODY3NSA3LjAwMDU3IDExLjkzNTdDLTcuMTg3MDYgNDguNTQ0MSA0OC40MjYzIDY2LjQ1NyA1Mi45NDI0IDI1LjY3MTdDNTQuMjMwMiAxNC4wNDE0IDMzLjU4NzMgNC42MTM2NCAyNS4wMDIzIDEuOTYyOTdDMTEuNDU3OSAtMi4yMTg5IDMuMDU1OTggNy44MzY0NyAxIDIwLjIxNDknIHN0cm9rZT0nYmxhY2snIHN0cm9rZS13aWR0aD0nMicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+Cjwvc3ZnPgo='
         case 'bold':
@@ -51,7 +53,8 @@ export default defineComponent({
   background: transparent;
   align-items: center;
   border: none;
-  font-family: TroubleMarker;
+  font-family: Heartwrecked;
+  font-weight: bold;
 
   .scribble-svg {
     position: absolute;
@@ -65,50 +68,51 @@ export default defineComponent({
     justify-content: center;
     display: flex;
     background: transparent;
-    padding: 3%;
   }
+
   .scribble-text--inner {
     z-index: 2;
     background: transparent;
-    // padding-top: 1em;
-    // padding-bottom: 1em;
-    font-size: 1.5em;
-    line-height: 1.5em;
-    max-width: fit-content;
-    min-width: 10em;
+    font-size: 1rem;
 
-    @media (max-width : 1200px) {
-      font-size: 1em;
-      min-width: 8em;
+    @media (min-width: 500px) {
+      font-size: 2.5rem;
+      min-width: 4em;
+    }
+
+    @media (min-width: 1020px) {
+      font-size: 3rem;
+      min-width: 5em;
     }
   }
   .button--children {
     z-index: 1;
     padding: 3%;
-    // padding-top: 1em;
-    // padding-bottom: 1em;
   }
 
   &.light {
-    // .button--children,
-    // .scribble-text--inner {
-    // font-family: UniSans;
     margin-left: 10px;
     color: black;
-    // }
+  }
+
+  &.medium {
+    img {
+      filter: brightness(0.5);
+    }
+    .scribble-text--inner {
+      margin-left: 1em;
+    }
   }
 
   &.bold {
-    padding-top: 3%;
-    padding-bottom: 3%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    margin-top: 1em;
     font-size: 2rem;
-    // .button--children,
-    // .scribble-text--inner {
     color: white;
-    // }
 
-    @media (max-width : 600px) {
-      font-size: 1em;
+    @media (min-width: 500px) {
+      font-size: 3rem;
     }
   }
 

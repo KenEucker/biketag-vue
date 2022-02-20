@@ -62,9 +62,9 @@ export default defineComponent({
 .footer-buttons {
   display: inline-flex;
 
-  @media (max-width: 490px){
+  @media (max-width: 490px) {
     flex-flow: column;
-    justify-content: space-between!important;
+    justify-content: space-between !important;
     align-items: center;
     height: 160px;
   }
