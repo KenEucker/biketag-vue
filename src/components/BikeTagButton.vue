@@ -99,6 +99,10 @@ export default defineComponent({
 
     .scribble-text--inner {
       min-width: 8rem;
+
+      @media (min-width: 570px) {
+        font-size: 3.5rem;
+      }
     }
   }
 

@@ -27,7 +27,7 @@
           class="fas fa-volume-mute"
           @click="muteEasterEgg"
         ></span>
-        <div v-if="authLoading">
+        <div v-if="!authLoading">
           <bike-tag-button
             v-if="!$auth.isAuthenticated.value"
             :text="$t('menu.login')"
@@ -76,6 +76,7 @@ export default defineComponent({
     }
   },
   data() {
+    console.log({ auth: this.$auth })
     return {
       playingEaster: false,
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
@@ -130,6 +131,7 @@ export default defineComponent({
       }
     },
     login() {
+      console.log({ auth: this.$auth })
       this.$auth.loginWithRedirect()
     },
     playEasterEgg(e) {
@@ -185,7 +187,7 @@ export default defineComponent({
 }
 
 .nav-buttons {
-  @media (max-width: 400px){
+  @media (max-width: 400px) {
     flex-flow: column;
     align-items: center;
     height: 250px;
