@@ -59,6 +59,7 @@ export default defineComponent({
 <style scoped lang="scss">
 .big-btn {
   min-height: 190px;
+  font-size: 1.8rem;
 }
 .games {
   display: flex;

@@ -18,7 +18,7 @@
           <span class="game-title">{{ getGameTitle }}</span>
         </div>
       </div>
-      <div class="nav-buttons align-center mt-4">
+      <div class="nav-buttons align-center mt-4 mb-4">
         <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />
         <bike-tag-button variant="bold" :text="$t('menu.play')" @click="goQueuePlay" />
         <bike-tag-button :text="$t('menu.howto')" @click="goHowPage" />
@@ -47,7 +47,7 @@
       </audio>
       <bike-tag-button
         v-if="getQueuedTags?.length && tagnumber === 0"
-        class="btn-queue"
+        class="btn-queue bike-btn"
         variant="circle"
         @click="goQueueView"
       >
@@ -187,11 +187,20 @@ export default defineComponent({
 }
 
 .nav-buttons {
-  @media (max-width: 400px) {
+  @media (max-width: 469px) {
     flex-flow: column;
     align-items: center;
     height: 250px;
+    margin: 0!important;
+
+    & .scribble-button {
+      min-height: 0;
+    }
   }
+}
+
+.bike-btn {
+  background-size: unset!important;
 }
 
 .bt-bicycle {
@@ -216,7 +225,7 @@ export default defineComponent({
 .btn-queue {
   position: absolute;
   top: 0;
-  right: -25px;
+  right: 0;
   z-index: 99;
   font-size: 1.25em;
   background-color: transparent !important;

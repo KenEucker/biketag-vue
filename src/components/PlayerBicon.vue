@@ -21,7 +21,10 @@
       >
     </div>
     <img v-if="playerBiconUrl" class="player-bicon" :src="playerBiconUrl" :alt="_playerName" />
-    <span class="player-name p-1">{{ _playerName }}</span>
+    <div class="info-wrapper">
+      <span v-if="isPolaroid" class="player-name fnt">{{ biconDate }}</span> 
+      <span class="player-name p-1">{{ _playerName }}</span>
+    </div>
   </div>
 </template>
 
@@ -45,6 +48,10 @@ export default defineComponent({
     playerName: {
       type: String,
       default: null,
+    },
+    isPolaroid : {
+      type: Boolean,
+      default: true
     },
     noLink: {
       type: Boolean,
@@ -76,6 +83,19 @@ export default defineComponent({
       }
       return this.getImgurImageSized(url, this.size[0])
     },
+    biconDate(){
+      let date
+      if (this.player && typeof this.player === 'object') {
+        if (!this.player.bicon) {
+          if (this.player.tags[this.player.tags.length - 1].mysteryTime) {
+            date = new Date(this.player.tags[this.player.tags.length - 1].mysteryTime * 1000).toLocaleDateString()
+          } else {
+            date = new Date(this.player.tags[this.player.tags.length - 1].foundTime * 1000).toLocaleDateString()
+          }
+        }
+      }
+      return date
+    }
   },
   methods: {
     goPlayerPage: function () {
@@ -101,18 +121,39 @@ export default defineComponent({
 </script>
 <style scoped lang="scss">
 .player-wrapper {
-  position: relative;
-  padding-top: 2rem;
+  // position: relative;
+  margin-top: 2rem;
+
+  .info-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-flow: row wrap;
+    padding: 0 1rem;
+  }
 
   .player-name {
-    z-index: 99;
+    // z-index: 99;
     text-shadow: 3px -2px 3px #292828e6;
     filter: invert(1) drop-shadow(2px 4px 6px white);
-    transform: rotate(-8deg);
-    display: block;
+    // transform: rotate(-8deg);
+    // display: block;
     animation: fadeIn 2s;
     // word-break: break-word;
     // text-decoration-line: underline;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    min-height: 60px;
+    justify-content: start;
+    display: flex;
+    align-items: center;
+
+
+    &.fnt {
+      font-size: 3rem!important;
+      // margin-left: -4rem
+    }
   }
 
   .svg {

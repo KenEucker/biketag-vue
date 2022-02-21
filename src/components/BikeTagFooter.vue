@@ -64,6 +64,9 @@ export default defineComponent({
 
   @media (max-width: 400px){
     flex-flow: column;
+    & .scribble-button {
+      min-height: 0;
+    }
   }
 
   .btn {
