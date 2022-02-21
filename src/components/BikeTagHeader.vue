@@ -1,6 +1,6 @@
 <template>
   <div class="biketag-header">
-    <div class="container mt-2 mb-5">
+    <div class="container mt-2">
       <div v-if="isShow" class="menu-btn p-2">
         <bike-tag-button class="btn-circle" variant="circle" @click="goBack">
           <img
@@ -176,84 +176,61 @@ export default defineComponent({
   },
 })
 </script>
-<style lang="scss">
-.biketag-header {
-  .btn-queue {
-    margin-right: 2em;
-    .scribble-svg {
-      height: 72% !important;
-    }
+<style lang="scss" scoped>
+.header-logo .logo {
+  width: auto;
+  height: 8rem;
+  line-height: 8rem;
+  margin: auto;
+}
+
+.nav-buttons {
+  @media (max-width: 400px){
+    flex-flow: column;
+    align-items: center;
+    height: 250px;
   }
 }
-</style>
-<style lang="scss" scoped>
-.biketag-header {
-  .header-logo .logo {
-    width: auto;
-    height: 8rem;
-    line-height: 8rem;
-    margin: auto;
-  }
 
-  .nav-buttons {
-    // @media (min-width: 490px) {
-    //   flex-flow: column;
-    //   justify-content: space-between !important;
-    //   align-items: center;
-    // }
-  }
+.bt-bicycle {
+  background-size: cover;
+  background-position: center;
+}
 
-  .bt-bicycle {
-    background-size: cover;
-    background-position: center;
-  }
+.btn-circle {
+  // width: 40px;
+  // height: 40px;
+  // border-radius: 30px;
+  display: flex;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+}
 
-  .btn-circle {
-    display: flex;
+.menu-btn {
+  position: absolute;
+}
+
+.btn-queue {
+  position: absolute;
+  top: 0;
+  right: -25px;
+  z-index: 99;
+  font-size: 1.25em;
+  background-color: transparent !important;
+  border-color: transparent !important;
+
+  i {
+    color: forestgreen;
     cursor: pointer;
-    justify-content: center;
-    align-items: center;
+    font-size: 4.5vh;
   }
+}
 
-  .menu-btn {
-    position: absolute;
-  }
-
-  .back-button {
-    font-size: 3rem;
-  }
-
-  .btn-queue {
-    position: absolute;
-    top: 0;
-    z-index: 99;
-    left: 70%;
-    font-size: 1.25em;
-    background-color: transparent !important;
-    border-color: transparent !important;
-    animation: tronFilter 5s ease-in-out infinite alternate;
-    // right: -2em;
-
-    .scribble-svg {
-      height: 72% !important;
-    }
-
-    i {
-      color: forestgreen;
-      cursor: pointer;
-      font-size: 4.5vh;
-    }
-
-    .spinning-bike {
-      max-height: 3.5em;
-      max-width: fit-content;
-    }
-  }
-
-  @media (min-width: 500px) {
-    .btn-queue {
-      // right: 2em;
-    }
+.btn-queue {
+  animation: tronFilter 5s ease-in-out infinite alternate;
+  .spinning-bike {
+    max-height: 3.5em;
   }
 }
 </style>

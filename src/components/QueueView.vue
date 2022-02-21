@@ -127,7 +127,7 @@ export default defineComponent({
     }
 
     .go-next-button span {
-      min-width: 12em;
+      min-width: 10em;
     }
 
     .swiper-pagination {

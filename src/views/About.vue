@@ -8,7 +8,7 @@
       <p>
         <bike-tag-button
           variant="secondary"
-          class="m-1"
+          class="m-1 big-btn"
           onclick="window.open('https://patreon.com/biketag')"
         >
           {{ $t('pages.about.article1.support_biketag') }}
@@ -19,7 +19,7 @@
       <p>
         <bike-tag-button
           variant="primary"
-          class="m-1"
+          class="m-1 big-btn"
           onclick="window.open('https://patreon.com/biketag')"
         >
           {{ $t('pages.about.article2.become_player') }}
@@ -57,6 +57,9 @@ export default defineComponent({
 })
 </script>
 <style scoped lang="scss">
+.big-btn {
+  min-height: 190px;
+}
 .games {
   display: flex;
   flex-flow: wrap;
@@ -67,11 +70,9 @@ export default defineComponent({
 
 .about {
   flex-direction: column;
+}
 
-  .biketag-game {
-    img {
-      max-width: 12em;
-    }
-  }
+img {
+  width: 100%;
 }
 </style>

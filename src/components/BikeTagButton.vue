@@ -1,6 +1,5 @@
 <template>
-  <button :class="`biketag-button scribble-button ${variant} mb-4 mt-5`">
-    <img alt="biketag-button" :src="backgroundSrc" class="scribble-svg" />
+  <button :class="`scribble-button ${variant}`" :style="`background-image: url(${backgroundSrc})`">
     <span v-if="text" class="scribble-text"
       ><span class="scribble-text--inner">{{ text }}</span></span
     >
@@ -48,26 +47,15 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .scribble-button {
-  position: relative;
-  display: flex;
   background: transparent;
-  align-items: center;
   border: none;
   font-family: Heartwrecked;
   font-weight: bold;
+  font-size: 13px;
+  @include background-btn;
 
-  .scribble-svg {
-    position: absolute;
-    height: 150%;
-    width: 100%;
-    z-index: 0;
-  }
   .scribble-text {
-    z-index: 1;
-    align-items: center;
-    justify-content: center;
     display: flex;
-    background: transparent;
   }
 
   .scribble-text--inner {
@@ -76,7 +64,7 @@ export default defineComponent({
     font-size: 2rem;
     min-width: 6rem;
 
-    @media (min-width: 500px) {
+    @media (min-width: 570px) {
       font-size: 2.5rem;
       min-width: 4em;
     }
@@ -92,32 +80,25 @@ export default defineComponent({
   }
 
   &.light {
-    margin-left: 10px;
+    // .button--children,
+    // .scribble-text--inner {
+    // font-family: UniSans;
+    // margin-left: 10px;
     color: black;
   }
 
   &.medium {
-    img {
-      filter: brightness(0.5);
-    }
     .scribble-text--inner {
-      margin-left: 1em;
+      padding: 1rem;
     }
   }
 
   &.bold {
-    padding-top: 2%;
-    padding-bottom: 2%;
-    margin-top: 1em;
     font-size: 2rem;
     color: white;
 
     .scribble-text--inner {
       min-width: 8rem;
-    }
-
-    @media (min-width: 500px) {
-      font-size: 3rem;
     }
   }
 

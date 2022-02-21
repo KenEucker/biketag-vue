@@ -1,6 +1,6 @@
 <template>
-  <div class="container mt-2">
-    <div class="footer-buttons mt-3 mb-3">
+  <div class="container">
+    <div class="footer-buttons mb-3">
       <bike-tag-button class="m-1" :text="$t('menu.about')" @click="goAboutPage" />
       <bike-tag-button class="m-1" :text="$t('menu.players')" @click="goUsersPage" />
       <bike-tag-button class="m-1" :text="$t('menu.top10')" @click="goLeaderboardPage" />
@@ -62,11 +62,8 @@ export default defineComponent({
 .footer-buttons {
   display: inline-flex;
 
-  @media (max-width: 490px) {
+  @media (max-width: 400px){
     flex-flow: column;
-    justify-content: space-between !important;
-    align-items: center;
-    height: 160px;
   }
 
   .btn {
