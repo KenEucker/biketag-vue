@@ -51,7 +51,7 @@ export default defineComponent({
     },
     isPolaroid : {
       type: Boolean,
-      default: true
+      default: false
     },
     noLink: {
       type: Boolean,

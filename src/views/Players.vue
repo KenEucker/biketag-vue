@@ -10,7 +10,7 @@
     ></b-pagination>
     <div class="player-list">
       <div v-for="player in playersForList" :key="player.name" class="p-lg-3 p-md-2 mb-2">
-        <player size="md" :player="player" :isPolaroid="false"/>
+        <player size="md" :player="player"/>
       </div>
     </div>
     <b-form-group>

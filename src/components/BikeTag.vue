@@ -20,6 +20,7 @@
             class="tag-player"
             :player="foundPlayer"
             :player-name="_foundPlayer"
+            :isPolaroid="true"
             size="txt"
           />
           <span v-if="showFoundPostedDateTime">{{ getPostedDate(tag.foundTime, true) }}</span>
@@ -48,7 +49,7 @@
             <span v-if="showPostedDate">{{ getPostedDate() }}</span>
             <span v-if="showMysteryPostedDateTime">{{ getPostedDate(tag.mysteryTime, true) }}</span>
           </div>
-          <player v-if="mysteryPlayer" :player="mysteryPlayer" size="txt" />
+          <player v-if="mysteryPlayer" :isPolaroid="true" :player="mysteryPlayer" size="txt" />
           <span v-else class="player-name">{{ _mysteryPlayer }}</span>
         </div>
       </b-card>
