@@ -64,7 +64,7 @@ export default defineComponent({
     font-size: 2rem;
     min-width: 6rem;
 
-    @media (min-width: 500px) {
+    @media (min-width: 570px) {
       font-size: 2.5rem;
       min-width: 4em;
     }
@@ -88,27 +88,17 @@ export default defineComponent({
   }
 
   &.medium {
-    img {
-      filter: brightness(0.5);
-    }
     .scribble-text--inner {
-      margin-left: 1em;
+      padding: 1rem;
     }
   }
 
   &.bold {
-    padding-top: 2%;
-    padding-bottom: 2%;
-    margin-top: 1em;
     font-size: 2rem;
     color: white;
 
     .scribble-text--inner {
       min-width: 8rem;
-    }
-
-    @media (min-width: 500px) {
-      font-size: 3rem;
     }
   }
 

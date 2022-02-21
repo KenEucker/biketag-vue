@@ -70,6 +70,7 @@ export default defineComponent({
 
 .about {
   flex-direction: column;
+}
 
 img {
   width: 100%;
