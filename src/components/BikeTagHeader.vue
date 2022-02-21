@@ -29,12 +29,12 @@
         ></span>
         <div v-if="!authLoading">
           <bike-tag-button
-            v-if="!$auth.isAuthenticated.value"
+            v-if="!$auth.isAuthenticated?.value"
             :text="$t('menu.login')"
             @click="login"
           />
           <bike-tag-button
-            v-if="$auth.isAuthenticated.value"
+            v-if="$auth.isAuthenticated?.value"
             :text="$t('menu.logout')"
             @click="logout"
           />
