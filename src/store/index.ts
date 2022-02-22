@@ -546,6 +546,9 @@ export const store = createStore<State>({
     getMostRecentlyViewedTagnumber(state) {
       return getMostRecentlyViewedBikeTagTagnumber(state.currentBikeTag.tagnumber)
     },
+    isBikeTagAmbassador(state) {
+      return state.isBikeTagAmbassador
+    },
   },
   modules: {},
 })

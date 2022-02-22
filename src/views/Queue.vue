@@ -203,7 +203,6 @@ export default defineComponent({
           formAction,
           new URLSearchParams(formData).toString(),
           (res) => {
-            console.log({ formSubmitted: res })
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
               type: 'success',

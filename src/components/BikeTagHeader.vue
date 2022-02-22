@@ -27,7 +27,7 @@
           class="fas fa-volume-mute"
           @click="muteEasterEgg"
         ></span>
-        <div v-if="!authLoading">
+        <div v-if="showAuth && !authLoading">
           <bike-tag-button
             v-if="!$auth.isAuthenticated?.value"
             :text="$t('menu.login')"
@@ -63,6 +63,7 @@ import { mapGetters } from 'vuex'
 import { GetQueryString } from '@/common/utils'
 import NetlifyIdentityWidget from '@/components/NetlifyIdentityWidget.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import netlifyIdentity from 'netlify-identity-widget'
 
 export default defineComponent({
   name: 'BikeTagHeader',
@@ -76,13 +77,15 @@ export default defineComponent({
     }
   },
   data() {
-    console.log({ auth: this.$auth })
     return {
       playingEaster: false,
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
     }
   },
   computed: {
+    showAuth() {
+      return false
+    },
     isShow() {
       return this.$route.name === 'Play' && !this.$route.params?.tagnumber?.length ? false : true
     },
@@ -94,6 +97,7 @@ export default defineComponent({
       'getEasterEgg',
       'getMostRecentlyViewedTagnumber',
       'getGameName',
+      'isBikeTagAmbassador',
     ]),
     authLoading() {
       return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
@@ -131,8 +135,11 @@ export default defineComponent({
       }
     },
     login() {
-      console.log({ auth: this.$auth })
-      this.$auth.loginWithRedirect()
+      if (this.isBikeTagAmbassador) {
+        netlifyIdentity.open('login')
+      } else {
+        this.$auth.loginWithRedirect()
+      }
     },
     playEasterEgg(e) {
       e.preventDefault()
