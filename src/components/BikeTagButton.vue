@@ -64,7 +64,7 @@ export default defineComponent({
     font-size: 2rem;
     min-width: 6rem;
 
-    @media (min-width: 650px) {
+    @media (min-width: 550px) {
       font-size: 2.5rem;
       min-width: 4em;
     }
@@ -91,7 +91,7 @@ export default defineComponent({
     .scribble-text--inner {
       padding: 1rem;
     }
-    @media (min-width: 650px) {
+    @media (min-width: 550px) {
       .scribble-text--inner {
         font-size: 2rem;
       }
@@ -103,9 +103,9 @@ export default defineComponent({
     color: white;
 
     .scribble-text--inner {
-      min-width: 8rem;
+      min-width: 6.8rem;
 
-      @media (min-width: 650px) {
+      @media (min-width: 550px) {
         font-size: 3.5rem;
       }
     }

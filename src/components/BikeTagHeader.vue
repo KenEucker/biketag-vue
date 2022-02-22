@@ -194,16 +194,8 @@ export default defineComponent({
 }
 
 .nav-buttons {
-  @media (max-width: 469px) {
-    flex-flow: column;
-    align-items: center;
-    height: 250px;
-    margin: 0!important;
-
-    & .scribble-button {
-      min-height: 0;
-    }
-  }
+  height: 250px;
+  margin: 0!important;
 }
 
 .bike-btn {

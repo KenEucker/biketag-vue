@@ -2,6 +2,14 @@
   <b-row :class="`center-flx ${reverse ? 'reversed' : ''}`">
     <b-col v-show="_foundImageUrl" md="6" class="mb-3 max-w">
       <b-card class="polaroid found-tag">
+        <bike-tag-button
+          v-if="_tagnumber"
+          v-b-popover.click.left="_getHint"
+          class="btn-hint btn-circle"
+          text="?"
+          variant="circle-clean"
+        >
+        </bike-tag-button>
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
           <expandable-image
@@ -29,6 +37,14 @@
     </b-col>
     <b-col v-show="_mysteryImageUrl" :md="_foundImageUrl ? 6 : 12" class="mb-3 max-w">
       <b-card class="polaroid mystery-tag">
+        <bike-tag-button
+          v-if="tagnumber"
+          v-b-popover.click.left="_getHint"
+          class="btn-hint btn-circle"
+          text="?"
+          variant="circle-clean"
+        >
+        </bike-tag-button>
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _tagnumber }}</span>
           <expandable-image
@@ -60,6 +76,7 @@
 import { defineComponent } from 'vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
 import Player from '@/components/PlayerBicon.vue'
+import BikeTagButton from '@/components/BikeTagButton.vue'
 import { mapGetters } from 'vuex'
 
 export default defineComponent({
@@ -67,6 +84,7 @@ export default defineComponent({
   components: {
     ExpandableImage,
     Player,
+    BikeTagButton
   },
   props: {
     tag: {
@@ -149,6 +167,11 @@ export default defineComponent({
     _tagnumber() {
       return this.tagnumber ? this.tagnumber : this.tag?.tagnumber
     },
+    _getHint(){
+      return this.tag?.hint
+        ? this.tag.hint
+        : this.$t('pages.play.nohint')
+    },
     _foundTagnumber() {
       return this.foundTagnumber ? this.foundTagnumber : this.tag?.tagnumber
     },
@@ -224,6 +247,14 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="scss">
+.btn-hint{
+  .scribble-text--inner{
+    min-width: 6rem!important;
+    font-size: 3.5rem!important;
+  }
+}
+</style>
 <style lang="scss" scoped>
 .reversed {
   flex-flow: row-reverse wrap;
@@ -273,5 +304,14 @@ export default defineComponent({
     padding: 0.5rem;
     line-height: 2em;
   }
+}
+.btn-hint {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 99;
+  background-size: unset;
+  background-color: transparent;
+  min-height: unset;
 }
 </style>

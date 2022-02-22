@@ -61,13 +61,7 @@ export default defineComponent({
 <style scoped lang="scss">
 .footer-buttons {
   display: inline-flex;
-
-  @media (max-width: 400px){
-    flex-flow: column;
-    & .scribble-button {
-      min-height: 0;
-    }
-  }
+  min-height: 0;
 
   .btn {
     max-height: 3em;

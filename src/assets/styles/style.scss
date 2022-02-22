@@ -52,11 +52,11 @@ body {
         .btn-hint {
           color: $btn-hint-text-color;
           font-weight: $btn-hint-font-weight;
-          background-color: $btn-hint-color;
+          // background-color: $btn-hint-color;
           border-color: $btn-hint-color;
           font-size: $btn-hint-font-size;
-          font-family: $btn-hint-font-family;
-          transform: rotate(30deg);
+          // font-family: $btn-hint-font-family;
+          // transform: rotate(30deg);
 
           &:focus {
             box-shadow: 0 0 0 0.25rem $btn-hint-shadow-color;
@@ -128,10 +128,6 @@ body {
       &:focus {
         box-shadow: 0 0 0 0.25rem $btn-post-shadow-color;
       }
-    }
-
-    button.biketag-button {
-      
     }
 
     .tag-number {
