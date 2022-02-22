@@ -29,12 +29,12 @@
         ></span>
         <div v-if="showAuth && !authLoading">
           <bike-tag-button
-            v-if="!$auth.isAuthenticated?.value"
+            v-if="$auth.isAuthenticated"
             :text="$t('menu.login')"
             @click="login"
           />
           <bike-tag-button
-            v-if="$auth.isAuthenticated?.value"
+            v-if="$auth.isAuthenticated"
             :text="$t('menu.logout')"
             @click="logout"
           />
@@ -84,7 +84,7 @@ export default defineComponent({
   },
   computed: {
     showAuth() {
-      return false
+      return true
     },
     isShow() {
       return this.$route.name === 'Play' && !this.$route.params?.tagnumber?.length ? false : true
@@ -135,10 +135,14 @@ export default defineComponent({
       }
     },
     login() {
-      if (this.isBikeTagAmbassador) {
-        netlifyIdentity.open('login')
+      if (this.$auth.isAuthenticated){
+        this.$auth.logout()
       } else {
-        this.$auth.loginWithRedirect()
+        if (this.isBikeTagAmbassador) {
+          netlifyIdentity.open('login')
+        } else {
+          this.$auth.loginWithRedirect()
+        }
       }
     },
     playEasterEgg(e) {

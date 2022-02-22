@@ -29,7 +29,7 @@ export const useAuth0 = ({
     async created() {
       this.auth0Client = await createAuth0Client({
         ...options,
-        client_id: options.clientId,
+        client_id: options.client_id,
         domain: options.domain,
         redirect_uri: redirectUri,
       })
@@ -77,20 +77,20 @@ export const useAuth0 = ({
           this.loading = false
         }
       },
-      loginWithRedirect(o: any) {
-        return this.auth0Client.loginWithRedirect(o)
+      loginWithRedirect() {
+        return this.auth0Client.loginWithRedirect()
       },
-      getIdTokenClaims(o: any) {
-        return this.auth0Client.getIdTokenClaims(o)
+      getIdTokenClaims() {
+        return this.auth0Client.getIdTokenClaims()
       },
-      getTokenSilently(o: any) {
-        return this.auth0Client.getTokenSilently(o)
+      getTokenSilently() {
+        return this.auth0Client.getTokenSilently()
       },
-      getTokenWithPopup(o: any) {
-        return this.auth0Client.getTokenWithPopup(o)
+      getTokenWithPopup() {
+        return this.auth0Client.getTokenWithPopup()
       },
-      logout(o: any) {
-        return this.auth0Client.logout(o)
+      logout() {
+        return this.auth0Client.logout()
       },
     },
   }).mount(document.createElement('div'))
