@@ -268,9 +268,10 @@ export default defineComponent({
   }
 }
 
-@media (max-width: 620px) {
-  .realign-spinner {
-    margin-left: -15%;
+.realign-spinner {
+  margin-left: -15%;
+  @media (min-width: 620px) {
+    margin-left: 0;
   }
 }
 </style>

@@ -4,17 +4,9 @@
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
     <div v-if="getCurrentBikeTag" class="rel">
-      <b-button
-        v-if="tagnumber === 0 && !tagIsLoading"
-        v-b-popover.click.left="getHint"
-        class="btn-hint"
-        :title="$t('pages.play.hint').toLocaleUpperCase()"
-        variant="primary"
-      >
-        ?
-      </b-button>
       <bike-tag
         v-if="tagnumber === 0"
+        :tag="getCurrentBikeTag"
         :tagnumber="getCurrentBikeTag.tagnumber"
         :mystery-image-url="getCurrentBikeTag.mysteryImageUrl"
         :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
@@ -70,11 +62,6 @@ export default defineComponent({
       }
       return undefined
     },
-    getHint() {
-      return this.getCurrentBikeTag?.hint?.length
-        ? this.getCurrentBikeTag.hint
-        : this.$t('pages.play.nohint')
-    },
   },
   async created() {
     this.tagIsLoading = true
@@ -84,9 +71,6 @@ export default defineComponent({
     this.tagIsLoading = false
   },
   methods: {
-    hint() {
-      alert(this.getCurrentBikeTag.hint)
-    },
     tagLoaded() {
       this.tagIsLoading = false
     },
@@ -113,26 +97,6 @@ export default defineComponent({
       animation: fadeIn 2s;
       max-height: 60vh;
     }
-  }
-}
-</style>
-<style scoped lang="scss">
-.play-biketag {
-  .rel {
-    position: relative;
-  }
-
-  .container {
-    min-height: 350px;
-    background-color: transparent;
-  }
-
-  .btn-hint {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 99;
-    font-size: 1.25em;
   }
 }
 </style>
