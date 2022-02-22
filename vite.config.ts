@@ -20,7 +20,7 @@ export default defineConfig({
   },
   css: {
     preprocessorOptions: {
-      scss: { charset: false },
+      scss: { charset: false, additionalData: `@import "./src/assets/styles/mixins.scss";` },
       css: { charset: false },
     },
   },
@@ -55,6 +55,12 @@ export default defineConfig({
       REDDIT_CLIENT_SECRET: process.env.REDDIT_CLIENT_SECRET ?? null,
       REDDIT_USERNAME: process.env.REDDIT_USERNAME ?? null,
       REDDIT_PASSWORD: process.env.REDDIT_PASSWORD ?? null,
+      REDDIT_ADMIN_SUBREDDIT: process.env.REDDIT_ADMIN_SUBREDDIT ?? 'biketag',
+      /* Reddit Admin Configuration */
+      REDDIT_ADMIN_CLIENT_ID: process.env.REDDIT_ADMIN_CLIENT_ID ?? null,
+      REDDIT_ADMIN_CLIENT_SECRET: process.env.REDDIT_ADMIN_CLIENT_SECRET ?? null,
+      REDDIT_ADMIN_USERNAME: process.env.REDDIT_ADMIN_USERNAME ?? null,
+      REDDIT_ADMIN_PASSWORD: process.env.REDDIT_ADMIN_PASSWORD ?? null,
       /* Auth0 Configuration */
       AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID ?? null,
       AUTH0_DOMAIN: process.env.AUTH0_DOMAIN ?? null,
@@ -106,7 +112,7 @@ export default defineConfig({
   },
   // root: './public',
   server: {
-    host: 'portland.localhost',
+    host: 'miami.localhost',
     port: 8080,
   },
   preview: {

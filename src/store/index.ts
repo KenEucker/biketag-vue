@@ -399,7 +399,7 @@ export const store = createStore<State>({
           oldState?.discussionUrl !== data?.discussionUrl ||
           oldState?.mentionUrl !== data?.mentionUrl
         ) {
-          state.formStep = BiketagFormSteps.queueSubmit
+          state.formStep = BiketagFormSteps.queuePostedShare
         } else {
           state.formStep = BiketagFormSteps.queueMystery
         }
@@ -439,7 +439,10 @@ export const store = createStore<State>({
       }
     },
     SET_FORM_STEP_TO_JOIN(state, force) {
-      const setQueudState = state.formStep !== BiketagFormSteps.queueJoined || force
+      const setQueudState =
+        (state.formStep !== BiketagFormSteps.queueJoined &&
+          state.formStep !== BiketagFormSteps.queueApprove) ||
+        force
       const oldState = state.formStep
       if (setQueudState && state.queuedTag) {
         state.formStep = getQueuedTagState(state.queuedTag)
@@ -542,6 +545,9 @@ export const store = createStore<State>({
     },
     getMostRecentlyViewedTagnumber(state) {
       return getMostRecentlyViewedBikeTagTagnumber(state.currentBikeTag.tagnumber)
+    },
+    isBikeTagAmbassador(state) {
+      return state.isBikeTagAmbassador
     },
   },
   modules: {},

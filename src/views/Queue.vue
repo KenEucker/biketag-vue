@@ -37,6 +37,9 @@
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueSubmit]">
         <queue-submit :tag="getQueuedTag" @submit="onQueueSubmit" />
       </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]">
+        <queue-posted-share :tag="getQueuedTag" @submit="onQueueSubmit" />
+      </div>
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
         <queue-posted :tag="getQueuedTag" />
       </div>
@@ -78,6 +81,7 @@ import QueueMystery from '@/components/QueueMystery.vue'
 import QueueSubmit from '@/components/QueueSubmit.vue'
 import QueueJoined from '@/components/QueueJoined.vue'
 import QueuePosted from '@/components/QueuePosted.vue'
+import QueuePostedShare from '@/components/QueuePostedShare.vue'
 import QueueApprove from '@/components/QueueApprove.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
@@ -90,6 +94,7 @@ export default defineComponent({
     QueueSubmit,
     QueueJoined,
     QueuePosted,
+    QueuePostedShare,
     QueueApprove,
     BikeTagQueue,
   },
@@ -148,7 +153,8 @@ export default defineComponent({
         !this.isViewingQueue() &&
         !(
           this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
-          this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]
+          this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted] ||
+          this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]
         )
       )
     },
@@ -197,7 +203,6 @@ export default defineComponent({
           formAction,
           new URLSearchParams(formData).toString(),
           (res) => {
-            console.log({ formSubmitted: res })
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
               type: 'success',

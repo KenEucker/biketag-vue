@@ -1,8 +1,7 @@
 <template>
-  <b-container class="queue-submit">
-    <div>
-      <h3 class="queue-title">{{ $t('pages.queue.submit_title') }}</h3>
-    </div>
+  <b-container class="queue-posted-share">
+    <h3 class="queue-title">{{ $t('pages.queue.posted_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.queue.posted_text') }}</p>
     <div>
       <b-tabs nav-item-class="nav-item">
         <b-tab v-if="!!getGame?.subreddit?.length">
@@ -98,12 +97,23 @@
             @click="showInstagram = !showInstagram"
           />
         </fieldset>
-        <bike-tag-button
-          variant="medium"
-          :text="$t('pages.queue.post_new_tag')"
-          @click="onSubmit"
-        />
+        <div class="mt-3 align-center">
+          <bike-tag-button
+            variant="medium"
+            class="mt-2 mb-2 border-0"
+            :text="$t('pages.queue.post_new_tag')"
+            @click="onSubmit"
+          />
+        </div>
       </form>
+    </div>
+
+    <div class="mt-3 align-center">
+      <bike-tag-button
+        class="border-0"
+        :text="`${$t('pages.queue.joined_button')} #${getCurrentBikeTag?.tagnumber}`"
+        @click="goViewQueue"
+      />
     </div>
   </b-container>
 </template>
@@ -152,15 +162,15 @@ export default defineComponent({
     },
     redditPostText() {
       return `
-[#${this.getQueuedTag.tagnumber} tag by ${this.getQueuedTag.foundPlayer}](https://biketag.io/#/${this.getQueuedTag.tagnumber})
+[#${this.getQueuedTag.tagnumber} tag by ${this.getQueuedTag.foundPlayer}](https://${this.getGameName}.biketag.io/#/${this.getQueuedTag.tagnumber})
 
 Credit goes to ${this.getQueuedTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
 
-"[${this.getQueuedTag.foundLocation}](https://biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
+"[${this.getQueuedTag.foundLocation}](https://${this.getGameName}.biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
 
 See all BikeTags and more, for ${this.getGameName}:
 
-[biketag.io](https://https://biketag.io) | [Leaderboard](https://https://biketag.io/leaderboard) | [Rules](https://https://biketag.io/#howto)
+[${this.getGameName}.biketag.io](https://${this.getGameName}.biketag.io) | [Leaderboard](https://${this.getGameName}.biketag.io/leaderboard) | [Rules](https://${this.getGameName}.biketag.io/#howto)
         `
     },
     twitterPostText() {
@@ -174,15 +184,15 @@ See all BikeTags and more, for ${this.getGameName}:
     },
     instgramPostText() {
       return `
-[#${this.getQueuedTag.tagnumber} tag by ${this.getQueuedTag.foundPlayer}](https://biketag.io/#/${this.getQueuedTag.tagnumber})
+[#${this.getQueuedTag.tagnumber} tag by ${this.getQueuedTag.foundPlayer}](https://${this.getGameName}biketag.io/#/${this.getQueuedTag.tagnumber})
 
 Credit goes to ${this.getQueuedTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
 
-"[${this.getQueuedTag.foundLocation}](https://biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
+"[${this.getQueuedTag.foundLocation}](https://${this.getGameName}biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
 
 See all BikeTags and more, for ${this.getGameName}:
 
-[biketag.io](https://https://biketag.io) | [Leaderboard](https://https://biketag.io/leaderboard) | [Rules](https://https://biketag.io/#howto)
+[${this.getGameName}.biketag.io](https://${this.getGameName}.biketag.io) | [Leaderboard](https://${this.getGameName}.biketag.io/leaderboard) | [Rules](https://${this.getGameName}.biketag.io/#howto)
         `
     },
   },
@@ -194,6 +204,9 @@ See all BikeTags and more, for ${this.getGameName}:
   methods: {
     copyTabContents(text) {
       navigator.clipboard.writeText(text)
+    },
+    goViewQueue() {
+      this.$store.dispatch('resetFormStep')
     },
     onSubmit() {
       const formAction = this.$refs.submitTag.getAttribute('action')
@@ -225,7 +238,7 @@ See all BikeTags and more, for ${this.getGameName}:
 })
 </script>
 <style lang="scss">
-.queue-submit {
+.queue-posted-share {
   .nav-tabs {
     margin-bottom: -6px;
 
@@ -237,7 +250,7 @@ See all BikeTags and more, for ${this.getGameName}:
 }
 </style>
 <style scoped lang="scss">
-.queue-submit {
+.queue-posted-share {
   .tab-logo {
     max-width: 2em;
   }
@@ -254,6 +267,17 @@ See all BikeTags and more, for ${this.getGameName}:
     margin-bottom: 1em;
     color: white;
     font-weight: 800;
+  }
+
+  form {
+    label {
+      font-size: 1.5rem;
+      margin-right: 1em;
+    }
+    input[type='checkbox'] {
+      height: 1rem;
+      width: 1rem;
+    }
   }
 }
 </style>

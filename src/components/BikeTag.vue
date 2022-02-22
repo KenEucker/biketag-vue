@@ -1,6 +1,33 @@
 <template>
-  <b-row :class="reverse ? 'reversed' : ''">
-    <b-col v-show="_mysteryImageUrl" :md="_foundImageUrl ? 6 : 12" class="mb-3">
+  <b-row :class="`center-flx ${reverse ? 'reversed' : ''}`">
+    <b-col v-show="_foundImageUrl" md="6" class="mb-3 max-w">
+      <b-card class="polaroid found-tag">
+        <div class="img-wrapper">
+          <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
+          <expandable-image
+            class="image img-fluid"
+            :source="sizedFoundImage ? getImgurImageSized(_foundImageUrl) : _foundImageUrl"
+            :full-source="_foundImageUrl"
+            :alt="foundDescription"
+            @load="tagImageLoaded('found')"
+          ></expandable-image>
+        </div>
+        <div class="card-bottom">
+          <div class="description">
+            <span>{{ _foundDescription }}</span>
+          </div>
+          <player
+            class="tag-player"
+            :player="foundPlayer"
+            :player-name="_foundPlayer"
+            :isPolaroid="true"
+            size="txt"
+          />
+          <span v-if="showFoundPostedDateTime">{{ getPostedDate(tag.foundTime, true) }}</span>
+        </div>
+      </b-card>
+    </b-col>
+    <b-col v-show="_mysteryImageUrl" :md="_foundImageUrl ? 6 : 12" class="mb-3 max-w">
       <b-card class="polaroid mystery-tag">
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _tagnumber }}</span>
@@ -22,34 +49,8 @@
             <span v-if="showPostedDate">{{ getPostedDate() }}</span>
             <span v-if="showMysteryPostedDateTime">{{ getPostedDate(tag.mysteryTime, true) }}</span>
           </div>
-          <player v-if="mysteryPlayer" :player="mysteryPlayer" size="txt" />
+          <player v-if="mysteryPlayer" :isPolaroid="true" :player="mysteryPlayer" size="txt" />
           <span v-else class="player-name">{{ _mysteryPlayer }}</span>
-        </div>
-      </b-card>
-    </b-col>
-    <b-col v-show="_foundImageUrl" md="6" class="mb-3">
-      <b-card class="polaroid found-tag">
-        <div class="img-wrapper">
-          <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
-          <expandable-image
-            class="image img-fluid"
-            :source="sizedFoundImage ? getImgurImageSized(_foundImageUrl) : _foundImageUrl"
-            :full-source="_foundImageUrl"
-            :alt="foundDescription"
-            @load="tagImageLoaded('found')"
-          ></expandable-image>
-        </div>
-        <div class="card-bottom">
-          <div class="description">
-            <span>{{ _foundDescription }}</span>
-            <player
-              class="tag-player"
-              :player="foundPlayer"
-              :player-name="_foundPlayer"
-              size="txt"
-            />
-            <span v-if="showFoundPostedDateTime">{{ getPostedDate(tag.foundTime, true) }}</span>
-          </div>
         </div>
       </b-card>
     </b-col>
@@ -223,23 +224,24 @@ export default defineComponent({
   },
 })
 </script>
-<style lang="scss">
-.polaroid.mystery-tag,
-.polaroid.found-tag {
-  .player-name {
-    margin-top: -1rem;
-  }
-}
-</style>
 <style lang="scss" scoped>
 .reversed {
-  flex-flow: row-reverse;
+  flex-flow: row-reverse wrap;
+}
+
+.max-w{
+  max-width: 800px;
+}
+
+.center-flx {
+  justify-content: center;
 }
 
 .polaroid {
   background-color: white;
   box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
   margin-bottom: 25px;
+  width: 100%;
 }
 
 .img-wrapper {
@@ -263,14 +265,12 @@ export default defineComponent({
 }
 
 .card-bottom {
-  min-height: 12rem;
+  // min-height: 12rem;
 
   .description {
     position: relative;
     white-space: pre-wrap;
-    width: 110%;
-    margin-left: -5%;
-    padding: 1em;
+    padding: 0.5rem;
     line-height: 2em;
   }
 }

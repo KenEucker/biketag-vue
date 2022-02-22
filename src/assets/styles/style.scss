@@ -5,10 +5,23 @@ html {
   height: 100%;
 }
 
+body {
+  color: $app-color;
+}
+
 #app {
   min-height: 100vh;
   color: $app-color;
   background: $app-bg;
+  
+  .align-center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .flex-columns {
+    flex-direction: column;
+  }
 
   .spinner {
     animation-name: spin;
@@ -115,6 +128,10 @@ html {
       &:focus {
         box-shadow: 0 0 0 0.25rem $btn-post-shadow-color;
       }
+    }
+
+    button.biketag-button {
+      
     }
 
     .tag-number {

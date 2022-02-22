@@ -35,16 +35,27 @@ export const getBikeTagClientOpts = (
     opts.imgur.accessToken = process.env.IMGUR_ACCESS_TOKEN
     opts.imgur.refreshToken = process.env.IMGUR_REFRESH_TOKEN
 
+    opts.reddit = opts.reddit ?? {}
+    opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
+    opts.reddit.clientSecret = process.env.REDDIT_CLIENT_SECRET
+    /// TODO: comes from sanity game settings
+    // opts.reddit.username = process.env.REDDIT_USERNAME
+    // opts.reddit.password = process.env.REDDIT_PASSWORD
+
     opts.sanity = opts.sanity ?? {}
     opts.sanity.projectId = process.env.SANITY_PROJECT_ID
     opts.sanity.dataset = process.env.SANITY_DATASET
 
     if (admin) {
-      opts.imgur = opts.imgur ?? {}
       opts.imgur.clientId = process.env.IMGUR_ADMIN_CLIENT_ID ?? opts.imgur.clientId
       opts.imgur.clientSecret = process.env.IMGUR_ADMIN_CLIENT_SECRET ?? opts.imgur.clientSecret
       opts.imgur.accessToken = process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? ''
       opts.imgur.refreshToken = process.env.IMGUR_ADMIN_REFRESH_TOKEN ?? opts.imgur.refreshToken
+
+      opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
+      opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
+      opts.reddit.username = process.env.REDDIT_ADMIN_USERNAME
+      opts.reddit.password = process.env.REDDIT_ADMIN_PASSWORD
     }
   }
 
@@ -275,7 +286,7 @@ export const sendEmailsToAmbassadors = async (
         emailSubject,
         {
           ...defaultEmailData,
-          ...getEmailData(),
+          ...getEmailData({ id: superAdmin } as unknown as Ambassador),
         },
         emailName
       )
@@ -309,17 +320,20 @@ export const archiveAndClearQueue = async (
   )
   const biketag = new BikeTagClient(biketagOpts)
   if (!game) {
-    game = (await biketag.game(queuedTags[0].game)) as Game
+    const gameResponse = await biketag.getGame({ game: queuedTags[0].game }, { source: 'sanity' })
+    game = gameResponse.success ? gameResponse.data : null
   }
-  const nonAdminBikeTagOpts = getBikeTagClientOpts(
-    { method: 'get' } as unknown as request.Request,
-    true
-  )
-  nonAdminBikeTagOpts.game = game.name.toLocaleLowerCase()
-  nonAdminBikeTagOpts.imgur.hash = game.queuehash
-  const nonAdminBikeTag = new BikeTagClient(nonAdminBikeTagOpts)
+  if (queuedTags.length > 1 && game) {
+    const nonAdminBikeTagOpts = getBikeTagClientOpts(
+      { method: 'get' } as unknown as request.Request,
+      true
+    )
+    const gameName = game.name.toLocaleLowerCase()
+    console.log('archiving remaining queued tags', { game: gameName, queuedTags })
+    nonAdminBikeTagOpts.game = gameName
+    nonAdminBikeTagOpts.imgur.hash = game.queuehash
+    const nonAdminBikeTag = new BikeTagClient(nonAdminBikeTagOpts)
 
-  if (queuedTags.length > 1) {
     const remainingQueuedTags = queuedTags.slice(1)
     for (const nonWinningTag of remainingQueuedTags) {
       /* Archive using ambassador credentials (mainhash and archivehash are both ambassador albums) */
@@ -327,14 +341,14 @@ export const archiveAndClearQueue = async (
       if (archiveTagResult.success) {
         results.push({
           message: 'non-winning found image archived',
-          game: game.name,
+          game: gameName,
           tag: nonWinningTag,
         })
       } else {
         console.log({ archiveTagResult })
         results.push({
           message: 'error archiving non-winning found image',
-          game: game.name,
+          game: gameName,
           tag: nonWinningTag,
         })
         errors = true
@@ -344,14 +358,14 @@ export const archiveAndClearQueue = async (
       if (deleteArchivedTagFromQueueResult.success) {
         results.push({
           message: 'non-winning tag deleted from queue',
-          game: game.name,
+          game: gameName,
           tag: nonWinningTag,
         })
       } else {
         console.log({ deleteArchivedTagFromQueueResult })
         results.push({
           message: 'error deleting non-winning tag from the queue',
-          game: game.name,
+          game: gameName,
           tag: nonWinningTag,
         })
         /// No error here?
@@ -400,13 +414,12 @@ export const getActiveQueueForGame = async (
       source: 'imgur',
     })
     queuedTags = getQueueResponse.success ? getQueueResponse.data : []
-    console.log({ getQueueResponse, game: game.name })
     if (queuedTags?.length) {
       completedTags = queuedTags.filter((t) => t.foundImageUrl?.length && t.mysteryImageUrl?.length)
 
       if (completedTags.length) {
         const now = Date.now()
-        const tagAutoPostTimer = 1000 * 60 * 1 //autoPostSetting
+        const tagAutoPostTimer = 1000 * 60 * autoPostSetting
         timedOutTags = completedTags.filter((t) => now - t.mysteryTime * 1000 > tagAutoPostTimer)
 
         if (timedOutTags.length) {
@@ -426,17 +439,20 @@ export const getActiveQueueForGame = async (
 
 export const setNewBikeTagPost = async (
   winningBikeTagPost: Tag,
-  game?: Game
+  game?: Game,
+  currentBikeTag?: Tag
 ): Promise<BackgroundProcessResults> => {
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,
     true
   )
-  delete biketagOpts.game
+  biketagOpts.game = game?.name.toLowerCase()
+  biketagOpts.imgur.hash = game?.mainhash
+  console.log({ biketagOpts })
   const biketag = new BikeTagClient(biketagOpts)
   game = game ?? ((await biketag.game(winningBikeTagPost.game)) as Game)
-  const { data: currentBikeTag } = await biketag.getTag() // the "current" mystery tag to be updated
+  currentBikeTag = currentBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
   const results = []
 
@@ -445,14 +461,14 @@ export const setNewBikeTagPost = async (
       const discussionUrlObject = JSON.parse(winningBikeTagPost.discussionUrl)
       if (discussionUrlObject && typeof discussionUrlObject.postToReddit !== 'undefined') {
         /// TODO: post to Reddit and save the URL here
-        winningBikeTagPost.discussionUrl = 'redd.it/'
+        winningBikeTagPost.discussionUrl = ''
       }
     }
     if (winningBikeTagPost.mentionUrl) {
       const mentionUrlObject = JSON.parse(winningBikeTagPost.mentionUrl)
       if (mentionUrlObject && typeof mentionUrlObject.postToTwitter === 'undefined') {
         /// TODO: post to Reddit and save the URL here
-        winningBikeTagPost.mentionUrl = 'twitter.com/'
+        winningBikeTagPost.mentionUrl = ''
       }
     }
   } catch (e) {
@@ -472,7 +488,9 @@ export const setNewBikeTagPost = async (
     currentBikeTag.foundTime = winningBikeTagPost.foundTime
     currentBikeTag.foundLocation = winningBikeTagPost.foundLocation
     currentBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
+    console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
     const currentBikeTagUpdateResult = await biketag.updateTag(currentBikeTag)
+    console.log({ currentBikeTagUpdateResult })
     if (currentBikeTagUpdateResult.success) {
       results.push({
         message: 'current BikeTag updated',
@@ -508,20 +526,42 @@ export const setNewBikeTagPost = async (
     }
 
     if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
-      /// TODO: REMOVE LEGACY HACK
-      axios
-        .get(`https://${game.name}.biketag.org?flushCache=true&resendNotification=true`)
-        .catch((e) => {
-          /// Unimportant
-        })
-      ////
+      const newPostedBikeTag = newBikeTagUpdateResult.data as unknown as Tag
+      const postToReddit = true
+      if (postToReddit) {
+        const postedToRedditResult = await biketag.updateTag(newPostedBikeTag, { source: 'reddit' })
+        if (postedToRedditResult.success) {
+          results.push({
+            message: 'new BikeTag posted to Reddit',
+            game: game.name,
+            tag: postedToRedditResult.data,
+          })
+        } else {
+          results.push({
+            message: 'new BikeTag was not posted to Reddit',
+            error: postedToRedditResult.error,
+            game: game.name,
+            tag: newPostedBikeTag,
+          })
+          errors = true
+        }
+      } else {
+        /// TODO: REMOVE LEGACY HACK
+        axios
+          .get(`https://${game.name}.biketag.org?flushCache=true&resendNotification=true`)
+          .catch((e) => {
+            /// Unimportant
+          })
+        ////
+      }
+
       const ambassadors = (await biketag.ambassadors(undefined, {
         source: 'sanity',
       })) as Ambassador[]
       const thisGamesAmbassadors = ambassadors.filter(
         (a) => game.ambassadors.indexOf(a.name) !== -1
       )
-      const winningTagnumber = (newBikeTagUpdateResult.data as unknown as Tag).tagnumber
+      const winningTagnumber = newPostedBikeTag.tagnumber
       const host = `https://${game.name}.biketag.io`
       const logo = game.logo?.length
         ? game.logo.indexOf('imgur.co') !== -1
@@ -533,6 +573,7 @@ export const setNewBikeTagPost = async (
         `New BikeTag Round (#${winningTagnumber}) Auto-Posted for [${game.name}]`,
         thisGamesAmbassadors,
         (a) => {
+          console.log({ a })
           return {
             currentBikeTag: currentBikeTagUpdateResult.data,
             newBikeTagPost: newBikeTagUpdateResult.data,
@@ -558,7 +599,7 @@ export const setNewBikeTagPost = async (
         }
       )
 
-      /************** CLEAR EXISTING QUEUE BY ARCHIVING/DELETING TAG IMAGES *****************/
+      /************** REMOVE NEWLY POSTED BIKETAG FROM QUEUE *****************/
       const nonAdminBikeTagOpts = getBikeTagClientOpts(
         {
           method: 'get',
@@ -588,7 +629,8 @@ export const setNewBikeTagPost = async (
     }
   } catch (e) {
     results.push({
-      message: e?.message ?? e,
+      message: 'error setting new BikeTag Post',
+      error: e?.message ?? e,
       game: game.name,
       current: currentBikeTag,
       tag: newBikeTagPost,
@@ -602,18 +644,13 @@ export const setNewBikeTagPost = async (
   }
 }
 
-export const getWinningTagForCurrentRound = (activeQueue, currentBikeTag: Tag): Tag => {
-  const { timedOutTags, completedTags } = activeQueue
-  console.log({ currentBikeTag, timedOutTags, completedTags })
-  if (completedTags.length) {
-    if (timedOutTags.length) {
-      const orderedTimedOutTags = timedOutTags.sort((t1, t2) => t1.mysteryTime - t2.mysteryTime)
-      console.log({ orderedTimedOutTags })
-      const winnerWinnerChickenDinner = orderedTimedOutTags[0] // the "first" completed tag in the queue
+export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag: Tag): Tag => {
+  if (timedOutTags.length) {
+    const orderedTimedOutTags = timedOutTags.sort((t1, t2) => t1.mysteryTime - t2.mysteryTime)
+    const winnerWinnerChickenDinner = orderedTimedOutTags[0] // the "first" completed tag in the queue
 
-      if (currentBikeTag.tagnumber !== winnerWinnerChickenDinner.tagnumber - 1) {
-        return winnerWinnerChickenDinner
-      }
+    if (currentBikeTag.tagnumber === winnerWinnerChickenDinner.tagnumber - 1) {
+      return winnerWinnerChickenDinner
     }
   }
 

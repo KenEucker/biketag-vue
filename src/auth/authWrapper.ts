@@ -93,7 +93,7 @@ export const useAuth0 = ({
         return this.auth0Client.logout(o)
       },
     },
-  })
+  }).mount(document.createElement('div'))
 
   return instance
 }

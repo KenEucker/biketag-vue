@@ -1,25 +1,20 @@
 <template>
-  <div class="container mt-2">
-    <div class="footer-buttons">
-      <b-button class="m-1" variant="primary" @click="goAboutPage">
-        {{ $t('menu.about') }}
-      </b-button>
-      <b-button class="m-1" variant="primary" @click="goUsersPage">
-        {{ $t('menu.players') }}
-      </b-button>
-      <b-button class="m-1" variant="primary" @click="goLeaderboardPage">
-        {{ $t('menu.top10') }}
-      </b-button>
+  <div class="container">
+    <div class="footer-buttons mb-3">
+      <bike-tag-button class="m-1" :text="$t('menu.about')" @click="goAboutPage" />
+      <bike-tag-button class="m-1" :text="$t('menu.players')" @click="goUsersPage" />
+      <bike-tag-button class="m-1" :text="$t('menu.top10')" @click="goLeaderboardPage" />
     </div>
     <footer class="container mt-2 pb-5">
       <div class="row">
         <div class="col-md-2">
           <div class="worldwide">
-            <a href="https://biketag.org">
-              <div>{{ $t('components.footer.biketag') }}</div>
-              <i class="fa fa-globe" aria-hidden="true"></i>
-              <div>{{ $t('components.footer.worldwide') }}</div>
-            </a>
+            <bike-tag-button variant="circle" @click="goWorldwide">
+              <img src="../assets/images/npworld.png" alt="BikeTag World Wide" />
+            </bike-tag-button>
+            <!-- <div>{{ $t('components.footer.biketag') }}</div> -->
+            <!-- <i class="fa fa-globe" aria-hidden="true"></i> -->
+            <!-- <div>{{ $t('components.footer.worldwide') }}</div> -->
           </div>
         </div>
         <div class="col-md-2">
@@ -40,9 +35,13 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import BikeTagButton from '@/components/BikeTagButton.vue'
 
 export default defineComponent({
   name: 'BikeTagFooter',
+  components: {
+    BikeTagButton,
+  },
   methods: {
     goAboutPage: function () {
       this.$router.push('/about')
@@ -62,6 +61,13 @@ export default defineComponent({
 <style scoped lang="scss">
 .footer-buttons {
   display: inline-flex;
+
+  @media (max-width: 400px){
+    flex-flow: column;
+    & .scribble-button {
+      min-height: 0;
+    }
+  }
 
   .btn {
     max-height: 3em;

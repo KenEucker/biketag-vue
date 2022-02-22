@@ -226,7 +226,7 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
     queuedTagState =
       discussionUrlIsSet || mentionUrlIsSet
         ? BiketagFormSteps.queuePosted
-        : BiketagFormSteps.queueSubmit
+        : BiketagFormSteps.queuePostedShare
   } else {
     queuedTagState = foundImageSet ? BiketagFormSteps.queueMystery : BiketagFormSteps.queueFound
   }
