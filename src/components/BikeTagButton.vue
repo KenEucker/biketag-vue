@@ -64,13 +64,13 @@ export default defineComponent({
     font-size: 2rem;
     min-width: 6rem;
 
-    @media (min-width: 570px) {
+    @media (min-width: 650px) {
       font-size: 2.5rem;
       min-width: 4em;
     }
 
     @media (min-width: 1020px) {
-      font-size: 3rem;
+      font-size: 3rem!important;
       min-width: 5em;
     }
   }
@@ -91,6 +91,11 @@ export default defineComponent({
     .scribble-text--inner {
       padding: 1rem;
     }
+    @media (min-width: 650px) {
+      .scribble-text--inner {
+        font-size: 2rem;
+      }
+    }
   }
 
   &.bold {
@@ -100,13 +105,13 @@ export default defineComponent({
     .scribble-text--inner {
       min-width: 8rem;
 
-      @media (min-width: 570px) {
+      @media (min-width: 650px) {
         font-size: 3.5rem;
       }
     }
   }
 
-  &.cirlce {
+  &.circle {
     .button--children {
       padding: 0;
     }
