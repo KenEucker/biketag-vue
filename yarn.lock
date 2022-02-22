@@ -2876,11 +2876,12 @@ better-opn@^3.0.0:
   dependencies:
     open "^8.0.4"
 
-biketag@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-2.0.4.tgz#6fe5d03a650c3eda802a300d46c4a59d9d876919"
-  integrity sha512-Tffjj3PjgU5Z5y/hR87DQ1g1R3m5vhFpzdqjxS6VpbuApCxup0Lluv1AAk1g4b7J4Jw9HACz0Sl65G2EplqpbA==
+biketag@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-2.0.5.tgz#355c4e4323bbe4209ec59fc0353c2e7ffebeb60b"
+  integrity sha512-J5UV5whkuvGwMaopwTNkGKB/SfSSYg0iLrm6Tx5YmeZqzSb7ZYPG9z2DEBtK3GuEuVHBRXF+1jlK9dPNY07pTA==
   dependencies:
+    "@croquet/croquet" "^1.0.5"
     "@sanity/client" "^2.23.2"
     axios "^0.21.1"
     axios-cache-adapter "^2.7.3"
