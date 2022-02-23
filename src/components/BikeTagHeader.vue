@@ -13,11 +13,11 @@
       <!-- <i class="fa back-button fa-long-arrow-alt-left" /> -->
       <!--Removed glowing bike icon from here-->
     </div>
-    <div class="header-logo">
+    <!-- <div class="header-logo">
       <a href="./">
         <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
       </a>
-    </div>
+    </div> -->
     <div class="nav-buttons align-center mt-4 mb-4">
       <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />
       <bike-tag-button variant="bold" :text="$t('menu.play')" @click="goQueuePlay" />
@@ -188,9 +188,11 @@ export default defineComponent({
   color: blue;
 }
 
+// start modififed by will
+
 .nav-buttons {
   @media (max-width: 469px) {
-    flex-flow: column;
+    flex-direction: row;
     align-items: center;
     height: 250px;
     margin: 0 !important;
@@ -201,18 +203,21 @@ export default defineComponent({
   }
 }
 
+// end modified by will
+
 .bike-btn {
   background-size: unset !important;
 }
 
 // start of modified by will
 .bike-tag-header {
-  background-color: pink;
+  
 }
 .biketag-header-nav {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  gap: 2rem;
   padding-top: 0.5rem;
 }
 
