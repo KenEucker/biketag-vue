@@ -1,48 +1,50 @@
 <template>
-  <div class="biketag-header">
-    <div class="container mt-2">
-      <div v-if="isShow" class="menu-btn p-2">
-        <bike-tag-button class="btn-circle" variant="circle" @click="goBack">
-          <!-- <i class="fa back-button fa-long-arrow-alt-left" /> -->
-          <!--Removed glowing bike icon from here-->
-        </bike-tag-button>
-      </div>
-      <div class="header-logo">
-        <a href="./">
-          <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
-        </a>
-        <div>
-          <span class="game-title">{{ getGameTitle }}</span>
-        </div>
-      </div>
-      <div class="nav-buttons align-center mt-4 mb-4">
-        <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />
-        <bike-tag-button variant="bold" :text="$t('menu.play')" @click="goQueuePlay" />
-        <bike-tag-button :text="$t('menu.howto')" @click="goHowPage" />
-        <span
-          v-if="getEasterEgg && playingEaster"
-          class="fas fa-volume-mute"
-          @click="muteEasterEgg"
-        ></span>
-        <div v-if="showAuth && !authLoading">
-          <bike-tag-button
-            v-if="!$auth.isAuthenticated?.value"
-            :text="$t('menu.login')"
-            @click="login"
-          />
-          <bike-tag-button
-            v-if="$auth.isAuthenticated?.value"
-            :text="$t('menu.logout')"
-            @click="logout"
-          />
-        </div>
-        <netlify-identity-widget />
-      </div>
-      <audio id="biketag-jingle" ref="jingle">
-        <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
-        Your browser does not support the audio element.
-      </audio>
+  <header class="biketag-header">
+    <div class="biketag-header-nav">
+      <img src="/public/images/Profile.svg" alt="Profile con" />
+      <img src="/public/images/bike-tag-logo.svg" alt="Bike tag logo" />
+      <img src="/public/images/Hamburger.svg" alt="Burge menu" />
     </div>
+    <span class="game-title">{{ getGameTitle }}</span>
+  </header>
+  <div class="container mt-2">
+    <div v-if="isShow" class="menu-btn p-2">
+      <!--Removed "bike-tag-button-->
+      <!-- <i class="fa back-button fa-long-arrow-alt-left" /> -->
+      <!--Removed glowing bike icon from here-->
+    </div>
+    <div class="header-logo">
+      <a href="./">
+        <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
+      </a>
+    </div>
+    <div class="nav-buttons align-center mt-4 mb-4">
+      <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />
+      <bike-tag-button variant="bold" :text="$t('menu.play')" @click="goQueuePlay" />
+      <bike-tag-button :text="$t('menu.howto')" @click="goHowPage" />
+      <span
+        v-if="getEasterEgg && playingEaster"
+        class="fas fa-volume-mute"
+        @click="muteEasterEgg"
+      ></span>
+      <div v-if="showAuth && !authLoading">
+        <bike-tag-button
+          v-if="!$auth.isAuthenticated?.value"
+          :text="$t('menu.login')"
+          @click="login"
+        />
+        <bike-tag-button
+          v-if="$auth.isAuthenticated?.value"
+          :text="$t('menu.logout')"
+          @click="logout"
+        />
+      </div>
+      <netlify-identity-widget />
+    </div>
+    <audio id="biketag-jingle" ref="jingle">
+      <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
+      Your browser does not support the audio element.
+    </audio>
   </div>
 </template>
 
@@ -182,12 +184,16 @@ export default defineComponent({
   margin: auto;
 }
 
+.header2 {
+  color: blue;
+}
+
 .nav-buttons {
   @media (max-width: 469px) {
     flex-flow: column;
     align-items: center;
     height: 250px;
-    margin: 0!important;
+    margin: 0 !important;
 
     & .scribble-button {
       min-height: 0;
@@ -196,8 +202,21 @@ export default defineComponent({
 }
 
 .bike-btn {
-  background-size: unset!important;
+  background-size: unset !important;
 }
+
+// start modified by will
+.bike-tag-header {
+  background-color: pink;
+}
+.biketag-header-nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 0.5rem;
+}
+
+// end modified by will
 
 .bt-bicycle {
   background-size: cover;
