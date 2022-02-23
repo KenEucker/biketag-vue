@@ -4,6 +4,7 @@
       <div v-if="isShow" class="menu-btn p-2">
         <bike-tag-button class="btn-circle" variant="circle" @click="goBack">
           <!-- <i class="fa back-button fa-long-arrow-alt-left" /> -->
+          <!--Removed glowing bike icon from here-->
         </bike-tag-button>
       </div>
       <div class="header-logo">
