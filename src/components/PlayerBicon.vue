@@ -127,7 +127,7 @@ export default defineComponent({
   .info-wrapper {
     width: 100%;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
     flex-flow: row wrap;
     padding: 0 1rem;

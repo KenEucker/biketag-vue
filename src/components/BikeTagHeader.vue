@@ -205,7 +205,7 @@ export default defineComponent({
   background-size: unset !important;
 }
 
-// start modified by will
+// start of modified by will
 .bike-tag-header {
   background-color: pink;
 }
@@ -216,7 +216,7 @@ export default defineComponent({
   padding-top: 0.5rem;
 }
 
-// end modified by will
+// end of modified by will
 
 .bt-bicycle {
   background-size: cover;
