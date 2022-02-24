@@ -1,5 +1,5 @@
 import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
-// import Auth from '../auth'
+import { authGuard } from '@/auth/authGuard'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -44,18 +44,18 @@ const routes: Array<RouteRecordRaw> = [
   },
 ]
 
-const protectedRoutes: Array<RouteRecordRaw> = []
+let protectedRoutes: Array<RouteRecordRaw> = []
 
-// if (process.env.AUTH0_DOMAIN?.length) {
-//   protectedRoutes = [
-//     {
-//       path: '/profile',
-//       name: 'Profile',
-//       beforeEnter: Auth.routeGuard,
-//       component: () => import('@/views/Profile.vue'),
-//     },
-//   ]
-// }
+if (process.env.AUTH0_DOMAIN?.length) {
+  protectedRoutes = [
+    {
+      path: '/profile',
+      name: 'Profile',
+      beforeEnter: authGuard,
+      component: () => import('@/views/Profile.vue'),
+    },
+  ]
+}
 
 const router = createRouter({
   history: createWebHashHistory(),

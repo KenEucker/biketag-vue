@@ -12,7 +12,7 @@ import {
   getSanityImageUrl,
   getMostRecentlyViewedBikeTagTagnumber,
 } from '@/common/utils'
-import { BiketagFormSteps, State } from '@/common/types'
+import { BiketagFormSteps, State, User} from '@/common/types'
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
@@ -50,10 +50,14 @@ export const store = createStore<State>({
     html: '',
     formStep: BiketagFormSteps.queueView,
     queuedTag: {} as Tag,
+    user: {} as User,
     isBikeTagAmbassador: ambassadorId?.length > 0,
     mostRecentlyViewedTagnumber,
   },
   actions: {
+    profileUpdate({ commit }, d) {
+      return commit('UPDATE_PROFILE', d)
+    },
     setGame({ commit, state }) {
       if (!state.game?.mainhash) {
         return client.game(state.gameName, gameOpts as any).then((d) => {
@@ -289,6 +293,9 @@ export const store = createStore<State>({
     },
   },
   mutations: {
+    UPDATE_PROFILE(state, user){
+      state.user = user
+    },
     SET_GAME(state, game) {
       const oldState = state.game
       state.game = game
@@ -473,6 +480,9 @@ export const store = createStore<State>({
     },
   },
   getters: {
+    getUser(state) {
+      return state.user
+    },
     getImgurImageSized: () => getImgurImageSized,
     getQueuedTagState: (state) => {
       return getQueuedTagState(state.queuedTag)
