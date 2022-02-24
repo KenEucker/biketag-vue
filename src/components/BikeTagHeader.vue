@@ -32,20 +32,11 @@
           <bike-tag-button v-if="$auth.isAuthenticated" :text="$t('menu.logout')" @click="logout" />
         </div>
         <netlify-identity-widget />
-      </div>
-      <audio id="biketag-jingle" ref="jingle">
-        <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
-        Your browser does not support the audio element.
-      </audio>
-      <bike-tag-button
-        v-if="getQueuedTags?.length && tagnumber === 0"
-        class="btn-queue bike-btn"
-        variant="circle"
-        @click="goQueueView"
-      >
-        <img class="spinning-bike" src="../assets/images/SpinningBikeV1.svg" />
-      </bike-tag-button>
     </div>
+    <audio id="biketag-jingle" ref="jingle">
+      <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
+      Your browser does not support the audio element.
+    </audio>
   </div>
 </template>
 
@@ -76,7 +67,7 @@ export default defineComponent({
   },
   computed: {
     showAuth() {
-      return true
+      return false
     },
     isShow() {
       return this.$route.name === 'Play' && !this.$route.params?.tagnumber?.length ? false : true
@@ -130,11 +121,7 @@ export default defineComponent({
       if (this.$auth.isAuthenticated) {
         this.$auth.logout()
       } else {
-        if (this.isBikeTagAmbassador) {
-          netlifyIdentity.open('login')
-        } else {
-          this.$auth.loginWithRedirect()
-        }
+        this.$auth.loginWithRedirect()
       }
     },
     playEasterEgg(e) {
@@ -189,14 +176,33 @@ export default defineComponent({
   margin: auto;
 }
 
+.header2 {
+  color: blue;
+}
+
+// start modififed by will
+
 .nav-buttons {
   height: 250px;
   margin: 0 !important;
 }
 
+// end modified by will
+
 .bike-btn {
   background-size: unset !important;
 }
+
+// start of modified by will
+.biketag-header-nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 2rem;
+  padding-top: 0.5rem;
+}
+
+// end of modified by will
 
 .bt-bicycle {
   background-size: cover;
