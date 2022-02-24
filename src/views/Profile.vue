@@ -130,7 +130,6 @@ export default defineComponent({
       // const formData = new FormData(this.$refs.profileUpdate)
       //user_id = (await this.$auth.getIdTokenClaims()).sub
       //raw_token = (await this.$auth.getIdTokenClaims())._raw
-      console.log(await this.$auth.auth0Client.getIdTokenClaims())
       await this.$store.dispatch('profileUpdate', {
         name: this.name,
         metadata: this.socialNetworks.map((value, i) =>
