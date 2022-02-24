@@ -13,7 +13,10 @@
     "players": "Players",
     "top10": "Top10",
     "external": "External",
-    "language": "Languages"
+    "language": "Languages",
+    "profile": "Profile",
+    "login": "Login",
+    "logout": "Logout"
   },
   "components": {
     "biketag": {
