@@ -152,10 +152,6 @@ export default defineComponent({
   align-items: center;
 }
 
-.menu-btn {
-  position: absolute;
-}
-
 .btn-queue {
   position: absolute;
   top: 0;
