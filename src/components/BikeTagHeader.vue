@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
+    <div class="container container-fluid">
       <div v-if="isShow" class="nav-item">
         <bike-tag-button class="btn-circle" variant="circle" @click="goBack">
           <img
@@ -243,18 +243,9 @@ export default defineComponent({
   margin: auto;
 }
 
-.nav-buttons {
-  height: 250px;
-  margin: 0 !important;
-}
 
 .bike-btn {
   background-size: unset !important;
-}
-
-.bt-bicycle {
-  background-size: cover;
-  background-position: center;
 }
 
 .btn-circle {
@@ -265,10 +256,6 @@ export default defineComponent({
   cursor: pointer;
   justify-content: center;
   align-items: center;
-}
-
-.menu-btn {
-  position: absolute;
 }
 
 .btn-queue {
