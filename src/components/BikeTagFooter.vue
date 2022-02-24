@@ -15,20 +15,6 @@ export default defineComponent({
   components: {
     BikeTagButton,
   },
-  methods: {
-    goAboutPage: function () {
-      this.$router.push('/about')
-    },
-    goSupportPage: function () {
-      this.$router.push('/support')
-    },
-    goLeaderboardPage: function () {
-      this.$router.push('/leaderboard')
-    },
-    goUsersPage: function () {
-      this.$router.push('/players')
-    },
-  },
 })
 </script>
 <style scoped lang="scss">
