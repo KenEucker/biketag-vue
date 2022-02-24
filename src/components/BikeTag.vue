@@ -28,7 +28,7 @@
             class="tag-player"
             :player="foundPlayer"
             :player-name="_foundPlayer"
-            :isPolaroid="true"
+            :is-polaroid="true"
             size="txt"
           />
           <span v-if="showFoundPostedDateTime">{{ getPostedDate(tag.foundTime, true) }}</span>
@@ -65,7 +65,7 @@
             <span v-if="showPostedDate">{{ getPostedDate() }}</span>
             <span v-if="showMysteryPostedDateTime">{{ getPostedDate(tag.mysteryTime, true) }}</span>
           </div>
-          <player v-if="mysteryPlayer" :isPolaroid="true" :player="mysteryPlayer" size="txt" />
+          <player v-if="mysteryPlayer" :is-polaroid="true" :player="mysteryPlayer" size="txt" />
           <span v-else class="player-name">{{ _mysteryPlayer }}</span>
         </div>
       </b-card>
@@ -84,7 +84,7 @@ export default defineComponent({
   components: {
     ExpandableImage,
     Player,
-    BikeTagButton
+    BikeTagButton,
   },
   props: {
     tag: {
@@ -167,10 +167,8 @@ export default defineComponent({
     _tagnumber() {
       return this.tagnumber ? this.tagnumber : this.tag?.tagnumber
     },
-    _getHint(){
-      return this.tag?.hint
-        ? this.tag.hint
-        : this.$t('pages.play.nohint')
+    _getHint() {
+      return this.tag?.hint ? this.tag.hint : this.$t('pages.play.nohint')
     },
     _foundTagnumber() {
       return this.foundTagnumber ? this.foundTagnumber : this.tag?.tagnumber
@@ -248,10 +246,10 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-.btn-hint{
-  .scribble-text--inner{
-    min-width: 6rem!important;
-    font-size: 3.5rem!important;
+.btn-hint {
+  .scribble-text--inner {
+    min-width: 6rem !important;
+    font-size: 3.5rem !important;
   }
 }
 </style>
@@ -260,7 +258,7 @@ export default defineComponent({
   flex-flow: row-reverse wrap;
 }
 
-.max-w{
+.max-w {
   max-width: 800px;
 }
 
@@ -305,6 +303,7 @@ export default defineComponent({
     line-height: 2em;
   }
 }
+
 .btn-hint {
   position: absolute;
   top: 20px;

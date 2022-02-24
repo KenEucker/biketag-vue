@@ -70,10 +70,11 @@ export default defineComponent({
     }
 
     @media (min-width: 1020px) {
-      font-size: 3rem!important;
+      font-size: 3rem !important;
       min-width: 5em;
     }
   }
+
   .button--children {
     z-index: 1;
     padding: 3%;

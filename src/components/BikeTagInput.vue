@@ -39,6 +39,7 @@ export default defineComponent({
 <style lang="scss">
 .biketag-input {
   @include background-btn;
+
   input {
     border: none;
     position: absolute;

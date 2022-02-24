@@ -1,34 +1,37 @@
 <template>
-  <div class="container mt-2">
-    <div v-if="isShow" class="menu-btn p-2">
-      <!--Removed "bike-tag-button-->
-      <!-- <i class="fa back-button fa-long-arrow-alt-left" /> -->
-      <!--Removed glowing bike icon from here-->
-    </div>
-    <!-- <div class="header-logo">
-    </div> -->
-    <div class="nav-buttons align-center mt-4 mb-4">
-      <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />
-      <bike-tag-button variant="bold" :text="$t('menu.play')" @click="goQueuePlay" />
-      <bike-tag-button :text="$t('menu.howto')" @click="goHowPage" />
-      <span
-        v-if="getEasterEgg && playingEaster"
-        class="fas fa-volume-mute"
-        @click="muteEasterEgg"
-      ></span>
-      <div v-if="showAuth && !authLoading">
-        <bike-tag-button
-          v-if="!$auth.isAuthenticated?.value"
-          :text="$t('menu.login')"
-          @click="login"
-        />
-        <bike-tag-button
-          v-if="$auth.isAuthenticated?.value"
-          :text="$t('menu.logout')"
-          @click="logout"
-        />
+  <div class="biketag-header">
+    <div class="container mt-2">
+      <div v-if="isShow" class="menu-btn p-2">
+        <bike-tag-button class="btn-circle" variant="circle" @click="goBack">
+          <img
+            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMzknIGhlaWdodD0nMjUnIHZpZXdCb3g9JzAgMCAzOSAyNScgZmlsbD0nbm9uZScgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz4KPHBhdGggZD0nTTQuNDUzMzcgOS42NDMzMUgzMi40NTM0JyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8cGF0aCBkPSdNMi40NTMzNyAxMi42NDM0QzEzLjI1MyAxMS4xMDA2IDQ2LjAyOTMgMTAuNjQzNCAzNS4xMiAxMC42NDM0QzMwLjc0MDcgMTAuNjQzNCA3LjE4NjUgOC4xNzcxIDUuNDUzMzcgMTEuNjQzNCcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWNhcD0ncm91bmQnLz4KPHBhdGggZD0nTTEzLjQ1MzQgMS42NDMyNUMxMi4wNTEyIDMuODg2NzMgMTAuNTA5MiA2LjA3MTUzIDguODk3ODMgOC4xNDMyNUM3Ljc4NTY5IDkuNTczMTQgNS40MDQ2MyA5LjI3NDg3IDQuNjc1NjEgMTAuODY1NUMzLjEyMDkyIDE0LjI1NzUgLTAuMzI1NTA2IDEyLjI4ODEgMy41MDg5NCAxNS42NDMyQzUuNTU4OSAxNy40MzcgNy43MzYyMSAxOC45MjYxIDkuNjc1NiAyMC44NjU1QzEzLjEwMjcgMjQuMjkyNiAxMS4xOTg3IDIzLjU3NzEgOC42NzU2IDIwLjY0MzJDNi4zMDQwMyAxNy44ODU2IDIuOTUwNjQgMTQuOTY1NSAxLjE3NTYxIDExLjgwOTlDMC4wNDYyMTQzIDkuODAyMTEgNC42ODczOCA3LjQ1MDIxIDUuODk3ODMgNi42NDMyNUM3LjMxOTIyIDUuNjk1NjUgMTUuMDExNSAtMS4wODYzOSAxMi4wMDg5IDEuNjQzMjVDOS4zMDkzOCA0LjA5NzM5IDQuNjI2OTUgNy4yNDg3OCAzLjIzMTE2IDEwLjQyMUMyLjQwMjM0IDEyLjMwNDcgLTAuMDMxMzczNSAxMi4zNjE5IDIuMDA4OTQgMTQuNTg3N0MzLjIxODc2IDE1LjkwNzUgNC43NjMyMSAxNi4yNzA2IDUuOTUzMzggMTcuNjk4OEM3LjgxNjg4IDE5LjkzNSAxMC40MDY2IDIyLjY0MzIgMTMuNDUzNCAyMi42NDMyJyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8cGF0aCBkPSdNMi40NTMzNyAxMS42NDMzQzUuNzUzNDIgMTQuMjIxNSAxMS42NDY4IDE5LjAzMDEgMTMuNDUzNCAyMi42NDMzJyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8L3N2Zz4K"
+            alt="go back"
+          />
+          <!-- <i class="fa back-button fa-long-arrow-alt-left" /> -->
+        </bike-tag-button>
       </div>
-      <netlify-identity-widget />
+      <div class="header-logo">
+        <a href="./">
+          <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
+        </a>
+        <div>
+          <span class="game-title">{{ getGameTitle }}</span>
+        </div>
+      </div>
+      <div class="nav-buttons align-center mt-4 mb-4">
+        <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />
+        <bike-tag-button variant="bold" :text="$t('menu.play')" @click="goQueuePlay" />
+        <bike-tag-button :text="$t('menu.howto')" @click="goHowPage" />
+        <span
+          v-if="getEasterEgg && playingEaster"
+          class="fas fa-volume-mute"
+          @click="muteEasterEgg"
+        ></span>
+        <div v-if="showAuth && !authLoading">
+          <bike-tag-button v-if="!$auth.isAuthenticated" :text="$t('menu.login')" @click="login" />
+          <bike-tag-button v-if="$auth.isAuthenticated" :text="$t('menu.logout')" @click="logout" />
+        </div>
+        <netlify-identity-widget />
     </div>
     <audio id="biketag-jingle" ref="jingle">
       <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
@@ -115,8 +118,8 @@ export default defineComponent({
       }
     },
     login() {
-      if (this.isBikeTagAmbassador) {
-        netlifyIdentity.open('login')
+      if (this.$auth.isAuthenticated) {
+        this.$auth.logout()
       } else {
         this.$auth.loginWithRedirect()
       }
@@ -180,16 +183,8 @@ export default defineComponent({
 // start modififed by will
 
 .nav-buttons {
-  @media (max-width: 469px) {
-    flex-direction: row;
-    align-items: center;
-    height: 250px;
-    margin: 0 !important;
-
-    & .scribble-button {
-      min-height: 0;
-    }
-  }
+  height: 250px;
+  margin: 0 !important;
 }
 
 // end modified by will
@@ -199,9 +194,6 @@ export default defineComponent({
 }
 
 // start of modified by will
-.bike-tag-header {
-  
-}
 .biketag-header-nav {
   display: flex;
   flex-direction: row;
@@ -249,6 +241,7 @@ export default defineComponent({
 
 .btn-queue {
   animation: tronFilter 5s ease-in-out infinite alternate;
+
   .spinning-bike {
     max-height: 3.5em;
   }

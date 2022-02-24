@@ -22,7 +22,7 @@
     </div>
     <img v-if="playerBiconUrl" class="player-bicon" :src="playerBiconUrl" :alt="_playerName" />
     <div class="info-wrapper">
-      <span v-if="isPolaroid" class="player-name fnt">{{ biconDate }}</span> 
+      <span v-if="isPolaroid" class="player-name fnt">{{ biconDate }}</span>
       <span class="player-name p-1">{{ _playerName }}</span>
     </div>
   </div>
@@ -49,9 +49,9 @@ export default defineComponent({
       type: String,
       default: null,
     },
-    isPolaroid : {
+    isPolaroid: {
       type: Boolean,
-      default: false
+      default: false,
     },
     noLink: {
       type: Boolean,
@@ -83,19 +83,23 @@ export default defineComponent({
       }
       return this.getImgurImageSized(url, this.size[0])
     },
-    biconDate(){
+    biconDate() {
       let date
       if (this.player && typeof this.player === 'object') {
         if (!this.player.bicon) {
           if (this.player.tags[this.player.tags.length - 1].mysteryTime) {
-            date = new Date(this.player.tags[this.player.tags.length - 1].mysteryTime * 1000).toLocaleDateString()
+            date = new Date(
+              this.player.tags[this.player.tags.length - 1].mysteryTime * 1000
+            ).toLocaleDateString()
           } else {
-            date = new Date(this.player.tags[this.player.tags.length - 1].foundTime * 1000).toLocaleDateString()
+            date = new Date(
+              this.player.tags[this.player.tags.length - 1].foundTime * 1000
+            ).toLocaleDateString()
           }
         }
       }
       return date
-    }
+    },
   },
   methods: {
     goPlayerPage: function () {
@@ -137,9 +141,11 @@ export default defineComponent({
     // z-index: 99;
     text-shadow: 3px -2px 3px #292828e6;
     filter: invert(1) drop-shadow(2px 4px 6px white);
+
     // transform: rotate(-8deg);
     // display: block;
     animation: fadeIn 2s;
+
     // word-break: break-word;
     // text-decoration-line: underline;
     text-overflow: ellipsis;
@@ -149,9 +155,9 @@ export default defineComponent({
     display: flex;
     align-items: center;
 
-
     &.fnt {
-      font-size: 3rem!important;
+      font-size: 3rem !important;
+
       // margin-left: -4rem
     }
   }
@@ -164,7 +170,7 @@ export default defineComponent({
 
   .tag-count {
     position: absolute;
-    padding: 10px 0 10px 0;
+    padding: 10px 0;
     width: 4rem;
     text-align: center;
     clip-path: url(#badge-clip);
@@ -172,19 +178,23 @@ export default defineComponent({
   }
 
   .tag-count--color-one {
-    background-color: rgba(228, 178, 13, 0.9);
+    background-color: rgb(228 178 13 / 90%);
   }
+
   .tag-count--color-lessthanten {
-    background-color: rgba(26, 228, 13, 0.9);
+    background-color: rgb(26 228 13 / 90%);
   }
+
   .tag-count--color-fiftyormore {
-    background-color: rgba(31, 13, 228, 0.9);
+    background-color: rgb(31 13 228 / 90%);
   }
+
   .tag-count--color-onehundredormore {
-    background-color: rgba(228, 13, 219, 0.9);
+    background-color: rgb(228 13 219 / 90%);
   }
+
   .tag-count--color-fivehundredormore {
-    background-color: rgba(228, 13, 31, 0.87);
+    background-color: rgb(228 13 31 / 87%);
   }
 }
 
@@ -271,7 +281,7 @@ export default defineComponent({
     font-size: 2rem;
     top: 2rem;
     right: 1rem;
-    padding: 2px 8px 2px 8px;
+    padding: 2px 8px;
   }
 }
 

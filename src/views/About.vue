@@ -61,6 +61,7 @@ export default defineComponent({
   min-height: 190px;
   font-size: 1.8rem;
 }
+
 .games {
   display: flex;
   flex-flow: wrap;
