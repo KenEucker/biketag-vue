@@ -10,11 +10,6 @@
           class="fas fa-volume-mute"
           @click="muteEasterEgg"
         ></span>
-        <div v-if="showAuth && !authLoading">
-          <bike-tag-button v-if="!$auth.isAuthenticated" :text="$t('menu.login')" @click="login" />
-          <bike-tag-button v-if="$auth.isAuthenticated" :text="$t('menu.logout')" @click="logout" />
-        </div>
-        <netlify-identity-widget />
       </div>
     </div>
     <audio id="biketag-jingle" ref="jingle">
@@ -29,7 +24,6 @@ import { defineComponent, ref } from 'vue'
 import { mapGetters } from 'vuex'
 import NetlifyIdentityWidget from '@/components/NetlifyIdentityWidget.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import netlifyIdentity from 'netlify-identity-widget'
 
 export default defineComponent({
   name: 'BikeTagHeader',
@@ -45,7 +39,7 @@ export default defineComponent({
   data() {
     return {
       playingEaster: false,
-      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
+      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0
     }
   },
   computed: {
@@ -70,13 +64,6 @@ export default defineComponent({
     },
   },
   methods: {
-    login() {
-      if (this.$auth.isAuthenticated) {
-        this.$auth.logout()
-      } else {
-        this.$auth.loginWithRedirect()
-      }
-    },
     playEasterEgg(e) {
       e.preventDefault()
       e.stopPropagation()
@@ -108,15 +95,8 @@ export default defineComponent({
       this.$store.dispatch('setFormStepToJoin', true)
       this.$router.push('/play')
     },
-    async goQueueView() {
-      await this.$store.dispatch('resetFormStep')
-      this.$router.push('/play')
-    },
     goHowPage: function () {
       this.$router.push('/howtoplay')
-    },
-    goBack: function () {
-      this.$router.back()
     },
   },
 })
