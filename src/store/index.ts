@@ -523,8 +523,13 @@ export const store = createStore<State>({
     },
     getLogoUrl(state) {
       return (size = '', logo?: string) => {
-        logo = logo ? logo : state.game?.logo?.length ? state.game?.logo : defaultLogo
-        return logo?.indexOf('imgur.com') !== -1
+        logo = logo ? logo : state.game?.logo?.length ? state.game?.logo : undefined
+
+        if (!logo) {
+          return defaultLogo
+        }
+
+        return logo.indexOf('imgur.com') !== -1
           ? logo
           : getSanityImageUrl(logo, size, sanityBaseCDNUrl)
       }

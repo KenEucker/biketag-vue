@@ -4,8 +4,7 @@
     <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
-    <div v-if="getCurrentBikeTag" class="rel">
-      
+    <div v-if="getCurrentBikeTag" class="rel"></div>
     <div v-else>
       <span>{{ $t('pages.play.game_not_exists') }}</span>
       <span>{{ $t('pages.play.send_hello_email') }}</span>
@@ -70,5 +69,4 @@ export default defineComponent({
   },
 })
 </script>
-<style lang="scss">
-</style>
+<style lang="scss"></style>

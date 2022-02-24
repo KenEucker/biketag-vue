@@ -6,13 +6,14 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { BikeTagMenu } from '@/components/BikeTagMenu.vue'
+import BikeTagMenu from '@/components/BikeTagMenu.vue'
 import ServiceWorker from '@/components/ServiceWorker.vue'
 
 export default defineComponent({
   name: 'App',
   components: {
     ServiceWorker,
+    BikeTagMenu,
   },
   async created() {
     await this.$store.dispatch('setGame')
