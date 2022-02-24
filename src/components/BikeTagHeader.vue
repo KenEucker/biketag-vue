@@ -96,7 +96,6 @@ import { mapGetters } from 'vuex'
 import { GetQueryString } from '@/common/utils'
 import NetlifyIdentityWidget from '@/components/NetlifyIdentityWidget.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import netlifyIdentity from 'netlify-identity-widget'
 
 export default defineComponent({
   name: 'BikeTagHeader',
@@ -112,8 +111,7 @@ export default defineComponent({
   data() {
     return {
       playingEaster: false,
-      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      expanded: false
+      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0
     }
   },
   computed: {
@@ -169,15 +167,7 @@ export default defineComponent({
       }
     },
     login() {
-      if (this.$auth.isAuthenticated) {
-        this.$auth.logout()
-      } else {
-        if (this.isBikeTagAmbassador) {
-          netlifyIdentity.open('login')
-        } else {
-          this.$auth.loginWithRedirect()
-        }
-      }
+      this.$router.push('/login')
     },
     playEasterEgg(e) {
       e.preventDefault()
