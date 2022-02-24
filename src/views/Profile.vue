@@ -14,7 +14,7 @@
       <div class="flx-columns mt-5">
         <span class="player-name mb-5 mt-3"> {{ player.name }} </span>
         <span class="player-name mt-4" style="font-size : 2.5rem" 
-          v-for="social, i in player.metadata.filter(value => value.length > 0)" 
+          v-for="social, i in player.metadata.filter(value => value != null && value.length > 0)" 
           :key="i"> {{ social }} </span>
       </div>
     </div>
@@ -122,7 +122,7 @@ export default defineComponent({
       // const formData = new FormData(this.$refs.profileUpdate)
       //user_id = (await this.$auth.getIdTokenClaims()).sub
       //raw_token = (await this.$auth.getIdTokenClaims())._raw
-
+      console.log(await this.$auth.auth0Client.getIdTokenClaims())
       await this.$store.dispatch("profileUpdate", 
         {
           name : this.name, 
