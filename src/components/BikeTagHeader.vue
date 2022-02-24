@@ -1,12 +1,4 @@
 <template>
-  <header class="biketag-header">
-    <div class="biketag-header-nav">
-      <img src="/public/images/Profile.svg" alt="Profile con" />
-      <img src="/public/images/bike-tag-logo.svg" alt="Bike tag logo" />
-      <img src="/public/images/Hamburger.svg" alt="Burge menu" />
-    </div>
-    <span class="game-title">{{ getGameTitle }}</span>
-  </header>
   <div class="container mt-2">
     <div v-if="isShow" class="menu-btn p-2">
       <!--Removed "bike-tag-button-->
@@ -14,9 +6,6 @@
       <!--Removed glowing bike icon from here-->
     </div>
     <!-- <div class="header-logo">
-      <a href="./">
-        <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
-      </a>
     </div> -->
     <div class="nav-buttons align-center mt-4 mb-4">
       <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />

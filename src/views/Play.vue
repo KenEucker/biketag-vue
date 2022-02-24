@@ -1,47 +1,33 @@
 <template>
   <div class="container col-lg-8 play-biketag">
+    <bike-tag-header />
     <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
     <div v-if="getCurrentBikeTag" class="rel">
-      <bike-tag
-        v-if="tagnumber === 0"
-        :tag="getCurrentBikeTag"
-        :tagnumber="getCurrentBikeTag.tagnumber"
-        :mystery-image-url="getCurrentBikeTag.mysteryImageUrl"
-        :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
-        :player="getCurrentBikeTag.mysteryPlayer"
-        size="l"
-        :mystery-description="$t('pages.play.mystery').toLocaleUpperCase()"
-      />
-      <bike-tag
-        v-else
-        size="l"
-        :tag="tag"
-        :found-player="getPlayer(tag.foundPlayer)"
-        :mystery-player="getPlayer(tag.mysteryPlayer)"
-        @load="tagLoaded"
-      />
-    </div>
+      
     <div v-else>
       <span>{{ $t('pages.play.game_not_exists') }}</span>
       <span>{{ $t('pages.play.send_hello_email') }}</span>
     </div>
+    <bike-tag-footer />
   </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
-import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
+import BikeTagHeader from '@/components/BikeTagHeader.vue'
+import BikeTagFooter from '@/components/BikeTagFooter.vue'
 // import useSWRV from 'swrv'
 
 export default defineComponent({
   name: 'PlayView',
   components: {
-    BikeTag,
     Loading,
+    BikeTagHeader,
+    BikeTagFooter,
   },
   data() {
     // const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
@@ -54,7 +40,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags', 'getPlayers']),
+    ...mapGetters(['getCurrentBikeTag', 'getTags', 'getPlayers']),
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
@@ -85,18 +71,4 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-.play-biketag {
-  .polaroid img {
-    animation: fadeIn 2s;
-    max-height: 45vh;
-  }
-}
-@media (min-width: 1024px) {
-  .play-biketag {
-    .polaroid img {
-      animation: fadeIn 2s;
-      max-height: 60vh;
-    }
-  }
-}
 </style>
