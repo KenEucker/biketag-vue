@@ -188,6 +188,7 @@ export default defineComponent({
 
 .bike-pagination-bullet {
   position: relative;
+
   img {
     display: flex;
     justify-content: center;
@@ -198,6 +199,7 @@ export default defineComponent({
     border-radius: 5rem;
     cursor: pointer;
   }
+
   span {
     position: absolute;
     top: 75%;

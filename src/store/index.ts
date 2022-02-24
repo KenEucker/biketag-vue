@@ -12,7 +12,7 @@ import {
   getSanityImageUrl,
   getMostRecentlyViewedBikeTagTagnumber,
 } from '@/common/utils'
-import { BiketagFormSteps, State, User} from '@/common/types'
+import { BiketagFormSteps, State, User } from '@/common/types'
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
@@ -293,7 +293,7 @@ export const store = createStore<State>({
     },
   },
   mutations: {
-    UPDATE_PROFILE(state, user){
+    UPDATE_PROFILE(state, user) {
       state.user = user
     },
     SET_GAME(state, game) {

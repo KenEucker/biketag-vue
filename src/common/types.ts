@@ -31,8 +31,8 @@ export const special = [
 export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet']
 
 export interface User {
-  name : string,
-  metadata : string[]
+  name: string
+  metadata: string[]
 }
 export interface State {
   game: Game
@@ -46,7 +46,7 @@ export interface State {
   players: Player[]
   leaderboard: Player[]
   html: string
-  user : User,
+  user: User
   formStep: number
   queuedTag: Tag
   isBikeTagAmbassador: boolean

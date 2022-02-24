@@ -107,6 +107,7 @@ export default defineComponent({
       .tag-number {
         display: none;
       }
+
       .player-name {
         line-height: 75%;
       }

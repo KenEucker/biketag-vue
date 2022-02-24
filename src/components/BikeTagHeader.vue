@@ -28,16 +28,8 @@
           @click="muteEasterEgg"
         ></span>
         <div v-if="showAuth && !authLoading">
-          <bike-tag-button
-            v-if="!$auth.isAuthenticated"
-            :text="$t('menu.login')"
-            @click="login"
-          />
-          <bike-tag-button
-            v-if="$auth.isAuthenticated"
-            :text="$t('menu.logout')"
-            @click="logout"
-          />
+          <bike-tag-button v-if="!$auth.isAuthenticated" :text="$t('menu.login')" @click="login" />
+          <bike-tag-button v-if="$auth.isAuthenticated" :text="$t('menu.logout')" @click="logout" />
         </div>
         <netlify-identity-widget />
       </div>
@@ -135,7 +127,7 @@ export default defineComponent({
       }
     },
     login() {
-      if (this.$auth.isAuthenticated){
+      if (this.$auth.isAuthenticated) {
         this.$auth.logout()
       } else {
         if (this.isBikeTagAmbassador) {
@@ -199,11 +191,11 @@ export default defineComponent({
 
 .nav-buttons {
   height: 250px;
-  margin: 0!important;
+  margin: 0 !important;
 }
 
 .bike-btn {
-  background-size: unset!important;
+  background-size: unset !important;
 }
 
 .bt-bicycle {
@@ -243,6 +235,7 @@ export default defineComponent({
 
 .btn-queue {
   animation: tronFilter 5s ease-in-out infinite alternate;
+
   .spinning-bike {
     max-height: 3.5em;
   }

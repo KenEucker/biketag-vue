@@ -241,12 +241,14 @@ See all BikeTags and more, for ${this.getGameName}:
   .tab-logo {
     max-width: 2em;
   }
+
   .reddit-post {
     background-color: white;
     padding: 1em;
     text-align: left;
     margin-bottom: 1em;
   }
+
   .twitter-post {
     background-color: black;
     padding: 1em;
