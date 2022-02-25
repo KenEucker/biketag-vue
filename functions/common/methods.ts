@@ -10,7 +10,9 @@ import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
 import { activeQueue, BackgroundProcessResults } from './types'
 import BikeTagClient from 'biketag'
 import axios from 'axios'
+import Ajv from 'Ajv'
 
+const ajv = new Ajv()
 export const getBikeTagHash = (key: string): string => md5(`${key}${process.env.HOST_KEY}`)
 
 export const getBikeTagClientOpts = (
@@ -86,6 +88,46 @@ export const getPayloadOpts = (event: any, base = {}): any => {
     ...parsedQuery,
     ...parsedBody,
   }
+}
+
+export const isValidJson = (data, type = 'none') => {
+  let schema = {}
+
+  switch (type) {
+    case 'profile':
+      schema = {
+        type: 'object',
+        properties: {
+          user_metadata: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              social: {
+                type: 'object',
+                properties: {
+                  reddit: { type: 'string' },
+                  instagram: { type: 'string' },
+                  twitter: { type: 'string' },
+                  imgur: { type: 'string' },
+                  discord: { type: 'string' },
+                },
+                minProperties: 1,
+                additionalProperties: false,
+              },
+            },
+            minProperties: 1,
+            additionalProperties: false,
+          },
+        },
+        required: ['user_metadata'],
+        additionalProperties: false,
+      }
+      break
+  }
+
+  const validate = ajv.compile(schema)
+
+  return validate(data)
 }
 
 export const getPayloadAuthorization = (event: any) => {
