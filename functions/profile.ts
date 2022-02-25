@@ -1,9 +1,10 @@
-import { builder, Handler } from '@netlify/functions'
+import { Handler } from '@netlify/functions'
 import * as jose from 'jose'
 import axios from 'axios'
+import Ajv from "ajv"
 import { getPayloadAuthorization } from './common/methods'
 
-const profileHandler: Handler = async (event) => {
+const profileHandler : Handler = async (event) => {
   console.log(event.httpMethod)
   const authorization = getPayloadAuthorization(event)
   let body = 'missing authorization header'
@@ -20,15 +21,54 @@ const profileHandler: Handler = async (event) => {
 
       switch(event.httpMethod) {
         case "POST":
-          //JSON schema validation missing
-          options = {
-            method: 'PATCH',
-            url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${payload.sub}`,
-            headers: {
-              authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
-              'content-type': 'application/json',
+          const schema = {
+            type: "object",
+            properties: {
+              user_metadata : {
+                type: "object",
+                properties: {
+                  name : { type: "string"},
+                  social : {
+                    type: "object",
+                    properties :{ 
+                      reddit: {type: "string"},
+                      instagram: {type: "string"},
+                      twitter: {type: "string"},
+                      imgur: {type: "string"},
+                      discord: {type: "string"},
+                    },
+                    minProperties: 1,
+                    additionalProperties: false,
+                  }
+                },
+                minProperties: 1,
+                additionalProperties: false,
+              }
             },
-            data: JSON.parse(event.body),
+            required: ["user_metadata"],
+            additionalProperties: false,
+          }
+          const ajv = new Ajv()
+          const validate = ajv.compile(schema)
+          try {
+            const data = JSON.parse(event.body)
+            if (validate(data)) {
+              options = {
+                method: 'PATCH',
+                url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${payload.sub}`,
+                headers: {
+                  authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
+                  'content-type': 'application/json',
+                },
+                data,
+              }
+            } else {
+              body = 'bad request'
+              statusCode = 400
+            }
+          } catch {
+            body = 'bad request'
+            statusCode = 400
           }
           break;
         case "GET":
@@ -46,7 +86,7 @@ const profileHandler: Handler = async (event) => {
           statusCode = 501
       }
 
-      if (statusCode != 501){
+      if (statusCode == 401){
         await axios
         .request(options)
         .then(function (response) {
@@ -72,6 +112,4 @@ const profileHandler: Handler = async (event) => {
   }
 }
 
-const handler = builder(profileHandler)
-
-export { handler }
+export {profileHandler as handler}

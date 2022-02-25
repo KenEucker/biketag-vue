@@ -67,6 +67,7 @@ export const store = createStore<State>({
       // })
       // if (response.status == 200 && typeof response.data === "string"){
       //   user_metadata = JSON.parse(response.data)
+      //   user_metadata = {...user_metadata.social, user_metadata.name}
       // }
       return commit('SET_USER', {...user, user_metadata})
     },
@@ -189,7 +190,7 @@ export const store = createStore<State>({
       //     authorization: `Bearer ${user.token}`,
       //     'content-type': 'application/json',
       //   },
-      //   data: {name: user.name, user_metadata : user.metadata},
+      //   data: {user_metadata : {name: user.name, user.metadata}},
       // })
       return commit('SET_USER', user)
     },
