@@ -143,7 +143,7 @@ export default defineComponent({
     this.checkForNewBikeTagPost()
     setTimeout(async () => {
       this.$auth.getIdTokenClaims().then((value) => {
-        this.$store.dispatch('setUser', {...this.$auth.user, token: value.__raw})
+        this.$store.dispatch('setUser', { ...this.$auth.user, token: value.__raw })
       })
     }, 2000)
   },

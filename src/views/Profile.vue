@@ -45,7 +45,7 @@
             :placeholder="getUser.name || 'Your new name'"
           />
         </div>
-        <div v-for="(social, i) in socialNetworks" :key="i" class="mt-3 input-icon">
+        <div v-for="(social, i) in socialNetworkIcons" :key="i" class="mt-3 input-icon">
           <bike-tag-input
             :id="social[0]"
             v-model="$data[social[0]]"
@@ -95,7 +95,7 @@ export default defineComponent({
       twitter: null,
       imgur: null,
       discord: null,
-      socialNetworks: [
+      socialNetworkIcons: [
         ['reddit', Reddit],
         ['instagram', Instagram],
         ['twitter', Twitter],
@@ -126,17 +126,20 @@ export default defineComponent({
     toggleForm() {
       this.showForm = !this.showForm
     },
-    async onSubmit(e) {
+    async onSubmit() {
       const token = (await this.$auth.getIdTokenClaims()).__raw
       await this.$store.dispatch('updateProfile', {
-        name: this.name != null && this.name.length > 0 
-                ? this.name 
-                : getUser.name,
+        name: this.name != null && this.name.length > 0 ? this.name : this.getUser.name,
         user_metadata: {
-          social: this.socialNetworks.filter(value => $data[value[0]] != null && $data[value[0]].length > 0)
-                                      .map(value => $data[value[0]]),
+          social: {
+            reddit: this.reddit,
+            instagram: this.instagram,
+            twitter: this.twitter,
+            imgur: this.imgur,
+            discord: this.discord,
+          },
         },
-        token
+        token,
       })
     },
   },
