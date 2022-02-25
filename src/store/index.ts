@@ -55,8 +55,9 @@ export const store = createStore<State>({
     mostRecentlyViewedTagnumber,
   },
   actions: {
-    profileUpdate({ commit }, d) {
-      return commit('UPDATE_PROFILE', d)
+    setUser({ commit }, user) {
+      /// Call to backend api GET on /profile with authorization header
+      return commit('SET_USER', user)
     },
     setGame({ commit, state }) {
       if (!state.game?.mainhash) {
@@ -167,6 +168,9 @@ export const store = createStore<State>({
         })
       }
       return false
+    },
+    async updateProfile({ state }, d) {
+      /// Update Auth0 Profile
     },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === playerId) {
@@ -293,8 +297,13 @@ export const store = createStore<State>({
     },
   },
   mutations: {
-    UPDATE_PROFILE(state, user) {
+    SET_USER(state, user) {
+      const oldState = state.user
       state.user = user
+
+      if (user?.name !== oldState?.name) {
+        console.log('state::user', user)
+      }
     },
     SET_GAME(state, game) {
       const oldState = state.game

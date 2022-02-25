@@ -22,13 +22,11 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { mapGetters } from 'vuex'
-import NetlifyIdentityWidget from '@/components/NetlifyIdentityWidget.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
 export default defineComponent({
   name: 'BikeTagHeader',
   components: {
-    NetlifyIdentityWidget,
     BikeTagButton,
   },
   setup() {
@@ -39,7 +37,7 @@ export default defineComponent({
   data() {
     return {
       playingEaster: false,
-      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0
+      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
     }
   },
   computed: {
@@ -84,6 +82,7 @@ export default defineComponent({
       }
     },
     logout() {
+      this.$store.dispatch('setUser')
       this.$auth.logout({
         returnTo: window.location.origin,
       })

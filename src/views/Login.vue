@@ -1,9 +1,11 @@
 <template>
-    <div class="container">
-        <img v-if="isBikeTagAmbassador" :src="bikeTag">
-        <p class="description mt-5 mb-5"> {{ isBikeTagAmbassador ? $t('login.ambassador') : $t('login.user')}} </p>
-        <bike-tag-button variant="bold" :text="$t('menu.login')" @click="login" />
-    </div>
+  <div class="container">
+    <img v-if="isBikeTagAmbassador" :src="bikeTag" />
+    <p class="description mt-5 mb-5">
+      {{ isBikeTagAmbassador ? $t('login.ambassador') : $t('login.user') }}
+    </p>
+    <bike-tag-button variant="bold" :text="$t('menu.login')" @click="login" />
+  </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
@@ -12,26 +14,28 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTag from '@/assets/images/BikeTag.svg'
 import netlifyIdentity from 'netlify-identity-widget'
 export default defineComponent({
-  name: 'Login',
+  name: 'LoginView',
   components: {
-		BikeTagButton,
-	},
+    BikeTagButton,
+  },
   data() {
     return {
-      bikeTag : BikeTag
+      bikeTag: BikeTag,
     }
   },
   computed: {
     ...mapGetters(['isBikeTagAmbassador']),
   },
   methods: {
-    login(){
+    login() {
       if (this.isBikeTagAmbassador) {
         netlifyIdentity.open('login')
       } else {
-        this.$auth.loginWithRedirect()
+        this.$auth.loginWithRedirect().then(() => {
+          this.$store.dispatch('setUser', this.$auth.user)
+        })
       }
-    }
+    },
   },
 })
 </script>
@@ -41,8 +45,9 @@ export default defineComponent({
     height: 100%;
     max-width: 160px;
   }
+
   .description {
-    background-color: transparent!important;
+    background-color: transparent !important;
   }
 }
 </style>

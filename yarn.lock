@@ -6862,6 +6862,11 @@ jest-worker@^26.2.1:
     merge-stream "^2.0.0"
     supports-color "^7.0.0"
 
+jose@^4.5.1:
+  version "4.5.1"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-4.5.1.tgz#1531d491fafe567338fd517f118293cce27aa0aa"
+  integrity sha512-uhjuzZjKGKmi5DVJ/eghN8hJklLhwZRLRAaaG9MkkMAdfRYlHvZ10i4z/4WSN1hSTMffCet+k7iRHvbdGwmZPw==
+
 js-sizeof@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/js-sizeof/-/js-sizeof-0.0.1.tgz#bf35bb93b59abe02e4f44dd8239dbf447ea62334"

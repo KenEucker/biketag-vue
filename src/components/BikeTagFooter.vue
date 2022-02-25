@@ -15,12 +15,24 @@ export default defineComponent({
   components: {
     BikeTagButton,
   },
+  methods: {
+    goAboutPage: function () {
+      this.$router.push('/about')
+    },
+    goLeaderboardPage: function () {
+      this.$router.push('/leaderboard')
+    },
+    goUsersPage: function () {
+      this.$router.push('/players')
+    },
+  },
 })
 </script>
 <style scoped lang="scss">
 .footer-buttons {
   display: inline-flex;
   min-height: 0;
+
   .btn {
     max-height: 3em;
   }

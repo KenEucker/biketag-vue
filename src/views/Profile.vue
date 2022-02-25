@@ -5,15 +5,15 @@
   <div class="container mb-5 mt-5">
     <div class="center-cnt">
       <div class="profile-picture">
-        <img class="player-avatar" :src="player.picture" :alt="player.name" />
+        <img class="player-avatar" :src="getUser.picture" :alt="getUser.name" />
         <div class="picture-outline">
           <bike-tag-button variant="circle-clean"> </bike-tag-button>
         </div>
       </div>
       <div class="flx-columns mt-5">
-        <span class="player-name mb-5 mt-3"> {{ player.name }} </span>
+        <span class="player-name mb-5 mt-3"> {{ getUser.name }} </span>
         <span
-          v-for="(social, i) in player.metadata.filter(
+          v-for="(social, i) in getUser.metadata?.filter(
             (value) => value != null && value.length > 0
           )"
           :key="i"
@@ -26,7 +26,7 @@
     </div>
     <div class="container mt-5 col-md-8 col-lg-8">
       <form
-        ref="profileUpdate"
+        ref="setUser"
         class="mt-5 mb-2"
         name="profile-update"
         action="profile-update"
@@ -40,7 +40,7 @@
             id="name"
             v-model="name"
             name="name"
-            :placeholder="player.name || 'Your new name'"
+            :placeholder="getUser.name || 'Your new name'"
           />
         </div>
         <div v-for="(social, i) in socialNetworks" :key="i" class="mt-3 input-icon">
@@ -49,7 +49,7 @@
             v-model="$data[social[0]]"
             :name="social[0]"
             :placeholder="
-              (player.metadata.length > i && player.metadata[i]) ||
+              (getUser.metadata?.length > i && getUser.metadata[i]) ||
               `${social[0].charAt(0).toUpperCase() + social[0].slice(1)} user name`
             "
           >
@@ -105,14 +105,14 @@ export default defineComponent({
   computed: {
     ...mapGetters(['getPlayers', 'getUser']),
     player() {
-      const playerList = this.getPlayers.filter((player) => {
+      const playerList = this.getPlayers?.filter((player) => {
         return this.$auth.user.name == player.name
       })
       return {
         ...playerList[0],
-        name: this.getUser.name || this.$auth.user.name,
-        picture: this.$auth.user.picture,
-        metadata: this.getUser.metadata || this.$auth.user.metadata || [],
+        name: this.getUser.name,
+        picture: this.getUser.picture,
+        metadata: this.getUser.metadata ?? {},
       }
     },
   },
@@ -126,19 +126,13 @@ export default defineComponent({
     },
     async onSubmit(e) {
       // e.preventDefault()
-      // const formAction = this.$refs.profileUpdate.getAttribute('action')
-      // const formData = new FormData(this.$refs.profileUpdate)
       //user_id = (await this.$auth.getIdTokenClaims()).sub
       //raw_token = (await this.$auth.getIdTokenClaims())._raw
-      await this.$store.dispatch('profileUpdate', {
+      await this.$store.dispatch('updateProfile', {
         name: this.name,
-        metadata: this.socialNetworks.map((value, i) =>
-          this.$data[value[0]] != null && this.$data[value[0]].length > 0
-            ? this.$data[value[0]]
-            : this.player.metadata.length > i
-            ? this.player.metadata[i]
-            : null
-        ),
+        metadata: {
+          social: this.socialNetworks,
+        },
       })
     },
   },

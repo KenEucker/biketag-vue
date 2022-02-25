@@ -76,7 +76,7 @@ export default defineComponent({
     // mix the getters into computed with object spread operator
     ...mapGetters(['getPlayers']),
     player() {
-      const playerList = this.getPlayers.filter((player) => {
+      const playerList = this.getPlayers?.filter((player) => {
         const playerName = this.playerName()
         return decodeURIComponent(encodeURIComponent(player.name)) == playerName
       })

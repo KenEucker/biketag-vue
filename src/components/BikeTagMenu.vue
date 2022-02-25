@@ -1,5 +1,5 @@
 <template>
-  <header class="biketag-header" v-if="variant === 'top'">
+  <header v-if="variant === 'top'" class="biketag-header">
     <!-- The header logo and profile and hamburger buttons go here -->
     <nav class="biketag-header-nav navbar navbar-expand-lg">
       <div v-if="isShow" class="nav-item" @click="goBack">
@@ -8,65 +8,72 @@
           alt="go back"
         />
       </div>
-      <img v-if="!isShow && !authLoading && $auth.isAuthenticated" @click="goProfile"
-        src="/public/images/Profile.svg" alt="Profile con" />
+      <img
+        v-if="!isShow && !authLoading && $auth.isAuthenticated"
+        src="/public/images/Profile.svg"
+        alt="Profile con"
+        @click="goProfile"
+      />
       <div class="navbar-brand nav-item">
         <a href="./">
-            <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
-          </a>
+          <img :src="getLogoUrl('h=256&w=256')" class="logo img-fluid" />
+        </a>
         <div>
           <span class="game-title">{{ getGameTitle }}</span>
         </div>
       </div>
 
-      <button class="navbar-toggler"
-        data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
-        aria-controls="navbarSupportedContent" aria-expanded="false" 
+      <button
+        class="navbar-toggler"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
         aria-label="Toggle navigation"
-        >
+      >
         <img src="/public/images/Hamburger.svg" alt="Burge menu" />
       </button>
 
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <div id="navbarSupportedContent" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item" @click="goAboutPage">
-            {{$t('menu.about')}}
+            {{ $t('menu.about') }}
           </li>
           <li class="nav-item" @click="goUsersPage">
-            {{$t('menu.players')}}
+            {{ $t('menu.players') }}
           </li>
           <li class="nav-item" @click="goLeaderboardPage">
-            {{$t('menu.top10')}}
+            {{ $t('menu.top10') }}
           </li>
           <li class="nav-item" @click="goBikeTagsPage">
-            {{$t('menu.biketags')}}
+            {{ $t('menu.biketags') }}
           </li>
           <li class="nav-item" @click="goQueuePlay">
-            {{$t('menu.play')}}
+            {{ $t('menu.play') }}
           </li>
           <li class="nav-item" @click="goHowPage">
-            {{$t('menu.howto')}}
+            {{ $t('menu.howto') }}
           </li>
           <li class="nav-item">
-          <template v-if="!authLoading">
-            <template  v-if="$auth.isAuthenticated">
-              <li class="nav-item" @click="goProfile">
-                {{$t('menu.profile')}}
-              </li>
-              <li class="nav-item" @click="logout">
-                {{$t('menu.logout')}}
+            <template v-if="!authLoading">
+              <template v-if="$auth.isAuthenticated">
+                <li class="nav-item" @click="goProfile">
+                  {{ $t('menu.profile') }}
+                </li>
+                <li class="nav-item" @click="logout">
+                  {{ $t('menu.logout') }}
+                </li>
+              </template>
+              <li v-else class="nav-item" @click="login">
+                {{ $t('menu.login') }}
               </li>
             </template>
-            <li v-else class="nav-item" @click="login">
-              {{$t('menu.login')}}
-            </li>
-          </template>
           </li>
         </ul>
       </div>
     </nav>
   </header>
-  <footer class="container mt-5 pb-5" v-if="variant === 'bottom'">
+  <footer v-if="variant === 'bottom'" class="container mt-5 pb-5">
     <!-- The footer nav buttons and link to homepage go here -->
     <div class="row">
       <div class="col-md-2">
@@ -114,7 +121,7 @@ export default defineComponent({
   computed: {
     ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag']),
     isShow() {
-      console.log(this.$route.name)
+      console.log(`page:: ${this.$route.name}`)
       return this.$route.name === 'Play'
     },
   },
@@ -130,6 +137,7 @@ export default defineComponent({
     await this.$store.dispatch('setCurrentBikeTag')
     await this.$store.dispatch('setQueuedTags')
     await this.$store.dispatch('setPlayers')
+    await this.$store.dispatch('setUser', this.$auth.user)
     this.checkForNewBikeTagPost()
   },
   mounted() {
@@ -153,6 +161,7 @@ export default defineComponent({
       this.$router.push('/login')
     },
     logout() {
+      this.$store.dispatch('setUser')
       this.$auth.logout({
         returnTo: window.location.origin,
       })
@@ -164,7 +173,7 @@ export default defineComponent({
       this.$store.dispatch('setFormStepToJoin', true)
       this.$router.push('/play')
     },
-    goProfile: function() {
+    goProfile: function () {
       this.$router.push('/profile')
     },
     goAboutPage: function () {
@@ -192,6 +201,7 @@ footer {
   flex-wrap: wrap;
   justify-content: center;
   max-width: 20vw;
+
   .row {
     > div {
       font-family: monospace;
@@ -200,27 +210,33 @@ footer {
       color: white;
       position: relative;
     }
+
     span {
       font-family: monospace;
       padding-left: 1px;
       margin-left: 5px;
       color: white;
     }
+
     .worldwide {
       div {
         color: black;
         margin: 0;
       }
+
       a {
         text-decoration: none;
+
         i {
           font-size: 5em;
+
           &:hover {
             filter: blur(2px);
           }
         }
       }
     }
+
     .flow {
       max-height: 131px;
       position: absolute;
@@ -230,6 +246,7 @@ footer {
       padding-top: 1px;
     }
   }
+
   .row > * {
     margin: auto;
   }
