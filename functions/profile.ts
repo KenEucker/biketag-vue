@@ -28,7 +28,7 @@ const profileHandler: Handler = async (event) => {
               authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
               'content-type': 'application/json',
             },
-            data: { user_metadata: JSON.parse(event.body) },
+            data: JSON.parse(event.body),
           }
           break;
         case "GET":

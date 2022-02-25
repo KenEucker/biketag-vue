@@ -127,9 +127,7 @@ export default defineComponent({
       this.showForm = !this.showForm
     },
     async onSubmit(e) {
-      // e.preventDefault()
-      //user_id = (await this.$auth.getIdTokenClaims()).sub
-      const raw_token = (await this.$auth.getIdTokenClaims()).__raw
+      const token = (await this.$auth.getIdTokenClaims()).__raw
       await this.$store.dispatch('updateProfile', {
         name: this.name != null && this.name.length > 0 
                 ? this.name 
@@ -138,7 +136,7 @@ export default defineComponent({
           social: this.socialNetworks.filter(value => $data[value[0]] != null && $data[value[0]].length > 0)
                                       .map(value => $data[value[0]]),
         },
-        raw_token
+        token
       })
     },
   },

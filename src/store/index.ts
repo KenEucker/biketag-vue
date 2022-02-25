@@ -180,8 +180,18 @@ export const store = createStore<State>({
       }
       return false
     },
-    async updateProfile({ state }, d) {
+    async updateProfile({ commit }, user) {
       /// Update Auth0 Profile
+      await client.request({
+        method: 'POST',
+        url: '/api/profile',
+        headers: {
+          authorization: `Bearer ${user.token}`,
+          'content-type': 'application/json',
+        },
+        data: {name: user.name, user_metadata : user.metadata},
+      })
+      return commit('SET_USER', user)
     },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === playerId) {

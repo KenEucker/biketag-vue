@@ -32,7 +32,7 @@ export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight'
 export interface User {
   name: string
   user_metadata: {},
-  raw_token: string
+  token: string
 }
 export interface State {
   game: Game
