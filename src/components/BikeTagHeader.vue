@@ -37,7 +37,6 @@ export default defineComponent({
   data() {
     return {
       playingEaster: false,
-      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
     }
   },
   computed: {
