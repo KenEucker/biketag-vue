@@ -12,16 +12,18 @@
       </div>
       <div class="flx-columns mt-5">
         <span class="player-name mb-5 mt-3"> {{ getUser.name }} </span>
-        <span
-          v-for="(social, i) in getUser.metadata?.filter(
-            (value) => value != null && value.length > 0
-          )"
-          :key="i"
-          class="player-name mt-4"
-          style="font-size: 2.5rem"
-        >
-          {{ social }}
-        </span>
+        <div v-if="getUser.user_metadata">
+          <span
+            v-for="(social, i) in Object.keys(getUser.user_metadata).filter(
+              (key) => getUser.user_metadata[key] != null && getUser.user_metadata[key].length > 0
+            )"
+            :key="i"
+            class="player-name mt-4"
+            style="font-size: 2.5rem"
+          >
+            {{ social }}
+          </span>
+        </div>
       </div>
     </div>
     <div class="container mt-5 col-md-8 col-lg-8">
@@ -49,7 +51,7 @@
             v-model="$data[social[0]]"
             :name="social[0]"
             :placeholder="
-              (getUser.metadata?.length > i && getUser.metadata[i]) ||
+              (getUser.user_metadata?.length > i && getUser.user_metadata[i]) ||
               `${social[0].charAt(0).toUpperCase() + social[0].slice(1)} user name`
             "
           >
@@ -112,7 +114,7 @@ export default defineComponent({
         ...playerList[0],
         name: this.getUser.name,
         picture: this.getUser.picture,
-        metadata: this.getUser.metadata ?? {},
+        user_metadata: this.getUser.user_metadata ?? {},
       }
     },
   },
@@ -127,12 +129,16 @@ export default defineComponent({
     async onSubmit(e) {
       // e.preventDefault()
       //user_id = (await this.$auth.getIdTokenClaims()).sub
-      //raw_token = (await this.$auth.getIdTokenClaims())._raw
+      const raw_token = (await this.$auth.getIdTokenClaims()).__raw
       await this.$store.dispatch('updateProfile', {
-        name: this.name,
-        metadata: {
-          social: this.socialNetworks,
+        name: this.name != null && this.name.length > 0 
+                ? this.name 
+                : getUser.name,
+        user_metadata: {
+          social: this.socialNetworks.filter(value => $data[value[0]] != null && $data[value[0]].length > 0)
+                                      .map(value => $data[value[0]]),
         },
+        raw_token
       })
     },
   },

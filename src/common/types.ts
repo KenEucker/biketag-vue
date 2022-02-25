@@ -29,10 +29,10 @@ export const special = [
   'nineteenth',
 ]
 export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet']
-
 export interface User {
   name: string
-  metadata: string[]
+  user_metadata: {},
+  raw_token: string
 }
 export interface State {
   game: Game

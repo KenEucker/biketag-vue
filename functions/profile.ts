@@ -3,7 +3,8 @@ import * as jose from 'jose'
 import axios from 'axios'
 import { getPayloadAuthorization } from './common/methods'
 
-const authorizeHandler: Handler = async (event) => {
+const profileHandler: Handler = async (event) => {
+  console.log(event.httpMethod)
   const authorization = getPayloadAuthorization(event)
   let body = 'missing authorization header'
   let statusCode = 401
@@ -15,17 +16,39 @@ const authorizeHandler: Handler = async (event) => {
       )
 
       const { payload } = await jose.jwtVerify(authorization, JWKS)
+      let options = {}
 
-      await axios
-        .request({
-          method: 'PATCH',
-          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${payload.sub}`,
-          headers: {
-            authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
-            'content-type': 'application/json',
-          },
-          data: { user_metadata: { social: { reddit: 'yourmother' } } },
-        })
+      switch(event.httpMethod) {
+        case "POST":
+          //JSON schema validation missing
+          options = {
+            method: 'PATCH',
+            url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${payload.sub}`,
+            headers: {
+              authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
+              'content-type': 'application/json',
+            },
+            data: { user_metadata: JSON.parse(event.body) },
+          }
+          break;
+        case "GET":
+          options = {
+            method: 'GET',
+            url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${payload.sub}?fields=user_metadata`,
+            headers: {
+              authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
+              'content-type': 'application/json',
+            },
+          }
+          break;
+        default:
+          body = 'method not implemented'
+          statusCode = 501
+      }
+
+      if (statusCode != 501){
+        await axios
+        .request(options)
         .then(function (response) {
           console.log(response.data)
           body = typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
@@ -36,6 +59,7 @@ const authorizeHandler: Handler = async (event) => {
           body = error.message
           console.error(error)
         })
+      }
     } catch (e) {
       console.log({ authorizationValidationError: e })
       body = 'invalid authorization'
@@ -48,6 +72,6 @@ const authorizeHandler: Handler = async (event) => {
   }
 }
 
-const handler = builder(authorizeHandler)
+const handler = builder(profileHandler)
 
 export { handler }

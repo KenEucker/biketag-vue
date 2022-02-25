@@ -55,9 +55,20 @@ export const store = createStore<State>({
     mostRecentlyViewedTagnumber,
   },
   actions: {
-    setUser({ commit }, user) {
+    async setUser({ commit }, user) {
       /// Call to backend api GET on /profile with authorization header
-      return commit('SET_USER', user)
+      let user_metadata = {}
+      // const response = await client.request({
+      //   method: 'GET',
+      //   url: '/api/profile',
+      //   headers: {
+      //     authorization: `Bearer ${user.token}`,
+      //   }
+      // })
+      // if (response.status == 200 && typeof response.data === "string"){
+      //   user_metadata = JSON.parse(response.data)
+      // }
+      return commit('SET_USER', {...user, user_metadata})
     },
     setGame({ commit, state }) {
       if (!state.game?.mainhash) {
@@ -300,7 +311,6 @@ export const store = createStore<State>({
     SET_USER(state, user) {
       const oldState = state.user
       state.user = user
-
       if (user?.name !== oldState?.name) {
         console.log('state::user', user)
       }

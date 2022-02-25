@@ -31,8 +31,9 @@ export default defineComponent({
       if (this.isBikeTagAmbassador) {
         netlifyIdentity.open('login')
       } else {
-        this.$auth.loginWithRedirect().then(() => {
-          this.$store.dispatch('setUser', this.$auth.user)
+        this.$auth.loginWithRedirect().then(async () => {
+          const token = (await this.$auth.getIdTokenClaims()).__raw
+          this.$store.dispatch('setUser', {...this.$auth.user, token})
         })
       }
     },
