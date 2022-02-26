@@ -8,9 +8,11 @@ import { join, extname } from 'path'
 import { readFileSync } from 'fs'
 import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
 import { activeQueue, BackgroundProcessResults } from './types'
+import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import BikeTagClient from 'biketag'
 import axios from 'axios'
 import Ajv from 'Ajv'
+import * as jose from 'jose'
 
 const ajv = new Ajv()
 export const getBikeTagHash = (key: string): string => md5(`${key}${process.env.HOST_KEY}`)
@@ -130,17 +132,101 @@ export const isValidJson = (data, type = 'none') => {
   return validate(data)
 }
 
-export const getPayloadAuthorization = (event: any) => {
-  const { authorization } = event.headers
+interface Event {
+  headers: Record<string, unknown>
+}
+
+export interface IdentityContext {
+  /**
+   * The token that was provided.
+   */
+  token: string
+
+  /**
+   * Claims for the authenticated user.
+   */
+  claims: Record<string, unknown>
+}
+
+/**
+ * Return a JSON response.
+ * @param statusCode
+ * @param body
+ */
+const json = (statusCode: number, body: Record<string, unknown>) => {
+  return {
+    statusCode,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  }
+}
+
+/**
+ * Middleware to validate a token and set the user context.
+ */
+const validateJWT = (verifier: JwtVerifier, options: any) => {
+  return (handler: any) => async (event: Event, context: any, cb: any) => {
+    let claims
+    let accessToken
+
+    try {
+      accessToken = getTokenFromHeader(event.headers.authorization as string)
+      claims = await verifier.verifyAccessToken(accessToken)
+    } catch (err) {
+      if (typeof options.handleError !== 'undefined' && options.handleError !== null) {
+        return options.handleError(err)
+      }
+
+      return json(401, {
+        error: err.code,
+        error_description: err.message,
+      })
+    }
+
+    // Expose the identity in the client context.
+    const ctx: IdentityContext = {
+      token: accessToken,
+      claims,
+    }
+    context.identityContext = ctx
+
+    // Continue.
+    return handler(event, context, cb)
+  }
+}
+
+export const getPayloadAuthorization = async (event: any): Promise<any> => {
   const bearer = 'Bearer '
   const clientId = 'Client-ID '
+  let authorizationString = event.headers.authorization
 
-  if (authorization?.indexOf(bearer) === 0) {
-    return authorization.substr(bearer.length)
-  } else if (authorization?.indexOf(clientId) === 0) {
-    return authorization.substr(clientId.length)
-  } else {
-    return authorization
+  if (authorizationString?.indexOf(bearer) === 0) {
+    authorizationString = authorizationString.substr(bearer.length)
+  } else if (authorizationString?.indexOf(clientId) === 0) {
+    authorizationString = authorizationString.substr(clientId.length)
+  }
+
+  /// Try netlify Auth validation for BikeTag Ambassador
+  try {
+    const verifierOpts = { issuer: '', audience: '' }
+    const verifier = new JwtVerifier(verifierOpts)
+    return await validateJWT(verifier, verifierOpts)
+  } catch (e) {
+    console.error({ authorizationNetlifyValidationError: e })
+  }
+
+  /// Try netlify Auth validation for BikeTag Ambassador
+  try {
+    const JWKS = jose.createRemoteJWKSet(
+      new URL(`https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`)
+    )
+
+    const { payload } = await jose.jwtVerify(authorizationString, JWKS)
+    return payload
+  } catch (e) {
+    console.error({ authorizationAuth0ValidationError: e })
   }
 }
 

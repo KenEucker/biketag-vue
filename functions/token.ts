@@ -4,7 +4,7 @@ import request from 'request'
 import { getBikeTagClientOpts, getBikeTagHash, getPayloadAuthorization } from './common/methods'
 
 const authorizeHandler: Handler = async (event) => {
-  const authorization = getPayloadAuthorization(event)
+  const authorization = await getPayloadAuthorization(event)
   let body = 'missing authorization header'
   let statusCode = 401
 

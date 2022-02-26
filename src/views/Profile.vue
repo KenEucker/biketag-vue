@@ -129,17 +129,15 @@ export default defineComponent({
     async onSubmit() {
       const token = (await this.$auth.getIdTokenClaims()).__raw
       await this.$store.dispatch('updateProfile', {
-        name: this.name != null && this.name.length > 0 
-                ? this.name 
-                : this.getUser.name,
+        name: this.name != null && this.name.length > 0 ? this.name : this.getUser.name,
         user_metadata: {
-          social: this.socialNetworks.filter(value => this.$data[value[0]] != null && this.$data[value[0]].length > 0)
-                                      .reduce((function(prev, current){
-                                          const obj = {...prev}
-                                          obj[current[0]] = this.$data[current[0]]
-                                          return obj
-                                        }).bind(this)
-                                      , {}),
+          social: {
+            reddit: this.reddit,
+            instagram: this.instagram,
+            twitter: this.twitter,
+            imgur: this.imgur,
+            discord: this.discord,
+          },
         },
         token,
       })

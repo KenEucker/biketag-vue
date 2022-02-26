@@ -121,11 +121,14 @@ export default defineComponent({
   computed: {
     ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag']),
     isShow() {
-      console.log(`page:: ${this.$route.name}`)
+      if (this.$route.name) {
+        console.log(`page:: ${this.$route.name}`)
+      }
       return this.$route.name === 'Play'
     },
   },
   async created() {
+    console.log('created')
     const btaId = GetQueryString(window, 'btaId')
     const expiry = GetQueryString(window, 'expiry')
     if (btaId && expiry) {
