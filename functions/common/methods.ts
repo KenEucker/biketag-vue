@@ -198,7 +198,6 @@ const validateJWT = (verifier: JwtVerifier, options: any) => {
 }
 
 export const getPayloadAuthorization = async (event: any): Promise<any> => {
-  // const { authorization } = event.headers
   const bearer = 'Bearer '
   const clientId = 'Client-ID '
   let authorizationString = event.headers.authorization

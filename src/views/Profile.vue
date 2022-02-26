@@ -5,7 +5,7 @@
   <div class="container mb-5 mt-5">
     <div class="center-cnt">
       <div class="profile-picture">
-        <img class="player-avatar" :src="getUser.picture" :alt="getUser.name" />
+        <img class="player-avatar" :src="player.picture" :alt="getUser.name" />
         <div class="picture-outline">
           <bike-tag-button variant="circle-clean"> </bike-tag-button>
         </div>
@@ -21,7 +21,7 @@
             class="player-name mt-4"
             style="font-size: 2.5rem"
           >
-            {{ social }}
+            {{ getUser.user_metadata[social] }}
           </span>
         </div>
       </div>
@@ -113,7 +113,7 @@ export default defineComponent({
       return {
         ...playerList[0],
         name: this.getUser.name,
-        picture: this.getUser.picture,
+        picture: this.$auth.user.picture,
         user_metadata: this.getUser.user_metadata ?? {},
       }
     },
@@ -126,7 +126,7 @@ export default defineComponent({
     toggleForm() {
       this.showForm = !this.showForm
     },
-    async onSubmit(e) {
+    async onSubmit() {
       const token = (await this.$auth.getIdTokenClaims()).__raw
       await this.$store.dispatch('updateProfile', {
         name: this.name != null && this.name.length > 0 ? this.name : this.getUser.name,

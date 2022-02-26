@@ -1,4 +1,4 @@
-import { builder, Handler } from '@netlify/functions'
+import { Handler } from '@netlify/functions'
 import {
   getActiveQueueForGame,
   getBikeTagClientOpts,
@@ -10,6 +10,13 @@ import request from 'request'
 import { Ambassador, Game } from 'biketag/lib/common/schema'
 
 const approveHandler: Handler = async (event) => {
+  if (event.httpMethod !== "POST") {
+    return {
+      body: 'method not allowed',
+      statusCode: 405,
+    }
+  }
+
   const adminBiketagOpts = getBikeTagClientOpts(event as unknown as request.Request, true, true)
   const biketag = new BikeTagClient(adminBiketagOpts)
   const approvePayload = getPayloadOpts(event)
@@ -64,6 +71,4 @@ const approveHandler: Handler = async (event) => {
   }
 }
 
-const handler = builder(approveHandler)
-
-export { handler }
+export { approveHandler as handler }
