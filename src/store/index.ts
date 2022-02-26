@@ -69,7 +69,7 @@ export const store = createStore<State>({
       //   user_metadata = JSON.parse(response.data)
       //   user_metadata = {...user_metadata.social, user_metadata.name}
       // }
-      return commit('SET_USER', {...user, user_metadata})
+      return commit('SET_USER', { ...user, user_metadata })
     },
     setGame({ commit, state }) {
       if (!state.game?.mainhash) {

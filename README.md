@@ -102,7 +102,7 @@ Support the BikeTag Project on [GitHub][github], [Patreon][patreon], or directly
   [twitter-image]: https://raw.githubusercontent.com/keneucker/biketag-website/production/public/img/twitter-logo.png
 
   ## Deployed on Netlify servers
-
+  [![Netlify Status](https://api.netlify.com/api/v1/badges/fe7ffef3-ea39-4e5b-a5b8-3ff6f96f45e4/deploy-status)](https://app.netlify.com/sites/biketag/deploys)
   <a href="https://www.netlify.com">
     <img src="https://www.netlify.com/img/global/badges/netlify-color-accent.svg" alt="Deploys by Netlify" />
   </a>

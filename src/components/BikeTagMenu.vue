@@ -10,7 +10,7 @@
       </div>
       <img
         v-if="!isShow && !authLoading && $auth.isAuthenticated"
-        src="/public/images/Profile.svg"
+        src="/images/Profile.svg"
         alt="Profile con"
         @click="goProfile"
       />
@@ -31,7 +31,7 @@
         aria-expanded="false"
         aria-label="Toggle navigation"
       >
-        <img src="/public/images/Hamburger.svg" alt="Burge menu" />
+        <img src="/images/Hamburger.svg" alt="Burge menu" />
       </button>
 
       <div id="navbarSupportedContent" class="collapse navbar-collapse">
@@ -121,11 +121,14 @@ export default defineComponent({
   computed: {
     ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag']),
     isShow() {
-      console.log(`page:: ${this.$route.name}`)
+      if (this.$route.name) {
+        console.log(`page:: ${this.$route.name}`)
+      }
       return this.$route.name === 'Play'
     },
   },
   async created() {
+    console.log('created')
     const btaId = GetQueryString(window, 'btaId')
     const expiry = GetQueryString(window, 'expiry')
     if (btaId && expiry) {
@@ -143,7 +146,7 @@ export default defineComponent({
     this.checkForNewBikeTagPost()
     setTimeout(async () => {
       this.$auth.getIdTokenClaims().then((value) => {
-        this.$store.dispatch('setUser', {...this.$auth.user, token: value.__raw})
+        this.$store.dispatch('setUser', { ...this.$auth.user, token: value.__raw })
       })
     }, 2000)
   },
