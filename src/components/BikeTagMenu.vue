@@ -10,7 +10,7 @@
       </div>
       <img
         v-if="!isShow && !authLoading && $auth.isAuthenticated"
-        src="/public/images/Profile.svg"
+        src="/images/Profile.svg"
         alt="Profile con"
         @click="goProfile"
       />
@@ -31,7 +31,7 @@
         aria-expanded="false"
         aria-label="Toggle navigation"
       >
-        <img src="/public/images/Hamburger.svg" alt="Burge menu" />
+        <img src="/images/Hamburger.svg" alt="Burge menu" />
       </button>
 
       <div id="navbarSupportedContent" class="collapse navbar-collapse">
