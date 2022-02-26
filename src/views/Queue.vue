@@ -7,7 +7,8 @@
   >
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
-  <div class="container col-md-8 col-lg-8 queue-page">
+  <!-- <div class="container col-md-8 col-lg-8 queue-page"> -->
+  <div class="queue-page">
     <div v-if="usingTimer && isViewingQueue()" class="clock-div mt-2">
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
@@ -21,7 +22,8 @@
       }}</span
     >
     <bike-tag-queue v-if="!isViewingQueue()" :only-mine="true" />
-    <div v-if="!uploadInProgress" class="container">
+    <!-- <div v-if="!uploadInProgress" class="container"> -->
+    <div v-if="!uploadInProgress" class="queue-slider">
       <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]">
         <queue-view />
       </div>
