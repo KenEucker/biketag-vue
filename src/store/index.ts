@@ -66,8 +66,8 @@ export const store = createStore<State>({
       //   }
       // })
       // if (response.status == 200 && typeof response.data === "string"){
-      //   user_metadata = JSON.parse(response.data)
-      //   user_metadata = {...user_metadata.social, user_metadata.name}
+      //   const data = JSON.parse(response.data)
+      //   user_metadata = {...data.social, name : data.name}
       // }
       return commit('SET_USER', {...user, user_metadata})
     },
@@ -182,6 +182,8 @@ export const store = createStore<State>({
       return false
     },
     async updateProfile({ commit }, user) {
+      console.log(user)
+      console.log({user_metadata : {...user.user_metadata, name: user.name}})
       /// Update Auth0 Profile
       // await client.request({
       //   method: 'POST',
@@ -190,9 +192,9 @@ export const store = createStore<State>({
       //     authorization: `Bearer ${user.token}`,
       //     'content-type': 'application/json',
       //   },
-      //   data: {user_metadata : {name: user.name, user.metadata}},
+      //   data: {user_metadata : {...user.user_metadata, name: user.name}},
       // })
-      return commit('SET_USER', user)
+      return commit('SET_USER', {user_metadata : user.user_metadata.social, name: user.name, token : user.token})
     },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === playerId) {

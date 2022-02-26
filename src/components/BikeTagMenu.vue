@@ -137,15 +137,15 @@ export default defineComponent({
     await this.$store.dispatch('setCurrentBikeTag')
     await this.$store.dispatch('setQueuedTags')
     await this.$store.dispatch('setPlayers')
+    if (this.$auth.isAuthenticated){
+      this.$auth.getIdTokenClaims().then((value) => {
+        this.$store.dispatch('setUser', {...this.$auth.user, token: value.__raw})
+      })
+    }
     this.checkForNewBikeTagPost()
   },
   mounted() {
     this.checkForNewBikeTagPost()
-    setTimeout(async () => {
-      this.$auth.getIdTokenClaims().then((value) => {
-        this.$store.dispatch('setUser', { ...this.$auth.user, token: value.__raw })
-      })
-    }, 2000)
   },
   methods: {
     checkForNewBikeTagPost() {
