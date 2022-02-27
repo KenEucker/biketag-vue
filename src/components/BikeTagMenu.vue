@@ -202,6 +202,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 header {
   nav {
+    .navbar-brand {
+      margin: 0 2rem
+    }
     .navbar-collapse {
       flex-grow: unset;
       ul > li {

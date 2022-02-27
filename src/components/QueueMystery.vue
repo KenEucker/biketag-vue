@@ -1,14 +1,33 @@
 <template>
-  <b-container class="queue-mystery-tag col-md-8 col-lg-8">
-    <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3>
-    <div>
-      <img v-if="preview" :src="preview" class="img-fluid" />
+  <div class="queue-mystery-tag">
+    <b-modal v-model="modalShow" title="BootstrapVue" hide-footer hide-header>
+      <img class="close-btn" @click="hideModal" src="@/assets/images/close.svg"/>
+      <bike-tag-button class="modal-header" variant="medium">
+        <p>You're {{ getCurrentBikeTag?.tagnumber }} in the Queue!</p>
+      </bike-tag-button>
+      <p style="text-align: center" class="go-queue" @click="goViewQueue"> View Queue </p>
+    </b-modal>
+    <!-- <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3> -->
+    <div class="title-cnt">
+      <bike-tag-button variant="medium" class="title-q">
+        <h3 class="queue-title">Add your new mystery Location</h3>
+      </bike-tag-button>
+    </div>
+    <div class="preview-cnt">
+      <template v-if="preview">
+        <img :src="preview" class="prev-img img-fluid" />
+        <img class="img-bck" src="@/assets/images/transparent_img.svg" />
+      </template>
       <img
         v-else
-        class="img-fluid click-me"
-        src="@/assets/images/blank.png"
+        class="img-bck click-me"
+        src="@/assets/images/blank_img.svg"
         @click="$refs.file.click()"
       />
+      <bike-tag-button :class="`click-me ${preview ? 'icn-top' : ''}`" 
+        variant="circle" @click="$refs.file.click()">
+        <img src="@/assets/images/camera.svg"/>
+      </bike-tag-button>
     </div>
     <div class="container biketag-tagit-form">
       <form
@@ -23,31 +42,24 @@
         <input type="hidden" name="form-name" value="queue-mystery-tag" />
         <input type="hidden" name="playerId" :value="getPlayerId" />
         <input v-model="mysteryImageUrl" type="hidden" name="mysteryImageUrl" />
-        <div class="p-3">
-          <label for="file-upload" class="btn-upload custom-file-upload">
-            <i class="fa fa-camera" />
-          </label>
-          <input
-            id="file-upload"
-            ref="file"
-            type="file"
-            class="d-none"
-            accept="image/*"
-            required
-            @change="setImage"
-          />
-        </div>
+        <input
+          id="file-upload"
+          ref="file"
+          type="file"
+          class="d-none"
+          accept="image/*"
+          required
+          @change="setImage"
+        />
         <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
-        <div class="mt-3">
-          <bike-tag-input
+        <div class="input-cnt mt-3 mb-3">
+          <bike-tag-input v-if="!this.$auth.isAuthenticated"
             id="player"
             v-model="player"
             name="player"
             readonly
             :placeholder="$t('pages.queue.name_placeholder')"
           />
-        </div>
-        <div>
           <bike-tag-input
             id="hint"
             v-model="hint"
@@ -55,16 +67,21 @@
             :placeholder="$t('pages.queue.hint_placeholder')"
           />
         </div>
-        <div class="mt-3">
+        <!-- <div class="mt-3">
           <bike-tag-button
             variant="medium"
             :text="`${$t('pages.queue.submit_new_tag')} ${$t('pages.queue.queue_postfix')}`"
             @click="onSubmit"
           />
-        </div>
+        </div> -->
+        <bike-tag-button
+          variant="medium"
+          type="submit"
+          :text="`${$t('pages.queue.submit_new_tag')} ${$t('pages.queue.queue_postfix')}`"
+        /> 
       </form>
     </div>
-  </b-container>
+  </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
@@ -91,15 +108,18 @@ export default defineComponent({
     return {
       preview: null,
       mysteryImageUrl: null,
-      player: this.tag?.mysteryPlayer?.length
-        ? this.tag.mysteryPlayer
-        : this.tag?.foundPlayer ?? '',
+      player: this.getName,
       hint: this.tag?.hint ?? '',
       image: this.tag?.mysteryImage,
+      modalShow : true
     }
   },
   computed: {
-    ...mapGetters(['getGameName', 'getQueue', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag']),
+    ...mapGetters(['getGameName', 'getQueue', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag', 'getUser']),
+    getName(){
+      if (this.$auth.isAuthenticated) return this.getUser.name ?? (this.tag?.mysteryPlayer?.length ? this.tag.mysteryPlayer : this.tag?.foundPlayer ?? '')
+      else this.tag?.mysteryPlayer?.length ? this.tag.mysteryPlayer : this.tag?.foundPlayer ?? ''
+    },
   },
   methods: {
     onSubmit(e) {
@@ -132,25 +152,37 @@ export default defineComponent({
         previewReader.readAsDataURL(this.image)
       }
     },
+    goViewQueue() {
+      this.hideModal()
+      this.$nextTick(() => this.$store.dispatch('resetFormStep'))
+    },
+    hideModal(){
+      this.modalShow = false
+    }
   },
 })
 </script>
-<style lang="scss">
-.queue-mystery-tag {
-  .biketag-button {
-    width: 100%;
+<style lang="scss" scoped>
+.modal-header {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 2rem;
+  @media (min-width: 470px) {
+    font-size: 3rem;
   }
 }
-</style>
-<style scoped lang="scss">
-.custom-file-upload {
-  border-radius: 2rem;
-  display: inline-block;
-  padding: 6px 12px;
+.go-queue{
+  font-family: markernotes;
+}
+.close-btn, .go-queue{
   cursor: pointer;
 }
-
-.click-me {
-  cursor: pointer;
+.close-btn{
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 </style>
