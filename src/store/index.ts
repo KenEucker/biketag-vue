@@ -11,6 +11,7 @@ import {
   getQueuedTagState,
   getSanityImageUrl,
   getMostRecentlyViewedBikeTagTagnumber,
+  GetQueryString,
 } from '@/common/utils'
 import { BiketagFormSteps, State, User } from '@/common/types'
 
@@ -19,6 +20,7 @@ export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(window)
 const playerId = getUuid()
 const ambassadorId = getAmbassadorUuid(window)
+// const expiry = GetQueryString(window, 'expiry')
 const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
@@ -31,7 +33,14 @@ const gameOpts = useAuth ? { source: 'sanity' } : {}
 const defaultLogo = '/images/BikeTag.svg'
 const defaultJingle = 'media/biketag-jingle-1.mp3'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
-console.log('store::init', { subdomain: domain.subdomain, domain, gameName, playerId })
+const isBikeTagAmbassador = ambassadorId?.length > 0
+console.log('store::init', {
+  subdomain: domain.subdomain,
+  domain,
+  gameName,
+  playerId,
+  isBikeTagAmbassador,
+})
 
 let client = new BikeTagClient(options)
 
@@ -51,13 +60,13 @@ export const store = createStore<State>({
     formStep: BiketagFormSteps.queueView,
     queuedTag: {} as Tag,
     user: {} as User,
-    isBikeTagAmbassador: ambassadorId?.length > 0,
+    isBikeTagAmbassador,
     mostRecentlyViewedTagnumber,
   },
   actions: {
     async setUser({ commit }, user) {
       /// Call to backend api GET on /profile with authorization header
-      let user_metadata = {}
+      const user_metadata = {}
       // const response = await client.request({
       //   method: 'GET',
       //   url: '/api/profile',
@@ -183,7 +192,7 @@ export const store = createStore<State>({
     },
     async updateProfile({ commit }, user) {
       console.log(user)
-      console.log({user_metadata : {...user.user_metadata, name: user.name}})
+      console.log({ user_metadata: { ...user.user_metadata, name: user.name } })
       /// Update Auth0 Profile
       // await client.request({
       //   method: 'POST',
@@ -194,7 +203,11 @@ export const store = createStore<State>({
       //   },
       //   data: {user_metadata : {...user.user_metadata, name: user.name}},
       // })
-      return commit('SET_USER', {user_metadata : user.user_metadata.social, name: user.name, token : user.token})
+      return commit('SET_USER', {
+        user_metadata: user.user_metadata.social,
+        name: user.name,
+        token: user.token,
+      })
     },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === playerId) {

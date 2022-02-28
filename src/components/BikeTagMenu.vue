@@ -10,8 +10,9 @@
       </div>
       <img
         v-if="!isShow && !authLoading && $auth.isAuthenticated"
-        src="/images/Profile.svg"
-        alt="Profile con"
+        :src="getProfileImageSrc"
+        class="profile-icon"
+        alt="Profile Icon"
         @click="goProfile"
       />
       <div class="navbar-brand nav-item">
@@ -102,7 +103,6 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
-import { GetQueryString } from '@/common/utils'
 
 export default defineComponent({
   name: 'BikeTagMenu',
@@ -117,22 +117,20 @@ export default defineComponent({
     },
   },
   computed: {
-    ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag']),
+    ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag', 'isBikeTagAmbassador']),
     isShow() {
       if (this.$route.name) {
         console.log(`page:: ${this.$route.name}`)
       }
-      return this.$route.name === 'Play' || this.$route.name === 'Queue'
+      return this.$route.name !== 'Play'
+    },
+    getProfileImageSrc() {
+      return this.isBikeTagAmbassador
+        ? '/images/biketag-ambassador.svg'
+        : '/images/biketag-player.svg'
     },
   },
   async created() {
-    console.log('created')
-    const btaId = GetQueryString(window, 'btaId')
-    const expiry = GetQueryString(window, 'expiry')
-    if (btaId && expiry) {
-      this.$store.dispatch('setFormStepToApprove')
-      this.$router.push('/play')
-    }
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setCurrentBikeTag')
@@ -202,6 +200,10 @@ export default defineComponent({
 <style lang="scss" scoped>
 header {
   nav {
+    .profile-icon {
+      max-width: 15vw;
+      height: auto;
+    }
     .navbar-brand {
       margin: 0 2rem;
     }

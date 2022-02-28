@@ -59,6 +59,12 @@ if (process.env.AUTH0_DOMAIN?.length) {
       beforeEnter: authGuard,
       component: () => import('@/views/Profile.vue'),
     },
+    {
+      path: '/approve',
+      name: 'Approve',
+      beforeEnter: authGuard,
+      component: () => import('@/views/Approve.vue'),
+    },
   ]
 }
 
