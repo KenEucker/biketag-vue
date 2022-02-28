@@ -274,7 +274,6 @@ export default defineComponent({
     transform: unset;
     font-size: 3rem !important;
     line-height: 3rem !important;
-    font-family: markernotes !important;
   }
 
   .tag-count {

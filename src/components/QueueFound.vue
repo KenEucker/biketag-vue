@@ -2,8 +2,7 @@
   <div class="queue-found-tag">
     <div class="title-cnt">
       <bike-tag-button variant="medium" class="title-q">
-        <!-- <h3 class="queue-title">{{ $t('pages.queue.found_title') }}</h3> -->
-        <h3 class="queue-title"> Queue your found tag </h3>
+        <h3 class="queue-title">{{ $t('pages.queue.found_title') }}</h3>
       </bike-tag-button>
     </div>
     <div class="preview-cnt">
@@ -17,9 +16,12 @@
         src="@/assets/images/blank_img.svg"
         @click="$refs.file.click()"
       />
-      <bike-tag-button :class="`click-me ${preview ? 'icn-top' : ''}`" 
-        variant="circle" @click="$refs.file.click()">
-        <img src="@/assets/images/camera.svg"/>
+      <bike-tag-button
+        :class="`click-me ${preview ? 'icn-top' : ''}`"
+        variant="circle"
+        @click="$refs.file.click()"
+      >
+        <img src="@/assets/images/camera.svg" />
       </bike-tag-button>
     </div>
     <form
@@ -34,15 +36,15 @@
       <input type="hidden" name="form-name" value="queue-found-tag" />
       <input type="hidden" name="playerId" :value="getPlayerId" />
       <input v-model="foundImageUrl" type="hidden" name="foundImageUrl" />
-        <input
-          id="file-upload"
-          ref="file"
-          type="file"
-          class="d-none"
-          accept="image/*"
-          required
-          @change="setImage"
-        />
+      <input
+        id="file-upload"
+        ref="file"
+        type="file"
+        class="d-none"
+        accept="image/*"
+        required
+        @change="setImage"
+      />
       <p class="queue-text">{{ $t('pages.queue.found_text') }}</p>
       <div class="input-cnt mt-3 mb-3">
         <bike-tag-input
@@ -52,7 +54,8 @@
           required
           :placeholder="$t('pages.queue.location_placeholder')"
         />
-        <bike-tag-input v-if="!this.$auth.isAuthenticated"
+        <bike-tag-input
+          v-if="!$auth.isAuthenticated"
           id="player"
           v-model="player"
           name="player"
@@ -65,11 +68,7 @@
         type="submit"
         :text="`${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}`"
       /> -->
-      <bike-tag-button
-        variant="medium"
-        type="submit"
-        text="Queue Found Tag"
-      /> 
+      <bike-tag-button variant="medium" type="submit" text="Queue Found Tag" />
     </form>
   </div>
 </template>
@@ -99,17 +98,27 @@ export default defineComponent({
       preview: null,
       image: this.tag?.foundImage ?? '',
       location: this.tag?.foundLocation ?? '',
-      player: this.getName,
+      player: '',
       foundImageUrl: null,
       tagNumber: 0,
     }
   },
   computed: {
-    ...mapGetters(['getGameName', 'getQueue', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag', 'getUser']),
-    getName(){
-      if (this.$auth.isAuthenticated) return this.getUser.name ?? this.tag?.foundPlayer ?? ''
-      else this.tag?.foundPlayer ?? ''
-    }
+    ...mapGetters([
+      'getGameName',
+      'getQueue',
+      'getQueuedTag',
+      'getPlayerId',
+      'getCurrentBikeTag',
+      'getUser',
+    ]),
+    getName() {
+      if (this.$auth.isAuthenticated) {
+        return this.getUser.name ?? this.tag?.foundPlayer ?? ''
+      }
+
+      return this.tag?.foundPlayer ?? ''
+    },
   },
   methods: {
     onSubmit(e) {

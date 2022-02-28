@@ -49,7 +49,7 @@ export default defineComponent({
 .scribble-button {
   background: transparent;
   border: none;
-  font-family: Heartwrecked;
+  font-family: PrequelRough;
   font-weight: bold;
   font-size: 13px;
   @include background-btn;

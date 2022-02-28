@@ -138,9 +138,9 @@ export default defineComponent({
     await this.$store.dispatch('setCurrentBikeTag')
     await this.$store.dispatch('setQueuedTags')
     await this.$store.dispatch('setPlayers')
-    if (this.$auth.isAuthenticated){
+    if (this.$auth.isAuthenticated) {
       this.$auth.getIdTokenClaims().then((value) => {
-        this.$store.dispatch('setUser', {...this.$auth.user, token: value.__raw})
+        this.$store.dispatch('setUser', { ...this.$auth.user, token: value.__raw })
       })
     }
     this.checkForNewBikeTagPost()
@@ -203,13 +203,13 @@ export default defineComponent({
 header {
   nav {
     .navbar-brand {
-      margin: 0 2rem
+      margin: 0 2rem;
     }
     .navbar-collapse {
       flex-grow: unset;
       ul > li {
-        @media (min-width: 992px){
-          margin: 1rem
+        @media (min-width: 992px) {
+          margin: 1rem;
         }
       }
     }
