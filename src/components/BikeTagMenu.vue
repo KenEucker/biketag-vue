@@ -42,12 +42,12 @@
           <li class="nav-item" @click="goAboutPage">
             {{ $t('menu.about') }}
           </li>
-          <li class="nav-item" @click="goUsersPage">
+          <!-- <li class="nav-item" @click="goUsersPage">
             {{ $t('menu.players') }}
-          </li>
-          <li class="nav-item" @click="goLeaderboardPage">
+          </li> -->
+          <!-- <li class="nav-item" @click="goLeaderboardPage">
             {{ $t('menu.top10') }}
-          </li>
+          </li> -->
           <li class="nav-item" @click="goBikeTagsPage">
             {{ $t('menu.biketags') }}
           </li>
@@ -74,14 +74,14 @@
       </div>
     </nav>
   </header>
-  <footer v-if="variant === 'bottom'" class="container mt-5 pb-5">
+  <footer v-if="variant === 'bottom'" class="container mt-5 pb-5 footer">
     <!-- The footer nav buttons and link to homepage go here -->
     <div class="row">
       <div class="col-md-2">
         <div class="worldwide">
-          <bike-tag-button variant="circle" @click="goWorldwide">
+          <!-- <bike-tag-button variant="circle" @click="goWorldwide">
             <img src="../assets/images/npworld.png" alt="BikeTag World Wide" />
-          </bike-tag-button>
+          </bike-tag-button> -->
           <!-- <div>{{ $t('components.footer.biketag') }}</div> -->
           <!-- <i class="fa fa-globe" aria-hidden="true"></i> -->
           <!-- <div>{{ $t('components.footer.worldwide') }}</div> -->
@@ -100,15 +100,44 @@
         </a>
       </div>
     </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer-fixed__wrapper">
+      <!-- Leaderboard -->
+      <div class="footer-fixed__group_column" @click="goLeaderboardPage">
+        <div>Leaderboard</div>
+        <img :src="require('@/assets/images/underline.svg')" alt="Underline" />
+      </div>
+
+      <!-- World -->
+      <div>
+        <bike-tag-button variant="circle" @click="goWorldwide">
+          <img
+            class="footer-fixed_image"
+            src="../assets/images/npworld.png"
+            alt="BikeTag World Wide"
+          />
+        </bike-tag-button>
+      </div>
+      <!-- Players -->
+      <div class="footer-fixed__group_column" @click="goUsersPage">
+        <div>Players</div>
+        <img :src="require('@/assets/images/underline-reverse.svg')" alt="Underline Reverse" />
+      </div>
+    </div>
   </footer>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import { GetQueryString } from '@/common/utils'
+import BikeTagButton from '@/components/BikeTagButton'
 
 export default defineComponent({
   name: 'BikeTagMenu',
+  components: {
+    BikeTagButton,
+  },
   props: {
     logo: {
       type: String,
@@ -174,6 +203,9 @@ export default defineComponent({
         returnTo: window.location.origin,
       })
     },
+    goWorldwide() {
+      window.location = 'http://biketag.org/'
+    },
     goBikeTagsPage: function () {
       this.$router.push('/biketags')
     },
@@ -204,6 +236,13 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 header {
+  background-color: #e5e5e5;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   nav {
     .navbar-brand {
       margin: 0 2rem;
@@ -217,14 +256,21 @@ header {
       }
     }
     .logo {
-      height: 56px;
+      height: 3.5rem;
+      width: auto;
+      margin-bottom: 1rem;
     }
     .hamburger-image {
       height: 3.5rem;
       width: auto;
     }
+    .game-title {
+      color: black;
+      font-family: 'Prequel';
+    }
   }
 }
+
 footer {
   display: flex;
   flex-flow: wrap;
@@ -279,6 +325,35 @@ footer {
 
   .row > * {
     margin: auto;
+  }
+  .footer-fixed {
+    &__wrapper {
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+      z-index: 100;
+      width: 100%;
+      background-color: #e5e5e5;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Prequel';
+      color: black;
+      font-size: 0.75rem;
+    }
+
+    &__group_column {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 0 1rem;
+    }
+
+    &__image {
+      width: 3.125rem;
+      height: auto;
+    }
   }
 }
 </style>

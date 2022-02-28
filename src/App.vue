@@ -1,8 +1,10 @@
 <template>
+  <div class="spacer-top"></div>
   <bike-tag-menu variant="top" />
   <service-worker />
   <router-view />
   <bike-tag-menu variant="bottom" />
+  <div class="spacer-bottom"></div>
 </template>
 <script>
 import { defineComponent } from 'vue'
@@ -26,5 +28,11 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   overflow: hidden;
+}
+.spacer-bottom {
+  margin-bottom: 10rem;
+}
+.spacer-top {
+  margin-top: 12rem;
 }
 </style>

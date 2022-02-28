@@ -47,6 +47,13 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Login',
     component: () => import('@/views/Login.vue'),
   },
+//   {
+//     path: '/worldWide',
+//     component: () => import(''),
+//     beforeEnter() {
+//       window.location.href = 'http://biketag.org/'
+//     },
+//   },
 ]
 
 let protectedRoutes: Array<RouteRecordRaw> = []

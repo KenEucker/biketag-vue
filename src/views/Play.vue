@@ -69,4 +69,8 @@ export default defineComponent({
   },
 })
 </script>
-<style lang="scss"></style>
+<style lang="scss">
+.play-biketag {
+  background-color: white;
+}
+</style>
