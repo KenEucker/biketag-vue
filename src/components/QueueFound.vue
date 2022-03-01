@@ -58,15 +58,15 @@
           <img :src="pinIcon" />
           <GMapAutocomplete
             id="google-input"
+            :class="location ? '' : 'disabled'"
             :disabled="locationDisabled"
-            placeholder="This is a placeholder"
             @input="changeLocation"
             @blur="changeLocation"
             @click="changeLocation"
             @place_changed="setPlace"
           />
         </bike-tag-input>
-        <b-popover ref="pop" target="found" :show="showPopover" triggers="click" placement="top">
+        <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
           <p v-if="locationDisabled">Please upload your image first!</p>
           <GMapMap
@@ -99,7 +99,7 @@
         type="submit"
         :text="`${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}`"
       /> -->
-      <bike-tag-button variant="medium" type="submit" text="Queue Found Tag" />
+      <bike-tag-button variant="medium" @click="onSubmit" type="submit" text="Queue Found Tag" />
     </form>
   </div>
 </template>
@@ -163,6 +163,7 @@ export default defineComponent({
       return this.gps.lat && this.gps.lng
     },
     getLocation() {
+      this.$nextTick(() => {})
       if (this.location.length > 0) {
         return this.location
       } else if (this.isGps) {
@@ -177,10 +178,25 @@ export default defineComponent({
   },
   mounted() {
     setTimeout(() => this.$nextTick(() => (this.showPopover = false)), 100)
+    this.player = this.getName
   },
   methods: {
     onSubmit(e) {
+      if (this.location.length == 0) {
+        if (this.gps.lat == null) {
+          return;
+        }
+        this.location = this.getLocation
+      }
+      if (this.player.length == 0) {
+        if (this.getName.length == 0) {
+          return;
+        } else {
+          this.player = this.getName
+        }
+      }
       e.preventDefault()
+      document.querySelector(".popover")?.remove()
       const formAction = this.$refs.foundTag.getAttribute('action')
       const formData = new FormData(this.$refs.foundTag)
       const foundTag = {
@@ -218,6 +234,9 @@ export default defineComponent({
     updateMarker(e) {
       this.gps['lat'] = this.round(e.latLng.lat())
       this.gps['lng'] = this.round(e.latLng.lng())
+      if (this.location.length == 0) {
+        this.location = this.getLocation
+      }
     },
     round(number) {
       return Number(Math.round(number + 'e4') + 'e-4')
@@ -240,6 +259,7 @@ export default defineComponent({
             }
             this.imageGps = { ...this.gps }
             this.center = { ...this.gps }
+            this.location = this.getLocation
           }
           this.locationDisabled = false
         })
@@ -249,7 +269,11 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+.disabled {
+  display: none;
+}
 input#found {
+  margin-left: 3.5rem;
   display: none;
 }
 #found {
