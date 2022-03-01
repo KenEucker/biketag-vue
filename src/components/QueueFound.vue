@@ -58,7 +58,6 @@
           <img :src="pinIcon" />
           <GMapAutocomplete
             id="google-input"
-            :class="location ? '' : 'disabled'"
             :disabled="locationDisabled"
             @input="changeLocation"
             @blur="changeLocation"
@@ -182,6 +181,7 @@ export default defineComponent({
   },
   methods: {
     onSubmit(e) {
+      e.preventDefault()
       if (this.location.length == 0) {
         if (this.gps.lat == null) {
           return;
@@ -195,7 +195,6 @@ export default defineComponent({
           this.player = this.getName
         }
       }
-      e.preventDefault()
       document.querySelector(".popover")?.remove()
       const formAction = this.$refs.foundTag.getAttribute('action')
       const formData = new FormData(this.$refs.foundTag)
@@ -269,9 +268,6 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-.disabled {
-  display: none;
-}
 input#found {
   margin-left: 3.5rem;
   display: none;
