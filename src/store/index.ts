@@ -53,6 +53,7 @@ export const store = createStore<State>({
     user: {} as User,
     isBikeTagAmbassador: ambassadorId?.length > 0,
     mostRecentlyViewedTagnumber,
+    googleApiKey: process.env.GOOGLE_API_KEY ?? ''
   },
   actions: {
     async setUser({ commit }, user) {
@@ -596,6 +597,9 @@ export const store = createStore<State>({
     isBikeTagAmbassador(state) {
       return state.isBikeTagAmbassador
     },
+    getGoogleApiKey(state) {
+      return state.googleApiKey
+    }
   },
   modules: {},
 })
