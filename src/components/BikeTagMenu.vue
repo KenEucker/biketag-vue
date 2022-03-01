@@ -175,7 +175,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag']),
+    ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag', 'isBikeTagAmbassador']),
     isShow() {
       if (this.$route.name) {
         console.log(`page:: ${this.$route.name}`)
@@ -185,15 +185,13 @@ export default defineComponent({
     currentRoute() {
       return this.$route.name
     },
+    getProfileImageSrc() {
+      return this.isBikeTagAmbassador
+        ? '/images/biketag-ambassador.svg'
+        : '/images/biketag-player.svg'
+    },
   },
   async created() {
-    console.log('created')
-    const btaId = GetQueryString(window, 'btaId')
-    const expiry = GetQueryString(window, 'expiry')
-    if (btaId && expiry) {
-      this.$store.dispatch('setFormStepToApprove')
-      this.$router.push('/play')
-    }
     await this.$store.dispatch('setGame')
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setCurrentBikeTag')
@@ -285,9 +283,12 @@ header {
   z-index: 100;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   nav {
+    .profile-icon {
+      max-width: 15vw;
+      height: auto;
+    }
     .navbar-brand {
       margin: 0 2rem;
-      padding-bottom: 0;
     }
     .navbar-collapse {
       flex-grow: unset;

@@ -34,10 +34,16 @@ export default defineComponent({
       if (this.isBikeTagAmbassador) {
         console.log({ u: netlifyIdentity.currentUser() })
         netlifyIdentity.open('login')
-      } else {
+      } else if (this.$auth.loginWithRedirect) {
         this.$auth.loginWithRedirect().then(async () => {
           const token = (await this.$auth.getIdTokenClaims()).__raw
           this.$store.dispatch('setUser', { ...this.$auth.user, token })
+        })
+      } else {
+        this.$toast.open({
+          message: 'cannot login because authentication is not configured',
+          type: 'error',
+          position: 'top',
         })
       }
     },

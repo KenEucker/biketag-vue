@@ -1,11 +1,11 @@
 <template>
   <div class="queue-mystery-tag">
     <b-modal v-model="modalShow" title="BootstrapVue" hide-footer hide-header>
-      <img class="close-btn" @click="hideModal" src="@/assets/images/close.svg"/>
+      <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
       <bike-tag-button class="modal-header" variant="medium">
-        <p>You're {{ getCurrentBikeTag?.tagnumber }} in the Queue!</p>
+        <p>You are {{ stringifyNumber(numberInQueue) }} in the Queue!</p>
       </bike-tag-button>
-      <p style="text-align: center" class="go-queue" @click="goViewQueue"> View Queue </p>
+      <p style="text-align: center" class="go-queue" @click="goViewQueue">View Queue</p>
     </b-modal>
     <!-- <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3> -->
     <div class="title-cnt">
@@ -24,9 +24,12 @@
         src="@/assets/images/blank_img.svg"
         @click="$refs.file.click()"
       />
-      <bike-tag-button :class="`click-me ${preview ? 'icn-top' : ''}`" 
-        variant="circle" @click="$refs.file.click()">
-        <img src="@/assets/images/camera.svg"/>
+      <bike-tag-button
+        :class="`click-me ${preview ? 'icn-top' : ''}`"
+        variant="circle"
+        @click="$refs.file.click()"
+      >
+        <img src="@/assets/images/camera.svg" />
       </bike-tag-button>
     </div>
     <div class="container biketag-tagit-form">
@@ -53,7 +56,8 @@
         />
         <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
         <div class="input-cnt mt-3 mb-3">
-          <bike-tag-input v-if="!this.$auth.isAuthenticated"
+          <bike-tag-input
+            v-if="!$auth.isAuthenticated"
             id="player"
             v-model="player"
             name="player"
@@ -78,7 +82,7 @@
           variant="medium"
           type="submit"
           :text="`${$t('pages.queue.submit_new_tag')} ${$t('pages.queue.queue_postfix')}`"
-        /> 
+        />
       </form>
     </div>
   </div>
@@ -88,6 +92,7 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
+import { stringifyNumber } from '@/common/utils'
 
 export default defineComponent({
   name: 'QueueMysteryTag',
@@ -108,17 +113,32 @@ export default defineComponent({
     return {
       preview: null,
       mysteryImageUrl: null,
-      player: this.getName,
+      player: '',
       hint: this.tag?.hint ?? '',
       image: this.tag?.mysteryImage,
-      modalShow : true
+      modalShow: true,
+      numberInQueue: 1,
     }
   },
   computed: {
-    ...mapGetters(['getGameName', 'getQueue', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag', 'getUser']),
-    getName(){
-      if (this.$auth.isAuthenticated) return this.getUser.name ?? (this.tag?.mysteryPlayer?.length ? this.tag.mysteryPlayer : this.tag?.foundPlayer ?? '')
-      else this.tag?.mysteryPlayer?.length ? this.tag.mysteryPlayer : this.tag?.foundPlayer ?? ''
+    ...mapGetters([
+      'getGameName',
+      'getQueue',
+      'getQueuedTag',
+      'getPlayerId',
+      'getCurrentBikeTag',
+      'getUser',
+    ]),
+    getName() {
+      if (this.$auth.isAuthenticated)
+        return (
+          this.getUser.name ??
+          (this.tag?.mysteryPlayer?.length ? this.tag.mysteryPlayer : this.tag?.foundPlayer ?? '')
+        )
+      else
+        return this.tag?.mysteryPlayer?.length
+          ? this.tag.mysteryPlayer
+          : this.tag?.foundPlayer ?? ''
     },
   },
   methods: {
@@ -156,9 +176,10 @@ export default defineComponent({
       this.hideModal()
       this.$nextTick(() => this.$store.dispatch('resetFormStep'))
     },
-    hideModal(){
+    hideModal() {
       this.modalShow = false
-    }
+    },
+    stringifyNumber,
   },
 })
 </script>
@@ -174,13 +195,14 @@ export default defineComponent({
     font-size: 3rem;
   }
 }
-.go-queue{
-  font-family: markernotes;
+.go-queue {
+  // font-family: markernotes;
 }
-.close-btn, .go-queue{
+.close-btn,
+.go-queue {
   cursor: pointer;
 }
-.close-btn{
+.close-btn {
   position: absolute;
   top: 10px;
   right: 10px;
