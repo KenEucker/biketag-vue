@@ -35,11 +35,11 @@
       <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-lg-0">
           <li class="nav-item">
-            <img src="/images/Profile.svg" alt="Profile con" @click="goProfile" />
             <img
               v-if="!isShow && !authLoading && $auth.isAuthenticated"
-              src="/images/Profile.svg"
-              alt="Profile con"
+              class="profile-icon"
+              :src="getProfileImageSrc"
+              alt="Profile Icon"
               @click="goProfile"
             />
           </li>
@@ -151,7 +151,6 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
-import { GetQueryString } from '@/common/utils'
 import BikeTagButton from '@/components/BikeTagButton'
 
 export default defineComponent({
@@ -170,9 +169,7 @@ export default defineComponent({
     },
   },
   data() {
-    return {
-      //   currentRoute: '',
-    }
+    return {}
   },
   computed: {
     ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag', 'isBikeTagAmbassador']),
@@ -284,8 +281,13 @@ header {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   nav {
     .profile-icon {
-      max-width: 15vw;
+      max-width: 25vw;
       height: auto;
+    }
+    @media (min-width: 990px) {
+      .profile-icon {
+        max-width: 10vh;
+      }
     }
     .navbar-brand {
       margin: 0 2rem;
