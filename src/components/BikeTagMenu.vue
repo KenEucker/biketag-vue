@@ -21,6 +21,7 @@
 
       <!-- Hamburger Menu -->
       <button
+        ref="buttonCollapse"
         class="navbar-toggler"
         data-bs-toggle="collapse"
         data-bs-target="#navbarSupportedContent"
@@ -31,7 +32,7 @@
         <img class="hamburger-image" src="/images/Hamburger.svg" alt="Burge menu" />
       </button>
 
-      <div id="navbarSupportedContent" class="collapse navbar-collapse">
+      <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-lg-0">
           <li class="nav-item">
             <img src="/images/Profile.svg" alt="Profile con" @click="goProfile" />
@@ -42,7 +43,11 @@
               @click="goProfile"
             />
           </li>
-          <li class="nav-item" @click="goAboutPage">
+          <li
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'About' }"
+            @click="goAboutPage"
+          >
             {{ $t('menu.about') }}
           </li>
           <!-- <li class="nav-item" @click="goUsersPage">
@@ -51,25 +56,38 @@
           <!-- <li class="nav-item" @click="goLeaderboardPage">
             {{ $t('menu.top10') }}
           </li> -->
-          <li class="nav-item" @click="goBikeTagsPage">
+          <li
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'BikeTags' }"
+            @click="goBikeTagsPage"
+          >
             {{ $t('menu.biketags') }}
           </li>
-          <li class="nav-item" @click="goQueuePlay">
+          <li
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'Queue' }"
+            @click="goQueuePlay"
+          >
             {{ $t('menu.play') }}
           </li>
-          <li class="nav-item" @click="goHowPage">
+          <li class="nav-item" :class="{ 'active-nav': currentRoute === 'How' }" @click="goHowPage">
             {{ $t('menu.howto') }}
           </li>
           <template v-if="!authLoading">
             <template v-if="$auth.isAuthenticated">
-              <li class="nav-item" @click="goProfile">
+              <!-- <li class="nav-item" @click="goProfile">
                 {{ $t('menu.profile') }}
-              </li>
+              </li> -->
               <li class="nav-item" @click="logout">
                 {{ $t('menu.logout') }}
               </li>
             </template>
-            <li v-else class="nav-item" @click="login">
+            <li
+              v-else
+              class="nav-item"
+              :class="{ 'active-nav': currentRoute === 'Login' }"
+              @click="login"
+            >
               {{ $t('menu.login') }}
             </li>
           </template>
@@ -153,7 +171,7 @@ export default defineComponent({
   },
   data() {
     return {
-      currentRoute: '',
+      //   currentRoute: '',
     }
   },
   computed: {
@@ -163,6 +181,9 @@ export default defineComponent({
         console.log(`page:: ${this.$route.name}`)
       }
       return this.$route.name !== 'Play'
+    },
+    currentRoute() {
+      return this.$route.name
     },
   },
   async created() {
@@ -203,6 +224,7 @@ export default defineComponent({
       }
     },
     login() {
+      this.closeCollapsible()
       this.$router.push('/login')
     },
     logout() {
@@ -211,29 +233,40 @@ export default defineComponent({
         returnTo: window.location.origin,
       })
     },
+    closeCollapsible() {
+      this.$refs.buttonCollapse.setAttribute('aria-expanded', false)
+      this.$refs.navList.classList.remove('show')
+    },
     goWorldwide() {
       window.location = 'http://biketag.org/'
     },
     goBikeTagsPage: function () {
+      this.closeCollapsible()
       this.$router.push('/biketags')
     },
     goQueuePlay: function () {
+      this.closeCollapsible()
       this.$store.dispatch('setFormStepToJoin', true)
       this.$router.push('/play')
     },
     goProfile: function () {
+      this.closeCollapsible()
       this.$router.push('/profile')
     },
     goAboutPage: function () {
+      this.closeCollapsible()
       this.$router.push('/about')
     },
     goLeaderboardPage: function () {
+      this.closeCollapsible()
       this.$router.push('/leaderboard')
     },
     goUsersPage: function () {
+      this.closeCollapsible()
       this.$router.push('/players')
     },
     goHowPage: function () {
+      this.closeCollapsible()
       this.$router.push('/howtoplay')
     },
     goBack: function () {
@@ -253,7 +286,7 @@ header {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   nav {
     .navbar-brand {
-      margin: 0 2rem;
+      margin: 0 2rem 1rem 2rem;
     }
     .navbar-collapse {
       flex-grow: unset;
@@ -281,9 +314,14 @@ header {
     }
     .nav-item {
       font-family: 'Prequel';
-      border-bottom: 1px solid black;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-      padding: 0.75rem 0;
+      font-size: 2rem;
+      cursor: pointer;
+
+      @media (max-width: 990px) {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        border-bottom: 1px solid black;
+        padding: 1.65rem 0;
+      }
     }
     .back-arrow {
       margin-left: 1rem;
@@ -293,6 +331,11 @@ header {
 
 .navbar {
   padding-bottom: 0 !important;
+}
+
+.active-nav {
+  background-color: black;
+  color: white;
 }
 
 footer {
