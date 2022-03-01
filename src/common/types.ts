@@ -51,7 +51,6 @@ export interface State {
   queuedTag: Tag
   isBikeTagAmbassador: boolean
   mostRecentlyViewedTagnumber: number,
-  googleApiKey: string
 }
 
 export enum BiketagFormSteps {

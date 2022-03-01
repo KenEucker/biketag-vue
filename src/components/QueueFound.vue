@@ -54,23 +54,25 @@
           name="found"
           required
           :placeholder="$t('pages.queue.location_placeholder')">
-          <img src="@/assets/images/pin.svg" />
+          <img :src="pin_icon" />
         </bike-tag-input>
-        <b-popover target="found" triggers="focus"  placement="top">
+        <b-popover target="found" triggers="click"  placement="top">
           <template #title>
             Location: {{ getLocation }}
           </template>
           <p v-if="locationDisabled">
             Please upload your image first!
           </p>
-          <iframe v-else
-            width="300"
-            height="400"
-            style="border:0"
-            loading="lazy"
-            allowfullscreen
-            :src="`https://www.google.com/maps/embed/v1/place?key=${getGoogleApiKey}&q=${getLocation}`">
-          </iframe>
+          <GMapMap :center="gps" :zoom="10"
+            map-type-id="roadmap" style="width: 500px; height: 300px">
+            <GMapMarker
+              :icon="pin_icon"
+              :position="gps"
+              :draggable="true"
+              :clickeable="true"
+              @drag=updateMarker
+            />
+          </GMapMap>
         </b-popover>
         <bike-tag-input
           v-if="!$auth.isAuthenticated"
@@ -96,6 +98,7 @@ import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import ExifParser from 'exif-parser'
+import Pin from "@/assets/images/pin.svg"
 
 export default defineComponent({
   name: 'QueueFoundTag',
@@ -121,7 +124,8 @@ export default defineComponent({
       foundImageUrl: null,
       tagNumber: 0,
       locationDisabled: true,
-      gps: null,
+      gps: {lat: 0, lng: 0},
+      pin_icon: Pin,
     }
   },
   computed: {
@@ -132,7 +136,6 @@ export default defineComponent({
       'getPlayerId',
       'getCurrentBikeTag',
       'getUser',
-      'getGoogleApiKey',
       'getGame'
     ]),
     getName() {
@@ -142,16 +145,19 @@ export default defineComponent({
 
       return this.tag?.foundPlayer ?? ''
     },
+    isGps(){
+      return this.gps.lat && this.gps.lng
+    },
     getLocation() {
-      console.log(this.gps)
       if (this.location.length > 0){
         return `${this.location} ${this.getRegionName}`
+      } else if (this.isGps){
+        return `${this.gps.lat}, ${this.gps.lng}`
       }
-      return `${this.gps?.lat}, ${this.gps?.long}`
     },
     getRegionName(){
       return this.getGame?.region
-    }
+    },
   },
   methods: {
     onSubmit(e) {
@@ -174,6 +180,13 @@ export default defineComponent({
         storeAction: 'queueFoundTag',
       })
     },
+    updateMarker(e){
+      this.gps['lat'] = this.round(e.latLng.lat())
+      this.gps['lng'] = this.round(e.latLng.lng())
+    },
+    round(number) {
+      return Number(Math.round(number + "e4") + "e-4")
+    },
     setImage(event) {
       var input = event.target
       if (input.files) {
@@ -187,9 +200,10 @@ export default defineComponent({
           const results = ExifParser.create(value).parse()
           if (results.tags.GPSLatitude != null && results.tags.GPSLongitude != null){
             this.gps = {
-              lat: results.tags.GPSLatitude,
-              long: results.tags.GPSLongitude
+              lat: this.round(results.tags.GPSLatitude),
+              lng: this.round(results.tags.GPSLongitude)
             }
+            this.key++
           }
           this.locationDisabled = false
         })
@@ -211,20 +225,23 @@ input#found {
 }
 .popover {
   max-width: 320px;
+  width: 320px;
   .popover-body {
     padding: 1rem 0.5rem
   }
+  .vue-map{
+    height: 400px;
+  }
   @media (min-width: 600px){
     max-width: 420px;
+    width: 420px;
     iframe {
       width: 400px;
     }
   }
   @media (min-width: 800px){
+    width: 620px;
     max-width: 620px;
-    iframe {
-      width: 600px;
-    }
   }
 }
 </style>
