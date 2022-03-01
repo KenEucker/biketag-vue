@@ -48,32 +48,34 @@
       <p class="queue-text">{{ $t('pages.queue.found_text') }}</p>
       <div class="input-cnt mt-3 mb-3">
         <bike-tag-input
-          :disabled="locationDisabled"
           id="found"
           v-model="location"
+          :disabled="locationDisabled"
           name="found"
           required
-          :placeholder="$t('pages.queue.location_placeholder')">
+          :placeholder="$t('pages.queue.location_placeholder')"
+        >
           <img :src="pinIcon" />
           <GMapAutocomplete
-            :disabled="locationDisabled"
             id="google-input"
-            @input="changeLocation" @blur="changeLocation"
-            @click="changeLocation" 
-            @place_changed="setPlace"
+            :disabled="locationDisabled"
             placeholder="This is a placeholder"
+            @input="changeLocation"
+            @blur="changeLocation"
+            @click="changeLocation"
+            @place_changed="setPlace"
           />
         </bike-tag-input>
-        <b-popover ref="pop"
-          target="found" :show="showPopover" triggers="click" placement="top">
-          <template #title>
-            Location: {{ getLocation }}
-          </template>
-          <p v-if="locationDisabled">
-            Please upload your image first!
-          </p>
-          <GMapMap v-if="isGps" :center="center" :zoom="18"
-            map-type-id="roadmap" style="width: 300px; height: 400px">
+        <b-popover ref="pop" target="found" :show="showPopover" triggers="click" placement="top">
+          <template #title> Location: {{ getLocation }} </template>
+          <p v-if="locationDisabled">Please upload your image first!</p>
+          <GMapMap
+            v-if="isGps"
+            :center="center"
+            :zoom="18"
+            map-type-id="roadmap"
+            style="width: 300px; height: 400px"
+          >
             <GMapMarker
               :icon="pinIcon"
               :position="gps"
@@ -107,7 +109,7 @@ import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import ExifParser from 'exif-parser'
-import Pin from "@/assets/images/pin.svg"
+import Pin from '@/assets/images/pin.svg'
 
 export default defineComponent({
   name: 'QueueFoundTag',
@@ -133,19 +135,13 @@ export default defineComponent({
       foundImageUrl: null,
       tagNumber: 0,
       locationDisabled: true,
-      center: {lat: 0, lng: 0},
-      gps: {lat: null, lng: null},
+      center: { lat: 0, lng: 0 },
+      gps: { lat: null, lng: null },
       imageGps: null,
       pinIcon: Pin,
       showPopover: false,
-      inputDOM: null 
+      inputDOM: null,
     }
-  },
-  created() {
-    this.$nextTick(() => this.showPopover = true)
-  },
-  mounted() {
-    setTimeout(() => this.$nextTick(() => this.showPopover = false), 100)
   },
   computed: {
     ...mapGetters([
@@ -163,16 +159,24 @@ export default defineComponent({
 
       return this.tag?.foundPlayer ?? ''
     },
-    isGps(){
+    isGps() {
       return this.gps.lat && this.gps.lng
     },
     getLocation() {
-      if (this.location.length > 0){
+      if (this.location.length > 0) {
         return this.location
-      } else if (this.isGps){
+      } else if (this.isGps) {
         return `${this.gps.lat}, ${this.gps.lng}`
       }
-    }
+
+      return this.location
+    },
+  },
+  created() {
+    this.$nextTick(() => (this.showPopover = true))
+  },
+  mounted() {
+    setTimeout(() => this.$nextTick(() => (this.showPopover = false)), 100)
   },
   methods: {
     onSubmit(e) {
@@ -185,7 +189,11 @@ export default defineComponent({
         foundLocation: this.location,
         tagnumber: this.getCurrentBikeTag?.tagnumber ?? 0,
         game: this.getGameName,
-        gps: this.location.length > 0 ? this.imageGps : this.gps
+        gps: {
+          lat: this.gps.lat,
+          long: this.gps.lng,
+          alt: this.gps.alt,
+        },
       }
 
       this.$emit('submit', {
@@ -195,24 +203,24 @@ export default defineComponent({
         storeAction: 'queueFoundTag',
       })
     },
-    changeLocation(e){
+    changeLocation(e) {
       this.location = e.target.value
       if (this.inputDOM == null) {
         this.inputDOM = e.target
       }
     },
-    setPlace(e){
+    setPlace(e) {
       this.gps['lat'] = this.round(e.geometry.location.lat())
       this.gps['lng'] = this.round(e.geometry.location.lng())
-      this.center = {...this.gps}
+      this.center = { ...this.gps }
       this.location = this.inputDOM.value
     },
-    updateMarker(e){
+    updateMarker(e) {
       this.gps['lat'] = this.round(e.latLng.lat())
       this.gps['lng'] = this.round(e.latLng.lng())
     },
     round(number) {
-      return Number(Math.round(number + "e4") + "e-4")
+      return Number(Math.round(number + 'e4') + 'e-4')
     },
     setImage(event) {
       var input = event.target
@@ -223,15 +231,15 @@ export default defineComponent({
           this.preview = e.target.result
         }
         previewReader.readAsDataURL(this.image)
-        this.image.arrayBuffer().then(value => {
+        this.image.arrayBuffer().then((value) => {
           const results = ExifParser.create(value).parse()
-          if (results.tags.GPSLatitude != null && results.tags.GPSLongitude != null){
+          if (results.tags.GPSLatitude != null && results.tags.GPSLongitude != null) {
             this.gps = {
               lat: this.round(results.tags.GPSLatitude),
-              lng: this.round(results.tags.GPSLongitude)
+              lng: this.round(results.tags.GPSLongitude),
             }
-            this.imageGps = {...this.gps}
-            this.center = {...this.gps}
+            this.imageGps = { ...this.gps }
+            this.center = { ...this.gps }
           }
           this.locationDisabled = false
         })
@@ -242,7 +250,7 @@ export default defineComponent({
 </script>
 <style lang="scss">
 input#found {
-    display: none;
+  display: none;
 }
 #found {
   img {
@@ -258,19 +266,19 @@ input#found {
   max-width: 320px;
   width: 320px;
   .popover-body {
-    padding: 1rem 0.5rem
+    padding: 1rem 0.5rem;
   }
-  .vue-map{
+  .vue-map {
     height: 400px;
   }
-  @media (min-width: 600px){
+  @media (min-width: 600px) {
     max-width: 420px;
     width: 420px;
     iframe {
       width: 400px;
     }
   }
-  @media (min-width: 800px){
+  @media (min-width: 800px) {
     width: 620px;
     max-width: 620px;
   }

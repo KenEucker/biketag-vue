@@ -57,7 +57,7 @@ export const store = createStore<State>({
   actions: {
     async setUser({ commit }, user) {
       /// Call to backend api GET on /profile with authorization header
-      let user_metadata = {}
+      const user_metadata = {}
       // const response = await client.request({
       //   method: 'GET',
       //   url: '/api/profile',
@@ -183,7 +183,7 @@ export const store = createStore<State>({
     },
     async updateProfile({ commit }, user) {
       console.log(user)
-      console.log({user_metadata : {...user.user_metadata, name: user.name}})
+      console.log({ user_metadata: { ...user.user_metadata, name: user.name } })
       /// Update Auth0 Profile
       // await client.request({
       //   method: 'POST',
@@ -194,7 +194,11 @@ export const store = createStore<State>({
       //   },
       //   data: {user_metadata : {...user.user_metadata, name: user.name}},
       // })
-      return commit('SET_USER', {user_metadata : user.user_metadata.social, name: user.name, token : user.token})
+      return commit('SET_USER', {
+        user_metadata: user.user_metadata.social,
+        name: user.name,
+        token: user.token,
+      })
     },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === playerId) {

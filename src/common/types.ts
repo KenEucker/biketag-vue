@@ -31,7 +31,7 @@ export const special = [
 export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet']
 export interface User {
   name: string
-  user_metadata: {},
+  user_metadata: {}
   token: string
 }
 export interface State {
@@ -50,7 +50,7 @@ export interface State {
   formStep: number
   queuedTag: Tag
   isBikeTagAmbassador: boolean
-  mostRecentlyViewedTagnumber: number,
+  mostRecentlyViewedTagnumber: number
 }
 
 export enum BiketagFormSteps {
