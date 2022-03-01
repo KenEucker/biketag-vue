@@ -45,9 +45,6 @@
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
         <queue-posted :tag="getQueuedTag" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueApprove]">
-        <queue-approve />
-      </div>
       <span v-if="isSubmittingData()" class="user-agree">
         * {{ $t('pages.queue.user_agree') }}
       </span>
@@ -84,7 +81,6 @@ import QueueSubmit from '@/components/QueueSubmit.vue'
 import QueueJoined from '@/components/QueueJoined.vue'
 import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
-import QueueApprove from '@/components/QueueApprove.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
 export default defineComponent({
@@ -97,7 +93,6 @@ export default defineComponent({
     QueueJoined,
     QueuePosted,
     QueuePostedShare,
-    QueueApprove,
     BikeTagQueue,
   },
   props: {
@@ -161,10 +156,7 @@ export default defineComponent({
       )
     },
     isViewingQueue() {
-      return (
-        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView] ||
-        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueApprove]
-      )
+      this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission

@@ -74,6 +74,10 @@ export default defineComponent({
   flex-direction: column;
 }
 
+.biketag-game img {
+  max-height: 20vh;
+  height: auto;
+}
 img {
   width: 100%;
 }

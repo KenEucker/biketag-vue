@@ -1,7 +1,11 @@
 <h1 align="center" style="border-bottom: none;">biketag-vue</h1>
 <h3 align="center">The Official BikeTag App</h3>
 <p align="center">
-  <a href="https://creativecommons.org/licenses/by-sa/4.0/">
+  <a href="https://app.netlify.com/sites/biketag/deploys">
+    <img alt="Netlify Status" src="https://api.netlify.com/api/v1/badges/fe7ffef3-ea39-4e5b-a5b8-3ff6f96f45e4/deploy-status">
+  </a>
+  <br>
+  <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">
     <img src='https://img.shields.io/github/license/KenEucker/biketag-vue' alt='license'>
   </a>
   <br>
@@ -34,13 +38,22 @@ then
 
 ### Configuration
 
+You will need to modify your hosts file to include at least one entry for testing a BikeTag Game, Portland example:
+```sh
+# /etc/hosts
+...
+127.0.0.1    portland.localhost
+...
+```
+
 The BikeTag APP does not require any special configuration in order to run the site in read-only mode. You will not be able to upload images to a given game, but you can see all of the content of the available games at biketag.org.
 
 ### Adding credentials for uploading/editing content
 
+Below you will find some of the primary settings for testing all features of the BikeTag App. You can find all of the [configuration values in the wiki](https://github.com/KenEucker/biketag-vue/wiki/Configuration).
 </div>
 
-```bash
+```sh
 #.env
 SUPER_ADMIN=admin@email.com
 HOST_KEY=anythingyouwantititobe
@@ -102,7 +115,6 @@ Support the BikeTag Project on [GitHub][github], [Patreon][patreon], or directly
   [twitter-image]: https://raw.githubusercontent.com/keneucker/biketag-website/production/public/img/twitter-logo.png
 
   ## Deployed on Netlify servers
-  [![Netlify Status](https://api.netlify.com/api/v1/badges/fe7ffef3-ea39-4e5b-a5b8-3ff6f96f45e4/deploy-status)](https://app.netlify.com/sites/biketag/deploys)
   <a href="https://www.netlify.com">
     <img src="https://www.netlify.com/img/global/badges/netlify-color-accent.svg" alt="Deploys by Netlify" />
   </a>

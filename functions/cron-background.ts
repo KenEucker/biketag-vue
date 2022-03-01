@@ -5,6 +5,7 @@ import {
   getWinningTagForCurrentRound,
   setNewBikeTagPost,
   archiveAndClearQueue,
+  sendEmail,
 } from './common/methods'
 import request from 'request'
 import { BackgroundProcessResults } from './common/types'
@@ -78,6 +79,7 @@ const autoPost: Handler = async (event) => {
     true
   )
   const { results, errors } = await autoPostNewBikeTags(adminBiketagOpts)
+  await sendEmail('keneucker@gmail.com', 'autoPostEmail test', { results, errors }, 'test')
 
   if (results.length) {
     console.log({ results })
