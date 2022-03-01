@@ -54,23 +54,32 @@
           name="found"
           required
           :placeholder="$t('pages.queue.location_placeholder')">
-          <img :src="pin_icon" />
+          <img :src="pinIcon" />
+          <GMapAutocomplete
+            :disabled="locationDisabled"
+            id="google-input"
+            @input="changeLocation" @blur="changeLocation"
+            @click="changeLocation" 
+            @place_changed="setPlace"
+            placeholder="This is a placeholder"
+          />
         </bike-tag-input>
-        <b-popover target="found" triggers="click"  placement="top">
+        <b-popover ref="pop"
+          target="found" :show="showPopover" triggers="click" placement="top">
           <template #title>
             Location: {{ getLocation }}
           </template>
           <p v-if="locationDisabled">
             Please upload your image first!
           </p>
-          <GMapMap :center="gps" :zoom="10"
-            map-type-id="roadmap" style="width: 500px; height: 300px">
+          <GMapMap v-if="isGps" :center="center" :zoom="18"
+            map-type-id="roadmap" style="width: 300px; height: 400px">
             <GMapMarker
-              :icon="pin_icon"
+              :icon="pinIcon"
               :position="gps"
               :draggable="true"
               :clickeable="true"
-              @drag=updateMarker
+              @dragend="updateMarker"
             />
           </GMapMap>
         </b-popover>
@@ -124,9 +133,19 @@ export default defineComponent({
       foundImageUrl: null,
       tagNumber: 0,
       locationDisabled: true,
-      gps: {lat: 0, lng: 0},
-      pin_icon: Pin,
+      center: {lat: 0, lng: 0},
+      gps: {lat: null, lng: null},
+      imageGps: null,
+      pinIcon: Pin,
+      showPopover: false,
+      inputDOM: null 
     }
+  },
+  created() {
+    this.$nextTick(() => this.showPopover = true)
+  },
+  mounted() {
+    setTimeout(() => this.$nextTick(() => this.showPopover = false), 100)
   },
   computed: {
     ...mapGetters([
@@ -136,7 +155,6 @@ export default defineComponent({
       'getPlayerId',
       'getCurrentBikeTag',
       'getUser',
-      'getGame'
     ]),
     getName() {
       if (this.$auth.isAuthenticated) {
@@ -150,14 +168,11 @@ export default defineComponent({
     },
     getLocation() {
       if (this.location.length > 0){
-        return `${this.location} ${this.getRegionName}`
+        return this.location
       } else if (this.isGps){
         return `${this.gps.lat}, ${this.gps.lng}`
       }
-    },
-    getRegionName(){
-      return this.getGame?.region
-    },
+    }
   },
   methods: {
     onSubmit(e) {
@@ -170,7 +185,7 @@ export default defineComponent({
         foundLocation: this.location,
         tagnumber: this.getCurrentBikeTag?.tagnumber ?? 0,
         game: this.getGameName,
-        gps: this.gps,
+        gps: this.location.length > 0 ? this.imageGps : this.gps
       }
 
       this.$emit('submit', {
@@ -179,6 +194,18 @@ export default defineComponent({
         tag: foundTag,
         storeAction: 'queueFoundTag',
       })
+    },
+    changeLocation(e){
+      this.location = e.target.value
+      if (this.inputDOM == null) {
+        this.inputDOM = e.target
+      }
+    },
+    setPlace(e){
+      this.gps['lat'] = this.round(e.geometry.location.lat())
+      this.gps['lng'] = this.round(e.geometry.location.lng())
+      this.center = {...this.gps}
+      this.location = this.inputDOM.value
     },
     updateMarker(e){
       this.gps['lat'] = this.round(e.latLng.lat())
@@ -203,7 +230,8 @@ export default defineComponent({
               lat: this.round(results.tags.GPSLatitude),
               lng: this.round(results.tags.GPSLongitude)
             }
-            this.key++
+            this.imageGps = {...this.gps}
+            this.center = {...this.gps}
           }
           this.locationDisabled = false
         })
@@ -214,13 +242,16 @@ export default defineComponent({
 </script>
 <style lang="scss">
 input#found {
-    margin-left: 3.5rem;
+    display: none;
 }
 #found {
   img {
     position: absolute;
     top: 33%;
     left: 1.5rem;
+  }
+  #google-input {
+    left: 2rem;
   }
 }
 .popover {

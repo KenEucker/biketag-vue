@@ -62,7 +62,8 @@ class BikeTagApp {
     this.app.use(Markdown)
     this.app.use(VueGoogleMaps, {
       load: {
-        key: process.env.GOOGLE_API_KEY
+        key: process.env.GOOGLE_API_KEY,
+        libraries: 'places'
       }
     })
   }
