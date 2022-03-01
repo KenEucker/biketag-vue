@@ -132,7 +132,7 @@
 
       <!-- World -->
       <div>
-        <bike-tag-button variant="circle" @click="goWorldwide">
+        <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
           <img
             class="footer-fixed_image"
             src="../assets/images/npworld.png"
@@ -258,11 +258,11 @@ export default defineComponent({
       this.$router.push('/about')
     },
     goLeaderboardPage: function () {
-      this.closeCollapsible()
+      //   this.closeCollapsible()
       this.$router.push('/leaderboard')
     },
     goUsersPage: function () {
-      this.closeCollapsible()
+      //   this.closeCollapsible()
       this.$router.push('/players')
     },
     goHowPage: function () {
@@ -286,10 +286,16 @@ header {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   nav {
     .navbar-brand {
-      margin: 0 2rem 1rem 2rem;
+      margin: 0 2rem;
+      padding-bottom: 0;
     }
     .navbar-collapse {
       flex-grow: unset;
+
+      @media (max-width: 990px) {
+        height: 85vh;
+        overflow: scroll;
+      }
       ul > li {
         @media (min-width: 992px) {
           margin: 1rem;
@@ -297,12 +303,12 @@ header {
       }
     }
     .navbar-toggler {
-      margin-right: 1rem;
+      //   margin-right: 1rem;
+      margin: 0.5rem;
     }
     .logo {
       height: 3.5rem;
       width: auto;
-      margin-bottom: 1rem;
     }
     .hamburger-image {
       height: 3.5rem;
@@ -311,6 +317,10 @@ header {
     .game-title {
       color: black;
       font-family: 'Prequel';
+
+      @media (max-width: 990px) {
+        display: none;
+      }
     }
     .nav-item {
       font-family: 'Prequel';
@@ -320,7 +330,7 @@ header {
       @media (max-width: 990px) {
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
         border-bottom: 1px solid black;
-        padding: 1.65rem 0;
+        padding: 2.5rem 0;
       }
     }
     .back-arrow {
@@ -331,6 +341,12 @@ header {
 
 .navbar {
   padding-bottom: 0 !important;
+  padding-top: 0 !important;
+}
+
+.button-reset {
+  min-height: auto;
+  padding: 0;
 }
 
 .active-nav {
@@ -407,6 +423,7 @@ footer {
       font-family: 'Prequel';
       color: black;
       font-size: 0.75rem;
+      padding: 0.25rem 0;
     }
 
     &__group_column {
