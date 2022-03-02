@@ -67,7 +67,7 @@
         </bike-tag-input>
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
-          <p v-if="locationDisabled">Please upload your image first!</p>
+          <p v-if="locationDisabled">{{$t('pages.queue.image_first')}}</p>
           <GMapMap
             v-if="isGps"
             :center="center"

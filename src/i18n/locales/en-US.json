@@ -33,8 +33,9 @@
       "view_mystery_image": "Queued Mystery Image",
       "view_found_image": "Queued Found Image",
       "current_mystery_location": "Current Mystery Location",
-      "view_queue_button": "VIEW",
-      "reset_queue_button": "RESET"
+      "view_queue_button": "VIEW QUEUE",
+      "reset_queue_button": "RESET",
+      "queue_mystery_title": "Add your new Mystery Location"
     }
   },
   "pages": {
@@ -82,7 +83,8 @@
       "approve_agree": "By approving this content to be posted to all BikeTag supported platforms, you agree that this submission meets the requirements within the terms of use set by the BikeTag Project",
       "dequeue_queued_tag": "Delete this BikeTag post",
       "reset_tag": "Reset tag submission",
-      "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project"
+      "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project",
+      "image_first": "Please upload your image first!"
     },
     "howto": {
       "browser_not_support_audio": "Your browser does not support the audio element.",

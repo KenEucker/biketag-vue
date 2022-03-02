@@ -142,7 +142,7 @@
       </div>
       <!-- Players -->
       <div class="footer-fixed__group_column" @click="goUsersPage">
-        <div>Players</div>
+        <div>{{$t('menu.players')}}</div>
         <img :src="require('@/assets/images/underline-reverse.svg')" alt="Underline Reverse" />
       </div>
     </div>

@@ -14,7 +14,7 @@
     </div>
     <audio id="biketag-jingle" ref="jingle">
       <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
-      Your browser does not support the audio element.
+      {{$t('pages.howto.browser_not_support_audio')}}
     </audio>
   </div>
 </template>
