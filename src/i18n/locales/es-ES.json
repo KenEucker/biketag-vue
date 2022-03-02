@@ -1,0 +1,139 @@
+{
+    "notifications": {
+      "uploading": "Subiendo información de la etiqueta...",
+      "error": "ERROR",
+      "success": "completado exitosamente"
+    },
+    "menu": {
+      "home": "Pagina Principal",
+      "biketags": "BikeTags",
+      "play": "¡Jugar!",
+      "howto": "Cómo jugar",
+      "about": "Acerca de",
+      "players": "Jugadores",
+      "top10": "Top10",
+      "external": "Externo",
+      "language": "Idiomas",
+      "profile": "Perfil",
+      "login": "Iniciar sesión",
+      "logout": "Cerrar sesión"
+    },
+    "components": {
+      "biketag": {
+        "found_at": "encontrado en",
+        "posted_on": "publicado en"
+      },
+      "footer": {
+        "sourced": "de origen",
+        "deployed": "desplegado",
+        "worldwide": "en todo el mundo",
+        "biketag": "BikeTag"
+      },
+      "queue": {
+        "view_mystery_image": "Imagen Misteriosa en Cola",
+        "view_found_image": "Imagen Encotrada en Cola",
+        "current_mystery_location": "Ubicación Misteriosa Actual",
+        "view_queue_button": "Vista",
+        "reset_queue_button": "Reiniciar"
+      }
+    },
+    "pages": {
+      "play": {
+        "hint": "¿necesitas una pinsta?",
+        "nohint": "no hay pistas, lo siento",
+        "mystery": "Ubicación Misteriosa Actual para encontrar",
+        "send_hello_email": "¡Envíe un correo electrónico a hello@biketag.org para preguntar cómo puede iniciar uno!",
+        "game_not_exists": "¿Oh, oh. Este juego no existe.. todavía?"
+      },
+      "queue": {
+        "join_queue": "Únete a la ronda",
+        "tape_title": "Ronda",
+        "complete_queue": "Complete su etiqueta para la ronda",
+        "submit_queue": "Comparte tu publicación de BikeTag para la ronda ",
+        "found_title": "¿Encontraste la Ubicación Misteriosa actual?",
+        "found_text": "¡Agregue la imagen de su ubicación encontrada y la información a continuación para unirse a la ronda actual de BikeTag! Nota: Los jugadores deben usar el mismo nombre (se distingue entre mayúsculas y minúsculas) para que sus etiquetas se recopilen en su página de perfil.",
+        "joined_title": "¡Te has unido a la ronda!",
+        "joined_text": "Ahora que ha agregado su imagen encontrada, debe andar en bicicleta a una nueva ubicación y tomar una foto allí. Si bien se registró la imagen que encontró, no completó su BikeTag hasta que agregue una nueva ubicación misteriosa para la próxima ronda. ¡La carrera está en marcha!",
+        "queue_posted": "¡Lo hiciste!",
+        "mystery_title": "A continuación, debe agregar una nueva Ubicación Misteriosa para la próxima ronda.",
+        "mystery_text": "Complete su par de imágenes con la nueva Ubicación Misteriosa para crear una nueva publicación BikeTag",
+        "mystery_button": "Agregar nueva ubicación misteriosa",
+        "joined_button": "Ver todas las etiquetas en ronda",
+        "submit_title": "¡Envía tu publicación BikeTag para ganar la ronda!",
+        "submit_text": "Puede hacer que BikeTag RoBot publique en su nombre o puede optar por publicar en otras plataformas por su cuenta. Una vez aprobado, el BikeTag Post 'ganador' se convertirá en la nueva Ubicación Misteriosa para encontrar.",
+        "submit_text_no_autopost": "¡Un embajador de BikeTag aprobará la próxima ronda y luego su nueva publicación sera publicada!",
+        "submit_text_manual_social": "También puede publicar su BikeTag en cualquiera de las plataformas compatibles desde las pestañas anteriores, copiando el texto que contiene.",
+        "posted_title": "Has completado con éxito la ronda.",
+        "posted_text": "Permita que el Embajador de BikeTag del juego apruebe su publicación de BikeTag, lo que puede demorar hasta 15 minutos. ¡Gracias por jugar BikeTag!",
+        "approve_title": "¡Hola, embajador de BikeTag!",
+        "approve_text": "¡Seleccione la etiqueta ganadora de la ronda para que el juego pueda continuar! Esta acción guardará todas las imágenes encontradas para cada jugador en su BikeDex y seleccionará la imagen misteriosa del ganador como la nueva ubicación misteriosa.",
+        "empty_text": "Actualmente no hay etiquetas en la cola para esta ronda.",
+        "location_placeholder": "Ingresa la ubicación encontrada",
+        "name_placeholder": "Ingresa su nombre",
+        "hint_placeholder": "Ingresa su pista",
+        "post_to_reddit": "Reddit",
+        "post_to_twitter": "Twitter",
+        "queue_found_tag": "Añade tu Imagen Encontrada",
+        "submit_new_tag": "Añade tu Imagen Misteriosa",
+        "queue_postfix": "",
+        "post_new_tag": "Compartir publicación de BikeTag",
+        "approve_new_tag": "Aprueba esta publicación de BikeTag",
+        "approve_new_tag_from": "del jugador(a)",
+        "approve_agree": "Al aprobar que este contenido se publique en todas las plataformas compatibles con BikeTag, acepta que este envío cumple con los requisitos dentro de los términos de uso establecidos por BikeTag Project",
+        "dequeue_queued_tag": "Eliminar esta publicación de BikeTag",
+        "reset_tag": "Restablecer envío de etiqueta",
+        "user_agree": "Al publicar contenido en BikeTag, acepta los términos de uso establecidos por BikeTag Project"
+      },
+      "howto": {
+        "browser_not_support_audio": "Su navegador no es compatible con el elemento de audio.",
+        "swiper1": {
+          "text1": "BIKETAG ES UN JUEGO DE ETIQUETAS FOTOGRÁFICAS DONDE ENCUENTRAS UN LUGAR MISTERIOSO EN EL MUNDO REAL EN BICICLETA.",
+          "text2": "PARA JUGAR EL JUEGO NECESITAS ENTENDER ALGUNAS COSAS:",
+          "text3": "1) IMÁGENES DE BICICLETAS Y COSAS ÚNICAS JUNTAS SON LO QUE LLAMAMOS 'BIKETAGS'",
+          "text4": "2) EL OBJETIVO DEL JUEGO ES ENCONTRAR Y CREAR LO QUE LLAMAMOS 'UBICACIONES MISTERIOSAS'",
+          "text5": "3) EL JUEGO NUNCA TERMINA Y CADA RONDA ES UNA NUEVA OPORTUNIDAD DE JUGAR EL JUEGO.",
+          "text6": "4) PARA COMPLETAR UNA RONDA DE BIKETAG, DEBE ENVIAR UNA IMAGEN ENCONTRADA Y UNA IMAGEN MISTERIOSA."
+        },
+        "swiper2": {
+          "text1": "EL LUGAR DONDE SE HIZO EL BIKETAG MÁS RECIENTE SE LLAMA 'UBICACIÓN MISTERIOSA'.",
+          "text2": "EN ESTE EJEMPLO SE MUESTRA UNA BICICLETA DE COLOR NARANJA:"
+        },
+        "swiper3": {
+          "text1": "UNA VEZ QUE LLEGUES A LA UBICACIÓN MISTERIOSA, DEBE CREAR SU PROPIA IMAGEN DE BIKETAG A JUEGO. EN ESTE EJEMPLO, ERES LA BICICLETA DE COLOR AZUL:"
+        },
+        "swiper4": {
+          "text1": "A CONTINUACIÓN, ES HORA DE VIAJAR A UNA NUEVA UBICACIÓN MISTERIOSA Y HACER UNA NUEVA BIKETAG.",
+          "text2": "TEN EN CUENTA QUE LAS BUENAS UBICACIONES MISTERIOSAS AYUDAN A PROGRESAR EL JUEGO."
+        },
+        "swiper5": {
+          "text1": "UBICACIONES MISTERIOSOS ESTUPENDOS TIENEN COSAS ÚNICAS, INTERESANTES E IDENTIFICABLES. PIENSA A DÓNDE QUIERES IR Y ELIGE BIEN PARA MANTENER EL JUEGO FUNCIONANDO SIN PROBLEMAS.",
+          "text2": "EJEMPLOS ESTUPENDOS INCLUYEN OBJETOS CREADOS COMO MURALES Y EDIFICIOS, Y OBJETOS PERMANENTES COMO LUGARES DE INTERÉS Y CARACTERÍSTICAS NATURALES."
+        },
+        "swiper6": {
+          "text1": "LAS UBICACIONES MISTERIOSAS QUE NO SON TAN ESTUPENDOS NO POSEEN CARACTERÍSTICAS, SON OSCURAS E INACCESIBLES. NO DEBEN SER DIFÍCILES DE ENCONTRAR. NO CREE UN BIKETAG QUE NO SEA SEGURO PARA OTROS.",
+          "text2": "EJEMPLOS QUE NO SON TAN ESTUPENDOS INCLUYEN OBJETOS TEMPORALES Y EN MOVIMIENTO COMO CAMIONES DE COMIDA Y GRAFFITI, OBJETOS SENCILLOS COMO MUROS DE HORMIGÓN Y PROPIEDAD PRIVADA QUE REQUIRIRÍAN TRASPASO."
+        },
+        "swiper7": {
+          "text1": "UNA VEZ QUE TENGAS LAS IMÁGENES LISTAS PARA LAUBICACIÓN MISTERIOSA ACTUAL, PUEDES ENVIARLAS AQUÍ",
+          "text2": "PRESIONE EL BOTÓN PLAY Y COMIENCE EL ENVÍO DE LA NUEVA ETIQUETA"
+        },
+        "swiper8": {
+          "text1": "DESPUÉS DE AGREGAR SUS NUEVAS IMÁGENES MISTERIOSAS Y ENCONTRADAS, ¡PUEDE ENVIAR LA ETIQUETA PARA SER PUBLICADA EN LA PRÓXIMA RONDA!",
+          "text2": "LOS TÉRMINOS DE USO DE LA APLICACIÓN BIKETAG ESTÁN DESCRITOS EN EL CÓDIGO DE CONDUCTA DE BIKETAG",
+          "text3": "LAS IMÁGENES QUE PROPORCIONE ESTARÁN DISPONIBLES PÚBLICAMENTE EN INTERNET"
+        }
+      },
+      "about": {
+        "title": "ACERCA DE BIKE TAG",
+        "article1": {
+          "title": "El Juego de BIKE TAG",
+          "support_biketag": "Apoye el Proyecto BikeTag en Patreon"
+        },
+        "article2": {
+          "title": "La aplicación Bike Tag",
+          "become_player": "Conviértete en un(a) jugador(a) suscrito(a)"
+        }
+      }
+    }
+  }
+  
