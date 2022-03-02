@@ -10,7 +10,7 @@ import request from 'request'
 import { Ambassador, Game } from 'biketag/lib/common/schema'
 
 const approveHandler: Handler = async (event) => {
-  if (event.httpMethod !== "POST") {
+  if (event.httpMethod !== 'POST') {
     return {
       body: 'method not allowed',
       statusCode: 405,
