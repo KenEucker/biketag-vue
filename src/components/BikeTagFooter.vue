@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="">
     <div class="footer-buttons mb-3">
       <bike-tag-button class="m-1" :text="$t('menu.about')" @click="goAboutPage" />
       <bike-tag-button class="m-1" :text="$t('menu.players')" @click="goUsersPage" />

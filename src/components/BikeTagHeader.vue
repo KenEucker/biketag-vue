@@ -1,10 +1,15 @@
 <template>
   <div class="biketag-header">
-    <div class="container mt-2">
-      <div class="nav-buttons align-center mt-4 mb-4">
-        <bike-tag-button :text="$t('menu.biketags')" @click="goBikeTagsPage" />
-        <bike-tag-button variant="bold" :text="$t('menu.play')" @click="goQueuePlay" />
-        <bike-tag-button :text="$t('menu.howto')" @click="goHowPage" />
+    <div class="">
+      <div class="nav-buttons mt-4 mb-4">
+        <bike-tag-button class="button-left" :text="$t('menu.biketags')" @click="goBikeTagsPage" />
+        <bike-tag-button
+          class="button-middle z-1"
+          variant="bold"
+          :text="$t('menu.play')"
+          @click="goQueuePlay"
+        />
+        <bike-tag-button class="button-right" :text="$t('menu.howto')" @click="goHowPage" />
         <span
           v-if="getEasterEgg && playingEaster"
           class="fas fa-volume-mute"
@@ -114,7 +119,7 @@ export default defineComponent({
 // start modififed by will
 
 .nav-buttons {
-  height: 250px;
+  //   height: 250px;
   margin: 0 !important;
 }
 
@@ -138,6 +143,20 @@ export default defineComponent({
 .bt-bicycle {
   background-size: cover;
   background-position: center;
+}
+
+.z-1 {
+  z-index: 1;
+  position: relative;
+}
+
+.button {
+  &-left {
+    margin-right: -0.9375rem;
+  }
+  &-right {
+    margin-left: -0.9375rem;
+  }
 }
 
 .btn-circle {

@@ -33,6 +33,6 @@ export default defineComponent({
   margin-bottom: 10rem;
 }
 .spacer-top {
-  margin-top: 12rem;
+  margin-top: 9rem;
 }
 </style>
