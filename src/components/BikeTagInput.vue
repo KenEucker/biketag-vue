@@ -1,7 +1,7 @@
 <template>
   <div class="biketag-input" :style="`background-image: url(${backgroundSrc})`">
     <label v-if="label" :for="name">{{ label }}</label>
-    <b-form-input v-bind="$attrs" :type="type" />
+    <b-form-input :disabled="disabled" v-bind="$attrs" :type="type" />
     <span>
       <slot></slot>
     </span>
@@ -24,6 +24,10 @@ export default defineComponent({
     variant: {
       type: String,
       default: 'svg',
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {

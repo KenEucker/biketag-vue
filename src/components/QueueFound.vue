@@ -50,10 +50,40 @@
         <bike-tag-input
           id="found"
           v-model="location"
+          :disabled="locationDisabled"
           name="found"
           required
           :placeholder="$t('pages.queue.location_placeholder')"
-        />
+        >
+          <img :src="pinIcon" />
+          <GMapAutocomplete
+            id="google-input"
+            :disabled="locationDisabled"
+            @input="changeLocation"
+            @blur="changeLocation"
+            @click="changeLocation"
+            @place_changed="setPlace"
+          />
+        </bike-tag-input>
+        <b-popover target="found" :show="showPopover" triggers="click" placement="top">
+          <template #title> Location: {{ getLocation }} </template>
+          <p v-if="locationDisabled">Please upload your image first!</p>
+          <GMapMap
+            v-if="isGps"
+            :center="center"
+            :zoom="18"
+            map-type-id="roadmap"
+            style="width: 300px; height: 400px"
+          >
+            <GMapMarker
+              :icon="pinIcon"
+              :position="gps"
+              :draggable="true"
+              :clickeable="true"
+              @dragend="updateMarker"
+            />
+          </GMapMap>
+        </b-popover>
         <bike-tag-input
           v-if="!$auth.isAuthenticated"
           id="player"
@@ -68,7 +98,7 @@
         type="submit"
         :text="`${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}`"
       /> -->
-      <bike-tag-button variant="medium" type="submit" text="Queue Found Tag" />
+      <bike-tag-button variant="medium" type="submit" text="Queue Found Tag" @click="onSubmit" />
     </form>
   </div>
 </template>
@@ -77,6 +107,8 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
+import ExifParser from 'exif-parser'
+import Pin from '@/assets/images/pin.svg'
 
 export default defineComponent({
   name: 'QueueFoundTag',
@@ -101,6 +133,13 @@ export default defineComponent({
       player: '',
       foundImageUrl: null,
       tagNumber: 0,
+      locationDisabled: true,
+      center: { lat: 0, lng: 0 },
+      gps: { lat: null, lng: null },
+      imageGps: null,
+      pinIcon: Pin,
+      showPopover: false,
+      inputDOM: null,
     }
   },
   computed: {
@@ -119,10 +158,43 @@ export default defineComponent({
 
       return this.tag?.foundPlayer ?? ''
     },
+    isGps() {
+      return this.gps.lat && this.gps.lng
+    },
+    getLocation() {
+      if (this.location.length > 0) {
+        return this.location
+      } else if (this.isGps) {
+        return `${this.gps.lat}, ${this.gps.lng}`
+      }
+
+      return this.location
+    },
+  },
+  created() {
+    this.$nextTick(() => (this.showPopover = true))
+  },
+  mounted() {
+    setTimeout(() => this.$nextTick(() => (this.showPopover = false)), 100)
+    this.player = this.getName
   },
   methods: {
     onSubmit(e) {
       e.preventDefault()
+      if (this.location.length == 0) {
+        if (this.gps.lat == null) {
+          return
+        }
+        this.location = this.getLocation
+      }
+      if (this.player.length == 0) {
+        if (this.getName.length == 0) {
+          return
+        } else {
+          this.player = this.getName
+        }
+      }
+      document.querySelector('.popover')?.remove()
       const formAction = this.$refs.foundTag.getAttribute('action')
       const formData = new FormData(this.$refs.foundTag)
       const foundTag = {
@@ -131,6 +203,11 @@ export default defineComponent({
         foundLocation: this.location,
         tagnumber: this.getCurrentBikeTag?.tagnumber ?? 0,
         game: this.getGameName,
+        gps: {
+          lat: this.gps.lat,
+          long: this.gps.lng,
+          alt: this.gps.alt,
+        },
       }
 
       this.$emit('submit', {
@@ -139,6 +216,28 @@ export default defineComponent({
         tag: foundTag,
         storeAction: 'queueFoundTag',
       })
+    },
+    changeLocation(e) {
+      this.location = e.target.value
+      if (this.inputDOM == null) {
+        this.inputDOM = e.target
+      }
+    },
+    setPlace(e) {
+      this.gps['lat'] = this.round(e.geometry.location.lat())
+      this.gps['lng'] = this.round(e.geometry.location.lng())
+      this.center = { ...this.gps }
+      this.location = this.inputDOM.value
+    },
+    updateMarker(e) {
+      this.gps['lat'] = this.round(e.latLng.lat())
+      this.gps['lng'] = this.round(e.latLng.lng())
+      if (this.location.length == 0) {
+        this.location = this.getLocation
+      }
+    },
+    round(number) {
+      return Number(Math.round(number + 'e4') + 'e-4')
     },
     setImage(event) {
       var input = event.target
@@ -149,8 +248,58 @@ export default defineComponent({
           this.preview = e.target.result
         }
         previewReader.readAsDataURL(this.image)
+        this.image.arrayBuffer().then((value) => {
+          const results = ExifParser.create(value).parse()
+          if (results.tags.GPSLatitude != null && results.tags.GPSLongitude != null) {
+            this.gps = {
+              lat: this.round(results.tags.GPSLatitude),
+              lng: this.round(results.tags.GPSLongitude),
+            }
+            this.imageGps = { ...this.gps }
+            this.center = { ...this.gps }
+            this.location = this.getLocation
+          }
+          this.locationDisabled = false
+        })
       }
     },
   },
 })
 </script>
+<style lang="scss">
+input#found {
+  margin-left: 3.5rem;
+  display: none;
+}
+#found {
+  img {
+    position: absolute;
+    top: 33%;
+    left: 1.5rem;
+  }
+  #google-input {
+    left: 2rem;
+  }
+}
+.popover {
+  max-width: 320px;
+  width: 320px;
+  .popover-body {
+    padding: 1rem 0.5rem;
+  }
+  .vue-map {
+    height: 400px;
+  }
+  @media (min-width: 600px) {
+    max-width: 420px;
+    width: 420px;
+    iframe {
+      width: 400px;
+    }
+  }
+  @media (min-width: 800px) {
+    width: 620px;
+    max-width: 620px;
+  }
+}
+</style>
