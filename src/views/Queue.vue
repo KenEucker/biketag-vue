@@ -132,8 +132,8 @@ export default defineComponent({
     this.uploadInProgress = false
   },
   async created() {
-    await this.$store.dispatch('setCurrentBikeTag')
-    await this.$store.dispatch('setQueuedTags', true)
+    // await this.$store.dispatch('setCurrentBikeTag')
+    // await this.$store.dispatch('setQueuedTags', true)
     this.countDownTimer()
   },
   methods: {

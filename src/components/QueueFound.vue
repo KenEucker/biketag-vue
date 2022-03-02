@@ -98,7 +98,7 @@
         type="submit"
         :text="`${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}`"
       /> -->
-      <bike-tag-button variant="medium" @click="onSubmit" type="submit" text="Queue Found Tag" />
+      <bike-tag-button variant="medium" type="submit" text="Queue Found Tag" @click="onSubmit" />
     </form>
   </div>
 </template>
@@ -162,7 +162,6 @@ export default defineComponent({
       return this.gps.lat && this.gps.lng
     },
     getLocation() {
-      this.$nextTick(() => {})
       if (this.location.length > 0) {
         return this.location
       } else if (this.isGps) {
@@ -184,18 +183,18 @@ export default defineComponent({
       e.preventDefault()
       if (this.location.length == 0) {
         if (this.gps.lat == null) {
-          return;
+          return
         }
         this.location = this.getLocation
       }
       if (this.player.length == 0) {
         if (this.getName.length == 0) {
-          return;
+          return
         } else {
           this.player = this.getName
         }
       }
-      document.querySelector(".popover")?.remove()
+      document.querySelector('.popover')?.remove()
       const formAction = this.$refs.foundTag.getAttribute('action')
       const formData = new FormData(this.$refs.foundTag)
       const foundTag = {

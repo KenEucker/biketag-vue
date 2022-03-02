@@ -31,7 +31,7 @@ export const special = [
 export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet']
 export interface User {
   name: string
-  user_metadata: {}
+  user_metadata: any
   token: string
 }
 export interface State {

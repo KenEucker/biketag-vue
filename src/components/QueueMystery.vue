@@ -121,25 +121,10 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters([
-      'getGameName',
-      'getQueue',
-      'getQueuedTag',
-      'getPlayerId',
-      'getCurrentBikeTag',
-      'getUser',
-    ]),
-    getName() {
-      if (this.$auth.isAuthenticated)
-        return (
-          this.getUser.name ??
-          (this.tag?.mysteryPlayer?.length ? this.tag.mysteryPlayer : this.tag?.foundPlayer ?? '')
-        )
-      else
-        return this.tag?.mysteryPlayer?.length
-          ? this.tag.mysteryPlayer
-          : this.tag?.foundPlayer ?? ''
-    },
+    ...mapGetters(['getGameName', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag']),
+  },
+  mounted() {
+    this.player = this.getQueuedTag?.foundPlayer
   },
   methods: {
     onSubmit(e) {
