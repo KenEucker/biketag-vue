@@ -68,7 +68,7 @@ IMGUR_ADMIN_REFRESH_TOKEN=IMGURADMINREFRESH
 
 ## Credits
 
-This project was started, managed, funded, deployed, and ultimately delivered by a single contributor. This project, and the [BikeTag API][biketag-api] that is uses, is the culmination of four years of attempting to _"make it easy for anyone and everyone to play the game of BikeTag in their area"_. Thanks to those who helped finish up features and polish the UI so that this one single contributor could meet their goal.
+This project was started, managed, funded, deployed, and ultimately delivered by a single contributor. This project, and the [BikeTag API][biketag-api] that it uses, is the culmination of four years of attempting to _"make it easy for anyone and everyone to play the game of BikeTag in their area"_. Thanks to those who helped finish up features and polish the UI so that this one single contributor could meet their goal.
 
 Many thanks to those who have donated to the BikeTag Project.
 

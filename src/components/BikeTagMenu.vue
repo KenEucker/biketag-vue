@@ -36,7 +36,7 @@
         <ul class="navbar-nav me-auto mb-lg-0">
           <li class="nav-item">
             <img
-              v-if="!isShow && !authLoading && $auth.isAuthenticated"
+              v-if="!authLoading && $auth.isAuthenticated"
               class="profile-icon"
               :src="getProfileImageSrc"
               alt="Profile Icon"
@@ -50,12 +50,6 @@
           >
             {{ $t('menu.about') }}
           </li>
-          <!-- <li class="nav-item" @click="goUsersPage">
-            {{ $t('menu.players') }}
-          </li> -->
-          <!-- <li class="nav-item" @click="goLeaderboardPage">
-            {{ $t('menu.top10') }}
-          </li> -->
           <li
             class="nav-item"
             :class="{ 'active-nav': currentRoute === 'BikeTags' }"
@@ -75,9 +69,6 @@
           </li>
           <template v-if="!authLoading">
             <template v-if="$auth.isAuthenticated">
-              <!-- <li class="nav-item" @click="goProfile">
-                {{ $t('menu.profile') }}
-              </li> -->
               <li class="nav-item" @click="logout">
                 {{ $t('menu.logout') }}
               </li>
@@ -99,16 +90,6 @@
     <!-- The footer nav buttons and link to homepage go here -->
     <div class="row">
       <div class="col-md-2">
-        <div class="worldwide">
-          <!-- <bike-tag-button variant="circle" @click="goWorldwide">
-            <img src="../assets/images/npworld.png" alt="BikeTag World Wide" />
-          </bike-tag-button> -->
-          <!-- <div>{{ $t('components.footer.biketag') }}</div> -->
-          <!-- <i class="fa fa-globe" aria-hidden="true"></i> -->
-          <!-- <div>{{ $t('components.footer.worldwide') }}</div> -->
-        </div>
-      </div>
-      <div class="col-md-2">
         <a href="https://github.com/KenEucker/biketag-vue">
           <img src="../assets/images/github-logo.png" alt="GitHub" />
           <img src="../assets/images/github-mark.png" alt="GitHub Mark" />
@@ -126,7 +107,7 @@
     <div class="footer-fixed__wrapper">
       <!-- Leaderboard -->
       <div class="footer-fixed__group_column" @click="goLeaderboardPage">
-        <div>Leaderboard</div>
+        <div>{{ $t('menu.top10') }}</div>
         <img :src="require('@/assets/images/underline.svg')" alt="Underline" />
       </div>
 
@@ -142,7 +123,11 @@
       </div>
       <!-- Players -->
       <div class="footer-fixed__group_column" @click="goUsersPage">
+<<<<<<< HEAD
         <div>{{$t('menu.players')}}</div>
+=======
+        <div>{{ $t('menu.players') }}</div>
+>>>>>>> 4756dec (Cleanup.)
         <img :src="require('@/assets/images/underline-reverse.svg')" alt="Underline Reverse" />
       </div>
     </div>
@@ -310,7 +295,7 @@ header {
       margin: 0.5rem;
     }
     .logo {
-      height: 3.5rem;
+      height: 4.5rem;
       width: auto;
     }
     .hamburger-image {

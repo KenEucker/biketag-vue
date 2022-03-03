@@ -17,8 +17,7 @@
       v-if="!uploadInProgress && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
       class="tag-number"
       >#{{
-        getCurrentBikeTag?.tagnumber +
-        (BiketagFormSteps[getFormStep] > BiketagFormSteps.queueFound ? 1 : 0)
+        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
       }}</span
     >
     <bike-tag-queue v-if="!isViewingQueue()" :only-mine="true" />
@@ -56,7 +55,6 @@
         data-netlify="true"
         data-netlify-honeypot="bot-field"
         hidden
-        @submit.prevent="onSubmit"
       >
         <input type="hidden" name="form-name" value="queue-tag-error" />
         <input type="hidden" name="submission" />
@@ -104,7 +102,7 @@ export default defineComponent({
   data() {
     const time = new Date()
     time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
-    const timer = useTimer(time)
+    const timer = useTimer(time.getSeconds())
     onMounted(() => {
       watchEffect(async () => {
         if (timer.isExpired.value) {
@@ -156,9 +154,14 @@ export default defineComponent({
       )
     },
     isViewingQueue() {
-      this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
+      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
     },
-    async onQueueSubmit(newTagSubmission) {
+    async onQueueSubmit(newTagSubmission: {
+      tag: any
+      formAction: any
+      formData: any
+      storeAction: any
+    }) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual'

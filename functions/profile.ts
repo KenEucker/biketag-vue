@@ -10,7 +10,7 @@ const profileHandler: Handler = async (event) => {
 
   if (authorization) {
     let options = {}
-    
+
     switch (event.httpMethod) {
       case 'POST':
         try {
