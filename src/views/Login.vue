@@ -31,10 +31,11 @@ export default defineComponent({
   },
   methods: {
     login() {
-      if (this.isBikeTagAmbassador) {
-        console.log({ u: netlifyIdentity.currentUser() })
-        netlifyIdentity.open('login')
-      } else if (this.$auth.loginWithRedirect) {
+      // if (this.isBikeTagAmbassador) {
+      //   console.log({ u: netlifyIdentity.currentUser() })
+      //   netlifyIdentity.open('login')
+      // } else
+      if (this.$auth.loginWithRedirect) {
         this.$auth.loginWithRedirect().then(async () => {
           const token = (await this.$auth.getIdTokenClaims()).__raw
           this.$store.dispatch('setUser', { ...this.$auth.user, token })

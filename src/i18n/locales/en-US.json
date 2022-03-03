@@ -1,5 +1,6 @@
 {
   "notifications": {
+    "approving": "Approving new BikeTag",
     "uploading": "Uploading tag information...",
     "error": "ERROR",
     "success": "successfully completed"

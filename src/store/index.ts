@@ -11,10 +11,9 @@ import {
   getQueuedTagState,
   getSanityImageUrl,
   getMostRecentlyViewedBikeTagTagnumber,
-  GetQueryString,
+  // GetQueryString,
 } from '@/common/utils'
 import { BiketagFormSteps, State, User } from '@/common/types'
-// export { State } from '@/common/types'
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
@@ -67,18 +66,19 @@ export const store = createStore<State>({
   actions: {
     async setUser({ commit }, user) {
       /// Call to backend api GET on /profile with authorization header
-      const user_metadata = {}
-      // const response = await client.request({
-      //   method: 'GET',
-      //   url: '/api/profile',
-      //   headers: {
-      //     authorization: `Bearer ${user.token}`,
-      //   }
-      // })
-      // if (response.status == 200 && typeof response.data === "string"){
-      //   const data = JSON.parse(response.data)
-      //   user_metadata = {...data.social, name : data.name}
-      // }
+      let user_metadata = {}
+      const response = await client.request({
+        method: 'GET',
+        url: '/api/profile',
+        headers: {
+          authorization: `Bearer ${user.token}`,
+        },
+      })
+      if (response.status == 200 && typeof response.data === 'string') {
+        const data = JSON.parse(response.data)
+        user_metadata = { social: data.social, name: data.name, credentials: data.credentials }
+      }
+      user.token = undefined
       return commit('SET_USER', { ...user, user_metadata })
     },
     setGame({ commit, state }) {
@@ -177,6 +177,7 @@ export const store = createStore<State>({
     },
     async dequeueTag({ state }, d) {
       // Check ambassador permissions?
+      console.log({ ambassadorId, d: d.ambassadorId })
       if (d.ambassadorId === ambassadorId) {
         d.hash = state.game.queuehash
         return client.deleteTag(d.tag).then((t) => {
@@ -186,10 +187,10 @@ export const store = createStore<State>({
             console.log('error::dequeue BikeTag failed', t)
             return t.error
           }
-          return t.success
+          return 'successfully dequeued tag'
         })
       }
-      return false
+      return 'incorrect permissions'
     },
     async updateProfile({ commit }, user) {
       /// Update Auth0 Profile
@@ -326,7 +327,7 @@ export const store = createStore<State>({
     },
     async getAmbassadorPermission({ state }, d) {
       if (d.ambassadorId === ambassadorId) {
-        /// TODO: check for privileges to delete?
+        /// TODO: check for privileges to approve?
         return true
       }
       return false

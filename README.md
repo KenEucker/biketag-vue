@@ -55,14 +55,22 @@ Below you will find some of the primary settings for testing all features of the
 
 ```sh
 #.env
+# Used for internal authentication
 SUPER_ADMIN=admin@email.com
 HOST_KEY=anythingyouwantititobe
 ACCESS_TOKEN=BIKETAGACCESSTOKEN
+# Used for uploading new BikeTag posts
 IMGUR_CLIENT_ID=IMGURCLIENTID
 IMGUR_CLIENT_SECRET=IMGURCLIENTSECRET
 IMGUR_REFRESH_TOKEN=IMGURCLIENTREFRESH
 IMGUR_ADMIN_REFRESH_TOKEN=IMGURADMINREFRESH
-
+# Used for google maps integration
+GOOGLE_API_KEY=GOOGLEAPIKEY
+# Used for BikeTag Player and BikeTag Ambassador logins
+AUTH0_CLIENT_ID=AUTH0CLIENTID
+AUTH0_DOMAIN=AUTH0DOMAIN
+AUTH0_TOKEN=AUTH0TOKEN
+AUTH0_AUDIENCE=AUTH0AUDIENCE
 ```
 <div align="center">
 

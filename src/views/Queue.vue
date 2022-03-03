@@ -156,12 +156,7 @@ export default defineComponent({
     isViewingQueue() {
       return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
     },
-    async onQueueSubmit(newTagSubmission: {
-      tag: any
-      formAction: any
-      formData: any
-      storeAction: any
-    }) {
+    async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual'

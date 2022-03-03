@@ -153,7 +153,9 @@ export default defineComponent({
   },
   methods: {
     dequeueTag() {
-      const tagToDequeue = {}
+      const tagToDequeue = {
+        ambassadorId: this.getAmbassadorId,
+      }
       return this.$store.dispatch('dequeueTag', tagToDequeue).then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
           this.$toast.open({
