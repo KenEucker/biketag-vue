@@ -791,23 +791,19 @@ export const getLoginIsBikeTagAmbassador = (): boolean => {
   return true
 }
 
-export const acceptCorsRequest = (event) => {
-  /// CORS
-  const headers = {
+export const acceptCorsHeaders = (withAuthorization = true) => {
+  const corsHeaders = {
     Accept: '*',
     'Access-Control-Allow-Headers': '*',
     'Content-Type': 'application/json',
     'Access-Control-Allow-Methods': '*',
-    'Access-Control-Max-Age': '8640',
     'Access-Control-Allow-Origin': '*',
+    'Access-Control-Max-Age': '8640',
   }
 
-  // HEADERS['Vary'] = 'Origin'
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ message: 'Successful preflight call.' }),
-    }
+  if (withAuthorization) {
+    corsHeaders['authorization'] = `Bearer ${process.env.AUTH0_TOKEN}`
   }
+
+  return corsHeaders
 }

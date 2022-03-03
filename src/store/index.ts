@@ -193,21 +193,21 @@ export const store = createStore<State>({
       }
       return 'incorrect permissions'
     },
-    async updateProfile({ commit }, user) {
+    async updateProfile({ commit }, profile) {
       // Update Auth0 Profile
       await client.request({
         method: 'PATCH',
         url: getApiUrl('profile'),
         headers: {
-          authorization: `Bearer ${user.token}`,
+          authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: { user_metadata: { ...user.user_metadata, name: user.name } },
+        data: { user_metadata: { ...profile.user_metadata } },
       })
       return commit('SET_USER', {
-        user_metadata: user.user_metadata,
-        name: user.name,
-        token: user.token,
+        user_metadata: profile.user_metadata,
+        name: profile.name,
+        token: profile.token,
       })
     },
     async dequeueFoundTag({ commit, state }) {

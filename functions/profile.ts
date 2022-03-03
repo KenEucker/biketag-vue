@@ -1,35 +1,36 @@
 import { Handler } from '@netlify/functions'
 import axios from 'axios'
-import { isValidJson, getPayloadAuthorization, acceptCorsRequest } from './common/methods'
+import { isValidJson, getPayloadAuthorization, acceptCorsHeaders } from './common/methods'
 
 const profileHandler: Handler = async (event) => {
-  // HEADERS['Vary'] = 'Origin'
+  const headers = acceptCorsHeaders(false)
   if (event.httpMethod === 'OPTIONS') {
-    return acceptCorsRequest(event)
+    return {
+      statusCode: 204,
+      headers,
+    }
   }
 
-  console.log(event.httpMethod)
-  const authorization = await getPayloadAuthorization(event)
   let body = 'missing authorization header'
   let statusCode = 401
+  const authorization = await getPayloadAuthorization(event)
 
   if (authorization) {
     let options = {}
+    const authorizationHeaders = acceptCorsHeaders()
 
     switch (event.httpMethod) {
       case 'PUT':
         try {
           const data = JSON.parse(event.body)
-          console.log({ data })
           if (isValidJson(data, 'profile')) {
             options = {
               method: 'PATCH',
               url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${authorization.sub}`,
-              headers: {
-                authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
-                'content-type': 'application/json',
+              headers: authorizationHeaders,
+              data: {
+                user_metadata: data,
               },
-              data,
             }
           } else {
             body = 'bad request'
@@ -43,16 +44,15 @@ const profileHandler: Handler = async (event) => {
       case 'PATCH':
         try {
           const data = JSON.parse(event.body)
-          console.log({ data })
+          console.log({ data, authorization })
           if (isValidJson(data, 'profile')) {
             options = {
               method: 'PATCH',
               url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${authorization.sub}`,
-              headers: {
-                authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
-                'content-type': 'application/json',
+              headers: authorizationHeaders,
+              data: {
+                user_metadata: data,
               },
-              data,
             }
           } else {
             body = 'bad request'
@@ -67,10 +67,7 @@ const profileHandler: Handler = async (event) => {
         options = {
           method: 'GET',
           url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${authorization.sub}?fields=user_metadata`,
-          headers: {
-            authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
-            'content-type': 'application/json',
-          },
+          headers: authorizationHeaders,
         }
         break
       default:
@@ -82,7 +79,6 @@ const profileHandler: Handler = async (event) => {
       await axios
         .request(options)
         .then(function (response) {
-          console.log({ success: response })
           body = typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
           statusCode = 200
         })
@@ -96,6 +92,7 @@ const profileHandler: Handler = async (event) => {
 
   return {
     statusCode,
+    headers,
     body,
   }
 }
