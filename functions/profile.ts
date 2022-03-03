@@ -1,23 +1,11 @@
 import { Handler } from '@netlify/functions'
 import axios from 'axios'
-import { isValidJson, getPayloadAuthorization } from './common/methods'
+import { isValidJson, getPayloadAuthorization, acceptCorsRequest } from './common/methods'
 
 const profileHandler: Handler = async (event) => {
-  /// CORS
-  const HEADERS = {
-    'Access-Control-Allow-Headers':
-      'Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Origin',
-    'Content-Type': 'application/json', //optional
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Max-Age': '8640',
-    'Access-Control-Allow-Origin': '*',
-  }
-  HEADERS['Vary'] = 'Origin'
+  // HEADERS['Vary'] = 'Origin'
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      HEADERS,
-    }
+    return acceptCorsRequest(event)
   }
 
   console.log(event.httpMethod)

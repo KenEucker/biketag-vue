@@ -71,7 +71,6 @@ export const store = createStore<State>({
       const response = await client.request({
         method: 'GET',
         url: getApiUrl('profile'),
-        withCredentials: false,
         headers: {
           authorization: `Bearer ${user.token}`,
         },

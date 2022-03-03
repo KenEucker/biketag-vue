@@ -3,6 +3,11 @@
   command = "yarn build"
   functions = "functions/"
 
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -18,11 +23,6 @@
 
 [functions."submission-created"]
   included_files=["functions/emails/*.liquid"]
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
 
 [[plugins]]
   package = 'netlify-plugin-contextual-env'

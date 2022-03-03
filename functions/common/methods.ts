@@ -790,3 +790,24 @@ export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag
 export const getLoginIsBikeTagAmbassador = (): boolean => {
   return true
 }
+
+export const acceptCorsRequest = (event) => {
+  /// CORS
+  const headers = {
+    Accept: '*',
+    'Access-Control-Allow-Headers': '*',
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Methods': '*',
+    'Access-Control-Max-Age': '8640',
+    'Access-Control-Allow-Origin': '*',
+  }
+
+  // HEADERS['Vary'] = 'Origin'
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ message: 'Successful preflight call.' }),
+    }
+  }
+}
