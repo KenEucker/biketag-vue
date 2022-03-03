@@ -154,6 +154,9 @@
         <bike-tag-button variant="medium" text="Save Changes" @click="onSubmit" />
       </form>
     </div>
+    <div v-if="player.tags" class="d-flex justify-content-center mt-5 mb-5">
+      <player size="lg" :player="player" :no-link="true" />
+    </div>
   </div>
 </template>
 
@@ -169,6 +172,7 @@ import Instagram from '@/assets/images/Instagram.svg'
 import Twitter from '@/assets/images/Twitter.svg'
 import Imgur from '@/assets/images/Imgur.svg'
 import Discord from '@/assets/images/Discord.svg'
+import Player from '@/components/PlayerBicon.vue'
 
 export default defineComponent({
   name: 'PlayerView',
@@ -176,6 +180,7 @@ export default defineComponent({
     Loading,
     BikeTagButton,
     BikeTagInput,
+    Player
   },
   data() {
     return {
@@ -204,7 +209,7 @@ export default defineComponent({
     ...mapGetters(['getPlayers', 'getUser', 'isBikeTagAmbassador']),
     player() {
       const playerList = this.getPlayers?.filter((player) => {
-        return this.$auth.user.name == player.name
+        return this.$auth.user.name == decodeURIComponent(encodeURIComponent(player.name))
       })
       return {
         ...playerList[0],

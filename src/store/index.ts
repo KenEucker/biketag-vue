@@ -14,7 +14,7 @@ import {
   GetQueryString,
 } from '@/common/utils'
 import { BiketagFormSteps, State, User } from '@/common/types'
-export { State } from '@/common/types'
+// export { State } from '@/common/types'
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
