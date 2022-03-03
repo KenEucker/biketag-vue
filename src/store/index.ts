@@ -191,8 +191,6 @@ export const store = createStore<State>({
       return false
     },
     async updateProfile({ commit }, user) {
-      console.log(user)
-      console.log({ user_metadata: { ...user.user_metadata, name: user.name } })
       /// Update Auth0 Profile
       // await client.request({
       //   method: 'POST',
@@ -204,7 +202,7 @@ export const store = createStore<State>({
       //   data: {user_metadata : {...user.user_metadata, name: user.name}},
       // })
       return commit('SET_USER', {
-        user_metadata: user.user_metadata.social,
+        user_metadata: user.user_metadata,
         name: user.name,
         token: user.token,
       })

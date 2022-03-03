@@ -37,7 +37,7 @@
         data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
-        <div class="mt-3">
+        <div class="mt-3" v-if="!isBikeTagAmbassador">
           <bike-tag-input
             id="name"
             v-model="name"
@@ -60,7 +60,97 @@
             </div>
           </bike-tag-input>
         </div>
-
+        <template v-if="isBikeTagAmbassador">
+          <template v-if="showImgur">
+            <div class="input-block mt-3">
+              <bike-tag-button variant="medium" text="Imgur Configuaration" @click="() => toogleData('showImgur')"/>
+              <bike-tag-input
+                v-model="imgurConfig.clientId"
+                name="Imgur Client Id"
+                label="Client Id"
+                placeholder="Imgur Client Id"
+                type="password"
+                required
+              />
+              <bike-tag-input
+                v-model="imgurConfig.clientSecret"
+                name="Imgur Client Secret"
+                label="Client Secret"
+                placeholder="Imgur Client Secret"
+                type="password"
+                required
+              />
+              <bike-tag-input
+                v-model="imgurConfig.refreshToken"
+                name="Imgur Refresh Token"
+                label="Refresh Token"
+                placeholder="Imgur Refresh Token"
+                type="password"
+                required
+              />
+            </div>
+          </template>
+          <template v-if="showSanity">
+            <div class="input-block mt-3">
+              <bike-tag-button variant="medium" text="Sanity Configuaration" @click="() => toogleData('showSanity')"/>
+              <bike-tag-input
+                v-model="sanityConfig.projectId"
+                name="Sanity Project Id"
+                label="Project Id"
+                placeholder="Sanity Project Id"
+                type="password"
+                required
+              />
+              <bike-tag-input
+                v-model="sanityConfig.dataset"
+                name="Sanity Dataset"
+                label="Dataset"
+                placeholder="Sanity Dataset"
+                type="password"
+                required
+              />
+            </div>
+          </template>
+          <template v-if="showReddit">
+            <div class="input-block mt-3">
+              <bike-tag-button variant="medium" text="Reddit Configuaration" @click="() => toogleData('showReddit')"/>
+              <bike-tag-input
+                v-model="redditConfig.redditClientId"
+                name="Reddit Client Id"
+                label="Cliend Id"
+                placeholder="Reddit Client Id"
+                type="password"
+                required
+              />
+              <bike-tag-input
+                v-model="redditConfig.clientSecret"
+                name="Reddit Client Secret"
+                label="Client Secret"
+                placeholder="Reddit Client Secret"
+                type="password"
+                required
+              />
+              <bike-tag-input
+                v-model="redditConfig.userName"
+                name="Reddit User Name"
+                label="User Name"
+                placeholder="Reddit User Name"
+                required
+              />
+              <bike-tag-input
+                v-model="redditConfig.password"
+                name="Reddit Password"
+                label="Password"
+                placeholder="Reddit Password"
+                type="password"
+                required
+              />
+            </div>
+          </template>
+          <bike-tag-button v-if="!showImgur" variant="medium" text="+ Igmur Config" @click="() => toogleData('showImgur')"/>
+          <bike-tag-button v-if="!showSanity" variant="medium" text="+ Sanity Config" @click="() => toogleData('showSanity')"/>
+          <bike-tag-button v-if="!showReddit" variant="medium" text="+ Reddit Config" @click="() => toogleData('showReddit')"/>
+        </template>
         <bike-tag-button variant="medium" text="Save Changes" @click="onSubmit" />
       </form>
     </div>
@@ -102,10 +192,16 @@ export default defineComponent({
         ['imgur', Imgur],
         ['discord', Discord],
       ],
+      imgurConfig: null,
+      sanityConfig: null,
+      redditConfig: null,
+      showImgur: false,
+      showSanity: false,
+      showReddit: false,
     }
   },
   computed: {
-    ...mapGetters(['getPlayers', 'getUser']),
+    ...mapGetters(['getPlayers', 'getUser', 'isBikeTagAmbassador']),
     player() {
       const playerList = this.getPlayers?.filter((player) => {
         return this.$auth.user.name == player.name
@@ -121,25 +217,63 @@ export default defineComponent({
   async mounted() {
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setPlayers')
+
+    if (this.isBikeTagAmbassador) {
+      const credentials = this.player.user_metadata.credentials ?? {}
+      if (credentials.imgur) {
+        this.imgurConfig = {...credentials.imgur}
+      } else {
+        this.imgurConfig = {
+          clientId : "",
+          clientSecret : "",
+          refreshToken : ""
+        }
+      }
+      if (credentials.sanity) {
+        this.sanityConfig = {...credentials.sanity}
+      } else {
+        this.sanityConfig = {
+          projectId : "",
+          dataset : ""
+        }
+      }
+      if (credentials.reddit) {
+        this.redditConfig = {...credentials.reddit}
+      } else {
+        this.redditConfig = {
+          clientId : "",
+          clientSecret : "",
+          userName : "",
+          password : ""
+        }
+      }
+    }
   },
   methods: {
-    toggleForm() {
-      this.showForm = !this.showForm
+    toogleData(name) {
+      this[name] = !this[name]
     },
     async onSubmit() {
       const token = (await this.$auth.getIdTokenClaims()).__raw
+      const user_metadata = {
+        social: {
+          reddit: this.reddit,
+          instagram: this.instagram,
+          twitter: this.twitter,
+          imgur: this.imgur,
+          discord: this.discord,
+        }
+      }
+      if (this.isBikeTagAmbassador) {
+        user_metadata['credentials'] = {
+            imgur: this.imgurConfig,
+            sanity: this.sanityConfig,
+            reddit: this.reddit,
+        }
+      }
       await this.$store.dispatch('updateProfile', {
         name: this.name != null && this.name.length > 0 ? this.name : this.getUser.name,
-        user_metadata: {
-          social: {
-            reddit: this.reddit,
-            instagram: this.instagram,
-            twitter: this.twitter,
-            imgur: this.imgur,
-            discord: this.discord,
-          },
-        },
-        token,
+        user_metadata, token,
       })
     },
   },
@@ -149,6 +283,14 @@ export default defineComponent({
 .flx-columns {
   @include flx-center($flow: column nowrap, $al: flex-start);
 
+  .scribble-button {
+    .scribble-text--inner {
+      font-size: 1.5rem !important;
+    }
+  }
+}
+
+.input-block {
   .scribble-button {
     .scribble-text--inner {
       font-size: 1.5rem !important;
