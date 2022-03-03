@@ -208,25 +208,27 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
     authorizationString = authorizationString.substr(clientId.length)
   }
 
-  /// Try netlify Auth validation for BikeTag Ambassador
-  try {
-    const verifierOpts = { issuer: '', audience: '' }
-    const verifier = new JwtVerifier(verifierOpts)
-    return await validateJWT(verifier, verifierOpts)
-  } catch (e) {
-    console.error({ authorizationNetlifyValidationError: e })
-  }
+  if (authorizationString) {
+    /// Try netlify Auth validation for BikeTag Ambassador
+    // try {
+    //   const verifierOpts = { issuer: '', audience: '' }
+    //   const verifier = new JwtVerifier(verifierOpts)
+    //   return await validateJWT(verifier, verifierOpts)
+    // } catch (e) {
+    //   console.error({ authorizationNetlifyValidationError: e })
+    // }
 
-  /// Try netlify Auth validation for BikeTag Ambassador
-  try {
-    const JWKS = jose.createRemoteJWKSet(
-      new URL(`https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`)
-    )
+    /// Try netlify Auth validation for BikeTag Ambassador
+    try {
+      const JWKS = jose.createRemoteJWKSet(
+        new URL(`https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`)
+      )
 
-    const { payload } = await jose.jwtVerify(authorizationString, JWKS)
-    return payload
-  } catch (e) {
-    console.error({ authorizationAuth0ValidationError: e })
+      const { payload } = await jose.jwtVerify(authorizationString, JWKS)
+      return payload
+    } catch (e) {
+      console.error({ authorizationAuth0ValidationError: e })
+    }
   }
 }
 
@@ -783,4 +785,8 @@ export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag
   }
 
   return undefined
+}
+
+export const getLoginIsBikeTagAmbassador = (): boolean => {
+  return true
 }

@@ -3,6 +3,23 @@ import axios from 'axios'
 import { isValidJson, getPayloadAuthorization } from './common/methods'
 
 const profileHandler: Handler = async (event) => {
+  /// CORS
+  const HEADERS = {
+    'Access-Control-Allow-Headers':
+      'Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Origin',
+    'Content-Type': 'application/json', //optional
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Max-Age': '8640',
+    'Access-Control-Allow-Origin': '*',
+  }
+  HEADERS['Vary'] = 'Origin'
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      HEADERS,
+    }
+  }
+
   console.log(event.httpMethod)
   const authorization = await getPayloadAuthorization(event)
   let body = 'missing authorization header'
@@ -12,7 +29,7 @@ const profileHandler: Handler = async (event) => {
     let options = {}
 
     switch (event.httpMethod) {
-      case 'POST':
+      case 'PUT':
         try {
           const data = JSON.parse(event.body)
           console.log({ data })
@@ -30,8 +47,31 @@ const profileHandler: Handler = async (event) => {
             body = 'bad request'
             statusCode = 400
           }
-        } catch {
-          body = 'bad request'
+        } catch (e) {
+          body = `patch failed: ${e.message ?? e}`
+          statusCode = 400
+        }
+        break
+      case 'PATCH':
+        try {
+          const data = JSON.parse(event.body)
+          console.log({ data })
+          if (isValidJson(data, 'profile')) {
+            options = {
+              method: 'PATCH',
+              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${authorization.sub}`,
+              headers: {
+                authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
+                'content-type': 'application/json',
+              },
+              data,
+            }
+          } else {
+            body = 'bad request'
+            statusCode = 400
+          }
+        } catch (e) {
+          body = `patch failed: ${e.message ?? e}`
           statusCode = 400
         }
         break

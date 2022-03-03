@@ -244,3 +244,10 @@ export const getSanityImageUrl = (
     .replace('-png', '.png')
     .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
 }
+
+export const getApiUrl = (path: string) => {
+  console.log('env', process.env, { path })
+  return process.env.CONTEXT === 'dev'
+    ? `${window.location.protocol}//${window.location.hostname}:7200/.netlify/functions/${path}`
+    : `/api/${path}`
+}

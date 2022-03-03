@@ -11,6 +11,7 @@ import {
   getQueuedTagState,
   getSanityImageUrl,
   getMostRecentlyViewedBikeTagTagnumber,
+  getApiUrl,
   // GetQueryString,
 } from '@/common/utils'
 import { BiketagFormSteps, State, User } from '@/common/types'
@@ -69,7 +70,8 @@ export const store = createStore<State>({
       let user_metadata = {}
       const response = await client.request({
         method: 'GET',
-        url: '/api/profile',
+        url: getApiUrl('profile'),
+        withCredentials: false,
         headers: {
           authorization: `Bearer ${user.token}`,
         },
@@ -193,16 +195,16 @@ export const store = createStore<State>({
       return 'incorrect permissions'
     },
     async updateProfile({ commit }, user) {
-      /// Update Auth0 Profile
-      // await client.request({
-      //   method: 'POST',
-      //   url: '/api/profile',
-      //   headers: {
-      //     authorization: `Bearer ${user.token}`,
-      //     'content-type': 'application/json',
-      //   },
-      //   data: {user_metadata : {...user.user_metadata, name: user.name}},
-      // })
+      // Update Auth0 Profile
+      await client.request({
+        method: 'PATCH',
+        url: getApiUrl('profile'),
+        headers: {
+          authorization: `Bearer ${user.token}`,
+          'content-type': 'application/json',
+        },
+        data: { user_metadata: { ...user.user_metadata, name: user.name } },
+      })
       return commit('SET_USER', {
         user_metadata: user.user_metadata,
         name: user.name,

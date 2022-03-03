@@ -28,6 +28,7 @@ export default defineConfig({
     vue(),
     EnvironmentPlugin({
       /* Application Configuration */
+      CONTEXT: process.env.CONTEXT ?? null,
       USE_AUTHENTICATION: process.env.USE_AUTHENTICATION ?? null,
       SUPER_ADMIN: process.env.SUPER_ADMIN ?? 'biketag@biketag.org',
       /* BikeTag Configuration */

@@ -3,6 +3,12 @@
   command = "yarn build"
   functions = "functions/"
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Credentials = "true"
+    Access-Control-Allow-Origin = "*"
+
 [functions."cron-background"]
   schedule = "*/15 * * * *"
   included_files=["functions/emails/*.liquid"]
@@ -20,9 +26,3 @@
 
 [[plugins]]
   package = 'netlify-plugin-contextual-env'
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Access-Control-Allow-Credentials = "true"
-    Access-Control-Allow-Origin = "*"
