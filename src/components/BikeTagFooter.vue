@@ -1,9 +1,14 @@
 <template>
   <div class="">
     <div class="footer-buttons mb-3">
-      <bike-tag-button class="m-1" :text="$t('menu.about')" @click="goAboutPage" />
-      <bike-tag-button class="m-1" :text="$t('menu.players')" @click="goUsersPage" />
-      <bike-tag-button class="m-1" :text="$t('menu.top10')" @click="goLeaderboardPage" />
+      <bike-tag-button class="button-left" :text="$t('menu.about')" @click="goAboutPage" />
+      <bike-tag-button
+        class="z-1 button-middle"
+        :text="$t('menu.hint')"
+        :variant="'bold'"
+        @click="goUsersPage"
+      />
+      <bike-tag-button class="button-right" :text="$t('menu.players')" @click="goUsersPage" />
     </div>
   </div>
 </template>
@@ -35,6 +40,18 @@ export default defineComponent({
 
   .btn {
     max-height: 3em;
+  }
+
+  .button {
+    &-left {
+      margin-right: -0.9375rem;
+    }
+    &-middle {
+      position: relative;
+    }
+    &-right {
+      margin-left: -0.9375rem;
+    }
   }
 }
 </style>
