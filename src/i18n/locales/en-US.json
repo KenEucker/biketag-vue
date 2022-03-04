@@ -18,7 +18,8 @@
     "profile": "Profile",
     "login": "Login",
     "logout": "Logout",
-	"hint": "Hint"
+	"hint": "Hint",
+	"mysterylocation": "Mystery Location"
   },
   "components": {
     "biketag": {

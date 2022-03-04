@@ -23,15 +23,36 @@
           <bike-tag-button class="clear-button-height" :text="'#' + getCurrentBikeTag.tagnumber" />
         </div>
         <div>
-          <bike-tag-button :text="'Mystery Location'" />
+          <bike-tag-button :text="$t('menu.mysterylocation')" />
         </div>
+
+        <!-- Modal -->
+        <b-modal v-model="modalShow" title="BootstrapVue" hide-footer hide-header>
+          <!-- Header Content -->
+          <div class="modal-top">
+            <img class="close-btn" src="@/assets/images/lightbulb.svg" />
+            <bike-tag-button class="modal-top__mystery" variant="medium" :text="'Mystery Hint'" />
+            <img class="close-btn" src="@/assets/images/close.svg" @click="toggleModal(false)" />
+          </div>
+          <!-- Line Separator -->
+          <div class="modal-line-divide"></div>
+          <!-- Hint Content -->
+          <div class="modal-bottom">
+            <div class="modal-bottom__hint">{{ getCurrentBikeTag.hint }}</div>
+            <img
+              class="modal-bottom__underline"
+              :src="require('@/assets/images/underline.svg')"
+              alt="Underline"
+            />
+          </div>
+        </b-modal>
       </div>
     </div>
     <div v-else>
       <span>{{ $t('pages.play.game_not_exists') }}</span>
       <span>{{ $t('pages.play.send_hello_email') }}</span>
     </div>
-    <bike-tag-footer class="bike-tag-footer" />
+    <bike-tag-footer class="bike-tag-footer" @toggle-modal="toggleModal" />
   </div>
 </template>
 <script>
@@ -61,6 +82,7 @@ export default defineComponent({
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
       tagIsLoading: true,
+      modalShow: false,
       // error,
     }
   },
@@ -81,6 +103,9 @@ export default defineComponent({
     await this.$store.dispatch('setCurrentBikeTag')
     this.tagIsLoading = false
   },
+  mounted() {
+    this.parseHint()
+  },
   methods: {
     tagLoaded() {
       this.tagIsLoading = false
@@ -92,6 +117,13 @@ export default defineComponent({
         }) ?? []
       return playerList[0]
     },
+    parseHint(hint) {
+      console.log(hint)
+    },
+    toggleModal(modalStatus) {
+      //   this.modalShow = !this.modalShow
+      this.modalShow = modalStatus
+    },
   },
 })
 </script>
@@ -102,8 +134,10 @@ export default defineComponent({
 
   &__image {
     height: 20.5rem;
-	width: 100%;
-    object-fit: cover;
+    width: 100%;
+    max-width: 40rem;
+    margin: auto;
+    // object-fit: cover;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   }
 
@@ -142,5 +176,47 @@ export default defineComponent({
 
 .play-biketag {
   margin: auto;
+}
+
+.modal {
+  &-top {
+    display: flex;
+    padding: 0;
+    justify-content: space-around;
+
+    &__mystery {
+      min-height: auto !important;
+    }
+  }
+
+  &-bottom {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &__underline {
+      height: 3rem;
+      width: auto;
+    }
+
+    &__hint {
+      margin-top: 1rem;
+      font-size: 2rem;
+      font-family: 'Prequel';
+      text-align: center;
+    }
+  }
+
+  &-line-divide {
+    height: 1px;
+    width: 90%;
+    margin: auto;
+    background: linear-gradient(45deg, rgba(100, 100, 100, 0.8), rgba(150, 150, 150, 0.5) 70.71%);
+  }
+
+  &-body {
+    padding-bottom: 0;
+  }
 }
 </style>

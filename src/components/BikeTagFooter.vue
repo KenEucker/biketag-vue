@@ -6,7 +6,7 @@
         class="z-1 button-middle"
         :text="$t('menu.hint')"
         :variant="'bold'"
-        @click="goUsersPage"
+        @click="$emit('toggle-modal', true)"
       />
       <bike-tag-button class="button-right" :text="$t('menu.players')" @click="goUsersPage" />
     </div>
@@ -19,6 +19,11 @@ export default defineComponent({
   name: 'BikeTagFooter',
   components: {
     BikeTagButton,
+  },
+  data() {
+    return {
+      //   modalActive: false,
+    }
   },
   methods: {
     goAboutPage: function () {
