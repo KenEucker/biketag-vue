@@ -7,7 +7,10 @@
     <div v-if="getCurrentBikeTag" class="rel home-screen">
       <img :src="getCurrentBikeTag.mysteryImageUrl" class="home-screen__image" alt="" />
       <div class="home-screen__label-group-top">
-        <bike-tag-button :text="getCurrentBikeTag.mysteryPlayer" />
+        <bike-tag-button
+          :text="getCurrentBikeTag.mysteryPlayer"
+          @click="$router.push('/player/' + getCurrentBikeTag.mysteryPlayer)"
+        />
       </div>
       <div class="home-screen__label-group-bottom">
         <div class="home-screen__label-group-bottom-number">

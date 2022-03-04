@@ -30,7 +30,7 @@ export default defineComponent({
   overflow: hidden;
 }
 .spacer-bottom {
-  margin-bottom: 10rem;
+  margin-bottom: 8rem;
 }
 .spacer-top {
   margin-top: 9rem;
