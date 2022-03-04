@@ -38,7 +38,7 @@
         data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
-        <div v-if="!isBikeTagAmbassador" class="mt-3">
+        <div v-if="!isBikeTagAmbassador || !player.name" class="mt-3">
           <bike-tag-input
             id="name"
             v-model="name"
@@ -241,7 +241,7 @@ export default defineComponent({
       })
       return {
         ...playerList[0],
-        name: this.getProfile?.name,
+        name: this.getProfile?.user_metadata?.name ?? {},
         picture: this.getProfile?.picture ?? this.$auth.user.picture,
         user_metadata: this.getProfile?.user_metadata ?? {},
       }
@@ -290,30 +290,37 @@ export default defineComponent({
       this[name] = !this[name]
     },
     async onSubmit() {
-      console.log('submitted')
-      return
       const token = (await this.$auth.getIdTokenClaims()).__raw
-      const user_metadata = {
+      const profile = { user_metadata : {}, token}
+      if (this.name != null && this.name.length > 0 && !isBikeTagAmbassador) {
+        profile.user_metadata['name'] = this.name
+        try {
+          await this.$store.dispatch('assignName', profile)
+        } catch (e) {
+          this.$toast.open({
+            message: e.message,
+            type: 'error',
+            position: 'top',
+          })
+        }
+      }
+      profile.user_metadata = {
         social: {
-          reddit: this.reddit,
-          instagram: this.instagram,
-          twitter: this.twitter,
-          imgur: this.imgur,
-          discord: this.discord,
+          reddit: this.reddit ?? "",
+          instagram: this.instagram ?? "",
+          twitter: this.twitter ?? "",
+          imgur: this.imgur ?? "",
+          discord: this.discord ?? "",
         },
       }
       if (this.isBikeTagAmbassador) {
-        user_metadata['credentials'] = {
+        profile.user_metadata['credentials'] = {
           imgur: this.imgurConfig,
           sanity: this.sanityConfig,
-          reddit: this.reddit,
+          reddit: this.redditConfig,
         }
       }
-      await this.$store.dispatch('updateProfile', {
-        name: this.name != null && this.name.length > 0 ? this.name : this.getProfile?.name,
-        user_metadata,
-        token,
-      })
+      await this.$store.dispatch('updateProfile', profile)
     },
   },
 })
