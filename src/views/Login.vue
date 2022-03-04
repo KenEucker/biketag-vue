@@ -2,7 +2,7 @@
   <div class="container">
     <img v-if="isBikeTagAmbassador" :src="bikeTag" />
     <p class="description mt-5 mb-5">
-      {{ isBikeTagAmbassador ? $t('login.ambassador') : $t('login.user') }}
+      {{ isBikeTagAmbassador ? $t('login.ambassador') : $t('login.player') }}
     </p>
     <bike-tag-button variant="bold" :text="$t('menu.login')" @click="login" />
   </div>
@@ -30,7 +30,7 @@ export default defineComponent({
       if (this.$auth.loginWithRedirect) {
         this.$auth.loginWithRedirect().then(async () => {
           const token = (await this.$auth.getIdTokenClaims()).__raw
-          this.$store.dispatch('setUser', { ...this.$auth.user, token })
+          this.$store.dispatch('setProfile', { ...this.$auth.user, token })
         })
       } else {
         this.$toast.open({

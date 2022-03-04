@@ -65,7 +65,7 @@
             @submit.prevent="onSubmit"
           >
             <input type="hidden" name="form-name" value="approve-queued-tag" />
-            <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
+            <input type="hidden" name="ambassadorId" value="" />
             <bike-tag-button
               class="w-75 btn-approve mt-2 mb-2 border-0"
               variant="primary"
@@ -89,13 +89,13 @@
             @submit.prevent="dequeueTag"
           >
             <input type="hidden" name="form-name" value="dequeue-queued-tag" />
-            <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
+            <input type="hidden" name="ambassadorId" value="" />
             <bike-tag-button class="w-75 mt-2 mb-2 border-0" variant="danger" @click="dequeueTag">
               {{ $t('pages.queue.dequeue_queued_tag') }} &nbsp;
             </bike-tag-button>
           </form>
         </div>
-        <span class="user-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
+        <span class="player-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
       </div>
     </div>
   </div>
@@ -141,12 +141,12 @@ export default defineComponent({
       'getQueuedTags',
       'getQueuedTag',
       'getCurrentBikeTag',
-      'getAmbassadorId',
-      'getExpiry',
+      'isBikeTagAmbassador',
+      'getProfile',
     ]),
   },
   mounted() {
-    if (!this.getAmbassadorId?.length > 0) {
+    if (!this.isBikeTagAmbassador) {
       /// kick it sideways
       this.$router.push('/')
     }
@@ -154,7 +154,7 @@ export default defineComponent({
   methods: {
     dequeueTag() {
       const tagToDequeue = {
-        ambassadorId: this.getAmbassadorId,
+        ambassadorId: this.getProfile.sub,
       }
       return this.$store.dispatch('dequeueTag', tagToDequeue).then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
@@ -179,7 +179,7 @@ export default defineComponent({
       const formAction = this.$refs.approveTag.getAttribute('action')
       const formData = new FormData(this.$refs.approveTag)
       const approvedTag = {
-        ambassadorId: this.getAmbassadorId,
+        ambassadorId: this.getProfile.sub,
         expiry: window.location.expiry,
       }
 

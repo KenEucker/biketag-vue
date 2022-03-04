@@ -177,7 +177,7 @@ export default defineComponent({
     await this.$store.dispatch('setPlayers')
     if (this.$auth.isAuthenticated) {
       this.$auth.getIdTokenClaims().then((value) => {
-        this.$store.dispatch('setUser', { ...this.$auth.user, token: value.__raw })
+        this.$store.dispatch('setProfile', { ...this.$auth.user, token: value.__raw })
       })
     }
     this.checkForNewBikeTagPost()
@@ -204,7 +204,7 @@ export default defineComponent({
       this.$router.push('/login')
     },
     logout() {
-      this.$store.dispatch('setUser')
+      this.$store.dispatch('setProfile')
       this.$auth.logout({
         returnTo: window.location.origin,
       })

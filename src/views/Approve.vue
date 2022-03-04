@@ -9,7 +9,7 @@
   </loading>
   <div class="queue-page">
     <queue-approve @submit="onApproveSubmit" />
-    <span class="user-agree"> * {{ $t('pages.queue.user_agree') }} </span>
+    <span class="player-agree"> * {{ $t('pages.queue.user_agree') }} </span>
     <form
       ref="queueError"
       name="queue-tag-error"
@@ -95,7 +95,6 @@ export default defineComponent({
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual'
       }
-      // This is needed if the user scrolls down during page load and you want to make sure the page is scrolled to the top once it's fully loaded. This has Cross-browser support.
       window.scrollTo(0, 0)
 
       this.$toast.open({

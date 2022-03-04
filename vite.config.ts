@@ -50,7 +50,13 @@ export default defineConfig({
       /* Sanity Configuration */
       SANITY_PROJECT_ID: process.env.SANITY_PROJECT_ID ?? null,
       SANITY_DATASET: process.env.SANITY_DATASET ?? null,
+      SANITY_TOKEN: process.env.SANITY_TOKEN ?? null,
       SANITY_CDN_URL: process.env.SANITY_CDN_URL ?? 'https://cdn.sanity.io/images/',
+      /* Sanity Admin Configuration */
+      SANITY_ADMIN_PROJECT_ID: process.env.SANITY_ADMIN_PROJECT_ID ?? null,
+      SANITY_ADMIN_DATASET: process.env.SANITY_ADMIN_DATASET ?? null,
+      SANITY_ADMIN_TOKEN: process.env.SANITY_ADMIN_TOKEN ?? null,
+      SANITY_ADMIN_CDN_URL: process.env.SANITY_ADMIN_CDN_URL ?? 'https://cdn.sanity.io/images/',
       /* Reddit Configuration */
       REDDIT_CLIENT_ID: process.env.REDDIT_CLIENT_ID ?? null,
       REDDIT_CLIENT_SECRET: process.env.REDDIT_CLIENT_SECRET ?? null,

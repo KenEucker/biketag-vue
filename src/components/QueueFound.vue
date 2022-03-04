@@ -149,11 +149,11 @@ export default defineComponent({
       'getQueuedTag',
       'getPlayerId',
       'getCurrentBikeTag',
-      'getUser',
+      'getProfile',
     ]),
     getName() {
       if (this.$auth.isAuthenticated) {
-        return this.getUser.name ?? this.tag?.foundPlayer ?? ''
+        return this.getProfile?.name ?? this.tag?.foundPlayer ?? ''
       }
 
       return this.tag?.foundPlayer ?? ''

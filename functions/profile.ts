@@ -1,8 +1,15 @@
 import { Handler } from '@netlify/functions'
 import axios from 'axios'
-import { isValidJson, getPayloadAuthorization, acceptCorsHeaders } from './common/methods'
+import {
+  isValidJson,
+  getProfileAuthorization,
+  acceptCorsHeaders,
+  constructAmbassadorProfile,
+  constructPlayerProfile,
+} from './common/methods'
 
 const profileHandler: Handler = async (event) => {
+  /// Bailout on OPTIONS requests
   const headers = acceptCorsHeaders(false)
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -11,11 +18,14 @@ const profileHandler: Handler = async (event) => {
     }
   }
 
+  /// If all else fails
   let body = 'missing authorization header'
   let statusCode = 401
-  const authorization = await getPayloadAuthorization(event)
+  /// Retrieves the authorization and profile data, if present
+  const profile = await getProfileAuthorization(event)
 
-  if (authorization) {
+  /// We can only provide profile data if the profile exists
+  if (profile && profile.sub) {
     let options = {}
     const authorizationHeaders = acceptCorsHeaders()
 
@@ -26,7 +36,7 @@ const profileHandler: Handler = async (event) => {
           if (isValidJson(data, 'profile')) {
             options = {
               method: 'PATCH',
-              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${authorization.sub}`,
+              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}`,
               headers: authorizationHeaders,
               data: {
                 user_metadata: data,
@@ -44,11 +54,10 @@ const profileHandler: Handler = async (event) => {
       case 'PATCH':
         try {
           const data = JSON.parse(event.body)
-          console.log({ data, authorization })
           if (isValidJson(data, 'profile')) {
             options = {
               method: 'PATCH',
-              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${authorization.sub}`,
+              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}`,
               headers: authorizationHeaders,
               data: {
                 user_metadata: data,
@@ -66,7 +75,7 @@ const profileHandler: Handler = async (event) => {
       case 'GET':
         options = {
           method: 'GET',
-          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${authorization.sub}?fields=user_metadata`,
+          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
           headers: authorizationHeaders,
         }
         break
@@ -79,7 +88,14 @@ const profileHandler: Handler = async (event) => {
       await axios
         .request(options)
         .then(function (response) {
-          body = typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
+          if (typeof response.data === 'string') {
+            body = response.data
+          } else {
+            const profileDataResponse = profile.isBikeTagAmbassador
+              ? constructAmbassadorProfile(response.data, profile)
+              : constructPlayerProfile(response.data, profile)
+            body = JSON.stringify(profileDataResponse)
+          }
           statusCode = 200
         })
         .catch(function (error) {
