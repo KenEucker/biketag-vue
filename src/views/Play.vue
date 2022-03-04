@@ -5,7 +5,13 @@
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
     <div v-if="getCurrentBikeTag" class="rel home-screen">
-      <img :src="getCurrentBikeTag.mysteryImageUrl" class="home-screen__image" alt="" />
+      <!-- <img :src="getCurrentBikeTag.mysteryImageUrl" class="home-screen__image" alt="" /> -->
+      <ExpandableImage
+        class="home-screen__image"
+        :src="getCurrentBikeTag.mysteryImageUrl"
+        :full-source="getCurrentBikeTag.mysteryImageUrl"
+        :alt="getCurrentBikeTag.hint"
+      />
       <div class="home-screen__label-group-top">
         <bike-tag-button
           :text="getCurrentBikeTag.mysteryPlayer"
@@ -36,6 +42,7 @@ import 'vue-loading-overlay/dist/vue-loading.css'
 import BikeTagHeader from '@/components/BikeTagHeader.vue'
 import BikeTagFooter from '@/components/BikeTagFooter.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import ExpandableImage from '@/components/ExpandableImage.vue'
 // import useSWRV from 'swrv'
 
 export default defineComponent({
@@ -45,6 +52,7 @@ export default defineComponent({
     BikeTagHeader,
     BikeTagFooter,
     BikeTagButton,
+    ExpandableImage,
   },
   data() {
     // const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
@@ -57,7 +65,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getTags', 'getPlayers']),
+    ...mapGetters(['getCurrentBikeTag', 'getTags', 'getPlayers', 'getImgurImageSized']),
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
