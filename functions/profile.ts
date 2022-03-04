@@ -33,14 +33,57 @@ const profileHandler: Handler = async (event) => {
       case 'PUT':
         try {
           const data = JSON.parse(event.body)
-          if (isValidJson(data, 'profile')) {
-            options = {
-              method: 'PATCH',
-              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}`,
-              headers: authorizationHeaders,
-              data: {
-                user_metadata: data,
-              },
+          if (isValidJson(data, 'profile.role')) {
+            const roles = (await axios.request({
+              method: 'GET',
+              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}/roles`,
+              headers: authorizationHeaders
+            })).data
+            const user_data = (await axios.request({
+              method: 'GET',
+              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
+              headers: authorizationHeaders
+            })).data
+            if (!roles.length && !user_data.user_metadata.name) {  
+              const exists = (await axios.request({
+                method: 'GET',
+                url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
+                params: {
+                  page: 0, per_page: 1, include_totals: false,
+                  fields: "user_metadata.name",
+                  q: `user_metadata.name:"${data.name}"`, search_engine: 'v3'
+                },
+                headers: authorizationHeaders
+              })).data  
+              if (!exists.length) {
+                if (profile.isBikeTagAmbassador) {
+                  await axios.request({
+                    method: 'POST',
+                    url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}/roles`,
+                    headers: authorizationHeaders,
+                    data: {roles: [process.env.AMBASSADOR_ROLE]}
+                  })
+                } else {
+                  await axios.request({
+                    method: 'POST',
+                    url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}/roles`,
+                    headers: authorizationHeaders,
+                    data: {roles: [process.env.PLAYER_ROLE]}
+                  })
+                }
+                options = {
+                  method: 'PATCH',
+                  url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}`,
+                  headers: authorizationHeaders,
+                  data,
+                }
+              } else {
+                body = 'name taken'
+                statusCode = 400
+              }
+            } else {
+              body = 'forbidden'
+              statusCode = 403
             }
           } else {
             body = 'bad request'
@@ -54,14 +97,13 @@ const profileHandler: Handler = async (event) => {
       case 'PATCH':
         try {
           const data = JSON.parse(event.body)
-          if (isValidJson(data, 'profile')) {
+          const isValid = profile.isBikeTagAmbassador ? isValidJson(data, 'profile.patch.ambassador') : isValidJson(data, 'profile.patch')
+          if (isValid) {
             options = {
               method: 'PATCH',
               url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}`,
               headers: authorizationHeaders,
-              data: {
-                user_metadata: data,
-              },
+              data,
             }
           } else {
             body = 'bad request'

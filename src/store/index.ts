@@ -192,6 +192,18 @@ export const store = createStore<State>({
       }
       return 'incorrect permissions'
     },
+    async assignName({ commit }, profile) {
+      await client.request({
+        method: 'PUT',
+        url: getApiUrl('profile'),
+        headers: {
+          authorization: `Bearer ${profile.token}`,
+          'content-type': 'application/json',
+        },
+        data: {user_metadata : profile.user_metadata},
+      })
+      return commit('SET_PROFILE', profile)
+    },
     async updateProfile({ commit }, profile) {
       // Update Auth0 Profile
       await client.request({
@@ -201,7 +213,7 @@ export const store = createStore<State>({
           authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: profile,
+        data: {user_metadata : profile.user_metadata},
       })
       return commit('SET_PROFILE', profile)
     },

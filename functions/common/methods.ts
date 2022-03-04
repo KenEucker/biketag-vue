@@ -103,14 +103,13 @@ export const isValidJson = (data, type = 'none') => {
   let schema = {}
 
   switch (type) {
-    case 'profile':
+    case 'profile.patch':
       schema = {
         type: 'object',
         properties: {
           user_metadata: {
             type: 'object',
             properties: {
-              name: { type: 'string' },
               social: {
                 type: 'object',
                 properties: {
@@ -124,7 +123,85 @@ export const isValidJson = (data, type = 'none') => {
                 additionalProperties: false,
               },
             },
+            required: ['social'],
+            additionalProperties: false,
+          },
+        },
+        required: ['user_metadata'],
+        additionalProperties: false,
+      }
+      break
+    case 'profile.patch.ambassador':
+      schema = {
+        type: 'object',
+        properties: {
+          user_metadata: {
+            type: 'object',
+            properties: {
+              social: {
+                type: 'object',
+                properties: {
+                  reddit: { type: 'string' },
+                  instagram: { type: 'string' },
+                  twitter: { type: 'string' },
+                  imgur: { type: 'string' },
+                  discord: { type: 'string' },
+                },
+                minProperties: 1,
+                additionalProperties: false,
+              },
+              credentials: {
+                type: 'object',
+                properties: {
+                  imgur: { 
+                    type: 'object',
+                    properties: {
+                      clientId : { type: 'string' },
+                      clientSecret : { type: 'string' },
+                      refreshToken : { type: 'string' }
+                    },
+                    additionalProperties: false,
+                  },
+                  sanity: {
+                    type: 'object',
+                    properties: {
+                      projectId : { type: 'string' },
+                      dataset : { type: 'string' },
+                    },
+                    additionalProperties: false,
+                  },
+                  reddit: {
+                    type: 'object',
+                    properties: {
+                      redditClientId : { type: 'string' },
+                      clientSecret : { type: 'string' },
+                      userName : { type: 'string' },
+                      password : { type: 'string' }
+                    },
+                    additionalProperties: false,
+                  }
+                },
+                additionalProperties: false,
+              }
+            },
             minProperties: 1,
+            additionalProperties: false,
+          },
+        },
+        required: ['user_metadata'],
+        additionalProperties: false,
+      }
+      break
+    case 'profile.put':
+      schema = {
+        type: 'object',
+        properties: {
+          user_metadata: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' }
+            },
+            required: ['name'],
             additionalProperties: false,
           },
         },
