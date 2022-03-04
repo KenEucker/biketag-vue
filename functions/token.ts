@@ -19,7 +19,7 @@ const authorizeHandler: Handler = async (event) => {
     const biketag = new BikeTagClient(biketagOpts)
     const config = biketag.config()
     const controlCheck = getBikeTagHash(new URL(`http://${event.headers.host}`).hostname)
-    console.log({ authorization, imgur: config.imgur, controlCheck })
+    // console.log({ authorization, imgur: config.imgur, controlCheck })
     const authorizationIsAccessToken =
       config.biketag.accessToken === authorization ||
       config.imgur?.refreshToken === authorization ||

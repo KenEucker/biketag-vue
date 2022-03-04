@@ -7,20 +7,18 @@ import {
   getImgurImageSized,
   getUuid,
   getBikeTagClientOpts,
-  getAmbassadorUuid,
   getQueuedTagState,
   getSanityImageUrl,
   getMostRecentlyViewedBikeTagTagnumber,
-  GetQueryString,
+  getApiUrl,
+  // GetQueryString,
 } from '@/common/utils'
-import { BiketagFormSteps, State, User } from '@/common/types'
+import { BiketagFormSteps, State, BikeTagProfile } from '@/common/types'
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(window)
 const playerId = getUuid()
-const ambassadorId = getAmbassadorUuid(window)
-// const expiry = GetQueryString(window, 'expiry')
 const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
@@ -33,13 +31,11 @@ const gameOpts = useAuth ? { source: 'sanity' } : {}
 const defaultLogo = '/images/BikeTag.svg'
 const defaultJingle = 'media/biketag-jingle-1.mp3'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
-const isBikeTagAmbassador = ambassadorId?.length > 0
 console.log('store::init', {
   subdomain: domain.subdomain,
   domain,
   gameName,
   playerId,
-  isBikeTagAmbassador,
 })
 
 let client = new BikeTagClient(options)
@@ -52,33 +48,39 @@ export const store = createStore<State>({
     currentBikeTag: {} as Tag,
     tags: [] as Tag[],
     playerId,
-    ambassadorId,
     queuedTags: [] as Tag[],
     players: [] as Player[],
     leaderboard: [] as Player[],
     html: '',
     formStep: BiketagFormSteps.queueView,
     queuedTag: {} as Tag,
-    user: {} as User,
-    isBikeTagAmbassador,
+    profile: {} as BikeTagProfile,
+    isBikeTagAmbassador: false,
     mostRecentlyViewedTagnumber,
   },
   actions: {
-    async setUser({ commit }, user) {
+    async setProfile({ commit }, profile) {
       /// Call to backend api GET on /profile with authorization header
-      const user_metadata = {}
-      // const response = await client.request({
-      //   method: 'GET',
-      //   url: '/api/profile',
-      //   headers: {
-      //     authorization: `Bearer ${user.token}`,
-      //   }
-      // })
-      // if (response.status == 200 && typeof response.data === "string"){
-      //   const data = JSON.parse(response.data)
-      //   user_metadata = {...data.social, name : data.name}
-      // }
-      return commit('SET_USER', { ...user, user_metadata })
+      const token = profile.token
+      profile.token = undefined
+
+      const response = await client.request({
+        method: 'GET',
+        url: getApiUrl('profile'),
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      })
+      if (response.status == 200) {
+        if (typeof response.data === 'string') {
+          const biketagProfile = JSON.parse(response.data)
+          return commit('SET_PROFILE', biketagProfile)
+        } else if (typeof response.data === 'object') {
+          return commit('SET_PROFILE', response.data)
+        }
+      }
+
+      return commit('SET_PROFILE', profile)
     },
     setGame({ commit, state }) {
       if (!state.game?.mainhash) {
@@ -175,8 +177,8 @@ export const store = createStore<State>({
       return false
     },
     async dequeueTag({ state }, d) {
-      // Check ambassador permissions?
-      if (d.ambassadorId === ambassadorId) {
+      // Check ambassador permissions? NO: just send it server(less)-side and let the auth pass through
+      if (state.isBikeTagAmbassador) {
         d.hash = state.game.queuehash
         return client.deleteTag(d.tag).then((t) => {
           if (t.success) {
@@ -185,29 +187,23 @@ export const store = createStore<State>({
             console.log('error::dequeue BikeTag failed', t)
             return t.error
           }
-          return t.success
+          return 'successfully dequeued tag'
         })
       }
-      return false
+      return 'incorrect permissions'
     },
-    async updateProfile({ commit }, user) {
-      console.log(user)
-      console.log({ user_metadata: { ...user.user_metadata, name: user.name } })
-      /// Update Auth0 Profile
-      // await client.request({
-      //   method: 'POST',
-      //   url: '/api/profile',
-      //   headers: {
-      //     authorization: `Bearer ${user.token}`,
-      //     'content-type': 'application/json',
-      //   },
-      //   data: {user_metadata : {...user.user_metadata, name: user.name}},
-      // })
-      return commit('SET_USER', {
-        user_metadata: user.user_metadata.social,
-        name: user.name,
-        token: user.token,
+    async updateProfile({ commit }, profile) {
+      // Update Auth0 Profile
+      await client.request({
+        method: 'PATCH',
+        url: getApiUrl('profile'),
+        headers: {
+          authorization: `Bearer ${profile.token}`,
+          'content-type': 'application/json',
+        },
+        data: profile,
       })
+      return commit('SET_PROFILE', profile)
     },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === playerId) {
@@ -326,19 +322,20 @@ export const store = createStore<State>({
       return commit('RESET_FORM_STEP_TO_POST')
     },
     async getAmbassadorPermission({ state }, d) {
-      if (d.ambassadorId === ambassadorId) {
-        /// TODO: check for privileges to delete?
-        return true
-      }
-      return false
+      return state.profile?.isBikeTagAmbassador
     },
   },
   mutations: {
-    SET_USER(state, user) {
-      const oldState = state.user
-      state.user = user
-      if (user?.name !== oldState?.name) {
-        console.log('state::user', user)
+    SET_PROFILE(state, profile) {
+      const oldState = state.profile
+      state.profile = profile
+      state.isBikeTagAmbassador = profile?.isBikeTagAmbassador
+
+      if (
+        profile?.name !== oldState?.name ||
+        profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
+      ) {
+        console.log('state::profile', profile)
       }
     },
     SET_GAME(state, game) {
@@ -526,7 +523,7 @@ export const store = createStore<State>({
   },
   getters: {
     getUser(state) {
-      return state.user
+      return state.profile
     },
     getImgurImageSized: () => getImgurImageSized,
     getQueuedTagState: (state) => {
@@ -543,9 +540,6 @@ export const store = createStore<State>({
     },
     getPlayerId(state) {
       return state.playerId
-    },
-    getAmbassadorId(state) {
-      return state.ambassadorId
     },
     getGameSettings(state) {
       return state.game?.settings
@@ -608,6 +602,9 @@ export const store = createStore<State>({
     },
     isBikeTagAmbassador(state) {
       return state.isBikeTagAmbassador
+    },
+    getProfile(state) {
+      return state.profile
     },
   },
   modules: {},

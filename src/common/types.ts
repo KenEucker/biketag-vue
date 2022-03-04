@@ -29,24 +29,50 @@ export const special = [
   'nineteenth',
 ]
 export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet']
-export interface User {
+
+export interface Profile {
   name: string
-  user_metadata: any
-  token: string
+  sub: string
+  slug: string
+  token?: string
+  email?: string
+  locale?: string
+  nonce?: string
+  picture?: string
+  user_metadata?: any
+  zipcode?: string
 }
+
+export interface AmbassadorProfile {
+  name: string
+  sub: string
+  slug: string
+  address1: string
+  address2: string
+  city: string
+  country: string
+  email: string
+  isBikeTagAmbassador: boolean
+  locale: string
+  nonce: string
+  phone: string
+  picture: string
+  user_metadata: any
+  zipcode: string
+}
+export type BikeTagProfile = Partial<Profile> & Partial<AmbassadorProfile>
 export interface State {
   game: Game
   allGames: Game[]
   gameName: string
   playerId: string
-  ambassadorId: string
   currentBikeTag: Tag
   tags: Tag[]
   queuedTags: Tag[]
   players: Player[]
   leaderboard: Player[]
   html: string
-  user: User
+  profile: BikeTagProfile
   formStep: number
   queuedTag: Tag
   isBikeTagAmbassador: boolean

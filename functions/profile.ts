@@ -1,48 +1,82 @@
 import { Handler } from '@netlify/functions'
 import axios from 'axios'
-import { isValidJson, getPayloadAuthorization } from './common/methods'
+import {
+  isValidJson,
+  getProfileAuthorization,
+  acceptCorsHeaders,
+  constructAmbassadorProfile,
+  constructPlayerProfile,
+} from './common/methods'
 
 const profileHandler: Handler = async (event) => {
-  console.log(event.httpMethod)
-  const authorization = await getPayloadAuthorization(event)
+  /// Bailout on OPTIONS requests
+  const headers = acceptCorsHeaders(false)
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers,
+    }
+  }
+
+  /// If all else fails
   let body = 'missing authorization header'
   let statusCode = 401
+  /// Retrieves the authorization and profile data, if present
+  const profile = await getProfileAuthorization(event)
 
-  if (authorization) {
+  /// We can only provide profile data if the profile exists
+  if (profile && profile.sub) {
     let options = {}
-    
+    const authorizationHeaders = acceptCorsHeaders()
+
     switch (event.httpMethod) {
-      case 'POST':
+      case 'PUT':
         try {
           const data = JSON.parse(event.body)
-          console.log({ data })
           if (isValidJson(data, 'profile')) {
             options = {
               method: 'PATCH',
-              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${authorization.sub}`,
-              headers: {
-                authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
-                'content-type': 'application/json',
+              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}`,
+              headers: authorizationHeaders,
+              data: {
+                user_metadata: data,
               },
-              data,
             }
           } else {
             body = 'bad request'
             statusCode = 400
           }
-        } catch {
-          body = 'bad request'
+        } catch (e) {
+          body = `patch failed: ${e.message ?? e}`
+          statusCode = 400
+        }
+        break
+      case 'PATCH':
+        try {
+          const data = JSON.parse(event.body)
+          if (isValidJson(data, 'profile')) {
+            options = {
+              method: 'PATCH',
+              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}`,
+              headers: authorizationHeaders,
+              data: {
+                user_metadata: data,
+              },
+            }
+          } else {
+            body = 'bad request'
+            statusCode = 400
+          }
+        } catch (e) {
+          body = `patch failed: ${e.message ?? e}`
           statusCode = 400
         }
         break
       case 'GET':
         options = {
           method: 'GET',
-          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${authorization.sub}?fields=user_metadata`,
-          headers: {
-            authorization: `Bearer ${process.env.AUTH0_TOKEN}`,
-            'content-type': 'application/json',
-          },
+          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
+          headers: authorizationHeaders,
         }
         break
       default:
@@ -54,8 +88,14 @@ const profileHandler: Handler = async (event) => {
       await axios
         .request(options)
         .then(function (response) {
-          console.log({ success: response })
-          body = typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
+          if (typeof response.data === 'string') {
+            body = response.data
+          } else {
+            const profileDataResponse = profile.isBikeTagAmbassador
+              ? constructAmbassadorProfile(response.data, profile)
+              : constructPlayerProfile(response.data, profile)
+            body = JSON.stringify(profileDataResponse)
+          }
           statusCode = 200
         })
         .catch(function (error) {
@@ -68,6 +108,7 @@ const profileHandler: Handler = async (event) => {
 
   return {
     statusCode,
+    headers,
     body,
   }
 }

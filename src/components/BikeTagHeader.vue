@@ -19,7 +19,7 @@
     </div>
     <audio id="biketag-jingle" ref="jingle">
       <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
-      Your browser does not support the audio element.
+      {{ $t('pages.howto.browser_not_support_audio') }}
     </audio>
   </div>
 </template>
@@ -61,9 +61,6 @@ export default defineComponent({
       'getGameName',
       'isBikeTagAmbassador',
     ]),
-    authLoading() {
-      return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
-    },
   },
   methods: {
     playEasterEgg(e) {
@@ -86,7 +83,7 @@ export default defineComponent({
       }
     },
     logout() {
-      this.$store.dispatch('setUser')
+      this.$store.dispatch('setProfile')
       this.$auth.logout({
         returnTo: window.location.origin,
       })

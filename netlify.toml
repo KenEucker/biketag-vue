@@ -3,6 +3,21 @@
   command = "yarn build"
   functions = "functions/"
 
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Accept = "*"
+    Access-Control-Allow-Headers = "*"
+    Content-Type = "application/json"
+    Access-Control-Allow-Methods = "*"
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Max-Age = 8640
+
 [functions."cron-background"]
   schedule = "*/15 * * * *"
   included_files=["functions/emails/*.liquid"]
@@ -13,16 +28,5 @@
 [functions."submission-created"]
   included_files=["functions/emails/*.liquid"]
 
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
 [[plugins]]
   package = 'netlify-plugin-contextual-env'
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Access-Control-Allow-Credentials = "true"
-    Access-Control-Allow-Origin = "*"

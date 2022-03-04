@@ -118,26 +118,6 @@ export default defineComponent({
         }) ?? []
       return playerList[0]
     },
-    tagLoaded() {
-      /// Remove?
-    },
-    //   const tagNotLoaded = this.tagsLoaded.indexOf(loadedTagNumber) === -1
-
-    //   if (tagNotLoaded) {
-    //     this.tagsLoaded.push(loadedTagNumber)
-    //   }
-
-    //   const currentTags = this.tagsList()
-    //   if (this.tagsLoaded.length === currentTags.length) {
-    //     const allTagsLoaded = currentTags.reduce(
-    //       (loaded, t) => loaded && this.tagsLoaded.indexOf(t.tagnumber) !== -1,
-    //       true
-    //     )
-    //     if (allTagsLoaded) {
-    //       this.tagsAreLoading = false
-    //     }
-    //   }
-    // },
   },
 })
 </script>

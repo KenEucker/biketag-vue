@@ -17,8 +17,7 @@
       v-if="!uploadInProgress && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
       class="tag-number"
       >#{{
-        getCurrentBikeTag?.tagnumber +
-        (BiketagFormSteps[getFormStep] > BiketagFormSteps.queueFound ? 1 : 0)
+        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
       }}</span
     >
     <bike-tag-queue v-if="!isViewingQueue()" :only-mine="true" />
@@ -45,7 +44,7 @@
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
         <queue-posted :tag="getQueuedTag" />
       </div>
-      <span v-if="isSubmittingData()" class="user-agree">
+      <span v-if="isSubmittingData()" class="player-agree">
         * {{ $t('pages.queue.user_agree') }}
       </span>
       <form
@@ -56,7 +55,6 @@
         data-netlify="true"
         data-netlify-honeypot="bot-field"
         hidden
-        @submit.prevent="onSubmit"
       >
         <input type="hidden" name="form-name" value="queue-tag-error" />
         <input type="hidden" name="submission" />
@@ -104,7 +102,7 @@ export default defineComponent({
   data() {
     const time = new Date()
     time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
-    const timer = useTimer(time)
+    const timer = useTimer(time.getSeconds())
     onMounted(() => {
       watchEffect(async () => {
         if (timer.isExpired.value) {
@@ -156,14 +154,13 @@ export default defineComponent({
       )
     },
     isViewingQueue() {
-      this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
+      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual'
       }
-      // This is needed if the user scrolls down during page load and you want to make sure the page is scrolled to the top once it's fully loaded. This has Cross-browser support.
       window.scrollTo(0, 0)
 
       this.$toast.open({

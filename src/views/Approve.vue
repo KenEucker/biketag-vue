@@ -8,8 +8,8 @@
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
   <div class="queue-page">
-    <queue-approve />
-    <span class="user-agree"> * {{ $t('pages.queue.user_agree') }} </span>
+    <queue-approve @submit="onApproveSubmit" />
+    <span class="player-agree"> * {{ $t('pages.queue.user_agree') }} </span>
     <form
       ref="queueError"
       name="queue-tag-error"
@@ -18,7 +18,6 @@
       data-netlify="true"
       data-netlify-honeypot="bot-field"
       hidden
-      @submit.prevent="onSubmit"
     >
       <input type="hidden" name="form-name" value="queue-tag-error" />
       <input type="hidden" name="submission" />
@@ -33,7 +32,7 @@ import { defineComponent, watchEffect, onMounted } from 'vue'
 import { mapGetters } from 'vuex'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
-
+import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 import QueueApprove from '@/components/QueueApprove.vue'
 
 export default defineComponent({
@@ -89,6 +88,71 @@ export default defineComponent({
           this.countDown -= 1
           this.countDownTimer()
         }, 500)
+      }
+    },
+    async onApproveSubmit(newTagSubmission) {
+      const { tag, formAction, formData, storeAction } = newTagSubmission
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual'
+      }
+      window.scrollTo(0, 0)
+
+      this.$toast.open({
+        message: this.$t('notifications.approving'),
+        type: 'info',
+        position: 'top',
+      })
+      const errorAction = this.$refs.queueError.getAttribute('action')
+
+      this.uploadInProgress = true
+      const success = await this.$store.dispatch(storeAction, tag)
+      this.uploadInProgress = false
+
+      if (success === true) {
+        /// Update the queue
+        this.$store.dispatch('setQueuedTags', true)
+
+        formData.set('game', this.getGameName)
+        formData.set('tag', JSON.stringify(this.getQueuedTag))
+        formData.set(
+          'approve',
+          `${this.getGameName}-${this.getQueuedTag.tagnumber}--${this.getQueuedTag.foundPlayer}`
+        )
+
+        if (tag.foundImage) {
+          formData.set('foundImageUrl', this.getQueuedTag.foundImageUrl)
+        } else if (tag.mysteryImage) {
+          formData.set('mysteryImageUrl', this.getQueuedTag.mysteryImageUrl)
+        }
+        return sendNetlifyForm(
+          formAction,
+          new URLSearchParams(formData).toString(),
+          (res) => {
+            this.$toast.open({
+              message: `${storeAction} ${this.$t('notifications.success')}`,
+              type: 'success',
+              position: 'top',
+            })
+          },
+          (m) => {
+            this.$toast.open({
+              message: `${this.$t('notifications.error')} ${m}`,
+              type: 'error',
+              timeout: false,
+              position: 'bottom',
+            })
+            return sendNetlifyError(m, undefined, errorAction)
+          }
+        )
+      } else {
+        const message = `${this.$t('notifications.error')}: ${success}`
+        this.$toast.open({
+          message,
+          type: 'error',
+          timeout: false,
+          position: 'bottom',
+        })
+        return sendNetlifyError(message, undefined, errorAction)
       }
     },
   },

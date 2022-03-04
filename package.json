@@ -8,7 +8,7 @@
     "lint:style": "stylelint \"./src/**/*.vue\" \"./src/**/*.scss\" --fix",
     "serve": "vite",
     "build": "vite build",
-    "dev": "netlify dev",
+    "dev": "netlify dev --functionsPort 7200",
     "preview": "yarn build -w & serve dist"
   },
   "dependencies": {

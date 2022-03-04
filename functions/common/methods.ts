@@ -13,6 +13,7 @@ import BikeTagClient from 'biketag'
 import axios from 'axios'
 import Ajv from 'Ajv'
 import * as jose from 'jose'
+import { BikeTagProfile } from '../../src/common/types'
 
 const ajv = new Ajv()
 export const getBikeTagHash = (key: string): string => md5(`${key}${process.env.HOST_KEY}`)
@@ -49,12 +50,18 @@ export const getBikeTagClientOpts = (
     opts.sanity = opts.sanity ?? {}
     opts.sanity.projectId = process.env.SANITY_PROJECT_ID
     opts.sanity.dataset = process.env.SANITY_DATASET
+    opts.sanity.token = process.env.SANITY_TOKEN
 
     if (admin) {
       opts.imgur.clientId = process.env.IMGUR_ADMIN_CLIENT_ID ?? opts.imgur.clientId
       opts.imgur.clientSecret = process.env.IMGUR_ADMIN_CLIENT_SECRET ?? opts.imgur.clientSecret
       opts.imgur.accessToken = process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? ''
       opts.imgur.refreshToken = process.env.IMGUR_ADMIN_REFRESH_TOKEN ?? opts.imgur.refreshToken
+
+      opts.sanity = opts.sanity ?? {}
+      opts.sanity.projectId = process.env.SANITY_ADMIN_PROJECT_ID
+      opts.sanity.dataset = process.env.SANITY_ADMIN_DATASET
+      opts.sanity.token = process.env.SANITY_ADMIN_TOKEN
 
       opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
       opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
@@ -197,6 +204,46 @@ const validateJWT = (verifier: JwtVerifier, options: any) => {
   }
 }
 
+export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTagOpts?: any) => {
+  if (!client) {
+    adminBikeTagOpts =
+      adminBikeTagOpts ??
+      getBikeTagClientOpts(
+        {
+          method: 'get',
+        } as unknown as request.Request,
+        true,
+        true
+      )
+  }
+  client = client ?? new BikeTagClient(adminBikeTagOpts)
+  const thisGamesAmbassadors = await client.ambassadors(undefined, {
+    source: 'sanity',
+  })
+
+  return thisGamesAmbassadors
+}
+
+export const getProfileAuthorization = async (event: any): Promise<any> => {
+  const authorization = await getPayloadAuthorization(event)
+  let profile: any = authorization
+
+  if (authorization) {
+    const biketagOpts = getBikeTagClientOpts(event, true, true)
+    const biketag = new BikeTagClient(biketagOpts)
+    const thisGamesAmbassadors = (await getThisGamesAmbassadors(biketag)) as Ambassador[]
+    const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
+
+    if (profileAmbassadorMatch.length) {
+      profile.isBikeTagAmbassador = true
+      profile = { ...profile, ...profileAmbassadorMatch[0] }
+    }
+  }
+
+  /// TODO: pear down this object to only the things we care about
+  return profile
+}
+
 export const getPayloadAuthorization = async (event: any): Promise<any> => {
   const bearer = 'Bearer '
   const clientId = 'Client-ID '
@@ -208,25 +255,27 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
     authorizationString = authorizationString.substr(clientId.length)
   }
 
-  /// Try netlify Auth validation for BikeTag Ambassador
-  try {
-    const verifierOpts = { issuer: '', audience: '' }
-    const verifier = new JwtVerifier(verifierOpts)
-    return await validateJWT(verifier, verifierOpts)
-  } catch (e) {
-    console.error({ authorizationNetlifyValidationError: e })
-  }
+  if (authorizationString) {
+    /// Try netlify Auth validation for BikeTag Ambassador
+    // try {
+    //   const verifierOpts = { issuer: '', audience: '' }
+    //   const verifier = new JwtVerifier(verifierOpts)
+    //   return await validateJWT(verifier, verifierOpts)
+    // } catch (e) {
+    //   console.error({ authorizationNetlifyValidationError: e })
+    // }
 
-  /// Try netlify Auth validation for BikeTag Ambassador
-  try {
-    const JWKS = jose.createRemoteJWKSet(
-      new URL(`https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`)
-    )
+    /// Try netlify Auth validation for BikeTag Ambassador
+    try {
+      const JWKS = jose.createRemoteJWKSet(
+        new URL(`https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`)
+      )
 
-    const { payload } = await jose.jwtVerify(authorizationString, JWKS)
-    return payload
-  } catch (e) {
-    console.error({ authorizationAuth0ValidationError: e })
+      const { payload } = await jose.jwtVerify(authorizationString, JWKS)
+      return payload
+    } catch (e) {
+      console.error({ authorizationAuth0ValidationError: e })
+    }
   }
 }
 
@@ -783,4 +832,58 @@ export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag
   }
 
   return undefined
+}
+
+export const acceptCorsHeaders = (withAuthorization = true) => {
+  const corsHeaders = {
+    Accept: '*',
+    'Access-Control-Allow-Headers': '*',
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Methods': '*',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Max-Age': '8640',
+  }
+
+  if (withAuthorization) {
+    corsHeaders['authorization'] = `Bearer ${process.env.AUTH0_TOKEN}`
+  }
+
+  return corsHeaders
+}
+
+export const constructAmbassadorProfile = (
+  profile: any = {},
+  defaults: any = {}
+): BikeTagProfile => {
+  return {
+    name: profile.name ?? defaults.name ?? '',
+    sub: profile.sub ?? defaults.sub ?? '',
+    slug: profile.slug ?? defaults.slug ?? '',
+    address1: profile.address1 ?? defaults.address1 ?? '',
+    address2: profile.address2 ?? defaults.address2 ?? '',
+    city: profile.city ?? defaults.city ?? '',
+    country: profile.country ?? defaults.country ?? '',
+    email: profile.email ?? defaults.email ?? '',
+    isBikeTagAmbassador: profile.isBikeTagAmbassador ?? defaults.isBikeTagAmbassador ?? '',
+    locale: profile.locale ?? defaults.locale ?? '',
+    nonce: profile.nonce ?? defaults.nonce ?? '',
+    phone: profile.phone ?? defaults.phone ?? '',
+    picture: profile.picture ?? defaults.picture ?? '',
+    user_metadata: profile.user_metadata ?? defaults.user_metadata ?? {},
+    zipcode: profile.zipcode ?? defaults.zipcode ?? '',
+  }
+}
+
+export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): BikeTagProfile => {
+  return {
+    name: profile.name ?? defaults.name ?? '',
+    sub: profile.sub ?? defaults.sub ?? '',
+    slug: profile.slug ?? defaults.slug ?? '',
+    email: profile.email ?? defaults.email ?? '',
+    locale: profile.locale ?? defaults.locale ?? '',
+    nonce: profile.nonce ?? defaults.nonce ?? '',
+    picture: profile.picture ?? defaults.picture ?? '',
+    user_metadata: profile.user_metadata ?? defaults.user_metadata ?? {},
+    zipcode: profile.zipcode ?? defaults.zipcode ?? '',
+  }
 }

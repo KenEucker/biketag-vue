@@ -5,12 +5,12 @@
       <bike-tag-button class="modal-header" variant="medium">
         <p>You are {{ stringifyNumber(numberInQueue) }} in the Queue!</p>
       </bike-tag-button>
-      <p style="text-align: center" class="go-queue" @click="goViewQueue">View Queue</p>
+      <p style="text-align: center" class="go-queue" @click="goViewQueue">{{$t('components.queue.view_queue_button')}}</p>
     </b-modal>
     <!-- <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3> -->
     <div class="title-cnt">
       <bike-tag-button variant="medium" class="title-q">
-        <h3 class="queue-title">Add your new mystery Location</h3>
+        <h3 class="queue-title">{{$t('components.queue.queue_mystery_title')}}</h3>
       </bike-tag-button>
     </div>
     <div class="preview-cnt">
