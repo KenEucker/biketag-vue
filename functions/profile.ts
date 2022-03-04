@@ -89,17 +89,14 @@ const profileHandler: Handler = async (event) => {
                   data,
                 }
               } else {
-                console.log(ErrorMessage.NameTaken, profile.sub)
                 body = ErrorMessage.NameTaken
                 statusCode = 400
               }
             } else {
-              console.log(ErrorMessage.ProfileInitialized, profile.sub)
               body = ErrorMessage.ProfileInitialized
               statusCode = 403
             }
           } else {
-            console.log(ErrorMessage.InvalidRequestData, profile.sub)
             body = ErrorMessage.InvalidRequestData
             statusCode = 400
           }
