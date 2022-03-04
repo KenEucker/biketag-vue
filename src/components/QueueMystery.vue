@@ -5,12 +5,14 @@
       <bike-tag-button class="modal-header" variant="medium">
         <p>You are {{ stringifyNumber(numberInQueue) }} in the Queue!</p>
       </bike-tag-button>
-      <p style="text-align: center" class="go-queue" @click="goViewQueue">{{$t('components.queue.view_queue_button')}}</p>
+      <p style="text-align: center" class="go-queue" @click="goViewQueue">
+        {{ $t('components.queue.view_queue_button') }}
+      </p>
     </b-modal>
     <!-- <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3> -->
     <div class="title-cnt">
       <bike-tag-button variant="medium" class="title-q">
-        <h3 class="queue-title">{{$t('components.queue.queue_mystery_title')}}</h3>
+        <h3 class="queue-title">{{ $t('components.queue.queue_mystery_title') }}</h3>
       </bike-tag-button>
     </div>
     <div class="preview-cnt">
@@ -117,11 +119,27 @@ export default defineComponent({
       hint: this.tag?.hint ?? '',
       image: this.tag?.mysteryImage,
       modalShow: true,
-      numberInQueue: 1,
     }
   },
   computed: {
-    ...mapGetters(['getGameName', 'getQueuedTag', 'getPlayerId', 'getCurrentBikeTag']),
+    ...mapGetters([
+      'getGameName',
+      'getQueuedTag',
+      'getPlayerId',
+      'getCurrentBikeTag',
+      'getQueuedTags',
+    ]),
+    numberInQueue() {
+      console.log(this.getQueuedTags)
+      return this.getQueuedTags?.reduce((o, t, n) => {
+        console.log(t, this.getQueuedTag, n, this.getQueuedTag?.playerId)
+        if (t.playerId === this.getQueuedTag?.playerId) {
+          console.log({ n })
+          o = n + 1
+        }
+        return o
+      }, 0)
+    },
   },
   mounted() {
     this.player = this.getQueuedTag?.foundPlayer

@@ -3,7 +3,7 @@
     <b-col v-show="_foundImageUrl" md="6" class="mb-3 max-w">
       <b-card class="polaroid found-tag">
         <bike-tag-button
-          v-if="_tagnumber"
+          v-if="showHint"
           v-b-popover.click.left="_getHint"
           class="btn-hint btn-circle"
           text="?"
@@ -96,6 +96,10 @@ export default defineComponent({
     size: {
       type: String,
       default: 'm',
+    },
+    showHint: {
+      type: Boolean,
+      default: false,
     },
     showPostedDate: {
       type: Boolean,

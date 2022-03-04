@@ -75,7 +75,6 @@
                 label="Client Id"
                 placeholder="Imgur Client Id"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="imgurConfig.clientSecret"
@@ -83,7 +82,6 @@
                 label="Client Secret"
                 placeholder="Imgur Client Secret"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="imgurConfig.refreshToken"
@@ -91,7 +89,6 @@
                 label="Refresh Token"
                 placeholder="Imgur Refresh Token"
                 type="password"
-                required
               />
             </div>
           </template>
@@ -108,7 +105,6 @@
                 label="Project Id"
                 placeholder="Sanity Project Id"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="sanityConfig.dataset"
@@ -116,7 +112,6 @@
                 label="Dataset"
                 placeholder="Sanity Dataset"
                 type="password"
-                required
               />
             </div>
           </template>
@@ -133,7 +128,6 @@
                 label="Cliend Id"
                 placeholder="Reddit Client Id"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="redditConfig.clientSecret"
@@ -141,14 +135,12 @@
                 label="Client Secret"
                 placeholder="Reddit Client Secret"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="redditConfig.userName"
                 name="Reddit User Name"
                 label="User Name"
                 placeholder="Reddit User Name"
-                required
               />
               <bike-tag-input
                 v-model="redditConfig.password"
@@ -156,7 +148,6 @@
                 label="Password"
                 placeholder="Reddit Password"
                 type="password"
-                required
               />
             </div>
           </template>
