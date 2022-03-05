@@ -29,8 +29,14 @@ export default defineComponent({
     login() {
       if (this.$auth.loginWithRedirect) {
         this.$auth.loginWithRedirect().then(async () => {
-          const token = (await this.$auth.getIdTokenClaims()).__raw
-          this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+          // CLAIMS is undefined!
+          const claims = await this.$auth.getIdTokenClaims()
+          if (claims) {
+            const token = claims.__raw
+            this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+          } else {
+            console.log('what is this?')
+          }
         })
       } else {
         this.$toast.open({

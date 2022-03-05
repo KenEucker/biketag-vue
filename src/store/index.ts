@@ -11,9 +11,10 @@ import {
   getSanityImageUrl,
   getMostRecentlyViewedBikeTagTagnumber,
   getApiUrl,
+  setProfileCookie,
   // GetQueryString,
 } from '@/common/utils'
-import { BiketagFormSteps, State, BikeTagProfile } from '@/common/types'
+import { BiketagFormSteps, State } from '@/common/types'
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
@@ -42,6 +43,7 @@ let client = new BikeTagClient(options)
 
 export const store = createStore<State>({
   state: {
+    dataInitialized: false,
     gameName,
     game: {} as Game,
     allGames: [] as Game[],
@@ -60,22 +62,24 @@ export const store = createStore<State>({
   actions: {
     async setProfile({ commit }, profile) {
       /// Call to backend api GET on /profile with authorization header
-      const token = profile.token
-      profile.token = undefined
+      if (profile) {
+        const token = profile.token
+        profile.token = undefined
 
-      const response = await client.request({
-        method: 'GET',
-        url: getApiUrl('profile'),
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      })
-      if (response.status == 200) {
-        if (typeof response.data === 'string') {
-          const biketagProfile = JSON.parse(response.data)
-          return commit('SET_PROFILE', biketagProfile)
-        } else if (typeof response.data === 'object') {
-          return commit('SET_PROFILE', response.data)
+        const response = await client.request({
+          method: 'GET',
+          url: getApiUrl('profile'),
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        })
+        if (response.status == 200) {
+          if (typeof response.data === 'string') {
+            const biketagProfile = JSON.parse(response.data)
+            return commit('SET_PROFILE', biketagProfile)
+          } else if (typeof response.data === 'object') {
+            return commit('SET_PROFILE', response.data)
+          }
         }
       }
 
@@ -175,6 +179,9 @@ export const store = createStore<State>({
       }
       return false
     },
+    setDataInitialized({ commit }) {
+      return commit('SET_DATA_INITIALIZED')
+    },
     async approveTag({ state }, d) {
       if (state.isBikeTagAmbassador) {
         d.hash = state.game.queuehash
@@ -206,6 +213,7 @@ export const store = createStore<State>({
       return 'incorrect permissions'
     },
     async assignName({ commit }, profile) {
+      console.log('assignName!')
       await client.request({
         method: 'PUT',
         url: getApiUrl('profile'),
@@ -219,6 +227,7 @@ export const store = createStore<State>({
     },
     async updateProfile({ commit }, profile) {
       // Update Auth0 Profile
+      console.log('updateProfile!')
       await client.request({
         method: 'PATCH',
         url: getApiUrl('profile'),
@@ -351,6 +360,9 @@ export const store = createStore<State>({
     },
   },
   mutations: {
+    SET_DATA_INITIALIZED(state) {
+      state.dataInitialized = true
+    },
     SET_PROFILE(state, profile) {
       const oldState = state.profile
       state.profile = profile
@@ -360,6 +372,7 @@ export const store = createStore<State>({
         profile?.name !== oldState?.name ||
         profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
       ) {
+        setProfileCookie(profile)
         console.log('state::profile', profile)
       }
     },
@@ -630,6 +643,9 @@ export const store = createStore<State>({
     },
     getProfile(state) {
       return state.profile
+    },
+    isDataInitialized(state) {
+      return state.dataInitialized
     },
     isBikeTagAmbassador(state) {
       return state.isBikeTagAmbassador

@@ -251,7 +251,7 @@ export default defineComponent({
     await this.$store.dispatch('setPlayers')
 
     if (this.isBikeTagAmbassador) {
-      const credentials = this.player.user_metadata.credentials ?? {}
+      const credentials = this.getProfile?.user_metadata.credentials ?? {}
       /// TODO: Stop constructing these items by hand
       if (credentials.imgur) {
         this.imgurConfig = { ...credentials.imgur }
@@ -290,41 +290,48 @@ export default defineComponent({
     },
     async onSubmit() {
       /// TODO: This needs to move to the modal (not yet created) flow when someone lands on this page and these items are not set
-      const token = (await this.$auth.getIdTokenClaims()).__raw
-      const profile = { user_metadata: {}, token }
-      /// TODO: Stop constructing these items by hand
-      if (this.name != null && this.name.length > 0 && !this.isBikeTagAmbassador) {
-        profile.user_metadata['name'] = this.name
-        try {
-          await this.$store.dispatch('assignName', profile)
-        } catch (e) {
-          this.$toast.open({
-            message: e.message,
-            type: 'error',
-            position: 'top',
-          })
+
+      const claims = await this.$auth.getIdTokenClaims()
+      if (claims) {
+        const token = claims.__raw
+        // const token = (await this.$auth.getIdTokenClaims()).__raw
+        const profile = { user_metadata: {}, token }
+        /// TODO: Stop constructing these items by hand
+        if (this.name != null && this.name.length > 0 && !this.isBikeTagAmbassador) {
+          profile.user_metadata['name'] = this.name
+          try {
+            await this.$store.dispatch('assignName', profile)
+          } catch (e) {
+            this.$toast.open({
+              message: e.message,
+              type: 'error',
+              position: 'top',
+            })
+          }
         }
-      }
-      /// TODO: Stop constructing these items by hand
-      profile.user_metadata = {
-        social: {
-          reddit: this.reddit ?? '',
-          instagram: this.instagram ?? '',
-          twitter: this.twitter ?? '',
-          imgur: this.imgur ?? '',
-          discord: this.discord ?? '',
-        },
-      }
-      /// TODO: Stop constructing these items by hand
-      if (this.isBikeTagAmbassador) {
-        profile.user_metadata['credentials'] = {
-          imgur: this.imgurConfig,
-          sanity: this.sanityConfig,
-          reddit: this.redditConfig,
+        /// TODO: Stop constructing these items by hand
+        profile.user_metadata = {
+          social: {
+            reddit: this.reddit ?? '',
+            instagram: this.instagram ?? '',
+            twitter: this.twitter ?? '',
+            imgur: this.imgur ?? '',
+            discord: this.discord ?? '',
+          },
         }
+        /// TODO: Stop constructing these items by hand
+        if (this.isBikeTagAmbassador) {
+          profile.user_metadata['credentials'] = {
+            imgur: this.imgurConfig,
+            sanity: this.sanityConfig,
+            reddit: this.redditConfig,
+          }
+        }
+        /// TODO: This should be called with the entire profile that we have access to with the updates
+        await this.$store.dispatch('updateProfile', profile)
+      } else {
+        console.log('what is this?')
       }
-      /// TODO: This should be called with the entire profile that we have access to with the updates
-      await this.$store.dispatch('updateProfile', profile)
     },
   },
 })
