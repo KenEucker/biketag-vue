@@ -5,20 +5,21 @@ import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import {
   getDomainInfo,
   getImgurImageSized,
-  getUuid,
+  getProfileFromCookie,
   getBikeTagClientOpts,
   getQueuedTagState,
   getSanityImageUrl,
   getMostRecentlyViewedBikeTagTagnumber,
   getApiUrl,
+  setProfileCookie,
   // GetQueryString,
 } from '@/common/utils'
-import { BiketagFormSteps, State, BikeTagProfile } from '@/common/types'
+import { BiketagFormSteps, State } from '@/common/types'
 
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(window)
-const playerId = getUuid()
+const profile = getProfileFromCookie()
 const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
@@ -35,48 +36,50 @@ console.log('store::init', {
   subdomain: domain.subdomain,
   domain,
   gameName,
-  playerId,
+  profile,
 })
 
 let client = new BikeTagClient(options)
 
 export const store = createStore<State>({
   state: {
+    dataInitialized: false,
     gameName,
     game: {} as Game,
     allGames: [] as Game[],
     currentBikeTag: {} as Tag,
     tags: [] as Tag[],
-    playerId,
     queuedTags: [] as Tag[],
     players: [] as Player[],
     leaderboard: [] as Player[],
     html: '',
     formStep: BiketagFormSteps.queueView,
     queuedTag: {} as Tag,
-    profile: {} as BikeTagProfile,
-    isBikeTagAmbassador: false,
+    profile,
+    isBikeTagAmbassador: profile.isBikeTagAmbassador ? true : false,
     mostRecentlyViewedTagnumber,
   },
   actions: {
     async setProfile({ commit }, profile) {
       /// Call to backend api GET on /profile with authorization header
-      const token = profile.token
-      profile.token = undefined
+      if (profile) {
+        const token = profile.token
+        profile.token = undefined
 
-      const response = await client.request({
-        method: 'GET',
-        url: getApiUrl('profile'),
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      })
-      if (response.status == 200) {
-        if (typeof response.data === 'string') {
-          const biketagProfile = JSON.parse(response.data)
-          return commit('SET_PROFILE', biketagProfile)
-        } else if (typeof response.data === 'object') {
-          return commit('SET_PROFILE', response.data)
+        const response = await client.request({
+          method: 'GET',
+          url: getApiUrl('profile'),
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        })
+        if (response.status == 200) {
+          if (typeof response.data === 'string') {
+            const biketagProfile = JSON.parse(response.data)
+            return commit('SET_PROFILE', biketagProfile)
+          } else if (typeof response.data === 'object') {
+            return commit('SET_PROFILE', response.data)
+          }
         }
       }
 
@@ -128,7 +131,7 @@ export const store = createStore<State>({
             const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
               (t) => t.tagnumber >= state.currentBikeTag.tagnumber
             )
-            const queuedTag = currentBikeTagQueue.filter((t) => t.playerId === playerId)
+            const queuedTag = currentBikeTagQueue.filter((t) => t.playerId === state.profile.sub)
 
             if (queuedTag.length) {
               const fullyQueuedTag = queuedTag[0]
@@ -176,8 +179,25 @@ export const store = createStore<State>({
       }
       return false
     },
+    setDataInitialized({ commit }) {
+      return commit('SET_DATA_INITIALIZED')
+    },
+    async approveTag({ state }, d) {
+      if (state.isBikeTagAmbassador) {
+        d.hash = state.game.queuehash
+        return client.deleteTag(d.tag).then((t) => {
+          if (t.success) {
+            console.log('store::tag dequeued', d.tag)
+          } else {
+            console.log('error::dequeue BikeTag failed', t)
+            return t.error
+          }
+          return 'successfully dequeued tag'
+        })
+      }
+      return 'incorrect permissions'
+    },
     async dequeueTag({ state }, d) {
-      // Check ambassador permissions? NO: just send it server(less)-side and let the auth pass through
       if (state.isBikeTagAmbassador) {
         d.hash = state.game.queuehash
         return client.deleteTag(d.tag).then((t) => {
@@ -221,7 +241,7 @@ export const store = createStore<State>({
       return commit('SET_PROFILE', profile)
     },
     async dequeueFoundTag({ commit, state }) {
-      if (state.queuedTag?.playerId === playerId) {
+      if (state.queuedTag?.playerId === state.profile.sub) {
         const queuedTag: any = state.queuedTag
         queuedTag.hash = state.game.queuehash
         return client.deleteTag(queuedTag).then(async (t) => {
@@ -239,7 +259,7 @@ export const store = createStore<State>({
       }
     },
     async dequeueMysteryTag({ commit, state }) {
-      if (state.queuedTag?.playerId === playerId) {
+      if (state.queuedTag?.playerId === state.profile.sub) {
         const queuedFoundTag: any = BikeTagClient.getters.getOnlyFoundTagFromTagData(
           state.queuedTag
         )
@@ -261,9 +281,9 @@ export const store = createStore<State>({
         })
       }
     },
-    async queueFoundTag({ commit }, d) {
+    async queueFoundTag({ commit, state }, d) {
       if (d.foundImage && !d.foundImageUrl) {
-        d.playerId = playerId
+        d.playerId = state.profile.sub
         return client.queueTag(d).then((t) => {
           if (t.success) {
             commit('SET_QUEUE_FOUND', t.data)
@@ -276,9 +296,9 @@ export const store = createStore<State>({
       }
       return commit('SET_QUEUE_FOUND', d)
     },
-    async queueMysteryTag({ commit }, d) {
+    async queueMysteryTag({ commit, state }, d) {
       if (d.mysteryImage && !d.mysteryImageUrl) {
-        d.playerId = playerId
+        d.playerId = state.profile.sub
         return client.queueTag(d).then((t) => {
           if (t.success) {
             commit('SET_QUEUE_MYSTERY', t.data)
@@ -291,9 +311,9 @@ export const store = createStore<State>({
       }
       return commit('SET_QUEUE_MYSTERY', d)
     },
-    async submitQueuedTag({ commit }, d) {
+    async submitQueuedTag({ commit, state }, d) {
       if (d.mysteryImageUrl && d.foundImageUrl) {
-        d.playerId = playerId
+        d.playerId = state.profile.sub
         return client.queueTag(d).then((t) => {
           if (t.success) {
             commit('SET_QUEUED_SUBMITTED', t.data)
@@ -341,6 +361,9 @@ export const store = createStore<State>({
     },
   },
   mutations: {
+    SET_DATA_INITIALIZED(state) {
+      state.dataInitialized = true
+    },
     SET_PROFILE(state, profile) {
       const oldState = state.profile
       state.profile = profile
@@ -350,6 +373,7 @@ export const store = createStore<State>({
         profile?.name !== oldState?.name ||
         profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
       ) {
+        setProfileCookie(profile)
         console.log('state::profile', profile)
       }
     },
@@ -537,8 +561,11 @@ export const store = createStore<State>({
     },
   },
   getters: {
-    getUser(state) {
-      return state.profile
+    getAmbassadorId(state) {
+      if (state.isBikeTagAmbassador) {
+        return state.profile.sub
+      }
+      return null
     },
     getImgurImageSized: () => getImgurImageSized,
     getQueuedTagState: (state) => {
@@ -554,7 +581,7 @@ export const store = createStore<State>({
       return state.game?.slug
     },
     getPlayerId(state) {
-      return state.playerId
+      return state.profile.sub
     },
     getGameSettings(state) {
       return state.game?.settings
@@ -615,11 +642,14 @@ export const store = createStore<State>({
     getMostRecentlyViewedTagnumber(state) {
       return getMostRecentlyViewedBikeTagTagnumber(state.currentBikeTag.tagnumber)
     },
-    isBikeTagAmbassador(state) {
-      return state.isBikeTagAmbassador
-    },
     getProfile(state) {
       return state.profile
+    },
+    isDataInitialized(state) {
+      return state.dataInitialized
+    },
+    isBikeTagAmbassador(state) {
+      return state.isBikeTagAmbassador
     },
   },
   modules: {},

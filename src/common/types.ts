@@ -85,10 +85,10 @@ export interface AmbassadorProfile extends Profile {
 }
 export type BikeTagProfile = Partial<Profile> | Partial<AmbassadorProfile>
 export interface State {
+  dataInitialized: boolean
   game: Game
   allGames: Game[]
   gameName: string
-  playerId: string
   currentBikeTag: Tag
   tags: Tag[]
   queuedTags: Tag[]

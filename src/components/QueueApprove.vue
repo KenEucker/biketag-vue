@@ -33,7 +33,6 @@
           :tag="tag"
           size="l"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
-          :found-description="`found at (${tag.foundLocation})`"
           :mystery-description="mysteryDescription(tag)"
         />
         <bike-tag
@@ -62,14 +61,14 @@
             method="POST"
             data-netlify="true"
             data-netlify-honeypot="bot-field"
-            @submit.prevent="onSubmit"
+            @submit.prevent="approveTag"
           >
             <input type="hidden" name="form-name" value="approve-queued-tag" />
             <input type="hidden" name="ambassadorId" value="" />
             <bike-tag-button
               class="w-75 btn-approve mt-2 mb-2 border-0"
               variant="primary"
-              @click="onSubmit"
+              type="submit"
             >
               {{ $t('pages.queue.approve_new_tag') }}&nbsp;
               {{ $t('pages.queue.approve_new_tag_from') }}&nbsp;#{{ selectedTagPlayer() }}&nbsp;({{
@@ -90,7 +89,7 @@
           >
             <input type="hidden" name="form-name" value="dequeue-queued-tag" />
             <input type="hidden" name="ambassadorId" value="" />
-            <bike-tag-button class="w-75 mt-2 mb-2 border-0" variant="danger" @click="dequeueTag">
+            <bike-tag-button class="w-75 mt-2 mb-2 border-0" variant="danger" type="submit">
               {{ $t('pages.queue.dequeue_queued_tag') }} &nbsp;
             </bike-tag-button>
           </form>
@@ -143,18 +142,20 @@ export default defineComponent({
       'getCurrentBikeTag',
       'isBikeTagAmbassador',
       'getProfile',
+      'getAmbassadorId',
     ]),
   },
   mounted() {
     if (!this.isBikeTagAmbassador) {
       /// kick it sideways
+      console.log("YOU DIDN'T SAY THE MAGIC WORD!")
       this.$router.push('/')
     }
   },
   methods: {
-    dequeueTag() {
+    dequeueTagOld() {
       const tagToDequeue = {
-        ambassadorId: this.getProfile.sub,
+        ambassadorId: this.getAmbassadorId,
       }
       return this.$store.dispatch('dequeueTag', tagToDequeue).then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
@@ -175,11 +176,11 @@ export default defineComponent({
         }
       })
     },
-    onSubmit() {
+    dequeueTag() {
       const formAction = this.$refs.approveTag.getAttribute('action')
       const formData = new FormData(this.$refs.approveTag)
       const approvedTag = {
-        ambassadorId: this.getProfile.sub,
+        ambassadorId: this.getAmbassadorId,
         expiry: window.location.expiry,
       }
 
@@ -187,7 +188,22 @@ export default defineComponent({
         formAction,
         formData,
         tag: approvedTag,
-        storeAction: 'getAmbassadorPermission',
+        storeAction: 'dequeueTag',
+      })
+    },
+    approveTag() {
+      const formAction = this.$refs.approveTag.getAttribute('action')
+      const formData = new FormData(this.$refs.approveTag)
+      const approvedTag = {
+        ambassadorId: this.getAmbassadorId,
+        expiry: window.location.expiry,
+      }
+
+      this.$emit('submit', {
+        formAction,
+        formData,
+        tag: approvedTag,
+        storeAction: 'approveTag',
       })
     },
     mysteryDescription(tag) {
