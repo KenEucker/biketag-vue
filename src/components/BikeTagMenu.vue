@@ -153,10 +153,17 @@ export default defineComponent({
     return {}
   },
   computed: {
-    ...mapGetters(['getGameTitle', 'getLogoUrl', 'getCurrentBikeTag', 'isBikeTagAmbassador']),
+    ...mapGetters([
+      'getGameTitle',
+      'getLogoUrl',
+      'getCurrentBikeTag',
+      'isDataInitialized',
+      'isBikeTagAmbassador',
+      'getProfile',
+    ]),
     isShow() {
       if (this.$route.name) {
-        console.log(`page:: ${this.$route.name}`)
+        console.log(`view::${this.$route.name}`)
       }
       return this.$route.name !== 'Play'
     },
@@ -170,17 +177,28 @@ export default defineComponent({
     },
   },
   async created() {
-    await this.$store.dispatch('setGame')
-    await this.$store.dispatch('setTags')
-    await this.$store.dispatch('setCurrentBikeTag')
-    await this.$store.dispatch('setQueuedTags')
-    await this.$store.dispatch('setPlayers')
-    if (this.$auth.isAuthenticated) {
-      this.$auth.getIdTokenClaims().then((value) => {
-        this.$store.dispatch('setProfile', { ...this.$auth.user, token: value.__raw })
-      })
+    if (!this.isDataInitialized) {
+      /// Set it first thing
+      this.$store.dispatch('setDataInitialized')
+
+      await this.$store.dispatch('setGame')
+      await this.$store.dispatch('setTags')
+      await this.$store.dispatch('setCurrentBikeTag')
+      await this.$store.dispatch('setQueuedTags')
+      await this.$store.dispatch('setPlayers')
+
+      if (this.$auth.isAuthenticated && !this.getProfile?.nonce?.length) {
+        const claims = await this.$auth.getIdTokenClaims()
+        if (claims) {
+          const token = claims.__raw
+          this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+        } else {
+          console.log('what is this?')
+        }
+      }
+
+      this.checkForNewBikeTagPost()
     }
-    this.checkForNewBikeTagPost()
   },
   mounted() {
     this.checkForNewBikeTagPost()
@@ -308,6 +326,7 @@ header {
     }
     .nav-item {
       font-family: 'Prequel';
+      text-transform: uppercase;
       font-size: 2rem;
       cursor: pointer;
 

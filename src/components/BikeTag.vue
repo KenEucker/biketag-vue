@@ -3,7 +3,7 @@
     <b-col v-show="_foundImageUrl" md="6" class="mb-3 max-w">
       <b-card class="polaroid found-tag">
         <bike-tag-button
-          v-if="_tagnumber"
+          v-if="showHint"
           v-b-popover.click.left="_getHint"
           class="btn-hint btn-circle"
           text="?"
@@ -21,8 +21,15 @@
           ></expandable-image>
         </div>
         <div class="card-bottom">
-          <div class="description">
-            <span>{{ _foundDescription }}</span>
+          <div v-if="foundDescription?.length" class="description">
+            <span>{{ foundDescription }}</span>
+          </div>
+          <div v-else class="description">
+            <span>#{{ _foundTagnumber }}</span>
+            <span class="found-at">[{{ $t('components.biketag.found_at') }}]</span>
+            <span>{{
+              tag.foundLocation?.length ? tag.foundLocation : $t('components.biketag.unknown')
+            }}</span>
           </div>
           <player
             class="tag-player"
@@ -96,6 +103,10 @@ export default defineComponent({
     size: {
       type: String,
       default: 'm',
+    },
+    showHint: {
+      type: Boolean,
+      default: false,
     },
     showPostedDate: {
       type: Boolean,
@@ -192,9 +203,6 @@ export default defineComponent({
     },
     _mysteryPlayer() {
       return this.tag?.mysteryPlayer ?? ''
-    },
-    _foundDescription() {
-      return this.foundDescription ? this.foundDescription : this.getFoundDescription()
     },
     _mysteryDescription() {
       return this.mysteryDescription ? this.mysteryDescription : this.getMysteryDescription()
@@ -301,6 +309,11 @@ export default defineComponent({
     white-space: pre-wrap;
     padding: 0.5rem;
     line-height: 2em;
+    text-transform: uppercase;
+
+    .found-at {
+      text-transform: initial;
+    }
   }
 }
 

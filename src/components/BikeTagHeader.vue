@@ -59,7 +59,6 @@ export default defineComponent({
       'getEasterEgg',
       'getMostRecentlyViewedTagnumber',
       'getGameName',
-      'isBikeTagAmbassador',
     ]),
   },
   methods: {

@@ -4,8 +4,11 @@
   </loading>
   <div class="container mb-5 mt-5">
     <div class="center-cnt">
-      <div class="profile-picture">
-        <img class="player-avatar" :src="player.picture" :alt="getProfile?.name" />
+      <div v-if="player.tags" class="d-flex justify-content-center mt-5 mb-5">
+        <player size="lg" :player="player" :no-link="true" />
+      </div>
+      <div v-else class="profile-picture">
+        <img class="player-avatar" :src="getProfile?.picture" :alt="getProfile?.name" />
         <div class="picture-outline">
           <bike-tag-button variant="circle-clean"> </bike-tag-button>
         </div>
@@ -38,11 +41,12 @@
         data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
-        <div v-if="!isBikeTagAmbassador" class="mt-3">
+        <div v-if="!isBikeTagAmbassador || !getProfile?.name" class="mt-3">
           <bike-tag-input
             id="name"
             v-model="name"
             name="name"
+            readonly
             :placeholder="getProfile?.name || 'Your new name'"
           />
         </div>
@@ -61,6 +65,7 @@
             </div>
           </bike-tag-input>
         </div>
+        <!-- TODO: refactor form to require less code and less manual element creation -->
         <template v-if="isBikeTagAmbassador">
           <template v-if="showImgur">
             <div class="input-block mt-3">
@@ -75,7 +80,6 @@
                 label="Client Id"
                 placeholder="Imgur Client Id"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="imgurConfig.clientSecret"
@@ -83,7 +87,6 @@
                 label="Client Secret"
                 placeholder="Imgur Client Secret"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="imgurConfig.refreshToken"
@@ -91,10 +94,10 @@
                 label="Refresh Token"
                 placeholder="Imgur Refresh Token"
                 type="password"
-                required
               />
             </div>
           </template>
+          <!-- TODO: refactor form to require less code and less manual element creation -->
           <template v-if="showSanity">
             <div class="input-block mt-3">
               <bike-tag-button
@@ -108,7 +111,6 @@
                 label="Project Id"
                 placeholder="Sanity Project Id"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="sanityConfig.dataset"
@@ -116,10 +118,10 @@
                 label="Dataset"
                 placeholder="Sanity Dataset"
                 type="password"
-                required
               />
             </div>
           </template>
+          <!-- TODO: refactor form to require less code and less manual element creation -->
           <template v-if="showReddit">
             <div class="input-block mt-3">
               <bike-tag-button
@@ -133,7 +135,6 @@
                 label="Cliend Id"
                 placeholder="Reddit Client Id"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="redditConfig.clientSecret"
@@ -141,14 +142,12 @@
                 label="Client Secret"
                 placeholder="Reddit Client Secret"
                 type="password"
-                required
               />
               <bike-tag-input
                 v-model="redditConfig.userName"
                 name="Reddit User Name"
                 label="User Name"
                 placeholder="Reddit User Name"
-                required
               />
               <bike-tag-input
                 v-model="redditConfig.password"
@@ -156,10 +155,10 @@
                 label="Password"
                 placeholder="Reddit Password"
                 type="password"
-                required
               />
             </div>
           </template>
+          <!-- TODO: refactor::these buttons should go immediately above the fields, are they floating off in space? -->
           <bike-tag-button
             v-if="!showImgur"
             variant="medium"
@@ -181,9 +180,6 @@
         </template>
         <bike-tag-button variant="medium" text="Save Changes" @click="onSubmit" />
       </form>
-    </div>
-    <div v-if="player.tags" class="d-flex justify-content-center mt-5 mb-5">
-      <player size="lg" :player="player" :no-link="true" />
     </div>
   </div>
 </template>
@@ -211,6 +207,7 @@ export default defineComponent({
     Player,
   },
   data() {
+    /// TODO: Stop constructing these items by hand, the profile has a schema that we know and can accomodate in the UI only
     return {
       name: null,
       reddit: null,
@@ -237,14 +234,13 @@ export default defineComponent({
     ...mapGetters(['getPlayers', 'getProfile', 'isBikeTagAmbassador']),
     player() {
       const playerList = this.getPlayers?.filter((player) => {
-        return this.$auth.user.name == decodeURIComponent(encodeURIComponent(player.name))
+        return this.$auth.user.name === decodeURIComponent(encodeURIComponent(player.name))
       })
-      return {
-        ...playerList[0],
-        name: this.getProfile?.name,
-        picture: this.getProfile?.picture ?? this.$auth.user.picture,
-        user_metadata: this.getProfile?.user_metadata ?? {},
+      if (playerList && playerList.length > 0) {
+        return playerList[0]
       }
+
+      return {}
     },
     authLoading() {
       return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
@@ -255,7 +251,8 @@ export default defineComponent({
     await this.$store.dispatch('setPlayers')
 
     if (this.isBikeTagAmbassador) {
-      const credentials = this.player.user_metadata.credentials ?? {}
+      const credentials = this.getProfile?.user_metadata.credentials ?? {}
+      /// TODO: Stop constructing these items by hand
       if (credentials.imgur) {
         this.imgurConfig = { ...credentials.imgur }
       } else {
@@ -265,6 +262,7 @@ export default defineComponent({
           refreshToken: '',
         }
       }
+      /// TODO: Stop constructing these items by hand
       if (credentials.sanity) {
         this.sanityConfig = { ...credentials.sanity }
       } else {
@@ -273,6 +271,7 @@ export default defineComponent({
           dataset: '',
         }
       }
+      /// TODO: Stop constructing these items by hand
       if (credentials.reddit) {
         this.redditConfig = { ...credentials.reddit }
       } else {
@@ -290,30 +289,49 @@ export default defineComponent({
       this[name] = !this[name]
     },
     async onSubmit() {
-      console.log('submitted')
-      return
-      const token = (await this.$auth.getIdTokenClaims()).__raw
-      const user_metadata = {
-        social: {
-          reddit: this.reddit,
-          instagram: this.instagram,
-          twitter: this.twitter,
-          imgur: this.imgur,
-          discord: this.discord,
-        },
-      }
-      if (this.isBikeTagAmbassador) {
-        user_metadata['credentials'] = {
-          imgur: this.imgurConfig,
-          sanity: this.sanityConfig,
-          reddit: this.reddit,
+      /// TODO: This needs to move to the modal (not yet created) flow when someone lands on this page and these items are not set
+
+      const claims = await this.$auth.getIdTokenClaims()
+      if (claims) {
+        const token = claims.__raw
+        // const token = (await this.$auth.getIdTokenClaims()).__raw
+        const profile = { user_metadata: {}, token }
+        /// TODO: Stop constructing these items by hand
+        if (this.name != null && this.name.length > 0 && !this.isBikeTagAmbassador) {
+          profile.user_metadata['name'] = this.name
+          try {
+            await this.$store.dispatch('assignName', profile)
+          } catch (e) {
+            this.$toast.open({
+              message: e.message,
+              type: 'error',
+              position: 'top',
+            })
+          }
         }
+        /// TODO: Stop constructing these items by hand
+        profile.user_metadata = {
+          social: {
+            reddit: this.reddit ?? '',
+            instagram: this.instagram ?? '',
+            twitter: this.twitter ?? '',
+            imgur: this.imgur ?? '',
+            discord: this.discord ?? '',
+          },
+        }
+        /// TODO: Stop constructing these items by hand
+        if (this.isBikeTagAmbassador) {
+          profile.user_metadata['credentials'] = {
+            imgur: this.imgurConfig,
+            sanity: this.sanityConfig,
+            reddit: this.redditConfig,
+          }
+        }
+        /// TODO: This should be called with the entire profile that we have access to with the updates
+        await this.$store.dispatch('updateProfile', profile)
+      } else {
+        console.log('what is this?')
       }
-      await this.$store.dispatch('updateProfile', {
-        name: this.name != null && this.name.length > 0 ? this.name : this.getProfile?.name,
-        user_metadata,
-        token,
-      })
     },
   },
 })

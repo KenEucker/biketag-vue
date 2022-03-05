@@ -16,7 +16,6 @@
           :reverse="true"
           :found-player="getPlayer(tag.foundPlayer)"
           :mystery-player="getPlayer(tag.mysteryPlayer)"
-          @load="tagLoaded(tagsList.tagnumber)"
         />
       </div>
     </div>

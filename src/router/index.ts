@@ -68,6 +68,8 @@ if (process.env.AUTH0_DOMAIN?.length) {
   ]
 }
 
+console.log('routes::init', { protectedRoutes })
+
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [...routes, ...protectedRoutes],

@@ -23,6 +23,7 @@
   },
   "components": {
     "biketag": {
+      "unknown": "unknown",
       "found_at": "found at",
       "posted_on": "posted"
     },
@@ -49,6 +50,10 @@
       "send_hello_email": "Send an email to hello@biketag.org to ask about how you can start one!",
       "game_not_exists": "Uh, oh. Does this game not exist.. yet?"
     },
+    "login":{
+      "player": "BikeTag Player Login",
+      "ambassador": "BikeTag Ambassador Login"
+    },
     "queue": {
       "join_queue": "Join round",
       "tape_title": "Round",
@@ -61,7 +66,7 @@
       "queue_posted": "You did it!",
       "mystery_title": "Next, you must add a new Mystery Location for the next round.",
       "mystery_text": "Complete your pair of images with the new Mystery Location in order to create a new BikeTag Post",
-      "mystery_button": "Add new Mystery Location",
+      "mystery_button": "Add Your New Mystery Image Now",
       "joined_button": "See all tags in round",
       "submit_title": "Submit your BikeTag Post to win the round!",
       "submit_text": "You can have the BikeTag RoBot post on your behalf or you can choose to post to other platforms on your own. Once approved, the 'winning' BikeTag Post will become the new Mystery Location to find.",
