@@ -12,6 +12,7 @@ import {
   getMostRecentlyViewedBikeTagTagnumber,
   getApiUrl,
   setProfileCookie,
+  getBikeTagHash,
   // GetQueryString,
 } from '@/common/utils'
 import { BiketagFormSteps, State } from '@/common/types'
@@ -24,8 +25,12 @@ const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
 const options: any = {
-  game: gameName,
-  host: `https://${gameName}.biketag.io/api`,
+  biketag: {
+    host: `https://${gameName}.biketag.io/api`,
+    game: gameName,
+    clientKey: getBikeTagHash(window.location.hostname),
+    clientToken: process.env.ACCESS_TOKEN,
+  },
   ...getBikeTagClientOpts(window, useAuth),
 }
 const gameOpts = useAuth ? { source: 'sanity' } : {}

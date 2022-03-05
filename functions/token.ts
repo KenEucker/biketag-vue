@@ -29,6 +29,8 @@ const authorizeHandler: Handler = async (event) => {
     const authorizationIsClientToken = controlCheck === authorization
 
     if (authorizationIsAccessToken) {
+      /// TODO: check to see if Imgur is accessible, if not don't pass the credentials back
+      // axios('http://api.imgur.com/v2/')
       body = JSON.stringify({
         imgur: {
           clientId: config.imgur.clientId,

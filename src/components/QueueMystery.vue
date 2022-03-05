@@ -94,7 +94,7 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
-import { stringifyNumber } from '@/common/utils'
+import { stringifyNumber, getApiUrl } from '@/common/utils'
 
 export default defineComponent({
   name: 'QueueMysteryTag',
@@ -165,6 +165,14 @@ export default defineComponent({
       })
     },
     setImage(event) {
+      /// TODO: fetch upload credentials
+      // try {
+      //   const credentials = await axios({
+      //     url: getApiUrl('token'),
+      //   }).data
+      //   client.config(credentials)
+      // } catch (e) {}
+
       var input = event.target
       if (input.files) {
         this.image = input.files[0]

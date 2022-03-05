@@ -3,6 +3,7 @@ import { Tag } from 'biketag/lib/common/schema'
 import { useCookies } from 'vue3-cookies'
 import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
 import CryptoJS from 'crypto-js'
+import md5 from 'md5'
 
 export type DomainInfo = {
   host: string
@@ -38,6 +39,7 @@ export const stringifyNumber = (n: number): string => {
   if (n % 10 === 0) return deca[Math.floor(n / 10) - 2] + 'ieth'
   return deca[Math.floor(n / 10) - 2] + 'y-' + special[n % 10]
 }
+export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 
 export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
   imgurUrl

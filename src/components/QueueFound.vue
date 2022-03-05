@@ -98,7 +98,12 @@
         type="submit"
         :text="`${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}`"
       /> -->
-      <bike-tag-button variant="medium" type="submit" text="Queue Found Tag" @click="onSubmit" />
+      <bike-tag-button
+        variant="medium"
+        type="submit"
+        :text="$t('pages.queue.queue_found_tag')"
+        @click="onSubmit"
+      />
     </form>
   </div>
 </template>
@@ -236,6 +241,8 @@ export default defineComponent({
       return Number(Math.round(number + 'e4') + 'e-4')
     },
     setImage(event) {
+      /// TODO: fetch upload credentials
+
       var input = event.target
       if (input.files) {
         this.image = input.files[0]
