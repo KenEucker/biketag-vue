@@ -52,6 +52,13 @@
       "player": "BikeTag Player Login",
       "ambassador": "BikeTag Ambassador Login"
     },
+    "profile": {
+      "name": "name",
+      "save": "Update Profile",
+      "set_name": "Save my name",
+      "set_name_placeholder": "Your new name",
+      "set_name_description": "Your name will be unique and only you will be able to make BikeTag posts using this name moving forward. Note: you cannot change your name after you set it."
+    },
     "queue": {
       "join_queue": "Join round",
       "tape_title": "Round",

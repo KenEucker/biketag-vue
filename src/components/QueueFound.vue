@@ -152,11 +152,7 @@ export default defineComponent({
       'getProfile',
     ]),
     getName() {
-      if (this.$auth.isAuthenticated) {
-        return this.getProfile?.name ?? this.tag?.foundPlayer ?? ''
-      }
-
-      return this.tag?.foundPlayer ?? ''
+      return this.getProfile?.user_metadata?.name ?? this.tag?.foundPlayer ?? ''
     },
     isGps() {
       return this.gps.lat && this.gps.lng

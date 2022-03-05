@@ -220,7 +220,7 @@ export const store = createStore<State>({
           authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: {user_metadata : {name: profile.user_metadata.name}},
+        data: { user_metadata: { name: profile.user_metadata.name } },
       })
       return commit('SET_PROFILE', profile)
     },
@@ -229,16 +229,17 @@ export const store = createStore<State>({
       profile.name = state.profile.name
       const user_metadata = profile.user_metadata
       delete user_metadata.name
-      await client.request({
+      const updatedProfileResponse = await client.request({
         method: 'PATCH',
         url: getApiUrl('profile'),
         headers: {
           authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: {user_metadata},
+        data: { user_metadata },
       })
-      return commit('SET_PROFILE', profile)
+
+      return commit('SET_PROFILE', updatedProfileResponse.data)
     },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === state.profile.sub) {
@@ -368,12 +369,12 @@ export const store = createStore<State>({
       const oldState = state.profile
       state.profile = profile
       state.isBikeTagAmbassador = profile?.isBikeTagAmbassador
+      setProfileCookie(profile)
 
       if (
         profile?.name !== oldState?.name ||
         profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
       ) {
-        setProfileCookie(profile)
         console.log('state::profile', profile)
       }
     },

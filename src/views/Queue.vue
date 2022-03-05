@@ -228,7 +228,6 @@ export default defineComponent({
 #app {
   .queue-page {
     .card.polaroid .player-wrapper .player-name {
-      // font-family: markernotes;
       font-weight: 100;
       font-size: 3rem;
       transform: unset;

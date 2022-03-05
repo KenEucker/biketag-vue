@@ -1,6 +1,7 @@
 @import 'fonts';
 @import 'colors';
 
+$default-font-family: PrequelRough;
 $how-font-family: PrequelRough;
 $how-font-size: 2vh;
 $btn-hint-font-weight: 1000;
@@ -16,7 +17,11 @@ $tag-description-font-weight: 500;
 $tag-description-font-family: PrequelRoughItalic;
 $tag-number-font-size: 2rem;
 $tag-number-font-weight: 500;
-$tag-player-font-weight: 800;
-$tag-player-font-family: bettergrade;
+$tag-player-font-weight: 300;
+$tag-player-font-family: Blackpine;
 $tag-player-font-size: 4rem;
-$tag-player-line-height: 1rem;
+$tag-player-line-height: 2rem;
+$tag-date-font-weight: 100;
+$tag-date-font-family: Kingthings;
+$tag-date-font-size: 1.5rem;
+$tag-date-line-height: 2rem;

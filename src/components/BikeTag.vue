@@ -2,14 +2,6 @@
   <b-row :class="`center-flx ${reverse ? 'reversed' : ''}`">
     <b-col v-show="_foundImageUrl" md="6" class="mb-3 max-w">
       <b-card class="polaroid found-tag">
-        <bike-tag-button
-          v-if="showHint"
-          v-b-popover.click.left="_getHint"
-          class="btn-hint btn-circle"
-          text="?"
-          variant="circle-clean"
-        >
-        </bike-tag-button>
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
           <expandable-image
@@ -31,14 +23,15 @@
               tag.foundLocation?.length ? tag.foundLocation : $t('components.biketag.unknown')
             }}</span>
           </div>
-          <player
-            class="tag-player"
-            :player="foundPlayer"
-            :player-name="_foundPlayer"
-            :is-polaroid="true"
-            size="txt"
-          />
-          <span v-if="showFoundPostedDateTime">{{ getPostedDate(tag.foundTime, true) }}</span>
+          <div class="info-wrapper">
+            <span v-if="showPlayer" class="tag-player" @click="goPlayerPage(tag.foundPlayer)">{{
+              tag.foundPlayer
+            }}</span>
+            <span v-if="showPostedDate" class="tag-date">{{ getPostedDate(tag.foundTime) }}</span>
+            <span v-if="showFoundPostedDateTime" class="tag-date">{{
+              getPostedDate(tag.foundTime, true)
+            }}</span>
+          </div>
         </div>
       </b-card>
     </b-col>
@@ -68,12 +61,16 @@
         <div class="card-bottom">
           <div class="description">
             <span>{{ _mysteryDescription }}</span>
-            <br />
-            <span v-if="showPostedDate">{{ getPostedDate() }}</span>
-            <span v-if="showMysteryPostedDateTime">{{ getPostedDate(tag.mysteryTime, true) }}</span>
           </div>
-          <player v-if="mysteryPlayer" :is-polaroid="true" :player="mysteryPlayer" size="txt" />
-          <span v-else class="player-name">{{ _mysteryPlayer }}</span>
+          <div class="info-wrapper">
+            <span v-if="showPlayer" class="tag-player" @click="goPlayerPage(tag.mysteryPlayer)">{{
+              tag.mysteryPlayer
+            }}</span>
+            <span v-if="showPostedDate" class="tag-date">{{ getPostedDate(tag.mysteryTime) }}</span>
+            <span v-if="showMysteryPostedDateTime" class="tag-date">{{
+              getPostedDate(tag.mysteryTime, true)
+            }}</span>
+          </div>
         </div>
       </b-card>
     </b-col>
@@ -82,7 +79,6 @@
 <script>
 import { defineComponent } from 'vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
-import Player from '@/components/PlayerBicon.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import { mapGetters } from 'vuex'
 
@@ -90,7 +86,6 @@ export default defineComponent({
   name: 'BikeTag',
   components: {
     ExpandableImage,
-    Player,
     BikeTagButton,
   },
   props: {
@@ -114,11 +109,11 @@ export default defineComponent({
     },
     showMysteryPostedDateTime: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     showFoundPostedDateTime: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     sizedMysteryImage: {
       type: Boolean,
@@ -144,13 +139,9 @@ export default defineComponent({
       type: String,
       default: null,
     },
-    foundPlayer: {
-      type: Object,
-      default: null,
-    },
-    mysteryPlayer: {
-      type: Object,
-      default: null,
+    showPlayer: {
+      type: Boolean,
+      default: true,
     },
     foundDescription: {
       type: String,
@@ -198,14 +189,10 @@ export default defineComponent({
           : this.mysteryImageUrl
         : this.tag?.mysteryImageUrl
     },
-    _foundPlayer() {
-      return this.tag?.foundPlayer ?? ''
-    },
-    _mysteryPlayer() {
-      return this.tag?.mysteryPlayer ?? ''
-    },
     _mysteryDescription() {
-      return this.mysteryDescription ? this.mysteryDescription : this.getMysteryDescription()
+      return this.mysteryDescription
+        ? this.mysteryDescription
+        : `#${this._tagnumber} ${this.tag?.hint?.length > 0 ? `"${this.tag.hint}"` : ''}`
     },
   },
   mounted() {
@@ -215,12 +202,6 @@ export default defineComponent({
     document.head.appendChild(viewportMeta)
   },
   methods: {
-    getFoundDescription() {
-      return `#${this._foundTagnumber} (found at) ${this.tag.foundLocation ?? 'unknown'}`
-    },
-    getMysteryDescription() {
-      return `#${this._tagnumber} ${this.tag?.hint?.length > 0 ? `"${this.tag.hint}"` : ''}`
-    },
     getPostedDate(timestamp, timeOnly = false) {
       if (!timestamp) {
         return ''
@@ -250,6 +231,9 @@ export default defineComponent({
         this.$router.push('/' + encodeURIComponent(this._tagnumber))
       }
     },
+    goPlayerPage(player) {
+      this.$router.push('/player/' + encodeURIComponent(player))
+    },
   },
 })
 </script>
@@ -264,6 +248,23 @@ export default defineComponent({
 <style lang="scss" scoped>
 .reversed {
   flex-flow: row-reverse wrap;
+}
+
+.info-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-flow: row wrap;
+  padding: 0 1rem;
+
+  .tag-player {
+    cursor: pointer;
+    animation: fadeIn 2s;
+    text-align: center;
+    width: 100%;
+    transform: rotate(-6deg);
+  }
 }
 
 .max-w {
@@ -283,22 +284,14 @@ export default defineComponent({
 
 .img-wrapper {
   position: relative;
-
-  .tag-number {
-    position: absolute;
-    top: -1em;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 99;
-    padding: 0 1.5rem;
-  }
-
-  .tag-player {
-    position: absolute;
-    right: 5rem;
-    bottom: 0;
-    z-index: 99;
-  }
+}
+.tag-number {
+  position: absolute;
+  top: -1em;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+  padding: 0 1.5rem;
 }
 
 .card-bottom {
@@ -306,7 +299,7 @@ export default defineComponent({
 
   .description {
     position: relative;
-    white-space: pre-wrap;
+    white-space: break-spaces;
     padding: 0.5rem;
     line-height: 2em;
     text-transform: uppercase;

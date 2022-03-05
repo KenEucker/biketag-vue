@@ -198,9 +198,6 @@ export default defineComponent({
     font-size: 3rem;
   }
 }
-.go-queue {
-  // font-family: markernotes;
-}
 .close-btn,
 .go-queue {
   cursor: pointer;

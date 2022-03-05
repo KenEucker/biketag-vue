@@ -29,7 +29,7 @@
           v-if="tag.mysteryImageUrl?.length && tag.foundImageUrl?.length"
           :key="tag.tagnumber"
           :reverse="true"
-          :show-posted-date-time="true"
+          :show-posted-date="true"
           :tag="tag"
           size="l"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"

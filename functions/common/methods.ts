@@ -123,7 +123,6 @@ export const isValidJson = (data, type = 'none') => {
               },
             },
             required: ['social'],
-            additionalProperties: false,
           },
         },
         required: ['user_metadata'],
@@ -172,10 +171,10 @@ export const isValidJson = (data, type = 'none') => {
                   reddit: {
                     type: 'object',
                     properties: {
-                      clientId : { type: 'string' },
-                      clientSecret : { type: 'string' },
-                      userName : { type: 'string' },
-                      password : { type: 'string' }
+                      clientId: { type: 'string' },
+                      clientSecret: { type: 'string' },
+                      username: { type: 'string' },
+                      password: { type: 'string' },
                     },
                     additionalProperties: false,
                   },
@@ -184,11 +183,10 @@ export const isValidJson = (data, type = 'none') => {
               },
             },
             minProperties: 1,
-            additionalProperties: false,
           },
         },
         required: ['user_metadata'],
-        additionalProperties: false,
+        // additionalProperties: false,
       }
       break
     case 'profile.put':
@@ -932,31 +930,64 @@ export const constructAmbassadorProfile = (
   defaults: any = {}
 ): BikeTagProfile => {
   const user_metadata = {
-    name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? "",
+    name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? '',
     social: {
-      reddit: profile?.user_metadata?.social.reddit ?? defaults?.user_metadata?.social.reddit ?? "",
-      instagram: profile?.user_metadata?.social.instagram ?? defaults?.user_metadata?.social.instagram ?? "",
-      twitter: profile?.user_metadata?.social.twitter ?? defaults?.user_metadata?.social.twitter ?? "",
-      imgur: profile?.user_metadata?.social.imgur ?? defaults?.user_metadata?.social.imgur ?? "",
-      discord: profile?.user_metadata?.social.discord ?? defaults?.user_metadata?.social.discord ?? "",
+      reddit:
+        profile?.user_metadata?.social?.reddit ?? defaults?.user_metadata?.social?.reddit ?? '',
+      instagram:
+        profile?.user_metadata?.social?.instagram ??
+        defaults?.user_metadata?.social?.instagram ??
+        '',
+      twitter:
+        profile?.user_metadata?.social?.twitter ?? defaults?.user_metadata?.social?.twitter ?? '',
+      imgur: profile?.user_metadata?.social?.imgur ?? defaults?.user_metadata?.social?.imgur ?? '',
+      discord:
+        profile?.user_metadata?.social?.discord ?? defaults?.user_metadata?.social?.discord ?? '',
     },
     credentials: {
-      imgur : {
-        clientId : profile?.user_metadata?.credentials?.imgur.clientId ?? defaults?.user_metadata?.credentials?.imgur.clientId ?? "",
-        clientSecret: profile?.user_metadata?.credentials?.imgur.clientSecret ?? defaults?.user_metadata?.credentials?.imgur.clientSecret ?? "",
-        refreshToken: profile?.user_metadata?.credentials?.imgur.refreshToken ?? defaults?.user_metadata?.credentials?.imgur.refreshToken ?? "",
+      imgur: {
+        clientId:
+          profile?.user_metadata?.credentials?.imgur.clientId ??
+          defaults?.user_metadata?.credentials?.imgur.clientId ??
+          '',
+        clientSecret:
+          profile?.user_metadata?.credentials?.imgur.clientSecret ??
+          defaults?.user_metadata?.credentials?.imgur.clientSecret ??
+          '',
+        refreshToken:
+          profile?.user_metadata?.credentials?.imgur.refreshToken ??
+          defaults?.user_metadata?.credentials?.imgur.refreshToken ??
+          '',
       },
-      sanity : {
-        projectId: profile?.user_metadata?.credentials?.sanity.projectId ?? defaults?.user_metadata?.credentials?.sanity.projectId ?? "",
-        dataset: profile?.user_metadata?.credentials?.sanity.dataset ?? defaults?.user_metadata?.credentials?.sanity.dataset ?? "",
+      sanity: {
+        projectId:
+          profile?.user_metadata?.credentials?.sanity.projectId ??
+          defaults?.user_metadata?.credentials?.sanity.projectId ??
+          '',
+        dataset:
+          profile?.user_metadata?.credentials?.sanity.dataset ??
+          defaults?.user_metadata?.credentials?.sanity.dataset ??
+          '',
       },
-      reddit : {
-        clientId: profile?.user_metadata?.credentials?.reddit.clientId ?? defaults?.user_metadata?.credentials?.reddit.clientId ?? "",
-        clientSecret: profile?.user_metadata?.credentials?.reddit.clientSecret ?? defaults?.user_metadata?.credentials?.reddit.clientSecret ?? "",
-        username: profile?.user_metadata?.credentials?.reddit.username ?? defaults?.user_metadata?.credentials?.reddit.username ?? "",
-        password: profile?.user_metadata?.credentials?.reddit.password ?? defaults?.user_metadata?.credentials?.reddit.password ?? "",
-      }
-    }
+      reddit: {
+        clientId:
+          profile?.user_metadata?.credentials?.reddit.clientId ??
+          defaults?.user_metadata?.credentials?.reddit.clientId ??
+          '',
+        clientSecret:
+          profile?.user_metadata?.credentials?.reddit.clientSecret ??
+          defaults?.user_metadata?.credentials?.reddit.clientSecret ??
+          '',
+        username:
+          profile?.user_metadata?.credentials?.reddit.username ??
+          defaults?.user_metadata?.credentials?.reddit.username ??
+          '',
+        password:
+          profile?.user_metadata?.credentials?.reddit.password ??
+          defaults?.user_metadata?.credentials?.reddit.password ??
+          '',
+      },
+    },
   }
   return {
     name: profile.name ?? defaults.name ?? '',
@@ -979,13 +1010,13 @@ export const constructAmbassadorProfile = (
 
 export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): BikeTagProfile => {
   const user_metadata = {
-    name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? "",
+    name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? '',
     social: {
-      reddit: profile?.user_metadata?.reddit ?? defaults?.user_metadata?.reddit ?? "",
-      instagram: profile?.user_metadata?.instagram ?? defaults?.user_metadata?.instagram ?? "",
-      twitter: profile?.user_metadata?.twitter ?? defaults?.user_metadata?.twitter ?? "",
-      imgur: profile?.user_metadata?.imgur ?? defaults?.user_metadata?.imgur ?? "",
-      discord: profile?.user_metadata?.discord ?? defaults?.user_metadata?.discord ?? "",
+      reddit: profile?.user_metadata?.reddit ?? defaults?.user_metadata?.reddit ?? '',
+      instagram: profile?.user_metadata?.instagram ?? defaults?.user_metadata?.instagram ?? '',
+      twitter: profile?.user_metadata?.twitter ?? defaults?.user_metadata?.twitter ?? '',
+      imgur: profile?.user_metadata?.imgur ?? defaults?.user_metadata?.imgur ?? '',
+      discord: profile?.user_metadata?.discord ?? defaults?.user_metadata?.discord ?? '',
     },
   }
   return {

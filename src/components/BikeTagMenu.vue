@@ -45,6 +45,13 @@
           </li>
           <li
             class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'Play' }"
+            @click="goHomePage"
+          >
+            {{ $t('menu.home') }}
+          </li>
+          <li
+            class="nav-item"
             :class="{ 'active-nav': currentRoute === 'About' }"
             @click="goAboutPage"
           >
@@ -66,6 +73,14 @@
           </li>
           <li class="nav-item" :class="{ 'active-nav': currentRoute === 'How' }" @click="goHowPage">
             {{ $t('menu.howto') }}
+          </li>
+          <li
+            v-if="isBikeTagAmbassador"
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'Approve' }"
+            @click="goApprovePage"
+          >
+            {{ $t('menu.home') }}
           </li>
           <template v-if="!authLoading">
             <template v-if="$auth.isAuthenticated">
@@ -232,6 +247,10 @@ export default defineComponent({
     goWorldwide() {
       window.location = 'http://biketag.org/'
     },
+    goApprovePage: function () {
+      this.closeCollapsible()
+      this.$router.push('/approve')
+    },
     goBikeTagsPage: function () {
       this.closeCollapsible()
       this.$router.push('/biketags')
@@ -250,16 +269,20 @@ export default defineComponent({
       this.$router.push('/about')
     },
     goLeaderboardPage: function () {
-      //   this.closeCollapsible()
+      this.closeCollapsible()
       this.$router.push('/leaderboard')
     },
     goUsersPage: function () {
-      //   this.closeCollapsible()
+      this.closeCollapsible()
       this.$router.push('/players')
     },
     goHowPage: function () {
       this.closeCollapsible()
       this.$router.push('/howtoplay')
+    },
+    goHomePage: function () {
+      this.closeCollapsible()
+      this.$router.push('/')
     },
     goBack: function () {
       this.$router.back()

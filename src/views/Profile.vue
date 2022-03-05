@@ -2,7 +2,13 @@
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
-  <b-modal v-if="profile?.user_metadata" v-model="modalShow" title="BootstrapVue" hide-footer hide-header>
+  <b-modal
+    v-if="profile?.user_metadata"
+    v-model="modalShow"
+    title="BootstrapVue"
+    hide-footer
+    hide-header
+  >
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmitName">
       <div class="mt-3">
@@ -10,13 +16,17 @@
           id="name"
           v-model="profile.user_metadata.name"
           name="name"
-          :placeholder="profile.user_metadata.name || 'Your new name'"
+          :placeholder="profile.user_metadata.name || $t('pages.profile.set_name_placeholder')"
         />
-        <bike-tag-button class="modal-header" variant="medium" text="Save Changes"/>
+        <bike-tag-button
+          class="modal-header"
+          variant="medium"
+          :text="$t('pages.profile.set_name')"
+        />
       </div>
     </form>
   </b-modal>
-  <div class="container mb-5 mt-5" v-if="profile?.user_metadata">
+  <div v-if="profile?.user_metadata" class="container mb-5 mt-5">
     <div class="center-cnt">
       <div v-if="player.tags" class="d-flex justify-content-center mt-5 mb-5">
         <player size="lg" :player="player" :no-link="true" />
@@ -28,12 +38,10 @@
         </div>
       </div>
       <div class="flx-columns mt-5">
-        <span class="player-name mb-5 mt-3"> {{ profile?.name }} </span>
         <div>
           <span
             v-for="(social, i) in Object.keys(profile?.user_metadata).filter(
-              (key) =>
-                profile?.user_metadata[key] != null && profile?.user_metadata[key].length > 0
+              (key) => profile?.user_metadata[key] != null && profile?.user_metadata[key].length > 0
             )"
             :key="i"
             class="player-name mt-4"
@@ -52,13 +60,13 @@
         method="POST"
         @submit.prevent="onSubmit"
       >
-        <div v-if="profile.user_metadata?.name?.length" class="mt-3">
+        <div v-if="profile.user_metadata" class="mt-3">
           <bike-tag-input
             id="name"
             v-model="profile.user_metadata.name"
             name="name"
+            :label="$t('pages.profile.name')"
             readonly
-            :placeholder="profile?.name || 'Your new name'"
           />
         </div>
         <div v-for="(social, i) in socialNetworkIcons" :key="i" class="mt-3 input-icon">
@@ -66,6 +74,7 @@
             :id="social[0]"
             v-model="profile.user_metadata.social[social[0]]"
             :name="social[0]"
+            :label="splitCamelCase(social[0])"
             :placeholder="
               (profile?.user_metadata?.length > i && profile?.user_metadata[i]) ||
               `${social[0].charAt(0).toUpperCase() + social[0].slice(1)} player name`
@@ -77,25 +86,31 @@
           </bike-tag-input>
         </div>
         <template v-if="isBikeTagAmbassador">
-          <template v-for="credential, i in Object.keys(profile.user_metadata.credentials)" :key="i">
+          <template
+            v-for="(credential, i) in Object.keys(profile.user_metadata.credentials)"
+            :key="i"
+          >
             <bike-tag-button
               variant="medium"
               :text="`${firstToUperCase(credential)} Configuration`"
               @click.prevent="() => toggleShowFields(credential)"
             />
-            <div class="input-block mt-3 hide" :ref="credential">
+            <div :ref="credential" class="input-block mt-3 hide">
               <bike-tag-input
-                v-for="inputField, i in Object.keys(profile.user_metadata.credentials[credential])" 
+                v-for="(inputField, i) in Object.keys(
+                  profile.user_metadata.credentials[credential]
+                )"
                 :key="i"
                 v-model="profile.user_metadata.credentials[credential][inputField]"
                 :name="`${firstToUperCase(credential)} ${splitCamelCase(inputField)}`"
                 :label="splitCamelCase(inputField)"
                 :placeholder="`${firstToUperCase(credential)} ${splitCamelCase(inputField)}`"
-                type="password"/>
+                type="password"
+              />
             </div>
           </template>
         </template>
-        <bike-tag-button variant="medium" text="Save Changes"/>
+        <bike-tag-button variant="medium" :text="$t('pages.profile.save')" />
       </form>
     </div>
   </div>
@@ -125,7 +140,7 @@ export default defineComponent({
   },
   data() {
     return {
-      profile : null,
+      profile: this.getProfile,
       socialNetworkIcons: [
         ['reddit', Reddit],
         ['instagram', Instagram],
@@ -133,7 +148,7 @@ export default defineComponent({
         ['imgur', Imgur],
         ['discord', Discord],
       ],
-      modalShow: true,
+      modalShow: false,
     }
   },
   computed: {
@@ -159,9 +174,9 @@ export default defineComponent({
   mounted() {
     this.$nextTick(() => {
       this.profile = this.getProfile
-      if (this.profile.user_metadata.name != null && !this.profile.user_metadata.name.length) { 
-        this.modalShow = true
-      }
+      this.profile.user_metadata = this.profile.user_metadata ?? {}
+      this.modalShow =
+        this.profile?.user_metadata?.name != null && !this.profile?.user_metadata?.name.length
     })
   },
   methods: {
@@ -182,14 +197,15 @@ export default defineComponent({
         this.profile['token'] = (await this.$auth.getIdTokenClaims()).__raw
         try {
           await this.$store.dispatch('assignName', this.profile)
+          this.profile = this.getProfile
           this.$toast.open({
-            message: "Success",
+            message: 'Success',
             type: 'success',
             position: 'top',
           })
         } catch (e) {
           this.$toast.open({
-            message: e.message,
+            message: e.response?.data ?? e.message,
             type: 'error',
             position: 'top',
           })
@@ -198,20 +214,23 @@ export default defineComponent({
       }
     },
     async onSubmit() {
-      this.profile['token'] = (await this.$auth.getIdTokenClaims()).__raw
-      try {
-        await this.$store.dispatch('updateProfile', this.profile)
-        this.$toast.open({
-          message: "Success",
-          type: 'success',
-          position: 'top',
-        })
-      } catch (e) {
-        this.$toast.open({
-          message: e.message,
-          type: 'error',
-          position: 'top',
-        })
+      const claims = await this.$auth.getIdTokenClaims()
+      if (claims) {
+        this.profile['token'] = claims.__raw
+        try {
+          await this.$store.dispatch('updateProfile', this.profile)
+          this.$toast.open({
+            message: 'Success',
+            type: 'success',
+            position: 'top',
+          })
+        } catch (e) {
+          this.$toast.open({
+            message: e.response?.data ?? e.message,
+            type: 'error',
+            position: 'top',
+          })
+        }
       }
     },
   },
@@ -309,9 +328,6 @@ export default defineComponent({
   }
 
   .player-name {
-    // line-height: unset!important;
-    text-shadow: 3px -2px 3px #292828e6;
-    filter: invert(1) drop-shadow(2px 4px 6px white);
     animation: fadeIn 2s;
   }
 }
