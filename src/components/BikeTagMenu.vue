@@ -295,8 +295,8 @@ header {
       flex-grow: unset;
 
       @media (max-width: 990px) {
-        height: 85vh;
-        overflow: scroll;
+        // height: 85vh;
+        // overflow: scroll;
       }
       ul > li {
         @media (min-width: 992px) {
@@ -333,7 +333,7 @@ header {
       @media (max-width: 990px) {
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
         border-bottom: 1px solid black;
-        padding: 2.5rem 0;
+        padding: 1rem 0;
       }
     }
     .back-arrow {
@@ -347,14 +347,31 @@ header {
   padding-top: 0 !important;
 }
 
+.navbar-nav {
+  align-items: center;
+
+  @media (max-width: 990px) {
+    align-items: unset;
+    height: 100vh;
+  }
+}
+
 .button-reset {
   min-height: auto;
   padding: 0;
 }
 
 .active-nav {
-  background-color: black;
-  color: white;
+  //   background-color: black;
+  //   color: white;
+
+  border-bottom: 3px solid black;
+
+  @media (max-width: 990px) {
+    border-bottom: none;
+    background-color: black;
+    color: white;
+  }
 }
 
 footer {

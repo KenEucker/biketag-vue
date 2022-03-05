@@ -80,6 +80,7 @@ export default defineComponent({
     }
 
     &--light {
+      line-height: 5rem;
       .scribble__text--inner {
         padding: 1.0625rem 1.3125rem;
         font-size: 2rem;

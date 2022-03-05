@@ -1,6 +1,12 @@
 <template>
   <div class="col-lg-8 play-biketag">
-    <bike-tag-header />
+    <div class="home-screen__label-group-top">
+      <bike-tag-header />
+      <bike-tag-button
+        :text="getCurrentBikeTag.mysteryPlayer"
+        @click="$router.push('/player/' + getCurrentBikeTag.mysteryPlayer)"
+      />
+    </div>
     <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
@@ -12,16 +18,12 @@
         :full-source="getCurrentBikeTag.mysteryImageUrl"
         :alt="getCurrentBikeTag.hint"
       />
-      <div class="home-screen__label-group-top">
-        <!-- <bike-tag-button
-          :text="getCurrentBikeTag.mysteryPlayer"
-          @click="$router.push('/player/' + getCurrentBikeTag.mysteryPlayer)"
-        /> -->
-      </div>
+
+      <bike-tag-button
+        class="home-screen__label-group-number"
+        :text="'#' + getCurrentBikeTag.tagnumber"
+      />
       <div class="home-screen__label-group-bottom">
-        <div class="home-screen__label-group-bottom-number">
-          <bike-tag-button class="clear-button-height" :text="'#' + getCurrentBikeTag.tagnumber" />
-        </div>
         <div>
           <bike-tag-button :text="$t('menu.mysterylocation')" />
         </div>
@@ -130,7 +132,7 @@ export default defineComponent({
 <style lang="scss">
 .home-screen {
   position: relative;
-  margin-top: 2rem;
+  //   margin-top: 4rem;
 
   &__image {
     height: 20.5rem;
@@ -142,13 +144,18 @@ export default defineComponent({
   }
 
   &__label-group {
-    &-top {
-      display: flex;
+    &-number {
+      //   margin-bottom: -2.5rem;
+      //   z-index: 2;
       position: absolute;
-      width: 100%;
-      justify-content: center;
-      top: -4rem;
+      top: 0;
       left: 0;
+    }
+
+    &-top {
+      margin-bottom: -1.25rem;
+      z-index: 1;
+      position: relative;
     }
 
     &-bottom {
