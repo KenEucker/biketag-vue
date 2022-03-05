@@ -49,6 +49,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
+@import '../assets/styles/style.scss';
 .scribble {
   &__button {
     background: transparent;
@@ -80,10 +81,29 @@ export default defineComponent({
     }
 
     &--light {
-      line-height: 5rem;
+      line-height: 8rem;
+
+      @media (max-width: $breakpoint-desktop) {
+        //   font-size: 2rem;
+        line-height: 7rem;
+      }
+      @media (max-width: $breakpoint-laptop) {
+        line-height: 6rem;
+      }
+      @media (max-width: $breakpoint-tablet) {
+        line-height: 5rem;
+      }
+      @media (max-width: $breakpoint-mobile-lg) {
+        line-height: 4rem;
+      }
+      @media (max-width: $breakpoint-mobile-md) {
+        line-height: 3rem;
+      }
+      @media (max-width: $breakpoint-mobile-sm) {
+        line-height: 2rem;
+      }
       .scribble__text--inner {
         padding: 1.0625rem 1.3125rem;
-        font-size: 2rem;
         color: black;
       }
     }
@@ -91,19 +111,33 @@ export default defineComponent({
     &--medium {
       .scribble__text--inner {
         padding: 0.75rem 0;
-        font-size: 2rem;
-      }
-      @media (min-width: 550px) {
-        // .scribble-text--inner {
-        //   font-size: 2rem;
-        // }
       }
     }
 
     &--bold {
-      padding: 0.9375rem 0;
+      line-height: 8rem;
+
+      @media (max-width: $breakpoint-desktop) {
+        //   font-size: 2rem;
+        line-height: 7rem;
+      }
+      @media (max-width: $breakpoint-laptop) {
+        // line-height: 6rem;
+      }
+      @media (max-width: $breakpoint-tablet) {
+        line-height: 6rem;
+      }
+      @media (max-width: $breakpoint-mobile-lg) {
+        line-height: 5rem;
+      }
+      @media (max-width: $breakpoint-mobile-md) {
+        // line-height: 4rem;
+      }
+      @media (max-width: $breakpoint-mobile-sm) {
+        // line-height: 3rem;
+      }
       .scribble__text--inner {
-        font-size: 2rem;
+        padding: 0 1.25rem;
         color: white;
       }
     }
@@ -118,21 +152,39 @@ export default defineComponent({
     display: flex;
 
     &--inner {
-      //   z-index: 2;
       background: transparent;
-      // font-size: 2rem;
-      // min-width: 6rem;
 
-      font-size: 1.5rem;
+      font-size: 2.5rem;
       padding: 1rem;
 
-      @media (max-width: 400px) {
+      @media (max-width: $breakpoint-desktop) {
+        font-size: 2rem;
+      }
+      @media (max-width: $breakpoint-laptop) {
+        font-size: 1.75rem;
+      }
+      @media (max-width: $breakpoint-tablet) {
+        font-size: 1.5rem;
+      }
+      @media (max-width: $breakpoint-mobile-lg) {
         font-size: 1.25rem;
-        padding: 0.5rem;
+      }
+      @media (max-width: $breakpoint-mobile-md) {
+        font-size: 1rem;
+      }
+      @media (max-width: $breakpoint-mobile-sm) {
+        font-size: 0.75rem;
       }
     }
   }
 }
+
+// $breakpoint-mobile-sm: 20rem; //320px
+// $breakpoint-mobile-md: 26.25rem; //420px
+// $breakpoint-mobile-lg: 30rem; //480px
+// $breakpoint-tablet: 48rem; //768px
+// $breakpoint-laptop: 64rem; //1024px
+// $breakpoint-desktop: 75rem; //1200px
 
 .scribble-button {
   //   background: transparent;
