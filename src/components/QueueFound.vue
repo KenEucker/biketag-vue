@@ -241,8 +241,7 @@ export default defineComponent({
       return Number(Math.round(number + 'e4') + 'e-4')
     },
     setImage(event) {
-      /// TODO: fetch upload credentials
-
+      await this.$store.dispatch('fetchCredentials')
       var input = event.target
       if (input.files) {
         this.image = input.files[0]

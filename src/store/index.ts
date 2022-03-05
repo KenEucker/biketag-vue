@@ -65,6 +65,12 @@ export const store = createStore<State>({
     mostRecentlyViewedTagnumber,
   },
   actions: {
+    async fetchCredentials() {
+      const credentials = (await client.request({
+        url: getApiUrl('token')
+      })).data
+      client = new BikeTagClient({...options, ...JSON.parse(credentials)})
+    },
     async setProfile({ commit }, profile) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {

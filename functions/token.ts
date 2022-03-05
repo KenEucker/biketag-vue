@@ -2,6 +2,7 @@ import { builder, Handler } from '@netlify/functions'
 import { BikeTagClient } from 'biketag'
 import request from 'request'
 import { getBikeTagClientOpts, getBikeTagHash, getPayloadAuthorization } from './common/methods'
+import axios from 'axios'
 
 const authorizeHandler: Handler = async (event) => {
   const authorization = await getPayloadAuthorization(event)
@@ -30,14 +31,20 @@ const authorizeHandler: Handler = async (event) => {
 
     if (authorizationIsAccessToken) {
       /// TODO: check to see if Imgur is accessible, if not don't pass the credentials back
-      // axios('http://api.imgur.com/v2/')
-      body = JSON.stringify({
-        imgur: {
-          clientId: config.imgur.clientId,
-          clientSecret: config.imgur.clientSecret,
-          refreshToken: config.imgur.refreshToken,
-        },
-      })
+      try {
+        await axios.request({
+          method: 'OPTIONS', url: 'http://api.imgur.com/3/image.json'
+        })
+        body = JSON.stringify({
+          imgur: {
+            clientId: config.imgur.clientId,
+            clientSecret: config.imgur.clientSecret,
+            refreshToken: config.imgur.refreshToken,
+          },
+        })
+      } catch {
+        body = '{}'
+      }
       statusCode = 200
     } else if (authorizationIsClientToken) {
       body = JSON.stringify({
