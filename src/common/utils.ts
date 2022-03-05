@@ -131,7 +131,6 @@ export const setProfileCookie = (
   profile: BikeTagProfile,
   profileCookieKey = 'profile'
 ): boolean => {
-  console.log('setProfileCookie')
   const { cookies } = useCookies()
 
   if (profile) {
@@ -140,7 +139,6 @@ export const setProfileCookie = (
       process.env.HOST_KEY ?? 'BikeTag'
     ).toString()
     cookies.set(profileCookieKey, encryptedProfileString)
-    console.log({ encryptedProfileString, profile })
   } else {
     cookies.remove(profileCookieKey)
   }

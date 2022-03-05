@@ -213,7 +213,6 @@ export const store = createStore<State>({
       return 'incorrect permissions'
     },
     async assignName({ commit }, profile) {
-      console.log('assignName!')
       await client.request({
         method: 'PUT',
         url: getApiUrl('profile'),
@@ -227,7 +226,6 @@ export const store = createStore<State>({
     },
     async updateProfile({ commit }, profile) {
       // Update Auth0 Profile
-      console.log('updateProfile!')
       await client.request({
         method: 'PATCH',
         url: getApiUrl('profile'),

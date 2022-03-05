@@ -1,6 +1,5 @@
 import { Handler } from '@netlify/functions'
 import axios from 'axios'
-import { defaults } from 'request'
 import { ErrorMessage, InfoMessage } from './common/constants'
 import {
   isValidJson,

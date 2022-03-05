@@ -196,8 +196,6 @@ export default defineComponent({
           console.log('what is this?')
         }
       }
-
-      this.checkForNewBikeTagPost()
     }
   },
   mounted() {
