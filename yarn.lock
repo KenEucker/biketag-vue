@@ -3847,7 +3847,7 @@ crypt@0.0.2:
   resolved "https://registry.yarnpkg.com/crypt/-/crypt-0.0.2.tgz#88d7ff7ec0dfb86f713dc87bbb42d044d3e6c41b"
   integrity sha1-iNf/fsDfuG9xPch7u0LQRNPmxBs=
 
-crypto-js@^4.0.0, crypto-js@^4.1.1:
+crypto-js@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.1.1.tgz#9e485bcf03521041bd85844786b83fb7619736cf"
   integrity sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==
@@ -11257,13 +11257,6 @@ vite@^2.8.0:
     rollup "^2.59.0"
   optionalDependencies:
     fsevents "~2.3.2"
-
-vue-cryptojs@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/vue-cryptojs/-/vue-cryptojs-2.2.1.tgz#aea5a133bcf1d587763477493ccd3354539a27db"
-  integrity sha512-KJgWuLWwF71Vh8U8Nd6UxumS/MHD//dXkK8oQpOs9jS5jy0TbCKE+xrgHHlKPB8cMuUGepo1cgVLR5ACYs4uAQ==
-  dependencies:
-    crypto-js "^4.0.0"
 
 vue-eslint-parser@^8.0.1:
   version "8.3.0"

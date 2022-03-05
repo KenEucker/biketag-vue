@@ -1,15 +1,16 @@
 <template>
-  <div class="">
-    <div class="footer-buttons mb-3">
-      <bike-tag-button class="button-left" :text="$t('menu.about')" @click="goAboutPage" />
-      <bike-tag-button
-        class="z-1 button-middle"
-        :text="$t('menu.hint')"
-        :variant="'bold'"
-        @click="$emit('toggle-modal', true)"
-      />
-      <bike-tag-button class="button-right" :text="$t('menu.players')" @click="goUsersPage" />
-    </div>
+  <div class="button-group">
+    <!-- Left Button -->
+    <bike-tag-button class="" :text="$t('menu.about')" @click="goAboutPage" />
+    <!-- Middle Button -->
+    <bike-tag-button
+      class="z-1 button-middle"
+      :text="$t('menu.hint')"
+      :variant="'bold'"
+      @click="$emit('toggle-modal', true)"
+    />
+    <!-- Right Button -->
+    <bike-tag-button class="button-right" :text="$t('menu.players')" @click="goUsersPage" />
   </div>
 </template>
 <script>
@@ -39,24 +40,9 @@ export default defineComponent({
 })
 </script>
 <style scoped lang="scss">
-.footer-buttons {
-  display: inline-flex;
-  min-height: 0;
-
-  .btn {
-    max-height: 3em;
-  }
-
-  .button {
-    &-left {
-      margin-right: -0.9375rem;
-    }
-    &-middle {
-      position: relative;
-    }
-    &-right {
-      margin-left: -0.9375rem;
-    }
-  }
+.button-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
