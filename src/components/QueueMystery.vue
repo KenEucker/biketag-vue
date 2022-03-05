@@ -165,17 +165,7 @@ export default defineComponent({
       })
     },
     setImage(event) {
-      /// TODO: fetch upload credentials
-      // try {
-      //   const credentials = await axios({
-      //     url: getApiUrl('token'),
-      //     headers: {
-      //       authorization: `Bearer ${client.config().biketag.accessToken}`,
-      //     },
-      //   }).data
-      //   client.config(credentials)
-      // } catch (e) {}
-
+      await this.$store.dispatch('fetchCredentials')
       var input = event.target
       if (input.files) {
         this.image = input.files[0]
