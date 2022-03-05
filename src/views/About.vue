@@ -7,7 +7,7 @@
       <html-content filename="about-game.html" />
       <p>
         <bike-tag-button
-          variant="secondary"
+          variant="medium"
           class="m-1 big-btn"
           onclick="window.open('https://patreon.com/biketag')"
         >
@@ -18,7 +18,7 @@
       <html-content filename="about-app.html" />
       <p>
         <bike-tag-button
-          variant="primary"
+          variant="medium"
           class="m-1 big-btn"
           onclick="window.open('https://patreon.com/biketag')"
         >

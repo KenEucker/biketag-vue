@@ -55,19 +55,8 @@ export default defineComponent({
     border: none;
     font-family: PrequelRough;
     font-weight: bold;
-    font-size: 13px;
+    text-transform: uppercase;
     @include background-btn;
-
-    &--medium {
-      .scribble-text--inner {
-        padding: 1rem;
-      }
-      @media (min-width: 550px) {
-        .scribble-text--inner {
-          font-size: 2rem;
-        }
-      }
-    }
 
     &--underline {
       img {
@@ -83,24 +72,39 @@ export default defineComponent({
     }
 
     &--circle {
-      //   .button--children {
-      //     padding: 0;
-      //   }
+      position: absolute;
+      z-index: 2;
+
       &-circle-clean {
       }
     }
 
-    &--bold {
-      font-size: 2rem;
-      color: white;
-
-      .scribble-text--inner {
-        min-width: 6.8rem;
+    &--light {
+      .scribble__text--inner {
+        padding: 1.0625rem 1.3125rem;
+        font-size: 2rem;
+        color: black;
       }
     }
 
-    &-light {
-      color: black;
+    &--medium {
+      .scribble__text--inner {
+        padding: 0.75rem 0;
+        font-size: 2rem;
+      }
+      @media (min-width: 550px) {
+        // .scribble-text--inner {
+        //   font-size: 2rem;
+        // }
+      }
+    }
+
+    &--bold {
+      padding: 0.9375rem 0;
+      .scribble__text--inner {
+        font-size: 2rem;
+        color: white;
+      }
     }
 
     &--children {
@@ -113,7 +117,7 @@ export default defineComponent({
     display: flex;
 
     &--inner {
-      z-index: 2;
+      //   z-index: 2;
       background: transparent;
       // font-size: 2rem;
       // min-width: 6rem;

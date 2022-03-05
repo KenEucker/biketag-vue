@@ -1,16 +1,16 @@
 <template>
   <div class="button-group">
     <!-- Left Button -->
-    <bike-tag-button class="" :text="$t('menu.about')" @click="goAboutPage" />
+    <bike-tag-button class="button-group__left" :text="$t('menu.about')" @click="goAboutPage" />
     <!-- Middle Button -->
     <bike-tag-button
-      class="z-1 button-middle"
+      class="button-group__middle"
       :text="$t('menu.hint')"
       :variant="'bold'"
       @click="$emit('toggle-modal', true)"
     />
     <!-- Right Button -->
-    <bike-tag-button class="button-right" :text="$t('menu.players')" @click="goUsersPage" />
+    <bike-tag-button class="button-group__right" :text="$t('menu.players')" @click="goUsersPage" />
   </div>
 </template>
 <script>
@@ -44,5 +44,16 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
+
+  &__left {
+  }
+
+  &__middle {
+    margin-left: 0.5rem;
+  }
+
+  &__right {
+    margin-left: 0.5rem;
+  }
 }
 </style>
