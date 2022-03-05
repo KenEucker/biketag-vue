@@ -308,6 +308,7 @@ header {
     }
     .nav-item {
       font-family: 'Prequel';
+      text-transform: uppercase;
       font-size: 2rem;
       cursor: pointer;
 

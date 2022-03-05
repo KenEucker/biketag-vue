@@ -69,6 +69,16 @@
       <input type="hidden" name="ip">
       <input name="submission" type="text" required>
     </form>
+    <form name="queue-approve-error" action="queue-tag-error" method="POST" data-netlify="true"
+      data-netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="queue-tag-error">
+      <input type="hidden" name="ambassadorId" required>
+      <input type="hidden" name="game" required>
+      <input type="hidden" name="message">
+      <input type="hidden" name="ip">
+      <input name="tag" type="text" required>
+      <input name="submission" type="text" required>
+    </form>
   </div>
   <script type="module" src="/src/main.ts"></script>
 </body>

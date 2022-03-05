@@ -1,7 +1,8 @@
 import { DeviceUUID } from '@/common/uuid'
 import { Tag } from 'biketag/lib/common/schema'
 import { useCookies } from 'vue3-cookies'
-import { BiketagFormSteps } from '../../src/common/types'
+import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
+import crypto from 'crypto'
 
 export type DomainInfo = {
   host: string
@@ -36,6 +37,46 @@ export const stringifyNumber = (n: number): string => {
   if (n < 20) return special[n]
   if (n % 10 === 0) return deca[Math.floor(n / 10) - 2] + 'ieth'
   return deca[Math.floor(n / 10) - 2] + 'y-' + special[n % 10]
+}
+const noKey = 'BikeTag'
+export const createMd5 = (text: string): Buffer => {
+  return crypto.createHash('md5').update(text).digest()
+}
+
+export const encrypt = (t: any, key?: string) => {
+  try {
+    t = typeof t !== 'string' ? JSON.stringify(t) : t
+    const secretKey = key ?? process.env.HOST_KEY ?? noKey
+
+    let encryptedKey = createMd5(secretKey)
+    encryptedKey = Buffer.concat([encryptedKey, encryptedKey.slice(0, 8)]) // properly expand 3DES key from 128 bit to 192 bit
+
+    const cipher = crypto.createCipheriv('des-ede3', encryptedKey, '')
+    const encrypted = cipher.update(t, 'utf8', 'base64')
+
+    return encrypted + cipher.final('base64')
+  } catch (e) {
+    /// swallow exception
+    return null
+  }
+}
+
+export const decrypt = (encryptedBase64: string, key?: string) => {
+  try {
+    const secretKey = key ?? process.env.HOST_KEY ?? noKey
+    let encryptedKey = createMd5(secretKey)
+    encryptedKey = Buffer.concat([encryptedKey, encryptedKey.slice(0, 8)]) // properly expand 3DES key from 128 bit to 192 bit
+    const decipher = crypto.createDecipheriv('des-ede3', encryptedKey, '')
+    let decrypted: any = decipher.update(encryptedBase64, 'base64')
+    decrypted += decipher.final()
+
+    const jsonObject = JSON.parse(decrypted)
+
+    return jsonObject || decrypted
+  } catch (e) {
+    /// swallow exception
+    return null
+  }
 }
 
 export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
@@ -107,17 +148,23 @@ export const getBikeTagClientOpts = (win?: Window, authorized?: boolean) => {
   return opts
 }
 
-export const getUuid = (playerIdCookieKey = 'playerId'): string => {
+export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfile => {
+  console.log('getProfileFromCookie')
   const { cookies } = useCookies()
-  const existingPlayerId = cookies.get(playerIdCookieKey)
+  const existingProfileString = cookies.get(profileCookieKey)
+  const existingProfile = decrypt(existingProfileString)
 
-  if (existingPlayerId) {
-    return existingPlayerId
+  if (existingProfile) {
+    return existingProfile
   }
-  const playerId = new DeviceUUID().get()
-  cookies.set(playerIdCookieKey, playerId)
 
-  return playerId
+  const profile = { sub: new DeviceUUID().get() }
+  const stringifiedProfileString = JSON.stringify(profile)
+  console.log({ stringifiedProfileString })
+  const encryptedProfileString = encrypt(stringifiedProfileString) as string
+  cookies.set(profileCookieKey, encryptedProfileString)
+
+  return profile
 }
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
@@ -143,23 +190,6 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
   }
 
   return 0
-}
-
-export const getAmbassadorUuid = (win: Window, ambassadorIdCookieKey = 'ambassadorId'): string => {
-  const { cookies } = useCookies()
-  const existingAmbassadorId = cookies.get('ambassadorId')
-
-  if (existingAmbassadorId) {
-    return existingAmbassadorId
-  }
-  const ambassadorId = GetQueryString(win, 'btaId')
-
-  if (ambassadorId) {
-    cookies.set(ambassadorIdCookieKey, ambassadorId)
-    return ambassadorId
-  }
-
-  return ''
 }
 
 export const sendNetlifyError = function (

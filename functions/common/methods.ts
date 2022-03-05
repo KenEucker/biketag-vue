@@ -16,8 +16,7 @@ import * as jose from 'jose'
 import { BikeTagProfile } from '../../src/common/types'
 
 const ajv = new Ajv()
-export const getBikeTagHash = (key: string): string => md5(`${key}${process.env.HOST_KEY}`)
-
+export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 export const getBikeTagClientOpts = (
   req?: request.Request,
   authorized?: boolean,
@@ -153,36 +152,36 @@ export const isValidJson = (data, type = 'none') => {
               credentials: {
                 type: 'object',
                 properties: {
-                  imgur: { 
+                  imgur: {
                     type: 'object',
                     properties: {
-                      clientId : { type: 'string' },
-                      clientSecret : { type: 'string' },
-                      refreshToken : { type: 'string' }
+                      clientId: { type: 'string' },
+                      clientSecret: { type: 'string' },
+                      refreshToken: { type: 'string' },
                     },
                     additionalProperties: false,
                   },
                   sanity: {
                     type: 'object',
                     properties: {
-                      projectId : { type: 'string' },
-                      dataset : { type: 'string' },
+                      projectId: { type: 'string' },
+                      dataset: { type: 'string' },
                     },
                     additionalProperties: false,
                   },
                   reddit: {
                     type: 'object',
                     properties: {
-                      redditClientId : { type: 'string' },
-                      clientSecret : { type: 'string' },
-                      userName : { type: 'string' },
-                      password : { type: 'string' }
+                      redditClientId: { type: 'string' },
+                      clientSecret: { type: 'string' },
+                      userName: { type: 'string' },
+                      password: { type: 'string' },
                     },
                     additionalProperties: false,
-                  }
+                  },
                 },
                 additionalProperties: false,
-              }
+              },
             },
             minProperties: 1,
             additionalProperties: false,
@@ -199,7 +198,7 @@ export const isValidJson = (data, type = 'none') => {
           user_metadata: {
             type: 'object',
             properties: {
-              name: { type: 'string' }
+              name: { type: 'string' },
             },
             required: ['name'],
             additionalProperties: false,

@@ -65,7 +65,6 @@ export interface State {
   game: Game
   allGames: Game[]
   gameName: string
-  playerId: string
   currentBikeTag: Tag
   tags: Tag[]
   queuedTags: Tag[]
