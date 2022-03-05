@@ -169,6 +169,9 @@ export default defineComponent({
       // try {
       //   const credentials = await axios({
       //     url: getApiUrl('token'),
+      //     headers: {
+      //       authorization: `Bearer ${client.config().biketag.accessToken}`,
+      //     },
       //   }).data
       //   client.config(credentials)
       // } catch (e) {}
