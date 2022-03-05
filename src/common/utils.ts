@@ -118,7 +118,6 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
       process.env.HOST_KEY ?? 'BikeTag'
     )
     const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
-    console.log({ existingProfile })
     return existingProfile
   }
 

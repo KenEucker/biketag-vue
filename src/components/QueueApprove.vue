@@ -148,6 +148,7 @@ export default defineComponent({
   mounted() {
     if (!this.isBikeTagAmbassador) {
       /// kick it sideways
+      console.log("YOU DIDN'T SAY THE MAGIC WORD!")
       this.$router.push('/')
     }
   },
