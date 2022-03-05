@@ -1,9 +1,12 @@
 <template>
-  <button :class="`scribble-button ${variant}`" :style="`background-image: url(${backgroundSrc})`">
-    <span v-if="text" class="scribble-text"
-      ><span class="scribble-text--inner">{{ text }}</span></span
+  <button
+    :class="`scribble__button scribble__button--${variant}`"
+    :style="`background-image: url(${backgroundSrc})`"
+  >
+    <span v-if="text" class="scribble__text"
+      ><span class="scribble__text--inner">{{ text }}</span></span
     >
-    <div v-else class="button--children scribble-text">
+    <div v-else class="scribble__button--children scribble__text">
       <slot></slot>
     </div>
   </button>
@@ -46,84 +49,164 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
-.scribble-button {
-  background: transparent;
-  border: none;
-  font-family: PrequelRough;
-  font-weight: bold;
-  font-size: 13px;
-  @include background-btn;
-
-  .scribble-text {
-    display: flex;
-  }
-
-  .scribble-text--inner {
-    z-index: 2;
+.scribble {
+  &__button {
     background: transparent;
-    // font-size: 2rem;
-    // min-width: 6rem;
+    border: none;
+    font-family: PrequelRough;
+    font-weight: bold;
+    font-size: 13px;
+    @include background-btn;
 
-    font-size: 1.5rem;
-    padding: 1rem;
-
-    @media (max-width: 400px) {
-      font-size: 1.25rem;
-      padding: 0.5rem;
-    }
-  }
-
-  .button--children {
-    z-index: 1;
-    padding: 3%;
-  }
-
-  &.light {
-    // .button--children,
-    // .scribble-text--inner {
-    // font-family: UniSans;
-    // margin-left: 10px;
-    color: black;
-  }
-
-  &.medium {
-    .scribble-text--inner {
-      padding: 1rem;
-    }
-    @media (min-width: 550px) {
+    &--medium {
       .scribble-text--inner {
-        font-size: 2rem;
+        padding: 1rem;
+      }
+      @media (min-width: 550px) {
+        .scribble-text--inner {
+          font-size: 2rem;
+        }
+      }
+    }
+
+    &--underline {
+      img {
+        margin-top: 80px;
+      }
+      &-reverse {
+        img {
+          margin-top: 80px;
+          margin-top: 40px;
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    &--circle {
+      //   .button--children {
+      //     padding: 0;
+      //   }
+      &-circle-clean {
+      }
+    }
+
+    &--bold {
+      font-size: 2rem;
+      color: white;
+
+      .scribble-text--inner {
+        min-width: 6.8rem;
+      }
+    }
+
+    &-light {
+      color: black;
+    }
+
+    &--children {
+      z-index: 1;
+      padding: 3%;
+    }
+  }
+
+  &__text {
+    display: flex;
+
+    &--inner {
+      z-index: 2;
+      background: transparent;
+      // font-size: 2rem;
+      // min-width: 6rem;
+
+      font-size: 1.5rem;
+      padding: 1rem;
+
+      @media (max-width: 400px) {
+        font-size: 1.25rem;
+        padding: 0.5rem;
       }
     }
   }
+}
 
-  &.bold {
-    font-size: 2rem;
-    color: white;
+.scribble-button {
+  //   background: transparent;
+  //   border: none;
+  //   font-family: PrequelRough;
+  //   font-weight: bold;
+  //   font-size: 13px;
+  //   @include background-btn;
 
-    .scribble-text--inner {
-      min-width: 6.8rem;
-    }
-  }
+  //   .scribble-text {
+  //     display: flex;
+  //   }
 
-  &.circle {
-    .button--children {
-      padding: 0;
-    }
-  }
+  //   .scribble-text--inner {
+  //     z-index: 2;
+  //     background: transparent;
+  //     // font-size: 2rem;
+  //     // min-width: 6rem;
 
-  &.underline-reverse,
-  &.underline {
-    img {
-      margin-top: 80px;
-    }
-  }
+  //     font-size: 1.5rem;
+  //     padding: 1rem;
 
-  &.underline-reverse {
-    img {
-      margin-top: 40px;
-      transform: rotate(180deg);
-    }
-  }
+  //     @media (max-width: 400px) {
+  //       font-size: 1.25rem;
+  //       padding: 0.5rem;
+  //     }
+  //   }
+
+  //   .button--children {
+  //     z-index: 1;
+  //     padding: 3%;
+  //   }
+
+  //   &.light {
+  //     // .button--children,
+  //     // .scribble-text--inner {
+  //     // font-family: UniSans;
+  //     // margin-left: 10px;
+  //     color: black;
+  //   }
+
+  //   &.medium {
+  //     .scribble-text--inner {
+  //       padding: 1rem;
+  //     }
+  //     @media (min-width: 550px) {
+  //       .scribble-text--inner {
+  //         font-size: 2rem;
+  //       }
+  //     }
+  //   }
+
+  //   &.bold {
+  //     font-size: 2rem;
+  //     color: white;
+
+  //     .scribble-text--inner {
+  //       min-width: 6.8rem;
+  //     }
+  //   }
+
+  //   &.circle {
+  //     .button--children {
+  //       padding: 0;
+  //     }
+  //   }
+
+  //   &.underline-reverse,
+  //   &.underline {
+  //     img {
+  //       margin-top: 80px;
+  //     }
+  //   }
+
+  //   &.underline-reverse {
+  //     img {
+  //       margin-top: 40px;
+  //       transform: rotate(180deg);
+  //     }
+  //   }
 }
 </style>

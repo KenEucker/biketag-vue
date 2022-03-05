@@ -3,16 +3,39 @@
     <!-- Butotn Group -->
     <div class="button-group">
       <!-- Left Button -->
-      <bike-tag-button class="" :text="$t('menu.biketags')" @click="goBikeTagsPage" />
+      <!-- <bike-tag-button class="" :text="$t('menu.biketags')" @click="goBikeTagsPage" /> -->
       <!-- Middle Button -->
-      <bike-tag-button
+      <!-- <bike-tag-button
         class="button-middle z-1"
         variant="bold"
         :text="$t('menu.play')"
         @click="goQueuePlay"
-      />
+      /> -->
       <!-- Right Button -->
+      <!-- <bike-tag-button class="" :text="$t('menu.howto')" @click="goHowPage" /> -->
       <bike-tag-button class="" :text="$t('menu.howto')" @click="goHowPage" />
+      <bike-tag-button :variant="'medium'" class="" :text="$t('menu.howto')" @click="goHowPage" />
+      <bike-tag-button :variant="'light'" class="" :text="$t('menu.howto')" @click="goHowPage" />
+      <bike-tag-button :variant="'bold'" class="" :text="$t('menu.howto')" @click="goHowPage" />
+      <bike-tag-button :variant="'circle'" class="" :text="$t('menu.howto')" @click="goHowPage" />
+      <bike-tag-button
+        :variant="'underline-reverse'"
+        class=""
+        :text="$t('menu.howto')"
+        @click="goHowPage"
+      />
+      <bike-tag-button
+        :variant="'underline'"
+        class=""
+        :text="$t('menu.howto')"
+        @click="goHowPage"
+      />
+      <bike-tag-button
+        :variant="'circle-clean'"
+        class=""
+        :text="$t('menu.howto')"
+        @click="goHowPage"
+      />
     </div>
     <span
       v-if="getEasterEgg && playingEaster"
