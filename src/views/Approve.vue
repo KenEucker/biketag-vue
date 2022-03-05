@@ -12,8 +12,8 @@
     <span class="player-agree"> * {{ $t('pages.queue.user_agree') }} </span>
     <form
       ref="queueError"
-      name="queue-tag-error"
-      action="queue-tag-error"
+      name="queue-approve-error"
+      action="queue-approve-error"
       method="POST"
       data-netlify="true"
       data-netlify-honeypot="bot-field"
@@ -21,7 +21,7 @@
     >
       <input type="hidden" name="form-name" value="queue-tag-error" />
       <input type="hidden" name="submission" />
-      <input type="hidden" name="playerId" :value="getPlayerId" />
+      <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
       <input type="hidden" name="message" />
       <input type="hidden" name="ip" value="" />
     </form>
@@ -70,7 +70,7 @@ export default defineComponent({
       'getQueuedTag',
       'getCurrentBikeTag',
       'getGameName',
-      'getPlayerId',
+      'getAmbassadorId',
     ]),
   },
   async mounted() {

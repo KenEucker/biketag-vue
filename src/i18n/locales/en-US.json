@@ -21,6 +21,7 @@
   },
   "components": {
     "biketag": {
+      "unknown": "unknown",
       "found_at": "found at",
       "posted_on": "posted"
     },
@@ -46,6 +47,10 @@
       "mystery": "current Mystery Location to find",
       "send_hello_email": "Send an email to hello@biketag.org to ask about how you can start one!",
       "game_not_exists": "Uh, oh. Does this game not exist.. yet?"
+    },
+    "login":{
+      "player": "BikeTag Player Login",
+      "ambassador": "BikeTag Ambassador Login"
     },
     "queue": {
       "join_queue": "Join round",

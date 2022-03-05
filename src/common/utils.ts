@@ -1,7 +1,8 @@
 import { DeviceUUID } from '@/common/uuid'
 import { Tag } from 'biketag/lib/common/schema'
 import { useCookies } from 'vue3-cookies'
-import { BiketagFormSteps } from '../../src/common/types'
+import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
+import CryptoJS from 'crypto-js'
 
 export type DomainInfo = {
   host: string
@@ -107,17 +108,42 @@ export const getBikeTagClientOpts = (win?: Window, authorized?: boolean) => {
   return opts
 }
 
-export const getUuid = (playerIdCookieKey = 'playerId'): string => {
+export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfile => {
   const { cookies } = useCookies()
-  const existingPlayerId = cookies.get(playerIdCookieKey)
+  const existingProfileString = cookies.get(profileCookieKey)
 
-  if (existingPlayerId) {
-    return existingPlayerId
+  if (existingProfileString) {
+    const existingProfileDecodedString = CryptoJS.AES.decrypt(
+      existingProfileString,
+      process.env.HOST_KEY ?? 'BikeTag'
+    )
+    const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
+    return existingProfile
   }
-  const playerId = new DeviceUUID().get()
-  cookies.set(playerIdCookieKey, playerId)
 
-  return playerId
+  const profile = { sub: new DeviceUUID().get() }
+  setProfileCookie(profile)
+
+  return profile
+}
+
+export const setProfileCookie = (
+  profile: BikeTagProfile,
+  profileCookieKey = 'profile'
+): boolean => {
+  const { cookies } = useCookies()
+
+  if (profile) {
+    const encryptedProfileString = CryptoJS.AES.encrypt(
+      JSON.stringify(profile),
+      process.env.HOST_KEY ?? 'BikeTag'
+    ).toString()
+    cookies.set(profileCookieKey, encryptedProfileString)
+  } else {
+    cookies.remove(profileCookieKey)
+  }
+
+  return true
 }
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
@@ -143,23 +169,6 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
   }
 
   return 0
-}
-
-export const getAmbassadorUuid = (win: Window, ambassadorIdCookieKey = 'ambassadorId'): string => {
-  const { cookies } = useCookies()
-  const existingAmbassadorId = cookies.get('ambassadorId')
-
-  if (existingAmbassadorId) {
-    return existingAmbassadorId
-  }
-  const ambassadorId = GetQueryString(win, 'btaId')
-
-  if (ambassadorId) {
-    cookies.set(ambassadorIdCookieKey, ambassadorId)
-    return ambassadorId
-  }
-
-  return ''
 }
 
 export const sendNetlifyError = function (
