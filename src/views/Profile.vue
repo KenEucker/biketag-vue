@@ -2,183 +2,100 @@
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
-  <div class="container mb-5 mt-5">
+  <b-modal v-if="profile?.user_metadata" v-model="modalShow" title="BootstrapVue" hide-footer hide-header>
+    <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
+    <form @submit.prevent="onSubmitName">
+      <div class="mt-3">
+        <bike-tag-input
+          id="name"
+          v-model="profile.user_metadata.name"
+          name="name"
+          :placeholder="profile.user_metadata.name || 'Your new name'"
+        />
+        <bike-tag-button class="modal-header" variant="medium" text="Save Changes"/>
+      </div>
+    </form>
+  </b-modal>
+  <div class="container mb-5 mt-5" v-if="profile?.user_metadata">
     <div class="center-cnt">
       <div v-if="player.tags" class="d-flex justify-content-center mt-5 mb-5">
         <player size="lg" :player="player" :no-link="true" />
       </div>
       <div v-else class="profile-picture">
-        <img class="player-avatar" :src="getProfile?.picture" :alt="getProfile?.name" />
+        <img class="player-avatar" :src="profile?.picture" :alt="profile?.name" />
         <div class="picture-outline">
           <bike-tag-button variant="circle-clean"> </bike-tag-button>
         </div>
       </div>
       <div class="flx-columns mt-5">
-        <span class="player-name mb-5 mt-3"> {{ getProfile?.name }} </span>
-        <div v-if="getProfile?.user_metadata">
+        <span class="player-name mb-5 mt-3"> {{ profile?.name }} </span>
+        <div>
           <span
-            v-for="(social, i) in Object.keys(getProfile?.user_metadata).filter(
+            v-for="(social, i) in Object.keys(profile?.user_metadata).filter(
               (key) =>
-                getProfile?.user_metadata[key] != null && getProfile?.user_metadata[key].length > 0
+                profile?.user_metadata[key] != null && profile?.user_metadata[key].length > 0
             )"
             :key="i"
             class="player-name mt-4"
             style="font-size: 2.5rem"
           >
-            {{ getProfile?.user_metadata[social] }}
+            {{ profile?.user_metadata[social] }}
           </span>
         </div>
       </div>
     </div>
     <div class="container mt-5 col-md-8 col-lg-8">
       <form
-        ref="setProfile"
         class="mt-5 mb-2"
         name="profile-update"
         action="profile-update"
         method="POST"
-        data-netlify="true"
-        data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
-        <div v-if="!isBikeTagAmbassador || !getProfile?.name" class="mt-3">
+        <div v-if="profile.user_metadata?.name?.length" class="mt-3">
           <bike-tag-input
             id="name"
-            v-model="name"
+            v-model="profile.user_metadata.name"
             name="name"
             readonly
-            :placeholder="getProfile?.name || 'Your new name'"
+            :placeholder="profile?.name || 'Your new name'"
           />
         </div>
         <div v-for="(social, i) in socialNetworkIcons" :key="i" class="mt-3 input-icon">
           <bike-tag-input
             :id="social[0]"
-            v-model="$data[social[0]]"
+            v-model="profile.user_metadata.social[social[0]]"
             :name="social[0]"
             :placeholder="
-              (getProfile?.user_metadata?.length > i && getProfile?.user_metadata[i]) ||
+              (profile?.user_metadata?.length > i && profile?.user_metadata[i]) ||
               `${social[0].charAt(0).toUpperCase() + social[0].slice(1)} player name`
             "
           >
             <div class="icon-cnt">
-              <img :id="social[0]" class="icon" :src="social[1]" @click="$refs.file.click()" />
+              <img :id="social[0]" class="icon" :src="social[1]" />
             </div>
           </bike-tag-input>
         </div>
-        <!-- TODO: refactor form to require less code and less manual element creation -->
         <template v-if="isBikeTagAmbassador">
-          <template v-if="showImgur">
-            <div class="input-block mt-3">
-              <bike-tag-button
-                variant="medium"
-                text="Imgur Configuaration"
-                @click.prevent="() => toggleShowFields('showImgur')"
-              />
+          <template v-for="credential, i in Object.keys(profile.user_metadata.credentials)" :key="i">
+            <bike-tag-button
+              variant="medium"
+              :text="`${firstToUperCase(credential)} Configuration`"
+              @click.prevent="() => toggleShowFields(credential)"
+            />
+            <div class="input-block mt-3 hide" :ref="credential">
               <bike-tag-input
-                v-model="imgurConfig.clientId"
-                name="Imgur Client Id"
-                label="Client Id"
-                placeholder="Imgur Client Id"
-                type="password"
-              />
-              <bike-tag-input
-                v-model="imgurConfig.clientSecret"
-                name="Imgur Client Secret"
-                label="Client Secret"
-                placeholder="Imgur Client Secret"
-                type="password"
-              />
-              <bike-tag-input
-                v-model="imgurConfig.refreshToken"
-                name="Imgur Refresh Token"
-                label="Refresh Token"
-                placeholder="Imgur Refresh Token"
-                type="password"
-              />
+                v-for="inputField, i in Object.keys(profile.user_metadata.credentials[credential])" 
+                :key="i"
+                v-model="profile.user_metadata.credentials[credential][inputField]"
+                :name="`${firstToUperCase(credential)} ${splitCamelCase(inputField)}`"
+                :label="splitCamelCase(inputField)"
+                :placeholder="`${firstToUperCase(credential)} ${splitCamelCase(inputField)}`"
+                type="password"/>
             </div>
           </template>
-          <!-- TODO: refactor form to require less code and less manual element creation -->
-          <template v-if="showSanity">
-            <div class="input-block mt-3">
-              <bike-tag-button
-                variant="medium"
-                text="Sanity Configuaration"
-                @click.prevent="() => toggleShowFields('showSanity')"
-              />
-              <bike-tag-input
-                v-model="sanityConfig.projectId"
-                name="Sanity Project Id"
-                label="Project Id"
-                placeholder="Sanity Project Id"
-                type="password"
-              />
-              <bike-tag-input
-                v-model="sanityConfig.dataset"
-                name="Sanity Dataset"
-                label="Dataset"
-                placeholder="Sanity Dataset"
-                type="password"
-              />
-            </div>
-          </template>
-          <!-- TODO: refactor form to require less code and less manual element creation -->
-          <template v-if="showReddit">
-            <div class="input-block mt-3">
-              <bike-tag-button
-                variant="medium"
-                text="Reddit Configuaration"
-                @click.prevent="() => toggleShowFields('showReddit')"
-              />
-              <bike-tag-input
-                v-model="redditConfig.redditClientId"
-                name="Reddit Client Id"
-                label="Cliend Id"
-                placeholder="Reddit Client Id"
-                type="password"
-              />
-              <bike-tag-input
-                v-model="redditConfig.clientSecret"
-                name="Reddit Client Secret"
-                label="Client Secret"
-                placeholder="Reddit Client Secret"
-                type="password"
-              />
-              <bike-tag-input
-                v-model="redditConfig.userName"
-                name="Reddit User Name"
-                label="User Name"
-                placeholder="Reddit User Name"
-              />
-              <bike-tag-input
-                v-model="redditConfig.password"
-                name="Reddit Password"
-                label="Password"
-                placeholder="Reddit Password"
-                type="password"
-              />
-            </div>
-          </template>
-          <!-- TODO: refactor::these buttons should go immediately above the fields, are they floating off in space? -->
-          <bike-tag-button
-            v-if="!showImgur"
-            variant="medium"
-            text="+ Igmur Config"
-            @click.prevent="() => toggleShowFields('showImgur')"
-          />
-          <bike-tag-button
-            v-if="!showSanity"
-            variant="medium"
-            text="+ Sanity Config"
-            @click.prevent="() => toggleShowFields('showSanity')"
-          />
-          <bike-tag-button
-            v-if="!showReddit"
-            variant="medium"
-            text="+ Reddit Config"
-            @click.prevent="() => toggleShowFields('showReddit')"
-          />
         </template>
-        <bike-tag-button variant="medium" text="Save Changes" @click="onSubmit" />
+        <bike-tag-button variant="medium" text="Save Changes"/>
       </form>
     </div>
   </div>
@@ -207,14 +124,8 @@ export default defineComponent({
     Player,
   },
   data() {
-    /// TODO: Stop constructing these items by hand, the profile has a schema that we know and can accomodate in the UI only
     return {
-      name: null,
-      reddit: null,
-      instagram: null,
-      twitter: null,
-      imgur: null,
-      discord: null,
+      profile : null,
       socialNetworkIcons: [
         ['reddit', Reddit],
         ['instagram', Instagram],
@@ -222,12 +133,7 @@ export default defineComponent({
         ['imgur', Imgur],
         ['discord', Discord],
       ],
-      imgurConfig: {},
-      sanityConfig: {},
-      redditConfig: {},
-      showImgur: false,
-      showSanity: false,
-      showReddit: false,
+      modalShow: true,
     }
   },
   computed: {
@@ -246,91 +152,66 @@ export default defineComponent({
       return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
     },
   },
-  async mounted() {
+  async created() {
     await this.$store.dispatch('setTags')
     await this.$store.dispatch('setPlayers')
-
-    if (this.isBikeTagAmbassador) {
-      const credentials = this.getProfile?.user_metadata.credentials ?? {}
-      /// TODO: Stop constructing these items by hand
-      if (credentials.imgur) {
-        this.imgurConfig = { ...credentials.imgur }
-      } else {
-        this.imgurConfig = {
-          clientId: '',
-          clientSecret: '',
-          refreshToken: '',
-        }
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.profile = this.getProfile
+      if (this.profile.user_metadata.name != null && !this.profile.user_metadata.name.length) { 
+        this.modalShow = true
       }
-      /// TODO: Stop constructing these items by hand
-      if (credentials.sanity) {
-        this.sanityConfig = { ...credentials.sanity }
-      } else {
-        this.sanityConfig = {
-          projectId: '',
-          dataset: '',
-        }
-      }
-      /// TODO: Stop constructing these items by hand
-      if (credentials.reddit) {
-        this.redditConfig = { ...credentials.reddit }
-      } else {
-        this.redditConfig = {
-          clientId: '',
-          clientSecret: '',
-          userName: '',
-          password: '',
-        }
-      }
-    }
+    })
   },
   methods: {
+    hideModal() {
+      this.modalShow = false
+    },
+    firstToUperCase(str) {
+      return str[0].charAt(0).toUpperCase() + str.slice(1)
+    },
+    splitCamelCase(str) {
+      return this.firstToUperCase(str).replace(/([a-z])([A-Z])/g, '$1 $2')
+    },
     toggleShowFields(name) {
-      this[name] = !this[name]
+      this.$refs[name][0].classList.toggle('hide')
+    },
+    async onSubmitName() {
+      if (this.profile.user_metadata.name.length > 0) {
+        this.profile['token'] = (await this.$auth.getIdTokenClaims()).__raw
+        try {
+          await this.$store.dispatch('assignName', this.profile)
+          this.$toast.open({
+            message: "Success",
+            type: 'success',
+            position: 'top',
+          })
+        } catch (e) {
+          this.$toast.open({
+            message: e.message,
+            type: 'error',
+            position: 'top',
+          })
+        }
+        this.modalShow = false
+      }
     },
     async onSubmit() {
-      /// TODO: This needs to move to the modal (not yet created) flow when someone lands on this page and these items are not set
-
-      const claims = await this.$auth.getIdTokenClaims()
-      if (claims) {
-        const token = claims.__raw
-        // const token = (await this.$auth.getIdTokenClaims()).__raw
-        const profile = { user_metadata: {}, token }
-        /// TODO: Stop constructing these items by hand
-        if (this.name != null && this.name.length > 0 && !this.isBikeTagAmbassador) {
-          profile.user_metadata['name'] = this.name
-          try {
-            await this.$store.dispatch('assignName', profile)
-          } catch (e) {
-            this.$toast.open({
-              message: e.message,
-              type: 'error',
-              position: 'top',
-            })
-          }
-        }
-        /// TODO: Stop constructing these items by hand
-        profile.user_metadata = {
-          social: {
-            reddit: this.reddit ?? '',
-            instagram: this.instagram ?? '',
-            twitter: this.twitter ?? '',
-            imgur: this.imgur ?? '',
-            discord: this.discord ?? '',
-          },
-        }
-        /// TODO: Stop constructing these items by hand
-        if (this.isBikeTagAmbassador) {
-          profile.user_metadata['credentials'] = {
-            imgur: this.imgurConfig,
-            sanity: this.sanityConfig,
-            reddit: this.redditConfig,
-          }
-        }
-        /// TODO: This should be called with the entire profile that we have access to with the updates
-        await this.$store.dispatch('updateProfile', profile)
-      } else {
-        console.log('what is this?')
+      this.profile['token'] = (await this.$auth.getIdTokenClaims()).__raw
+      try {
+        await this.$store.dispatch('updateProfile', this.profile)
+        this.$toast.open({
+          message: "Success",
+          type: 'success',
+          position: 'top',
+        })
+      } catch (e) {
+        this.$toast.open({
+          message: e.message,
+          type: 'error',
+          position: 'top',
+        })
       }
     },
   },
@@ -433,5 +314,20 @@ export default defineComponent({
     filter: invert(1) drop-shadow(2px 4px 6px white);
     animation: fadeIn 2s;
   }
+}
+.hide {
+  display: none;
+}
+.modal-header {
+  margin: auto;
+}
+.close-btn,
+.go-queue {
+  cursor: pointer;
+}
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 </style>

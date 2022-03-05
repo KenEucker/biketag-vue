@@ -220,12 +220,15 @@ export const store = createStore<State>({
           authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: { user_metadata: profile.user_metadata },
+        data: {user_metadata : {name: profile.user_metadata.name}},
       })
       return commit('SET_PROFILE', profile)
     },
-    async updateProfile({ commit }, profile) {
+    async updateProfile({ commit, state }, profile) {
       // Update Auth0 Profile
+      profile.name = state.profile.name
+      const user_metadata = profile.user_metadata
+      delete user_metadata.name
       await client.request({
         method: 'PATCH',
         url: getApiUrl('profile'),
@@ -233,7 +236,7 @@ export const store = createStore<State>({
           authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: { user_metadata: profile.user_metadata },
+        data: {user_metadata},
       })
       return commit('SET_PROFILE', profile)
     },
