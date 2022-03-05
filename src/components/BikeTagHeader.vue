@@ -102,91 +102,91 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
-.header-logo .logo {
-  width: auto;
-  height: 8rem;
-  line-height: 8rem;
-  margin: auto;
-}
+// .header-logo .logo {
+//   width: auto;
+//   height: 8rem;
+//   line-height: 8rem;
+//   margin: auto;
+// }
 
-.header2 {
-  color: blue;
-}
+// .header2 {
+//   color: blue;
+// }
 
 // start modififed by will
 
-.nav-buttons {
-  //   height: 250px;
-  margin: 0 !important;
-}
+// .nav-buttons {
+//   //   height: 250px;
+//   margin: 0 !important;
+// }
 
 // end modified by will
 
-.bike-btn {
-  background-size: unset !important;
-}
+// .bike-btn {
+//   background-size: unset !important;
+// }
 
 // start of modified by will
-.biketag-header-nav {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 2rem;
-  padding-top: 0.5rem;
-}
+// .biketag-header-nav {
+//   display: flex;
+//   flex-direction: row;
+//   justify-content: center;
+//   gap: 2rem;
+//   padding-top: 0.5rem;
+// }
 
 // end of modified by will
 
-.bt-bicycle {
-  background-size: cover;
-  background-position: center;
-}
+// .bt-bicycle {
+//   background-size: cover;
+//   background-position: center;
+// }
 
-.z-1 {
-  z-index: 1;
-  position: relative;
-}
+// .z-1 {
+//   z-index: 1;
+//   position: relative;
+// }
 
-.button {
-  &-left {
-    margin-right: -0.9375rem;
-  }
-  &-right {
-    margin-left: -0.9375rem;
-  }
-}
+// .button {
+//   &-left {
+//     margin-right: -0.9375rem;
+//   }
+//   &-right {
+//     margin-left: -0.9375rem;
+//   }
+// }
 
-.btn-circle {
-  // width: 40px;
-  // height: 40px;
-  // border-radius: 30px;
-  display: flex;
-  cursor: pointer;
-  justify-content: center;
-  align-items: center;
-}
+// .btn-circle {
+//   // width: 40px;
+//   // height: 40px;
+//   // border-radius: 30px;
+//   display: flex;
+//   cursor: pointer;
+//   justify-content: center;
+//   align-items: center;
+// }
 
-.btn-queue {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 99;
-  font-size: 1.25em;
-  background-color: transparent !important;
-  border-color: transparent !important;
+// .btn-queue {
+//   position: absolute;
+//   top: 0;
+//   right: 0;
+//   z-index: 99;
+//   font-size: 1.25em;
+//   background-color: transparent !important;
+//   border-color: transparent !important;
 
-  i {
-    color: forestgreen;
-    cursor: pointer;
-    font-size: 4.5vh;
-  }
-}
+//   i {
+//     color: forestgreen;
+//     cursor: pointer;
+//     font-size: 4.5vh;
+//   }
+// }
 
-.btn-queue {
-  animation: tronFilter 5s ease-in-out infinite alternate;
+// .btn-queue {
+//   animation: tronFilter 5s ease-in-out infinite alternate;
 
-  .spinning-bike {
-    max-height: 3.5em;
-  }
-}
+//   .spinning-bike {
+//     max-height: 3.5em;
+//   }
+// }
 </style>
