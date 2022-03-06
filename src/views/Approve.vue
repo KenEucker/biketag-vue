@@ -9,7 +9,6 @@
   </loading>
   <div class="queue-page">
     <queue-approve @submit="onApproveSubmit" />
-    <span class="player-agree"> * {{ $t('pages.queue.user_agree') }} </span>
     <form
       ref="queueError"
       name="queue-approve-error"

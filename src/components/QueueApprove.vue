@@ -1,4 +1,5 @@
 <template>
+  <div></div>
   <div v-if="!getQueuedTags.length" class="queue-approve-tag container">
     <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.empty_text') }}</p>
@@ -6,7 +7,7 @@
   <div v-else class="queue-approve-tag container queue-approve">
     <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.approve_text') }}</p>
-
+    <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" />
     <swiper
       :modules="[Controller]"
       :pagination="{}"
@@ -50,50 +51,42 @@
         />
       </swiper-slide>
     </swiper>
-    <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" />
     <div class="container">
+      <div class="row just-center">
+        <form
+          ref="approveTag"
+          name="approve-queued-tag"
+          action="approve-queued-tag"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          @submit.prevent="approveTag"
+        >
+          <input type="hidden" name="form-name" value="approve-queued-tag" />
+          <input type="hidden" name="ambassadorId" value="" />
+          <bike-tag-button class="circle-button" variant="circle" type="submit" label="Approve">
+            <img src="/images/green-circle-check.png" alt="Approve This Tag" />
+          </bike-tag-button>
+        </form>
+        <form
+          ref="dequeueTag"
+          name="dequeue-queued-tag"
+          action="dequeue-queued-tag"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          @submit.prevent="dequeueTag"
+        >
+          <input type="hidden" name="form-name" value="dequeue-queued-tag" />
+          <input type="hidden" name="ambassadorId" value="" />
+
+          <bike-tag-button class="circle-button" variant="circle" type="submit" label="Remove">
+            <img src="/images/red-circle-x.png" alt="Delete This Tag" />
+          </bike-tag-button>
+        </form>
+      </div>
       <div class="row">
-        <div class="col-md-6">
-          <form
-            ref="approveTag"
-            name="approve-queued-tag"
-            action="approve-queued-tag"
-            method="POST"
-            data-netlify="true"
-            data-netlify-honeypot="bot-field"
-            @submit.prevent="approveTag"
-          >
-            <input type="hidden" name="form-name" value="approve-queued-tag" />
-            <input type="hidden" name="ambassadorId" value="" />
-            <bike-tag-button
-              class="w-75 btn-approve mt-2 mb-2 border-0"
-              variant="primary"
-              type="submit"
-            >
-              {{ $t('pages.queue.approve_new_tag') }}&nbsp;
-              {{ $t('pages.queue.approve_new_tag_from') }}&nbsp;#{{ selectedTagPlayer() }}&nbsp;({{
-                mysteryPlayer()
-              }})
-            </bike-tag-button>
-          </form>
-        </div>
-        <div class="col-md-6">
-          <form
-            ref="dequeueTag"
-            name="dequeue-queued-tag"
-            action="dequeue-queued-tag"
-            method="POST"
-            data-netlify="true"
-            data-netlify-honeypot="bot-field"
-            @submit.prevent="dequeueTag"
-          >
-            <input type="hidden" name="form-name" value="dequeue-queued-tag" />
-            <input type="hidden" name="ambassadorId" value="" />
-            <bike-tag-button class="w-75 mt-2 mb-2 border-0" variant="danger" type="submit">
-              {{ $t('pages.queue.dequeue_queued_tag') }} &nbsp;
-            </bike-tag-button>
-          </form>
-        </div>
+        <img class="ambassador-icon" src="/images/biketag-ambassador.svg" alt="Ambassador Icon" />
         <span class="player-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
       </div>
     </div>
@@ -231,11 +224,24 @@ export default defineComponent({
   .swiper-pagination {
     display: none;
   }
+
+  .circle-button {
+    max-width: 100px;
+    img {
+      max-width: 85px;
+    }
+  }
 }
 </style>
 <style lang="scss" scoped>
 i {
   color: #000;
   font-size: 20px;
+}
+.ambassador-icon {
+  max-height: 10vh;
+}
+form {
+  flex-basis: fit-content;
 }
 </style>

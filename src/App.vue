@@ -22,7 +22,7 @@ export default defineComponent({
   },
 })
 </script>
-<style>
+<style lang="scss">
 #app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -33,6 +33,11 @@ export default defineComponent({
   margin-bottom: 10rem;
 }
 .spacer-top {
-  margin-top: 12rem;
+  margin-top: 8rem;
+}
+@media (min-width: 550px) {
+  .spacer-top {
+    margin-top: 12rem;
+  }
 }
 </style>

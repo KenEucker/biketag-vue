@@ -294,6 +294,11 @@ body {
       font-size: 0.75rem;
       font-style: italic;
     }
+
+    .just-center {
+      justify-content: center;
+      align-items: center;
+    }
   
   .queue-found-tag, .queue-mystery-tag {
     max-width: 600px;

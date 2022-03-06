@@ -1,12 +1,18 @@
 <template>
-  <button :class="`scribble-button ${variant}`" :style="`background-image: url(${backgroundSrc})`">
-    <span v-if="text" class="scribble-text"
-      ><span class="scribble-text--inner">{{ text }}</span></span
+  <div>
+    <span v-if="label">{{ label }}</span>
+    <button
+      :class="`scribble-button ${variant}`"
+      :style="`background-image: url(${backgroundSrc})`"
     >
-    <div v-else class="button--children scribble-text">
-      <slot></slot>
-    </div>
-  </button>
+      <span v-if="text" class="scribble-text"
+        ><span class="scribble-text--inner">{{ text }}</span></span
+      >
+      <div v-else class="button--children scribble-text">
+        <slot></slot>
+      </div>
+    </button>
+  </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
@@ -17,6 +23,10 @@ export default defineComponent({
     text: {
       type: String,
       default: '',
+    },
+    label: {
+      type: String,
+      default: null,
     },
     variant: {
       type: String,
@@ -46,7 +56,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
-.scribble-button {
+.scribble-button,
+span {
   background: transparent;
   border: none;
   font-family: PrequelRough;

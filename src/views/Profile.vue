@@ -174,7 +174,7 @@ export default defineComponent({
   mounted() {
     this.$nextTick(() => {
       this.profile = this.getProfile
-      this.profile.user_metadata = this.profile.user_metadata ?? {}
+      this.profile.user_metadata = this.profile.user_metadata ?? { social: {} }
       this.modalShow =
         this.profile?.user_metadata?.name != null && !this.profile?.user_metadata?.name.length
     })

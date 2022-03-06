@@ -89,7 +89,7 @@ export const store = createStore<State>({
         const token = profile.token
         profile.token = undefined
 
-        const response = await client.request({
+        const response = await client.plainRequest({
           method: 'GET',
           url: getApiUrl('profile'),
           headers: {
@@ -236,7 +236,7 @@ export const store = createStore<State>({
       return 'incorrect permissions'
     },
     async assignName({ commit }, profile) {
-      await client.request({
+      await client.plainRequest({
         method: 'PUT',
         url: getApiUrl('profile'),
         headers: {
@@ -252,7 +252,7 @@ export const store = createStore<State>({
       profile.name = state.profile.name
       const user_metadata = profile.user_metadata
       delete user_metadata.name
-      const updatedProfileResponse = await client.request({
+      const updatedProfileResponse = await client.plainRequest({
         method: 'PATCH',
         url: getApiUrl('profile'),
         headers: {
@@ -396,6 +396,10 @@ export const store = createStore<State>({
       state.profile = profile
       state.isBikeTagAmbassador = profile?.isBikeTagAmbassador
       setProfileCookie(profile)
+
+      if (!profile) {
+        setQueuedTagInCookie()
+      }
 
       if (
         profile?.name !== oldState?.name ||

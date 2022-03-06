@@ -295,8 +295,6 @@ export default defineComponent({
 }
 
 .card-bottom {
-  // min-height: 12rem;
-
   .description {
     position: relative;
     white-space: break-spaces;

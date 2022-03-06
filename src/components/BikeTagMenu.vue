@@ -44,6 +44,14 @@
             />
           </li>
           <li
+            v-if="isBikeTagAmbassador"
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'Approve' }"
+            @click="goApprovePage"
+          >
+            {{ $t('menu.queue') }}
+          </li>
+          <li
             class="nav-item"
             :class="{ 'active-nav': currentRoute === 'Play' }"
             @click="goHomePage"
@@ -73,14 +81,6 @@
           </li>
           <li class="nav-item" :class="{ 'active-nav': currentRoute === 'How' }" @click="goHowPage">
             {{ $t('menu.howto') }}
-          </li>
-          <li
-            v-if="isBikeTagAmbassador"
-            class="nav-item"
-            :class="{ 'active-nav': currentRoute === 'Approve' }"
-            @click="goApprovePage"
-          >
-            {{ $t('menu.home') }}
           </li>
           <template v-if="!authLoading">
             <template v-if="$auth.isAuthenticated">
