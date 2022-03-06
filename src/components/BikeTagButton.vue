@@ -1,6 +1,4 @@
 <template>
-  <div>
-    <span v-if="label">{{ label }}</span>
   <button
     :class="`scribble__button scribble__button--${variant}`"
     :style="`background-image: url(${backgroundSrc})`"
@@ -22,10 +20,6 @@ export default defineComponent({
     text: {
       type: String,
       default: '',
-    },
-    label: {
-      type: String,
-      default: null,
     },
     variant: {
       type: String,
@@ -57,21 +51,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 @import '../assets/styles/style.scss';
 .scribble {
-  &__button,
-  span {
-  background: transparent;
-  border: none;
-  font-family: PrequelRough;
-  font-weight: bold;
-  font-size: 13px;
-  @include background-btn;
-
-  .scribble-text {
-    display: flex;
-  }
-
-  .scribble-text--inner {
-    z-index: 2;
+  &__button {
     background: transparent;
     border: none;
     font-family: PrequelRough;
