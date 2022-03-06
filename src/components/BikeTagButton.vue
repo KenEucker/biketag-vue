@@ -1,18 +1,17 @@
 <template>
   <div>
     <span v-if="label">{{ label }}</span>
-    <button
-      :class="`scribble-button ${variant}`"
-      :style="`background-image: url(${backgroundSrc})`"
+  <button
+    :class="`scribble__button scribble__button--${variant}`"
+    :style="`background-image: url(${backgroundSrc})`"
+  >
+    <span v-if="text" class="scribble__text"
+      ><span class="scribble__text--inner">{{ text }}</span></span
     >
-      <span v-if="text" class="scribble-text"
-        ><span class="scribble-text--inner">{{ text }}</span></span
-      >
-      <div v-else class="button--children scribble-text">
-        <slot></slot>
-      </div>
-    </button>
-  </div>
+    <div v-else class="scribble__button--children scribble__text">
+      <slot></slot>
+    </div>
+  </button>
 </template>
 <script>
 import { defineComponent } from 'vue'
@@ -56,8 +55,10 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
-.scribble-button,
-span {
+@import '../assets/styles/style.scss';
+.scribble {
+  &__button,
+  span {
   background: transparent;
   border: none;
   font-family: PrequelRough;
@@ -72,75 +73,217 @@ span {
   .scribble-text--inner {
     z-index: 2;
     background: transparent;
-    font-size: 2rem;
-    min-width: 6rem;
+    border: none;
+    font-family: PrequelRough;
+    font-weight: bold;
+    text-transform: uppercase;
+    @include background-btn;
 
-    @media (min-width: 550px) {
+    &--underline {
+      img {
+        margin-top: 80px;
+      }
+      &-reverse {
+        img {
+          margin-top: 80px;
+          margin-top: 40px;
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    &--circle {
+      position: absolute;
+      z-index: 2;
+
+      &-circle-clean {
+      }
+    }
+
+    &--light {
+      line-height: 8rem;
+
+      @media (max-width: $breakpoint-desktop) {
+        //   font-size: 2rem;
+        line-height: 7rem;
+      }
+      @media (max-width: $breakpoint-laptop) {
+        line-height: 6rem;
+      }
+      @media (max-width: $breakpoint-tablet) {
+        line-height: 5rem;
+      }
+      @media (max-width: $breakpoint-mobile-lg) {
+        line-height: 4rem;
+      }
+      @media (max-width: $breakpoint-mobile-md) {
+        line-height: 3rem;
+      }
+      @media (max-width: $breakpoint-mobile-sm) {
+        line-height: 2rem;
+      }
+      .scribble__text--inner {
+        padding: 1.0625rem 1.3125rem;
+        color: black;
+      }
+    }
+
+    &--medium {
+      .scribble__text--inner {
+        padding: 0.75rem 0;
+      }
+    }
+
+    &--bold {
+      line-height: 8rem;
+
+      @media (max-width: $breakpoint-desktop) {
+        //   font-size: 2rem;
+        line-height: 7rem;
+      }
+      @media (max-width: $breakpoint-laptop) {
+        // line-height: 6rem;
+      }
+      @media (max-width: $breakpoint-tablet) {
+        line-height: 6rem;
+      }
+      @media (max-width: $breakpoint-mobile-lg) {
+        line-height: 5rem;
+      }
+      @media (max-width: $breakpoint-mobile-md) {
+        // line-height: 4rem;
+      }
+      @media (max-width: $breakpoint-mobile-sm) {
+        // line-height: 3rem;
+      }
+      .scribble__text--inner {
+        padding: 0 1.25rem;
+        color: white;
+      }
+    }
+
+    &--children {
+      z-index: 1;
+      padding: 3%;
+    }
+  }
+
+  &__text {
+    display: flex;
+
+    &--inner {
+      background: transparent;
+
       font-size: 2.5rem;
-      min-width: 4em;
-    }
-
-    @media (min-width: 1020px) {
-      font-size: 3rem !important;
-      min-width: 5em;
-    }
-  }
-
-  .button--children {
-    z-index: 1;
-    padding: 3%;
-  }
-
-  &.light {
-    // .button--children,
-    // .scribble-text--inner {
-    // font-family: UniSans;
-    // margin-left: 10px;
-    color: black;
-  }
-
-  &.medium {
-    .scribble-text--inner {
       padding: 1rem;
-    }
-    @media (min-width: 550px) {
-      .scribble-text--inner {
+
+      @media (max-width: $breakpoint-desktop) {
         font-size: 2rem;
       }
-    }
-  }
-
-  &.bold {
-    font-size: 2rem;
-    color: white;
-
-    .scribble-text--inner {
-      min-width: 6.8rem;
-
-      @media (min-width: 550px) {
-        font-size: 3.5rem;
+      @media (max-width: $breakpoint-laptop) {
+        font-size: 1.75rem;
+      }
+      @media (max-width: $breakpoint-tablet) {
+        font-size: 1.5rem;
+      }
+      @media (max-width: $breakpoint-mobile-lg) {
+        font-size: 1.25rem;
+      }
+      @media (max-width: $breakpoint-mobile-md) {
+        font-size: 1rem;
+      }
+      @media (max-width: $breakpoint-mobile-sm) {
+        font-size: 0.75rem;
       }
     }
   }
+}
 
-  &.circle {
-    .button--children {
-      padding: 0;
-    }
-  }
+// $breakpoint-mobile-sm: 20rem; //320px
+// $breakpoint-mobile-md: 26.25rem; //420px
+// $breakpoint-mobile-lg: 30rem; //480px
+// $breakpoint-tablet: 48rem; //768px
+// $breakpoint-laptop: 64rem; //1024px
+// $breakpoint-desktop: 75rem; //1200px
 
-  &.underline-reverse,
-  &.underline {
-    img {
-      margin-top: 80px;
-    }
-  }
+.scribble-button {
+  //   background: transparent;
+  //   border: none;
+  //   font-family: PrequelRough;
+  //   font-weight: bold;
+  //   font-size: 13px;
+  //   @include background-btn;
 
-  &.underline-reverse {
-    img {
-      margin-top: 40px;
-      transform: rotate(180deg);
-    }
-  }
+  //   .scribble-text {
+  //     display: flex;
+  //   }
+
+  //   .scribble-text--inner {
+  //     z-index: 2;
+  //     background: transparent;
+  //     // font-size: 2rem;
+  //     // min-width: 6rem;
+
+  //     font-size: 1.5rem;
+  //     padding: 1rem;
+
+  //     @media (max-width: 400px) {
+  //       font-size: 1.25rem;
+  //       padding: 0.5rem;
+  //     }
+  //   }
+
+  //   .button--children {
+  //     z-index: 1;
+  //     padding: 3%;
+  //   }
+
+  //   &.light {
+  //     // .button--children,
+  //     // .scribble-text--inner {
+  //     // font-family: UniSans;
+  //     // margin-left: 10px;
+  //     color: black;
+  //   }
+
+  //   &.medium {
+  //     .scribble-text--inner {
+  //       padding: 1rem;
+  //     }
+  //     @media (min-width: 550px) {
+  //       .scribble-text--inner {
+  //         font-size: 2rem;
+  //       }
+  //     }
+  //   }
+
+  //   &.bold {
+  //     font-size: 2rem;
+  //     color: white;
+
+  //     .scribble-text--inner {
+  //       min-width: 6.8rem;
+  //     }
+  //   }
+
+  //   &.circle {
+  //     .button--children {
+  //       padding: 0;
+  //     }
+  //   }
+
+  //   &.underline-reverse,
+  //   &.underline {
+  //     img {
+  //       margin-top: 80px;
+  //     }
+  //   }
+
+  //   &.underline-reverse {
+  //     img {
+  //       margin-top: 40px;
+  //       transform: rotate(180deg);
+  //     }
+  //   }
 }
 </style>

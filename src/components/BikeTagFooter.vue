@@ -1,10 +1,16 @@
 <template>
-  <div class="container">
-    <div class="footer-buttons mb-3">
-      <bike-tag-button class="m-1" :text="$t('menu.about')" @click="goAboutPage" />
-      <bike-tag-button class="m-1" :text="$t('menu.players')" @click="goUsersPage" />
-      <bike-tag-button class="m-1" :text="$t('menu.top10')" @click="goLeaderboardPage" />
-    </div>
+  <div class="button-group">
+    <!-- Left Button -->
+    <bike-tag-button class="button-group__left" :text="$t('menu.about')" @click="goAboutPage" />
+    <!-- Middle Button -->
+    <bike-tag-button
+      class="button-group__middle"
+      :text="$t('menu.hint')"
+      :variant="'bold'"
+      @click="$emit('toggle-modal', true)"
+    />
+    <!-- Right Button -->
+    <bike-tag-button class="button-group__right" :text="$t('menu.players')" @click="goUsersPage" />
   </div>
 </template>
 <script>
@@ -14,6 +20,11 @@ export default defineComponent({
   name: 'BikeTagFooter',
   components: {
     BikeTagButton,
+  },
+  data() {
+    return {
+      //   modalActive: false,
+    }
   },
   methods: {
     goAboutPage: function () {
@@ -29,12 +40,20 @@ export default defineComponent({
 })
 </script>
 <style scoped lang="scss">
-.footer-buttons {
-  display: inline-flex;
-  min-height: 0;
+.button-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  .btn {
-    max-height: 3em;
+  &__left {
+  }
+
+  &__middle {
+    margin-left: 0.5rem;
+  }
+
+  &__right {
+    margin-left: 0.5rem;
   }
 }
 </style>

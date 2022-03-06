@@ -18,7 +18,9 @@
     "language": "Languages",
     "profile": "Profile",
     "login": "Login",
-    "logout": "Logout"
+    "logout": "Logout",
+	"hint": "Hint",
+	"mysterylocation": "Mystery Location"
   },
   "components": {
     "biketag": {
