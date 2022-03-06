@@ -30,6 +30,36 @@ export const special = [
 ]
 export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet']
 
+export interface ProfileMeta {
+  name: string
+  social: {
+    reddit: string
+    instagram: string
+    twitter: string
+    imgur: string
+    discord: string
+  }
+}
+
+export interface AmbassadorMeta extends ProfileMeta {
+  credentials: {
+    imgur: {
+      clientId: string
+      clientSecret: string
+      refreshToken: string
+    }
+    sanity: {
+      projectId: string
+      dataset: string
+    }
+    reddit: {
+      clientId: string
+      clientSecret: string
+      username: string
+      password: string
+    }
+  }
+}
 export interface Profile {
   name: string
   sub: string
@@ -39,28 +69,20 @@ export interface Profile {
   locale?: string
   nonce?: string
   picture?: string
-  user_metadata?: any
+  user_metadata?: ProfileMeta
   zipcode?: string
 }
-
-export interface AmbassadorProfile {
-  name: string
-  sub: string
-  slug: string
+export interface AmbassadorProfile extends Profile {
   address1: string
   address2: string
   city: string
   country: string
-  email: string
   isBikeTagAmbassador: boolean
-  locale: string
-  nonce: string
   phone: string
-  picture: string
-  user_metadata: any
+  user_metadata?: AmbassadorMeta
   zipcode: string
 }
-export type BikeTagProfile = Partial<Profile> & Partial<AmbassadorProfile>
+export type BikeTagProfile = Partial<Profile> | Partial<AmbassadorProfile>
 export interface State {
   dataInitialized: boolean
   game: Game
@@ -76,18 +98,18 @@ export interface State {
   formStep: number
   queuedTag: Tag
   isBikeTagAmbassador: boolean
+  credentialsFetched: boolean
   mostRecentlyViewedTagnumber: number
 }
 
 export enum BiketagFormSteps {
-  queueView = 1,
-  queueFound = 2,
-  queueJoined = 3,
-  queueMystery = 4,
-  queueSubmit = 5,
-  queuePosted = 6,
-  queuePostedShare = 6.5,
-  queueApprove = 7,
+  queueView = 0.5,
+  queueFound = 1,
+  queueJoined = 1.5,
+  queueMystery = 2,
+  queueSubmit = 2.5,
+  queuePosted = 3,
+  queuePostedShare = 3.5,
 }
 
 export enum Settings {

@@ -3,6 +3,7 @@ import { Tag } from 'biketag/lib/common/schema'
 import { useCookies } from 'vue3-cookies'
 import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
 import CryptoJS from 'crypto-js'
+import md5 from 'md5'
 
 export type DomainInfo = {
   host: string
@@ -38,6 +39,22 @@ export const stringifyNumber = (n: number): string => {
   if (n % 10 === 0) return deca[Math.floor(n / 10) - 2] + 'ieth'
   return deca[Math.floor(n / 10) - 2] + 'y-' + special[n % 10]
 }
+// https://stackoverflow.com/questions/13627308/add-st-nd-rd-and-th-ordinal-suffix-to-a-number
+export const ordinalSuffixOf = (n: number) => {
+  const j = n % 10,
+    k = n % 100
+  if (j == 1 && k != 11) {
+    return n + 'st'
+  }
+  if (j == 2 && k != 12) {
+    return n + 'nd'
+  }
+  if (j == 3 && k != 13) {
+    return n + 'rd'
+  }
+  return n + 'th'
+}
+export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 
 export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
   imgurUrl
@@ -95,11 +112,6 @@ export const getBikeTagClientOpts = (win?: Window, authorized?: boolean) => {
   }
 
   if (authorized) {
-    opts.imgur = opts.imgur ?? {}
-    opts.imgur.clientSecret = process.env.IMGUR_CLIENT_SECRET
-    opts.imgur.accessToken = process.env.IMGUR_ACCESS_TOKEN
-    opts.imgur.refreshToken = process.env.IMGUR_REFRESH_TOKEN
-
     opts.sanity = opts.sanity ?? {}
     opts.sanity.projectId = process.env.SANITY_PROJECT_ID
     opts.sanity.dataset = process.env.SANITY_DATASET
@@ -118,7 +130,6 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
       process.env.HOST_KEY ?? 'BikeTag'
     )
     const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
-    console.log({ existingProfile })
     return existingProfile
   }
 
@@ -128,11 +139,32 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
   return profile
 }
 
+export const getQueuedTagFromCookie = (biketagCookieKey = 'biketag'): Tag | undefined => {
+  const { cookies } = useCookies()
+  const existingBikeTagString = cookies.get(biketagCookieKey)
+
+  if (existingBikeTagString) {
+    const existingBikeTag = JSON.parse(existingBikeTagString)
+    return existingBikeTag
+  }
+}
+
+export const setQueuedTagInCookie = (queuedTag?: Tag, biketagCookieKey = 'biketag'): boolean => {
+  const { cookies } = useCookies()
+
+  if (queuedTag) {
+    cookies.set(biketagCookieKey, JSON.stringify(queuedTag))
+  } else {
+    cookies.remove(biketagCookieKey)
+  }
+
+  return true
+}
+
 export const setProfileCookie = (
-  profile: BikeTagProfile,
+  profile?: BikeTagProfile,
   profileCookieKey = 'profile'
 ): boolean => {
-  console.log('setProfileCookie')
   const { cookies } = useCookies()
 
   if (profile) {
@@ -141,7 +173,6 @@ export const setProfileCookie = (
       process.env.HOST_KEY ?? 'BikeTag'
     ).toString()
     cookies.set(profileCookieKey, encryptedProfileString)
-    console.log({ encryptedProfileString, profile })
   } else {
     cookies.remove(profileCookieKey)
   }
@@ -151,7 +182,7 @@ export const setProfileCookie = (
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
   currentTagnumber: number,
-  mostRecentCookieKey = 'recentTagnumber'
+  mostRecentCookieKey = 'mostRecentlyViewedTagnumber'
 ): number => {
   const { cookies } = useCookies()
   const existingMostRecent = cookies.get(mostRecentCookieKey)

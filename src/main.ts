@@ -50,7 +50,7 @@ class BikeTagApp {
           )
         },
       }
-      console.log('init::setting up authentication with Auth0 credentials')
+      console.log('init::authentication')
       this.app.use(Auth0Plugin, auth0Opts)
     } else {
       this.app.config.globalProperties.$auth = () => () => null

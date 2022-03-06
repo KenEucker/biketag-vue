@@ -67,7 +67,7 @@
         </bike-tag-input>
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
-          <p v-if="locationDisabled">{{$t('pages.queue.image_first')}}</p>
+          <p v-if="locationDisabled">{{ $t('pages.queue.image_first') }}</p>
           <GMapMap
             v-if="isGps"
             :center="center"
@@ -98,7 +98,12 @@
         type="submit"
         :text="`${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}`"
       /> -->
-      <bike-tag-button variant="medium" type="submit" text="Queue Found Tag" @click="onSubmit" />
+      <bike-tag-button
+        variant="medium"
+        type="submit"
+        :text="$t('pages.queue.queue_found_tag')"
+        @click="onSubmit"
+      />
     </form>
   </div>
 </template>
@@ -152,11 +157,7 @@ export default defineComponent({
       'getProfile',
     ]),
     getName() {
-      if (this.$auth.isAuthenticated) {
-        return this.getProfile?.name ?? this.tag?.foundPlayer ?? ''
-      }
-
-      return this.tag?.foundPlayer ?? ''
+      return this.getProfile?.user_metadata?.name ?? this.tag?.foundPlayer ?? ''
     },
     isGps() {
       return this.gps.lat && this.gps.lng
@@ -240,6 +241,7 @@ export default defineComponent({
       return Number(Math.round(number + 'e4') + 'e-4')
     },
     setImage(event) {
+      this.$store.dispatch('fetchCredentials')
       var input = event.target
       if (input.files) {
         this.image = input.files[0]

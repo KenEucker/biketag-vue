@@ -28,6 +28,9 @@ export const getBikeTagClientOpts = (
   const opts: any = {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     cached: isGET || !isAuthenticatedPOST,
+    biketag: {
+      accessToken: process.env.ACCESS_TOKEN,
+    },
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
     },
@@ -39,9 +42,9 @@ export const getBikeTagClientOpts = (
     opts.imgur.accessToken = process.env.IMGUR_ACCESS_TOKEN
     opts.imgur.refreshToken = process.env.IMGUR_REFRESH_TOKEN
 
-    opts.reddit = opts.reddit ?? {}
-    opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
-    opts.reddit.clientSecret = process.env.REDDIT_CLIENT_SECRET
+    // opts.reddit = opts.reddit ?? {}
+    // opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
+    // opts.reddit.clientSecret = process.env.REDDIT_CLIENT_SECRET
     /// TODO: comes from sanity game settings
     // opts.reddit.username = process.env.REDDIT_USERNAME
     // opts.reddit.password = process.env.REDDIT_PASSWORD
@@ -62,10 +65,10 @@ export const getBikeTagClientOpts = (
       opts.sanity.dataset = process.env.SANITY_ADMIN_DATASET
       opts.sanity.token = process.env.SANITY_ADMIN_TOKEN
 
-      opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
-      opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
-      opts.reddit.username = process.env.REDDIT_ADMIN_USERNAME
-      opts.reddit.password = process.env.REDDIT_ADMIN_PASSWORD
+      // opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
+      // opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
+      // opts.reddit.username = process.env.REDDIT_ADMIN_USERNAME
+      // opts.reddit.password = process.env.REDDIT_ADMIN_PASSWORD
     }
   }
 
@@ -123,7 +126,6 @@ export const isValidJson = (data, type = 'none') => {
               },
             },
             required: ['social'],
-            additionalProperties: false,
           },
         },
         required: ['user_metadata'],
@@ -172,9 +174,9 @@ export const isValidJson = (data, type = 'none') => {
                   reddit: {
                     type: 'object',
                     properties: {
-                      redditClientId: { type: 'string' },
+                      clientId: { type: 'string' },
                       clientSecret: { type: 'string' },
-                      userName: { type: 'string' },
+                      username: { type: 'string' },
                       password: { type: 'string' },
                     },
                     additionalProperties: false,
@@ -184,11 +186,10 @@ export const isValidJson = (data, type = 'none') => {
               },
             },
             minProperties: 1,
-            additionalProperties: false,
           },
         },
         required: ['user_metadata'],
-        additionalProperties: false,
+        // additionalProperties: false,
       }
       break
     case 'profile.put':
@@ -350,7 +351,9 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
       const { payload } = await jose.jwtVerify(authorizationString, JWKS)
       return payload
     } catch (e) {
-      console.error({ authorizationAuth0ValidationError: e })
+      /// Swallow error
+      // console.error({ authorizationAuth0ValidationError: e })
+      return authorizationString
     }
   }
 }
@@ -931,6 +934,66 @@ export const constructAmbassadorProfile = (
   profile: any = {},
   defaults: any = {}
 ): BikeTagProfile => {
+  const user_metadata = {
+    name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? '',
+    social: {
+      reddit:
+        profile?.user_metadata?.social?.reddit ?? defaults?.user_metadata?.social?.reddit ?? '',
+      instagram:
+        profile?.user_metadata?.social?.instagram ??
+        defaults?.user_metadata?.social?.instagram ??
+        '',
+      twitter:
+        profile?.user_metadata?.social?.twitter ?? defaults?.user_metadata?.social?.twitter ?? '',
+      imgur: profile?.user_metadata?.social?.imgur ?? defaults?.user_metadata?.social?.imgur ?? '',
+      discord:
+        profile?.user_metadata?.social?.discord ?? defaults?.user_metadata?.social?.discord ?? '',
+    },
+    credentials: {
+      imgur: {
+        clientId:
+          profile?.user_metadata?.credentials?.imgur.clientId ??
+          defaults?.user_metadata?.credentials?.imgur.clientId ??
+          '',
+        clientSecret:
+          profile?.user_metadata?.credentials?.imgur.clientSecret ??
+          defaults?.user_metadata?.credentials?.imgur.clientSecret ??
+          '',
+        refreshToken:
+          profile?.user_metadata?.credentials?.imgur.refreshToken ??
+          defaults?.user_metadata?.credentials?.imgur.refreshToken ??
+          '',
+      },
+      sanity: {
+        projectId:
+          profile?.user_metadata?.credentials?.sanity.projectId ??
+          defaults?.user_metadata?.credentials?.sanity.projectId ??
+          '',
+        dataset:
+          profile?.user_metadata?.credentials?.sanity.dataset ??
+          defaults?.user_metadata?.credentials?.sanity.dataset ??
+          '',
+      },
+      reddit: {
+        clientId:
+          profile?.user_metadata?.credentials?.reddit.clientId ??
+          defaults?.user_metadata?.credentials?.reddit.clientId ??
+          '',
+        clientSecret:
+          profile?.user_metadata?.credentials?.reddit.clientSecret ??
+          defaults?.user_metadata?.credentials?.reddit.clientSecret ??
+          '',
+        username:
+          profile?.user_metadata?.credentials?.reddit.username ??
+          defaults?.user_metadata?.credentials?.reddit.username ??
+          '',
+        password:
+          profile?.user_metadata?.credentials?.reddit.password ??
+          defaults?.user_metadata?.credentials?.reddit.password ??
+          '',
+      },
+    },
+  }
   return {
     name: profile.name ?? defaults.name ?? '',
     sub: profile.sub ?? defaults.sub ?? '',
@@ -945,12 +1008,22 @@ export const constructAmbassadorProfile = (
     nonce: profile.nonce ?? defaults.nonce ?? '',
     phone: profile.phone ?? defaults.phone ?? '',
     picture: profile.picture ?? defaults.picture ?? '',
-    user_metadata: profile.user_metadata ?? defaults.user_metadata ?? {},
+    user_metadata,
     zipcode: profile.zipcode ?? defaults.zipcode ?? '',
   }
 }
 
 export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): BikeTagProfile => {
+  const user_metadata = {
+    name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? '',
+    social: {
+      reddit: profile?.user_metadata?.reddit ?? defaults?.user_metadata?.reddit ?? '',
+      instagram: profile?.user_metadata?.instagram ?? defaults?.user_metadata?.instagram ?? '',
+      twitter: profile?.user_metadata?.twitter ?? defaults?.user_metadata?.twitter ?? '',
+      imgur: profile?.user_metadata?.imgur ?? defaults?.user_metadata?.imgur ?? '',
+      discord: profile?.user_metadata?.discord ?? defaults?.user_metadata?.discord ?? '',
+    },
+  }
   return {
     name: profile.name ?? defaults.name ?? '',
     sub: profile.sub ?? defaults.sub ?? '',
@@ -959,7 +1032,7 @@ export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): B
     locale: profile.locale ?? defaults.locale ?? '',
     nonce: profile.nonce ?? defaults.nonce ?? '',
     picture: profile.picture ?? defaults.picture ?? '',
-    user_metadata: profile.user_metadata ?? defaults.user_metadata ?? {},
+    user_metadata,
     zipcode: profile.zipcode ?? defaults.zipcode ?? '',
   }
 }

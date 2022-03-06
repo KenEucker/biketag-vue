@@ -20,10 +20,9 @@
           <bike-tag
             :key="tag.tagnumber"
             :tag="tag"
-            :found-player="' '"
-            :mystery-player="' '"
+            :show-player="false"
             :found-tagnumber="tag.tagnumber - 1"
-            :found-description="getSelfTagFoundDescription(tag)"
+            :found-description="tag.foundLocation"
           />
         </div>
       </div>

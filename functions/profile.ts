@@ -1,6 +1,5 @@
 import { Handler } from '@netlify/functions'
 import axios from 'axios'
-import { defaults } from 'request'
 import { ErrorMessage, InfoMessage } from './common/constants'
 import {
   isValidJson,
@@ -109,9 +108,10 @@ const profileHandler: Handler = async (event) => {
       case 'PATCH':
         try {
           const data = JSON.parse(event.body)
-          const isValid = profile.isBikeTagAmbassador
-            ? isValidJson(data, 'profile.patch.ambassador')
-            : isValidJson(data, 'profile.patch')
+          const validator = profile.isBikeTagAmbassador
+            ? 'profile.patch.ambassador'
+            : 'profile.patch'
+          const isValid = isValidJson(data, validator)
           if (isValid) {
             options = {
               method: 'PATCH',
@@ -120,7 +120,8 @@ const profileHandler: Handler = async (event) => {
               data,
             }
           } else {
-            console.log(ErrorMessage.InvalidRequestData, profile.sub)
+            console.log(data.user_metadata.credentials)
+            console.log('data is not valid', data, validator)
             body = ErrorMessage.InvalidRequestData
             statusCode = 400
           }

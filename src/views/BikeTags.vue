@@ -10,13 +10,7 @@
     ></b-pagination>
     <div class="m-auto">
       <div v-for="tag in tagsList" :key="tag.tagnumber">
-        <bike-tag
-          :key="tag.tagnumber"
-          :tag="tag"
-          :reverse="true"
-          :found-player="getPlayer(tag.foundPlayer)"
-          :mystery-player="getPlayer(tag.mysteryPlayer)"
-        />
+        <bike-tag :key="tag.tagnumber" :tag="tag" :reverse="true" />
       </div>
     </div>
     <b-form-group>
@@ -69,7 +63,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getTags', 'getPlayers']),
+    ...mapGetters(['getTags']),
     tagsList() {
       return this.getTags.slice(
         (this.currentPage - 1) * this.perPage + (this.currentPage === 1 ? 1 : 0), // exclude current mystery tag
@@ -109,13 +103,6 @@ export default defineComponent({
           this.tagsAreLoading = false
         }, 500)
       }
-    },
-    getPlayer(playerName) {
-      const playerList =
-        this.getPlayers?.filter((player) => {
-          return decodeURIComponent(encodeURIComponent(player.name)) == playerName
-        }) ?? []
-      return playerList[0]
     },
   },
 })

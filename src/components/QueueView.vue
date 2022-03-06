@@ -24,7 +24,6 @@
           size="l"
           :mystery-image-url="''"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
-          :show-found-posted-date-time="true"
           :found-description="stringifyNumber(index + 1)"
         />
       </swiper-slide>

@@ -175,6 +175,8 @@ export default defineComponent({
       this.uploadInProgress = false
 
       if (success === true) {
+        /// Get a clean cache
+        await this.$store.dispatch('setTags')
         /// Update the queue
         this.$store.dispatch('setQueuedTags', true)
 
@@ -228,7 +230,6 @@ export default defineComponent({
 #app {
   .queue-page {
     .card.polaroid .player-wrapper .player-name {
-      // font-family: markernotes;
       font-weight: 100;
       font-size: 3rem;
       transform: unset;

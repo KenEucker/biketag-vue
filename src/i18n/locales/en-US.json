@@ -13,6 +13,7 @@
     "about": "About",
     "players": "Players",
     "top10": "Top10",
+    "queue": "Queue",
     "external": "External",
     "language": "Languages",
     "profile": "Profile",
@@ -54,6 +55,13 @@
       "player": "BikeTag Player Login",
       "ambassador": "BikeTag Ambassador Login"
     },
+    "profile": {
+      "name": "name",
+      "save": "Update Profile",
+      "set_name": "Save my name",
+      "set_name_placeholder": "Your new name",
+      "set_name_description": "Your name will be unique and only you will be able to make BikeTag posts using this name moving forward. Note: you cannot change your name after you set it."
+    },
     "queue": {
       "join_queue": "Join round",
       "tape_title": "Round",
@@ -82,8 +90,8 @@
       "hint_placeholder": "Enter your Hint",
       "post_to_reddit": "Reddit",
       "post_to_twitter": "Twitter",
-      "queue_found_tag": "Add your Found Image",
-      "submit_new_tag": "Add your Mystery Image",
+      "queue_found_tag": "I found it!",
+      "submit_new_tag": "Complete Your BikeTag!",
       "queue_postfix": "",
       "post_new_tag": "Share BikeTag Post For Me",
       "approve_new_tag": "Approve this BikeTag post",

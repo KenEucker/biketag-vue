@@ -44,6 +44,21 @@
             />
           </li>
           <li
+            v-if="isBikeTagAmbassador"
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'Approve' }"
+            @click="goApprovePage"
+          >
+            {{ $t('menu.queue') }}
+          </li>
+          <li
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'Play' }"
+            @click="goHomePage"
+          >
+            {{ $t('menu.home') }}
+          </li>
+          <li
             class="nav-item"
             :class="{ 'active-nav': currentRoute === 'About' }"
             @click="goAboutPage"
@@ -163,7 +178,7 @@ export default defineComponent({
     ]),
     isShow() {
       if (this.$route.name) {
-        console.log(`view::${this.$route.name}`)
+        console.log(`view::${this.$route.name}`, 'SECOND PAINT')
       }
       return this.$route.name !== 'Play'
     },
@@ -178,14 +193,15 @@ export default defineComponent({
   },
   async created() {
     if (!this.isDataInitialized) {
+      const initResults = []
       /// Set it first thing
-      this.$store.dispatch('setDataInitialized')
+      initResults.push(this.$store.dispatch('setDataInitialized'))
 
-      await this.$store.dispatch('setGame')
-      await this.$store.dispatch('setTags')
-      await this.$store.dispatch('setCurrentBikeTag')
-      await this.$store.dispatch('setQueuedTags')
-      await this.$store.dispatch('setPlayers')
+      initResults.push(await this.$store.dispatch('setGame'))
+      initResults.push(await this.$store.dispatch('setTags'))
+      initResults.push(await this.$store.dispatch('setCurrentBikeTag'))
+      initResults.push(await this.$store.dispatch('setQueuedTags'))
+      initResults.push(await this.$store.dispatch('setPlayers'))
 
       if (this.$auth.isAuthenticated && !this.getProfile?.nonce?.length) {
         const claims = await this.$auth.getIdTokenClaims()
@@ -196,8 +212,7 @@ export default defineComponent({
           console.log('what is this?')
         }
       }
-
-      this.checkForNewBikeTagPost()
+      console.log(`view::data-init`, initResults)
     }
   },
   mounted() {
@@ -234,6 +249,10 @@ export default defineComponent({
     goWorldwide() {
       window.location = 'http://biketag.org/'
     },
+    goApprovePage: function () {
+      this.closeCollapsible()
+      this.$router.push('/approve')
+    },
     goBikeTagsPage: function () {
       this.closeCollapsible()
       this.$router.push('/biketags')
@@ -252,16 +271,20 @@ export default defineComponent({
       this.$router.push('/about')
     },
     goLeaderboardPage: function () {
-      //   this.closeCollapsible()
+      this.closeCollapsible()
       this.$router.push('/leaderboard')
     },
     goUsersPage: function () {
-      //   this.closeCollapsible()
+      this.closeCollapsible()
       this.$router.push('/players')
     },
     goHowPage: function () {
       this.closeCollapsible()
       this.$router.push('/howtoplay')
+    },
+    goHomePage: function () {
+      this.closeCollapsible()
+      this.$router.push('/')
     },
     goBack: function () {
       this.$router.back()

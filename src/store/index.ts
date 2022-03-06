@@ -12,33 +12,44 @@ import {
   getMostRecentlyViewedBikeTagTagnumber,
   getApiUrl,
   setProfileCookie,
-  // GetQueryString,
+  getBikeTagHash,
+  setQueuedTagInCookie,
+  getQueuedTagFromCookie,
 } from '@/common/utils'
 import { BiketagFormSteps, State } from '@/common/types'
 
 // define injection key
+/// TODO: move these initializers to a method for FE use only
 export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(window)
 const profile = getProfileFromCookie()
 const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
+/// TODO: move these options to a method for FE use only
 const options: any = {
-  game: gameName,
-  host: `https://${gameName}.biketag.io/api`,
+  biketag: {
+    host: `https://${gameName}.biketag.io/api`,
+    game: gameName,
+    clientKey: getBikeTagHash(window.location.hostname),
+    clientToken: process.env.ACCESS_TOKEN,
+  },
   ...getBikeTagClientOpts(window, useAuth),
 }
 const gameOpts = useAuth ? { source: 'sanity' } : {}
+/// TODO: move these constants to common
 const defaultLogo = '/images/BikeTag.svg'
 const defaultJingle = 'media/biketag-jingle-1.mp3'
 const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
-console.log('store::init', {
+
+console.log('init::store', {
   subdomain: domain.subdomain,
   domain,
   gameName,
   profile,
 })
 
+/// TODO: create a helper for the instantiation of the biketag client (use singleton?)
 let client = new BikeTagClient(options)
 
 export const store = createStore<State>({
@@ -58,15 +69,27 @@ export const store = createStore<State>({
     profile,
     isBikeTagAmbassador: profile.isBikeTagAmbassador ? true : false,
     mostRecentlyViewedTagnumber,
+    credentialsFetched: false,
   },
   actions: {
+    async fetchCredentials({ state }) {
+      if (!state.credentialsFetched) {
+        const credentials = (
+          await client.request({
+            url: getApiUrl('token'),
+            method: 'POST',
+          })
+        ).data as any
+        await client.config(credentials, false, true)
+      }
+    },
     async setProfile({ commit }, profile) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {
         const token = profile.token
         profile.token = undefined
 
-        const response = await client.request({
+        const response = await client.plainRequest({
           method: 'GET',
           url: getApiUrl('profile'),
           headers: {
@@ -96,6 +119,8 @@ export const store = createStore<State>({
           return commit('SET_GAME', game)
         })
       }
+
+      return false
     },
     setAllGames({ commit }) {
       const biketagClient = new BikeTagClient({ ...options, game: undefined })
@@ -112,6 +137,8 @@ export const store = createStore<State>({
             )
             return commit('SET_ALL_GAMES', supportedGames)
           }
+
+          return false
         })
     },
     setCurrentBikeTag({ commit }) {
@@ -149,6 +176,8 @@ export const store = createStore<State>({
 
             return commit('SET_QUEUED_TAGS', currentBikeTagQueue)
           }
+
+          return false
         })
       }
 
@@ -172,12 +201,6 @@ export const store = createStore<State>({
         return commit('SET_FORM_STEP_TO_JOIN', d)
       }
       return true
-    },
-    setFormStepToApprove({ commit, state }) {
-      if (state.isBikeTagAmbassador) {
-        return commit('SET_FORM_STEP_TO_APPROVE')
-      }
-      return false
     },
     setDataInitialized({ commit }) {
       return commit('SET_DATA_INITIALIZED')
@@ -213,31 +236,33 @@ export const store = createStore<State>({
       return 'incorrect permissions'
     },
     async assignName({ commit }, profile) {
-      console.log('assignName!')
-      await client.request({
+      await client.plainRequest({
         method: 'PUT',
         url: getApiUrl('profile'),
         headers: {
           authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: { user_metadata: profile.user_metadata },
+        data: { user_metadata: { name: profile.user_metadata.name } },
       })
       return commit('SET_PROFILE', profile)
     },
-    async updateProfile({ commit }, profile) {
+    async updateProfile({ commit, state }, profile) {
       // Update Auth0 Profile
-      console.log('updateProfile!')
-      await client.request({
+      profile.name = state.profile.name
+      const user_metadata = profile.user_metadata
+      delete user_metadata.name
+      const updatedProfileResponse = await client.plainRequest({
         method: 'PATCH',
         url: getApiUrl('profile'),
         headers: {
           authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: { user_metadata: profile.user_metadata },
+        data: { user_metadata },
       })
-      return commit('SET_PROFILE', profile)
+
+      return commit('SET_PROFILE', updatedProfileResponse.data)
     },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === state.profile.sub) {
@@ -256,6 +281,8 @@ export const store = createStore<State>({
           }
         })
       }
+
+      return false
     },
     async dequeueMysteryTag({ commit, state }) {
       if (state.queuedTag?.playerId === state.profile.sub) {
@@ -323,6 +350,7 @@ export const store = createStore<State>({
           return t.success
         })
       }
+      return false
     },
     async resetFormStep({ commit }) {
       return commit('RESET_FORM_STEP')
@@ -355,7 +383,7 @@ export const store = createStore<State>({
       })
       return commit('RESET_FORM_STEP_TO_POST')
     },
-    async getAmbassadorPermission({ state }, d) {
+    async getAmbassadorPermission({ state }) {
       return state.profile?.isBikeTagAmbassador
     },
   },
@@ -367,12 +395,16 @@ export const store = createStore<State>({
       const oldState = state.profile
       state.profile = profile
       state.isBikeTagAmbassador = profile?.isBikeTagAmbassador
+      setProfileCookie(profile)
+
+      if (!profile) {
+        setQueuedTagInCookie()
+      }
 
       if (
         profile?.name !== oldState?.name ||
         profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
       ) {
-        setProfileCookie(profile)
         console.log('state::profile', profile)
       }
     },
@@ -435,6 +467,7 @@ export const store = createStore<State>({
     SET_QUEUE_FOUND(state, data) {
       const oldState = state.queuedTag
       state.queuedTag = BikeTagClient.createTagObject(data, state.queuedTag)
+      setQueuedTagInCookie(state.queuedTag)
 
       // state.queuedTag.foundImageUrl = data.foundImageUrl
       // state.queuedTag.foundImage = data.foundImage
@@ -463,6 +496,7 @@ export const store = createStore<State>({
     SET_QUEUE_MYSTERY(state, data) {
       const oldState = state.queuedTag
       state.queuedTag = BikeTagClient.createTagObject(data, state.queuedTag)
+      setQueuedTagInCookie(state.queuedTag)
 
       // state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
       // state.queuedTag.mysteryImage = data.mysteryImage
@@ -496,6 +530,7 @@ export const store = createStore<State>({
       const oldState = state.queuedTag
       state.queuedTag.discussionUrl = data.discussionUrl
       state.queuedTag.mentionUrl = data.mentionUrl
+      setQueuedTagInCookie(state.queuedTag)
 
       if (
         oldState?.discussionUrl !== data?.discussionUrl ||
@@ -508,6 +543,7 @@ export const store = createStore<State>({
     SET_QUEUED_TAG(state, data?: any) {
       const oldState = state.queuedTag
       state.queuedTag = BikeTagClient.createTagObject(data, data ? state.queuedTag : {})
+      setQueuedTagInCookie(data ? state.queuedTag : undefined)
 
       if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
@@ -553,10 +589,6 @@ export const store = createStore<State>({
     RESET_FORM_STEP_TO_MYSTERY(state) {
       state.formStep = BiketagFormSteps.queueMystery
       // console.log('state::queue', BiketagFormSteps[state.formStep])
-    },
-    SET_FORM_STEP_TO_APPROVE(state) {
-      state.formStep = BiketagFormSteps.queueApprove
-      console.log('state::queue', BiketagFormSteps[state.formStep])
     },
   },
   getters: {
@@ -636,7 +668,7 @@ export const store = createStore<State>({
       return BiketagFormSteps[state.formStep]
     },
     getQueuedTag(state) {
-      return state.queuedTag
+      return state.queuedTag ?? getQueuedTagFromCookie()
     },
     getMostRecentlyViewedTagnumber(state) {
       return getMostRecentlyViewedBikeTagTagnumber(state.currentBikeTag.tagnumber)

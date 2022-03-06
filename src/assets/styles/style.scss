@@ -144,10 +144,18 @@ body {
 
     .player-name {
       color: $tag-text-color;
-      font-family: $tag-player-font-family;
+      font-family: $default-font-family;
       font-weight: $tag-player-font-weight;
       font-size: $tag-player-font-size;
       line-height: $tag-player-line-height;
+    }
+
+    .tag-date {
+      color: $tag-text-color;
+      font-family: $tag-date-font-family;
+      font-weight: $tag-date-font-weight;
+      font-size: $tag-date-font-size;
+      line-height: $tag-date-line-height;
     }
 
     .description {
@@ -256,15 +264,13 @@ body {
       }
     }
 
-    .img-wrapper {
-      .tag-player {
-        color: $tag-text-color;
-        font-family: $tag-player-font-family;
-        font-weight: $tag-player-font-weight;
-        font-size: $tag-player-font-size;
-        text-shadow: 2px 2px #292828e6;
-        filter: invert(1);
-      }
+    .tag-player {
+      color: $tag-text-color;
+      font-family: $tag-player-font-family;
+      font-weight: $tag-player-font-weight;
+      font-size: $tag-player-font-size;
+      // text-shadow: 2px 2px #292828e6;
+      // filter: invert(1);
     }
 
     .vld-overlay .vld-background {
@@ -287,6 +293,11 @@ body {
     .user-agree {
       font-size: 0.75rem;
       font-style: italic;
+    }
+
+    .just-center {
+      justify-content: center;
+      align-items: center;
     }
   
   .queue-found-tag, .queue-mystery-tag {

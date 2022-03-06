@@ -17,6 +17,7 @@ $light-pink: hsl(351deg 77% 82% / 100%);
 $mountbatten-pink: hsl(343deg 13% 56% / 100%);
 $black-coral: hsl(235deg 6% 38% / 100%);
 $cadet: hsl(201deg 17% 37% / 100%);
+$black: #28282B;
 
 /* Chosen colors */
 $app-color: $charcoal;
@@ -32,7 +33,7 @@ $btn-secondary-text-color: $cadet;
 /* Component colors */
 $app-bg: linear-gradient(45deg, rgb(100 100 100 / 80%), rgb(150 150 150 / 50%) 70.71%);
 $card-bg-color: #fff;
-$card-border-color: rgb(0 0 0 / 12.5%);
+$card-border-color: $black;
 $btn-upload-color: #ff4500;
 $btn-upload-text-color: #fff;
 $btn-found-shadow-color: rgb(13 202 240 / 50%);
@@ -48,14 +49,14 @@ $btn-post-shadow-color: rgb(214 51 132 / 50%);
 $btn-post-text-color: #fff;
 $btn-hint-color: rgba(255 255 255 / 50%);
 $btn-hint-shadow-color: rgb(255 255 255 / 0%);
-$btn-hint-text-color: black;
+$btn-hint-text-color: 28282B;
 $btn-swiper-color: rgba(255 255 255 / 2500%);
-$tag-text-color: #fff;
-$tag-number-color: black;
+$tag-text-color: $black;
+$tag-number-color: $black;
 $tag-number-bg-color: hsl(40deg 100% 80%);
 $tag-count-bg-color: #d63384;
 $tag-count-text-color: #fff;
-$player-name-text-color: #fff;
+$player-name-text-color: $black;
 
 /* Aliased colors */
 $link-color: $primary-color;

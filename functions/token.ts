@@ -1,59 +1,46 @@
-import { builder, Handler } from '@netlify/functions'
+import { Handler } from '@netlify/functions'
 import { BikeTagClient } from 'biketag'
 import request from 'request'
-import { getBikeTagClientOpts, getBikeTagHash, getPayloadAuthorization } from './common/methods'
+import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadAuthorization } from './common/methods'
 
-const authorizeHandler: Handler = async (event) => {
+const tokenHandler: Handler = async (event) => {
+  /// Bailout on OPTIONS requests
+  let headers = acceptCorsHeaders(false)
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers,
+    }
+  }
+
   const authorization = await getPayloadAuthorization(event)
   let body = 'missing authorization header'
   let statusCode = 401
 
   if (authorization) {
+    headers = acceptCorsHeaders(true)
     const biketagOpts = getBikeTagClientOpts(
       {
         ...event,
         method: event.httpMethod,
       } as unknown as request.Request,
+      true,
       true
     )
-    const biketag = new BikeTagClient(biketagOpts)
-    const config = biketag.config()
-    const controlCheck = getBikeTagHash(new URL(`http://${event.headers.host}`).hostname)
-    // console.log({ authorization, imgur: config.imgur, controlCheck })
-    const authorizationIsAccessToken =
-      config.biketag.accessToken === authorization ||
-      config.imgur?.refreshToken === authorization ||
-      config.sanity?.token === authorization ||
-      config.reddit?.refreshToken === authorization ||
-      config.twitter?.bearer_token === authorization
-    const authorizationIsClientToken = controlCheck === authorization
 
-    if (authorizationIsAccessToken) {
-      body = JSON.stringify({
-        imgur: {
-          clientId: config.imgur.clientId,
-          clientSecret: config.imgur.clientSecret,
-          refreshToken: config.imgur.refreshToken,
-        },
-      })
-      statusCode = 200
-    } else if (authorizationIsClientToken) {
-      body = JSON.stringify({
-        imgur: {
-          clientId: config.imgur.clientId,
-        },
-      })
-      statusCode = 200
-    } else {
-      body = 'invalid authorization'
-    }
+    const biketag = new BikeTagClient(biketagOpts)
+    const credentials = await biketag.fetchCredentials(authorization)
+    body = JSON.stringify(credentials)
+    statusCode = 200
+  } else {
+    body = 'invalid authorization'
   }
+
   return {
-    statusCode,
+    headers,
     body,
+    statusCode,
   }
 }
 
-const handler = builder(authorizeHandler)
-
-export { handler }
+export { tokenHandler as handler }
