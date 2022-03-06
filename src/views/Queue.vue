@@ -175,6 +175,8 @@ export default defineComponent({
       this.uploadInProgress = false
 
       if (success === true) {
+        /// Get a clean cache
+        await this.$store.dispatch('setTags')
         /// Update the queue
         this.$store.dispatch('setQueuedTags', true)
 

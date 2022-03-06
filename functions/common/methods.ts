@@ -28,6 +28,9 @@ export const getBikeTagClientOpts = (
   const opts: any = {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     cached: isGET || !isAuthenticatedPOST,
+    biketag: {
+      accessToken: process.env.ACCESS_TOKEN,
+    },
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
     },
@@ -39,9 +42,9 @@ export const getBikeTagClientOpts = (
     opts.imgur.accessToken = process.env.IMGUR_ACCESS_TOKEN
     opts.imgur.refreshToken = process.env.IMGUR_REFRESH_TOKEN
 
-    opts.reddit = opts.reddit ?? {}
-    opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
-    opts.reddit.clientSecret = process.env.REDDIT_CLIENT_SECRET
+    // opts.reddit = opts.reddit ?? {}
+    // opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
+    // opts.reddit.clientSecret = process.env.REDDIT_CLIENT_SECRET
     /// TODO: comes from sanity game settings
     // opts.reddit.username = process.env.REDDIT_USERNAME
     // opts.reddit.password = process.env.REDDIT_PASSWORD
@@ -62,10 +65,10 @@ export const getBikeTagClientOpts = (
       opts.sanity.dataset = process.env.SANITY_ADMIN_DATASET
       opts.sanity.token = process.env.SANITY_ADMIN_TOKEN
 
-      opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
-      opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
-      opts.reddit.username = process.env.REDDIT_ADMIN_USERNAME
-      opts.reddit.password = process.env.REDDIT_ADMIN_PASSWORD
+      // opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
+      // opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
+      // opts.reddit.username = process.env.REDDIT_ADMIN_USERNAME
+      // opts.reddit.password = process.env.REDDIT_ADMIN_PASSWORD
     }
   }
 
@@ -348,7 +351,9 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
       const { payload } = await jose.jwtVerify(authorizationString, JWKS)
       return payload
     } catch (e) {
-      console.error({ authorizationAuth0ValidationError: e })
+      /// Swallow error
+      // console.error({ authorizationAuth0ValidationError: e })
+      return authorizationString
     }
   }
 }

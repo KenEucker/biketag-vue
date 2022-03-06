@@ -178,7 +178,7 @@ export default defineComponent({
     ]),
     isShow() {
       if (this.$route.name) {
-        console.log(`view::${this.$route.name}`)
+        console.log(`view::${this.$route.name}`, 'SECOND PAINT')
       }
       return this.$route.name !== 'Play'
     },
@@ -193,14 +193,15 @@ export default defineComponent({
   },
   async created() {
     if (!this.isDataInitialized) {
+      const initResults = []
       /// Set it first thing
-      this.$store.dispatch('setDataInitialized')
+      initResults.push(this.$store.dispatch('setDataInitialized'))
 
-      await this.$store.dispatch('setGame')
-      await this.$store.dispatch('setTags')
-      await this.$store.dispatch('setCurrentBikeTag')
-      await this.$store.dispatch('setQueuedTags')
-      await this.$store.dispatch('setPlayers')
+      initResults.push(await this.$store.dispatch('setGame'))
+      initResults.push(await this.$store.dispatch('setTags'))
+      initResults.push(await this.$store.dispatch('setCurrentBikeTag'))
+      initResults.push(await this.$store.dispatch('setQueuedTags'))
+      initResults.push(await this.$store.dispatch('setPlayers'))
 
       if (this.$auth.isAuthenticated && !this.getProfile?.nonce?.length) {
         const claims = await this.$auth.getIdTokenClaims()
@@ -211,6 +212,7 @@ export default defineComponent({
           console.log('what is this?')
         }
       }
+      console.log(`view::data-init`, initResults)
     }
   },
   mounted() {

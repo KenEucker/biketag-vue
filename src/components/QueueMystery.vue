@@ -2,12 +2,15 @@
   <div class="queue-mystery-tag">
     <b-modal v-model="modalShow" title="BootstrapVue" hide-footer hide-header>
       <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
-      <bike-tag-button class="modal-header" variant="medium">
-        <p>You are {{ stringifyNumber(numberInQueue) }} in the Queue!</p>
-      </bike-tag-button>
-      <p style="text-align: center" class="go-queue" @click="goViewQueue">
-        {{ $t('components.queue.view_queue_button') }}
-      </p>
+      <h3 class="modal-header">
+        {{ $t('You are ') }}{{ ordinalSuffixOf(numberInQueue) }}
+        {{ $t('in the current round!') }}
+      </h3>
+      <bike-tag-button
+        variant="medium"
+        :text="$t('components.queue.view_queue_button')"
+        @click="goViewQueue"
+      />
     </b-modal>
     <!-- <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3> -->
     <div class="title-cnt">
@@ -94,7 +97,7 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
-import { stringifyNumber, getApiUrl } from '@/common/utils'
+import { stringifyNumber, ordinalSuffixOf } from '@/common/utils'
 
 export default defineComponent({
   name: 'QueueMysteryTag',
@@ -165,7 +168,7 @@ export default defineComponent({
       })
     },
     setImage(event) {
-      await this.$store.dispatch('fetchCredentials')
+      this.$store.dispatch('fetchCredentials')
       var input = event.target
       if (input.files) {
         this.image = input.files[0]
@@ -184,6 +187,7 @@ export default defineComponent({
       this.modalShow = false
     },
     stringifyNumber,
+    ordinalSuffixOf,
   },
 })
 </script>
@@ -195,6 +199,7 @@ export default defineComponent({
   align-items: center;
   margin-top: 1rem;
   font-size: 2rem;
+  font-family: 'PrequelRough';
   @media (min-width: 470px) {
     font-size: 3rem;
   }

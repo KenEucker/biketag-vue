@@ -51,7 +51,7 @@ export default defineComponent({
   async created() {
     this.tagIsLoading = true
     await this.$store.dispatch('setGame')
-    await this.$store.dispatch('setTags')
+    await this.$store.dispatch('setTags', true)
     await this.$store.dispatch('setCurrentBikeTag')
     this.tagIsLoading = false
   },

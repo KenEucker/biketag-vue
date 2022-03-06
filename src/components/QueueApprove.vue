@@ -145,10 +145,13 @@ export default defineComponent({
       'getAmbassadorId',
     ]),
   },
-  mounted() {
+  async mounted() {
     if (!this.isBikeTagAmbassador) {
       /// kick it sideways
-      console.log("YOU DIDN'T SAY THE MAGIC WORD!")
+      for (let x = 0; x < 1000; ++x) {
+        const uhuhuh = () => console.log("YOU DIDN'T SAY THE MAGIC WORD!")
+        await setTimeout(uhuhuh, 1)
+      }
       this.$router.push('/')
     }
   },
