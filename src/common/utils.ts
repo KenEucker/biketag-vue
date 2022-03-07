@@ -292,7 +292,10 @@ export const getSanityImageUrl = (
 }
 
 export const getApiUrl = (path = '') => {
-  return process.env.CONTEXT === 'dev'
-    ? `${window.location.protocol}//${window.location.hostname}:7200/.netlify/functions/${path}`
-    : `/api/${path}`
+  const url =
+    process.env.CONTEXT === 'dev'
+      ? `${window.location.protocol}//${window.location.hostname}:7200/.netlify/functions/${path}`
+      : `/api/${path}`
+
+  return url
 }

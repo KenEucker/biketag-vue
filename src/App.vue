@@ -1,9 +1,9 @@
 <template>
   <div class="spacer-top"></div>
-  <bike-tag-menu variant="top" />
+  <bike-tag-menu v-if="gameIsSet" variant="top" />
   <service-worker />
   <router-view />
-  <bike-tag-menu variant="bottom" />
+  <bike-tag-menu v-if="gameIsSet" variant="bottom" />
   <div class="spacer-bottom"></div>
 </template>
 <script>
@@ -17,8 +17,17 @@ export default defineComponent({
     ServiceWorker,
     BikeTagMenu,
   },
+  data() {
+    return {
+      gameIsSet: true,
+    }
+  },
   async created() {
-    await this.$store.dispatch('setGame')
+    const game = await this.$store.dispatch('setGame')
+    if (!game) {
+      this.$router.push('/landing')
+      this.gameIsSet = false
+    }
   },
 })
 </script>

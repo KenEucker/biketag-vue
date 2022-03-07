@@ -28,7 +28,9 @@ const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
 /// TODO: move these options to a method for FE use only
 const options: any = {
+  cached: false,
   biketag: {
+    cached: false,
     host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.io/api`,
     game: gameName,
     clientKey: getBikeTagHash(window.location.hostname),
@@ -105,15 +107,19 @@ export const store = createStore<State>({
 
       return commit('SET_PROFILE', profile)
     },
-    setGame({ commit, state }) {
+    async setGame({ commit, state }) {
       if (!state.game?.mainhash) {
-        return client.game(state.gameName, gameOpts as any).then((d) => {
-          const game = d as Game
-          options.imgur.hash = game.mainhash
-          options.imgur.queuehash = game.queuehash
-          client = new BikeTagClient(options)
+        return client.game(state.gameName, gameOpts as any).then(async (d) => {
+          if (d) {
+            const game = d as Game
+            options.imgur.hash = game.mainhash
+            options.imgur.queuehash = game.queuehash
+            client = new BikeTagClient(options)
 
-          return commit('SET_GAME', game)
+            await commit('SET_GAME', game)
+            return game
+          }
+          return false
         })
       }
 

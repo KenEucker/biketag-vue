@@ -107,7 +107,7 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
-import ExifParser from 'exif-parser'
+import exifr from 'exifr'
 import Pin from '@/assets/images/pin.svg'
 
 export default defineComponent({
@@ -136,7 +136,6 @@ export default defineComponent({
       locationDisabled: true,
       center: { lat: 0, lng: 0 },
       gps: { lat: null, lng: null },
-      imageGps: null,
       pinIcon: Pin,
       showPopover: false,
       inputDOM: null,
@@ -150,6 +149,7 @@ export default defineComponent({
       'getPlayerId',
       'getCurrentBikeTag',
       'getProfile',
+      'getGame',
     ]),
     getName() {
       return this.getProfile?.user_metadata?.name ?? this.tag?.foundPlayer ?? ''
@@ -250,17 +250,22 @@ export default defineComponent({
             this.preview = e.target.result
           }
           previewReader.readAsDataURL(this.image)
-          this.image.arrayBuffer().then((value) => {
-            const results = ExifParser.create(value).parse()
-            if (results.tags.GPSLatitude != null && results.tags.GPSLongitude != null) {
-              this.gps = {
-                lat: this.round(results.tags.GPSLatitude),
-                lng: this.round(results.tags.GPSLongitude),
+          this.image.arrayBuffer().then(async (value) => {
+            const results = await exifr.gps(value)
+            if (results) {
+              console.log({ results })
+              if (results.latitude != null && results.longitude != null) {
+                this.gps = {
+                  lat: this.round(results.latitude),
+                  lng: this.round(results.longitude),
+                }
               }
-              this.imageGps = { ...this.gps }
-              this.center = { ...this.gps }
-              this.location = this.getLocation
+            } else {
+              console.log({ defaulting: this.getGame.boundary }, this.getGame)
+              this.gps = this.getGame.boundary
             }
+            this.center = { ...this.gps }
+            this.location = this.getLocation
           })
         } catch (e) {
           console.error(e)

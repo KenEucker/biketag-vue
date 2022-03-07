@@ -32,7 +32,7 @@ export default defineConfig({
       USE_AUTHENTICATION: process.env.USE_AUTHENTICATION ?? null,
       SUPER_ADMIN: process.env.SUPER_ADMIN ?? 'biketag@biketag.org',
       /* BikeTag Configuration */
-      GAME_NAME: process.env.GAME_NAME ?? 'test',
+      GAME_NAME: process.env.GAME_NAME ?? 'null',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,
       HOST: process.env.HOST ?? 'biketag.io',
       HOST_KEY: process.env.HOST_KEY ?? 'ItsABikeTagGame',
