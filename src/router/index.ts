@@ -3,6 +3,11 @@ import { authGuard } from '@/auth/authGuard'
 
 const routes: Array<RouteRecordRaw> = [
   {
+    path: '/landing',
+    name: 'Landing',
+    component: () => import('@/views/Landing.vue')
+  },
+  {
     path: '/:tagnumber?',
     name: 'Play',
     component: () => import('@/views/Play.vue'),
