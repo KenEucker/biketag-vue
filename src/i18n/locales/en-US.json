@@ -19,8 +19,8 @@
     "profile": "Profile",
     "login": "Login",
     "logout": "Logout",
-	"hint": "Hint",
-	"mysterylocation": "Mystery Location"
+    "hint": "Hint",
+    "mysterylocation": "Mystery Location"
   },
   "components": {
     "biketag": {
@@ -38,7 +38,7 @@
       "view_mystery_image": "Queued Mystery Image",
       "view_found_image": "Queued Found Image",
       "current_mystery_location": "Current Mystery Location",
-      "view_queue_button": "VIEW QUEUE",
+      "view_queue_button": "View tags in this round",
       "reset_queue_button": "RESET",
       "queue_mystery_title": "Add your new Mystery Location"
     }

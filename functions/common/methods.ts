@@ -232,24 +232,7 @@ export interface IdentityContext {
   claims: Record<string, unknown>
 }
 
-/**
- * Return a JSON response.
- * @param statusCode
- * @param body
- */
-const json = (statusCode: number, body: Record<string, unknown>) => {
-  return {
-    statusCode,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  }
-}
-
-/**
- * Middleware to validate a token and set the user context.
- */
+/// For netlify identity JWT decoding
 const validateJWT = (verifier: JwtVerifier, options: any) => {
   return (handler: any) => async (event: Event, context: any, cb: any) => {
     let claims
@@ -263,10 +246,16 @@ const validateJWT = (verifier: JwtVerifier, options: any) => {
         return options.handleError(err)
       }
 
-      return json(401, {
-        error: err.code,
-        error_description: err.message,
-      })
+      return {
+        statusCode: 401,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          error: err.code,
+          error_description: err.message,
+        }),
+      }
     }
 
     // Expose the identity in the client context.

@@ -171,6 +171,7 @@ export default defineComponent({
       const errorAction = this.$refs.queueError.getAttribute('action')
 
       this.uploadInProgress = true
+      console.log('deleting', tag)
       const success = await this.$store.dispatch(storeAction, tag)
       this.uploadInProgress = false
 

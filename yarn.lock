@@ -2937,10 +2937,10 @@ better-opn@^3.0.0:
   dependencies:
     open "^8.0.4"
 
-biketag@^2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-2.0.7.tgz#fe677c8007534a3446b4cec0b5501c7bbcd9f7b0"
-  integrity sha512-QnQ4worhT49bOF7LtvC0vBrVmLC4jGKBUbyq/Uuas0xU9lBYT7Yu20NkO2FdWbeu5H1vXVbIVBTQVJrb44iviQ==
+biketag@^2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-2.0.8.tgz#49f2d518c49d26ea57d233e68d834d059ccd7cb3"
+  integrity sha512-uSFw3ReVfQydOitpTXWqXH14Vqw5xeSd1ndS1bXT3dwS/gOHTK4+xnzYcMbDjRNpvqyQcsayuO3fS3r65dzFHA==
   dependencies:
     "@croquet/croquet" "^1.0.5"
     "@sanity/client" "^2.23.2"
@@ -3074,12 +3074,12 @@ browser-tabs-lock@^1.2.15:
     lodash ">=4.17.21"
 
 browserslist@^4.17.5, browserslist@^4.19.1:
-  version "4.19.3"
-  resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.19.3.tgz#29b7caad327ecf2859485f696f9604214bedd383"
-  integrity sha512-XK3X4xtKJ+Txj8G5c30B4gsm71s69lqXlkYui4s6EkKxuv49qjYlY6oVd+IFJ73d4YymtM3+djvvt/R/iJwwDg==
+  version "4.20.0"
+  resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.20.0.tgz#35951e3541078c125d36df76056e94738a52ebe9"
+  integrity sha512-bnpOoa+DownbciXj0jVGENf8VYQnE2LNWomhYuCsMmmx9Jd9lwq0WXODuwpSsp8AVdKM2/HorrzxAfbKvWTByQ==
   dependencies:
-    caniuse-lite "^1.0.30001312"
-    electron-to-chromium "^1.4.71"
+    caniuse-lite "^1.0.30001313"
+    electron-to-chromium "^1.4.76"
     escalade "^3.1.1"
     node-releases "^2.0.2"
     picocolors "^1.0.0"
@@ -3272,7 +3272,7 @@ camelcase@^6.0.0, camelcase@^6.2.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-6.3.0.tgz#5685b95eb209ac9c0c177467778c9c84df58ba9a"
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
-caniuse-lite@^1.0.30001312:
+caniuse-lite@^1.0.30001313:
   version "1.0.30001313"
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001313.tgz#a380b079db91621e1b7120895874e2fd62ed2e2f"
   integrity sha512-rI1UN0koZUiKINjysQDuRi2VeSCce3bYJNmDcj3PIKREiAmjakugBul1QSkg/fPrlULYl6oWfGg3PbgOSY9X4Q==
@@ -4372,7 +4372,7 @@ ejs@^3.1.6:
   dependencies:
     jake "^10.6.1"
 
-electron-to-chromium@^1.4.71:
+electron-to-chromium@^1.4.76:
   version "1.4.76"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.76.tgz#a0494baedaf51094b1c172999919becd9975a934"
   integrity sha512-3Vftv7cenJtQb+k00McEBZ2vVmZ/x+HEF7pcZONZIkOsESqAqVuACmBxMv0JhzX7u0YltU0vSqRqgBSTAhFUjA==
@@ -6855,9 +6855,9 @@ jest-worker@^26.2.1:
     supports-color "^7.0.0"
 
 jose@^4.5.1:
-  version "4.5.3"
-  resolved "https://registry.yarnpkg.com/jose/-/jose-4.5.3.tgz#ce9dc9423e69080e50b2d1e6dda508011af4a532"
-  integrity sha512-8/ZwHYnowlqJElKuBUB7nk5W6FmkoUS1Nol61VMv/F9owQ8wDOnT8aLTBo/aglrLScpYt+4mb2StgWMteggjjA==
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-4.6.0.tgz#f3ff007ddcbce462c091d3d41b7af2e35dec348c"
+  integrity sha512-0hNAkhMBNi4soKSAX4zYOFV+aqJlEz/4j4fregvasJzEVtjDChvWqRjPvHwLqr5hx28Ayr6bsOs1Kuj87V0O8w==
 
 js-sizeof@0.0.1:
   version "0.0.1"
@@ -9664,9 +9664,9 @@ rollup-pluginutils@^2.8.1, rollup-pluginutils@^2.8.2:
     estree-walker "^0.6.1"
 
 rollup@^2.23.1, rollup@^2.43.1, rollup@^2.59.0, rollup@^2.60.2:
-  version "2.69.1"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.69.1.tgz#d37f8bf9c9d60018df58c5c9ec36705a7b90dc6e"
-  integrity sha512-xaQKTomUVZBopk38EIshM/kOoPFkKWisgBV7Emy80coP9MOSLUDrba1jKZhqH0iS5DoGcRbbcuyl/BzblV8w5w==
+  version "2.69.2"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.69.2.tgz#5e0f3b6d07b2a293bc4f4727315dcddb46a96b85"
+  integrity sha512-KghktpWg3Wd+nYCsx3Griidm2/CKIJYG2yyaaKspo0TXSoGdW+0duwzKl4wWIu62oN3mFg3zCDbwVRPwuNPPlA==
   optionalDependencies:
     fsevents "~2.3.2"
 

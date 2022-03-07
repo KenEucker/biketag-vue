@@ -44,6 +44,8 @@ export default defineComponent({
 .biketag-input {
   @include background-btn;
   height: 5.5rem;
+  position: relative;
+
   input,
   label {
     position: absolute;

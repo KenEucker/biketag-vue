@@ -121,7 +121,7 @@ export default defineComponent({
       player: '',
       hint: this.tag?.hint ?? '',
       image: this.tag?.mysteryImage,
-      modalShow: true,
+      modalShow: false,
     }
   },
   computed: {
@@ -133,11 +133,8 @@ export default defineComponent({
       'getQueuedTags',
     ]),
     numberInQueue() {
-      console.log(this.getQueuedTags)
       return this.getQueuedTags?.reduce((o, t, n) => {
-        console.log(t, this.getQueuedTag, n, this.getQueuedTag?.playerId)
         if (t.playerId === this.getQueuedTag?.playerId) {
-          console.log({ n })
           o = n + 1
         }
         return o
@@ -146,6 +143,7 @@ export default defineComponent({
   },
   mounted() {
     this.player = this.getQueuedTag?.foundPlayer
+    this.modalShow = true
   },
   methods: {
     onSubmit(e) {

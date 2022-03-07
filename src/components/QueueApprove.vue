@@ -44,7 +44,7 @@
           size="l"
           :show-posted-date="false"
           :sized-mystery-image="false"
-          mystery-image-url="@/assets/images/blank.png"
+          mystery-image-url="/images/no_image.png"
           mystery-description="Mystery image not yet uploaded"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
           :found-description="stringifyNumber(index + 1)"
@@ -52,8 +52,9 @@
       </swiper-slide>
     </swiper>
     <div class="container">
-      <div class="row just-center">
+      <div class="approve-button row just-center">
         <form
+          v-if="currentIsReadyForApproval"
           ref="approveTag"
           name="approve-queued-tag"
           action="approve-queued-tag"
@@ -64,6 +65,7 @@
         >
           <input type="hidden" name="form-name" value="approve-queued-tag" />
           <input type="hidden" name="ambassadorId" value="" />
+          <span>APPROVE</span>
           <bike-tag-button class="circle-button" variant="circle" type="submit" label="Approve">
             <img src="/images/green-circle-check.png" alt="Approve This Tag" />
           </bike-tag-button>
@@ -79,15 +81,15 @@
         >
           <input type="hidden" name="form-name" value="dequeue-queued-tag" />
           <input type="hidden" name="ambassadorId" value="" />
-
           <bike-tag-button class="circle-button" variant="circle" type="submit" label="Remove">
             <img src="/images/red-circle-x.png" alt="Delete This Tag" />
           </bike-tag-button>
+          <span>REMOVE</span>
         </form>
       </div>
       <div class="row">
-        <img class="ambassador-icon" src="/images/biketag-ambassador.svg" alt="Ambassador Icon" />
         <span class="player-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
+        <img class="ambassador-icon" src="/images/biketag-ambassador.svg" alt="Ambassador Icon" />
       </div>
     </div>
   </div>
@@ -137,6 +139,12 @@ export default defineComponent({
       'getProfile',
       'getAmbassadorId',
     ]),
+    currentIsReadyForApproval() {
+      return this.currentlySelectedTag?.mysteryImageUrl && this.currentlySelectedTag?.foundImageUrl
+    },
+    currentlySelectedTag() {
+      return this.getQueuedTags[this.controlledSwiper?.activeIndex]
+    },
   },
   async mounted() {
     if (!this.isBikeTagAmbassador) {
@@ -149,41 +157,13 @@ export default defineComponent({
     }
   },
   methods: {
-    dequeueTagOld() {
-      const tagToDequeue = {
-        ambassadorId: this.getAmbassadorId,
-      }
-      return this.$store.dispatch('dequeueTag', tagToDequeue).then((dequeueSuccessful) => {
-        if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-          this.$toast.open({
-            message: `dequeue tag error: ${dequeueSuccessful}`,
-            type: 'error',
-            timeout: false,
-            position: 'bottom',
-          })
-          return this.$store.dispatch('setQueuedTags', true)
-        } else {
-          return this.$toast.open({
-            message: 'tag successfully dequeued',
-            type: 'success',
-            timeout: false,
-            position: 'top',
-          })
-        }
-      })
-    },
     dequeueTag() {
-      const formAction = this.$refs.approveTag.getAttribute('action')
-      const formData = new FormData(this.$refs.approveTag)
-      const approvedTag = {
-        ambassadorId: this.getAmbassadorId,
-        expiry: window.location.expiry,
-      }
-
-      this.$emit('submit', {
+      const formAction = this.$refs.dequeueTag.getAttribute('action')
+      const formData = new FormData(this.$refs.dequeueTag)
+      const tagToRemove = this.$emit('submit', {
         formAction,
         formData,
-        tag: approvedTag,
+        tag: tagToRemove,
         storeAction: 'dequeueTag',
       })
     },
@@ -192,7 +172,6 @@ export default defineComponent({
       const formData = new FormData(this.$refs.approveTag)
       const approvedTag = {
         ambassadorId: this.getAmbassadorId,
-        expiry: window.location.expiry,
       }
 
       this.$emit('submit', {
@@ -216,6 +195,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+@import '../assets/styles/style.scss';
 .queue-approve {
   .card .tag-number {
     display: none;
@@ -243,5 +223,21 @@ i {
 }
 form {
   flex-basis: fit-content;
+  display: flex;
+}
+.player-agree {
+  max-width: 50%;
+  margin: auto;
+}
+
+.approve-button {
+  font-family: PrequelRough;
+  vertical-align: middle;
+
+  span {
+    margin: auto;
+    padding-left: 1em;
+    padding-right: 1em;
+  }
 }
 </style>
