@@ -29,7 +29,7 @@ const useAuth = process.env.USE_AUTHENTICATION === 'true'
 /// TODO: move these options to a method for FE use only
 const options: any = {
   biketag: {
-    host: `https://${gameName}.biketag.io/api`,
+    host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.io/api`,
     game: gameName,
     clientKey: getBikeTagHash(window.location.hostname),
     clientToken: process.env.ACCESS_TOKEN,
@@ -65,7 +65,7 @@ export const store = createStore<State>({
     leaderboard: [] as Player[],
     html: '',
     formStep: BiketagFormSteps.queueView,
-    queuedTag: {} as Tag,
+    queuedTag: getQueuedTagFromCookie() ?? ({} as Tag),
     profile,
     isBikeTagAmbassador: profile.isBikeTagAmbassador ? true : false,
     mostRecentlyViewedTagnumber,
@@ -74,13 +74,10 @@ export const store = createStore<State>({
   actions: {
     async fetchCredentials({ state }) {
       if (!state.credentialsFetched) {
-        const credentials = (
-          await client.request({
-            url: getApiUrl('token'),
-            method: 'POST',
-          })
-        ).data as any
+        const credentials = await client.fetchCredentials()
+        console.log({ credentials })
         await client.config(credentials, false, true)
+        state.credentialsFetched = true
       }
     },
     async setProfile({ commit }, profile) {
@@ -223,12 +220,13 @@ export const store = createStore<State>({
     async dequeueTag({ state }, d) {
       if (state.isBikeTagAmbassador) {
         d.hash = state.game.queuehash
-        return client.deleteTag(d.tag).then((t) => {
+        return client.deleteTag(d).then((t) => {
+          console.log({ t })
           if (t.success) {
-            console.log('store::tag dequeued', d.tag)
+            console.log('store::tag dequeued', d)
           } else {
             console.log('error::dequeue BikeTag failed', t)
-            return t.error
+            return t.error ? t.error : Array.isArray(t.data) ? t.data.join(' - ') : t.data
           }
           return 'successfully dequeued tag'
         })
@@ -276,8 +274,7 @@ export const store = createStore<State>({
 
             return true
           } else {
-            console.log('error::dequeue BikeTag failed', t)
-            return t.error
+            return t.error ? t.error : Array.isArray(t.data) ? t.data.join(' - ') : t.data
           }
         })
       }
@@ -614,6 +611,9 @@ export const store = createStore<State>({
     getPlayerId(state) {
       return state.profile.sub
     },
+    getGameBoundary(state) {
+      return state.game?.boundary
+    },
     getGameSettings(state) {
       return state.game?.settings
     },
@@ -668,7 +668,7 @@ export const store = createStore<State>({
       return BiketagFormSteps[state.formStep]
     },
     getQueuedTag(state) {
-      return state.queuedTag ?? getQueuedTagFromCookie()
+      return state.queuedTag
     },
     getMostRecentlyViewedTagnumber(state) {
       return getMostRecentlyViewedBikeTagTagnumber(state.currentBikeTag.tagnumber)

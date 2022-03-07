@@ -73,6 +73,7 @@ export default defineComponent({
     ]),
   },
   async mounted() {
+    await this.$store.dispatch('fetchCredentials')
     this.uploadInProgress = false
   },
   async created() {
@@ -97,11 +98,16 @@ export default defineComponent({
       window.scrollTo(0, 0)
 
       this.$toast.open({
-        message: this.$t('notifications.approving'),
+        message:
+          storeAction.indexOf('approve') !== -1
+            ? this.$t('notifications.approving')
+            : this.$t('notifications.removing'),
         type: 'info',
         position: 'top',
       })
       const errorAction = this.$refs.queueError.getAttribute('action')
+
+      console.log('onApproveSubmit', { storeAction, tag })
 
       this.uploadInProgress = true
       const success = await this.$store.dispatch(storeAction, tag)

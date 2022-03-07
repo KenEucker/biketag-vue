@@ -125,12 +125,16 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
   const existingProfileString = cookies.get(profileCookieKey)
 
   if (existingProfileString) {
-    const existingProfileDecodedString = CryptoJS.AES.decrypt(
-      existingProfileString,
-      process.env.HOST_KEY ?? 'BikeTag'
-    )
-    const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
-    return existingProfile
+    try {
+      const existingProfileDecodedString = CryptoJS.AES.decrypt(
+        existingProfileString,
+        process.env.HOST_KEY ?? 'BikeTag'
+      )
+      const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
+      return existingProfile
+    } catch (e) {
+      /// Swallow anonymous
+    }
   }
 
   const profile = { sub: new DeviceUUID().get() }
@@ -141,11 +145,10 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
 
 export const getQueuedTagFromCookie = (biketagCookieKey = 'biketag'): Tag | undefined => {
   const { cookies } = useCookies()
-  const existingBikeTagString = cookies.get(biketagCookieKey)
+  const existingBikeTag = cookies.get(biketagCookieKey)
 
-  if (existingBikeTagString) {
-    const existingBikeTag = JSON.parse(existingBikeTagString)
-    return existingBikeTag
+  if (existingBikeTag) {
+    return existingBikeTag as unknown as Tag
   }
 }
 
@@ -288,8 +291,7 @@ export const getSanityImageUrl = (
     .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
 }
 
-export const getApiUrl = (path: string) => {
-  // console.log('env', process.env, { path })
+export const getApiUrl = (path = '') => {
   return process.env.CONTEXT === 'dev'
     ? `${window.location.protocol}//${window.location.hostname}:7200/.netlify/functions/${path}`
     : `/api/${path}`

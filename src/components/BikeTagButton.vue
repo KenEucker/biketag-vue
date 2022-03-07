@@ -73,9 +73,6 @@ export default defineComponent({
     }
 
     &--circle {
-      position: absolute;
-      z-index: 2;
-
       &-circle-clean {
       }
     }

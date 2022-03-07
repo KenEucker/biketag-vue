@@ -74,6 +74,7 @@
             :zoom="18"
             map-type-id="roadmap"
             style="width: 300px; height: 400px"
+            :region="getGameBoundary"
           >
             <GMapMarker
               :icon="pinIcon"
@@ -85,7 +86,6 @@
           </GMapMap>
         </b-popover>
         <bike-tag-input
-          v-if="!$auth.isAuthenticated"
           id="player"
           v-model="player"
           name="player"
@@ -93,11 +93,6 @@
           :placeholder="$t('pages.queue.name_placeholder')"
         />
       </div>
-      <!-- <bike-tag-button
-        variant="medium"
-        type="submit"
-        :text="`${$t('pages.queue.queue_found_tag')} ${$t('pages.queue.queue_postfix')}`"
-      /> -->
       <bike-tag-button
         variant="medium"
         type="submit"
@@ -184,12 +179,14 @@ export default defineComponent({
       e.preventDefault()
       if (this.location.length == 0) {
         if (this.gps.lat == null) {
+          console.log('location must be set')
           return
         }
         this.location = this.getLocation
       }
       if (this.player.length == 0) {
         if (this.getName.length == 0) {
+          console.log('player name must set')
           return
         } else {
           this.player = this.getName
@@ -219,6 +216,7 @@ export default defineComponent({
       })
     },
     changeLocation(e) {
+      console.log({ changeLocation: e.target.value })
       this.location = e.target.value
       if (this.inputDOM == null) {
         this.inputDOM = e.target
@@ -244,25 +242,29 @@ export default defineComponent({
       this.$store.dispatch('fetchCredentials')
       var input = event.target
       if (input.files) {
-        this.image = input.files[0]
-        const previewReader = new FileReader()
-        previewReader.onload = (e) => {
-          this.preview = e.target.result
-        }
-        previewReader.readAsDataURL(this.image)
-        this.image.arrayBuffer().then((value) => {
-          const results = ExifParser.create(value).parse()
-          if (results.tags.GPSLatitude != null && results.tags.GPSLongitude != null) {
-            this.gps = {
-              lat: this.round(results.tags.GPSLatitude),
-              lng: this.round(results.tags.GPSLongitude),
-            }
-            this.imageGps = { ...this.gps }
-            this.center = { ...this.gps }
-            this.location = this.getLocation
+        this.locationDisabled = false
+        try {
+          this.image = input.files[0]
+          const previewReader = new FileReader()
+          previewReader.onload = (e) => {
+            this.preview = e.target.result
           }
-          this.locationDisabled = false
-        })
+          previewReader.readAsDataURL(this.image)
+          this.image.arrayBuffer().then((value) => {
+            const results = ExifParser.create(value).parse()
+            if (results.tags.GPSLatitude != null && results.tags.GPSLongitude != null) {
+              this.gps = {
+                lat: this.round(results.tags.GPSLatitude),
+                lng: this.round(results.tags.GPSLongitude),
+              }
+              this.imageGps = { ...this.gps }
+              this.center = { ...this.gps }
+              this.location = this.getLocation
+            }
+          })
+        } catch (e) {
+          console.error(e)
+        }
       }
     },
   },

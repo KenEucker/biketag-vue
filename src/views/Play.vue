@@ -105,9 +105,6 @@ export default defineComponent({
     await this.$store.dispatch('setCurrentBikeTag')
     this.tagIsLoading = false
   },
-  mounted() {
-    this.parseHint()
-  },
   methods: {
     tagLoaded() {
       this.tagIsLoading = false
@@ -118,9 +115,6 @@ export default defineComponent({
           return decodeURIComponent(encodeURIComponent(player.name)) == playerName
         }) ?? []
       return playerList[0]
-    },
-    parseHint(hint) {
-      console.log(hint)
     },
     toggleModal(modalStatus) {
       //   this.modalShow = !this.modalShow
