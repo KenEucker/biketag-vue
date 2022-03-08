@@ -1,5 +1,5 @@
 <template>
-    <section :class="`${variant}`">
+    <section :id="title.toLowerCase().replaceAll(' ', '-')" :class="`biketag-blurb ${variant}`">
       <div class="header">
         <h1> {{ title }} </h1>
         <h5> {{ subtitle }} </h5>

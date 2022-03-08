@@ -1,10 +1,14 @@
 <template>
-  <div class="spacer-top"></div>
-  <bike-tag-menu variant="top" />
+  <template v-if="isNotLanding">
+    <div class="spacer-top"></div>
+    <bike-tag-menu variant="top" />
+  </template>
   <service-worker />
   <router-view />
-  <bike-tag-menu variant="bottom" />
-  <div class="spacer-bottom"></div>
+  <template v-if="isNotLanding">
+    <bike-tag-menu  variant="bottom" />
+    <div class="spacer-bottom"></div>
+  </template>
 </template>
 <script>
 import { defineComponent } from 'vue'
@@ -17,8 +21,22 @@ export default defineComponent({
     ServiceWorker,
     BikeTagMenu,
   },
+  data() {
+    return {
+      gameIsSet: true,
+    }
+  },
   async created() {
-    await this.$store.dispatch('setGame')
+    const game = await this.$store.dispatch('setGame')
+    if (!game) {
+      this.$router.push('/landing')
+      this.gameIsSet = false
+    }
+  },
+  computed: {
+    isNotLanding(){
+      return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
+    }
   },
 })
 </script>

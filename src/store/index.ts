@@ -105,19 +105,21 @@ export const store = createStore<State>({
 
       return commit('SET_PROFILE', profile)
     },
-    setGame({ commit, state }) {
+    async setGame({ commit, state }) {
       if (!state.game?.mainhash) {
-        return client.game(state.gameName, gameOpts as any).then((d) => {
-          const game = d as Game
-          options.imgur.hash = game.mainhash
-          options.imgur.queuehash = game.queuehash
-          client = new BikeTagClient(options)
+        return client.game(state.gameName, gameOpts as any).then(async (d) => {
+          if (d) {
+            const game = d as Game
+            options.imgur.hash = game.mainhash
+            options.imgur.queuehash = game.queuehash
+            client = new BikeTagClient(options)
 
-          return commit('SET_GAME', game)
+            await commit('SET_GAME', game)
+            return game
+          }
+          return false
         })
-      }
-
-      return false
+     }
     },
     setAllGames({ commit }) {
       const biketagClient = new BikeTagClient({ ...options, game: undefined })

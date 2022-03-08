@@ -136,7 +136,6 @@ export default defineComponent({
       locationDisabled: true,
       center: { lat: 0, lng: 0 },
       gps: { lat: null, lng: null },
-      imageGps: null,
       pinIcon: Pin,
       showPopover: false,
       inputDOM: null,
@@ -257,7 +256,6 @@ export default defineComponent({
                 lat: this.round(results.tags.GPSLatitude),
                 lng: this.round(results.tags.GPSLongitude),
               }
-              this.imageGps = { ...this.gps }
               this.center = { ...this.gps }
               this.location = this.getLocation
             }
