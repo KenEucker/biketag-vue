@@ -4900,16 +4900,6 @@ execall@^2.0.0:
   dependencies:
     clone-regexp "^2.1.0"
 
-exif-parser@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/exif-parser/-/exif-parser-0.1.12.tgz#58a9d2d72c02c1f6f02a0ef4a9166272b7760922"
-  integrity sha1-WKnS1ywCwfbwKg70qRZicrd2CSI=
-
-exif-reader@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/exif-reader/-/exif-reader-1.0.3.tgz#8eb63f878aeb49ec89bd5b7be10e393db78c3c2e"
-  integrity sha512-tWMBj1+9jUSibgR/kv/GQ/fkR0biaN9GEZ5iPdf7jFeH//d2bSzgPoaWf1OfMv4MXFD4upwvpCCyeMvSyLWSfA==
-
 exifr@^7.1.3:
   version "7.1.3"
   resolved "https://registry.yarnpkg.com/exifr/-/exifr-7.1.3.tgz#f6218012c36dbb7d843222011b27f065fddbab6f"
