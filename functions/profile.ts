@@ -162,6 +162,8 @@ const profileHandler: Handler = async (event) => {
           body = error.message
         })
     }
+  } else if (event.httpMethod === 'GET' && profile.username && profile.passcode) {
+    /// Check in Auth0 that the credentials are valid
   }
 
   if (statusCode !== 200) {
