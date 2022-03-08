@@ -311,17 +311,31 @@ export const getProfileAuthorization = async (event: any): Promise<any> => {
 }
 
 export const getPayloadAuthorization = async (event: any): Promise<any> => {
+  let authorizationString = event.headers.authorization
+  const basic = 'Basic '
   const bearer = 'Bearer '
   const clientId = 'Client-ID '
-  let authorizationString = event.headers.authorization
+  const isBasic = authorizationString?.indexOf(basic) === 0
+  const isBearer = authorizationString?.indexOf(bearer) === 0
+  const isClientId = authorizationString?.indexOf(clientId) === 0
 
-  if (authorizationString?.indexOf(bearer) === 0) {
+  if (isBearer) {
     authorizationString = authorizationString.substr(bearer.length)
-  } else if (authorizationString?.indexOf(clientId) === 0) {
+  } else if (isClientId) {
     authorizationString = authorizationString.substr(clientId.length)
+  } else if (isBasic) {
+    authorizationString = authorizationString.substr(basic.length)
   }
 
-  if (authorizationString) {
+  if (isBasic) {
+    const usernamePasscodeString = decrypt(authorizationString)
+    /// Basic Auth: "Basic [username]::[password]""
+    const usernamePasscodeSplit = usernamePasscodeString.split('::')
+    return {
+      username: usernamePasscodeSplit[0],
+      passcode: usernamePasscodeSplit[1],
+    }
+  } else if (isBearer) {
     /// Try netlify Auth validation for BikeTag Ambassador
     // try {
     //   const verifierOpts = { issuer: '', audience: '' }
@@ -345,6 +359,8 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
       return authorizationString
     }
   }
+
+  return null
 }
 
 export const defaultLogo = '/images/BikeTag.svg'
