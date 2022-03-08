@@ -57,7 +57,6 @@ const approveHandler: Handler = async (event) => {
     }
   }
   if (results.length) {
-    console.log({ results })
     return {
       statusCode: errors ? 400 : 200,
       body: JSON.stringify(results),

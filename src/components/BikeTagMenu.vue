@@ -11,7 +11,7 @@
       </div>
       <!-- Region Image -->
       <div class="navbar-brand">
-        <a href="./">
+        <a href="./" @click="clearTagCache">
           <img :src="getLogoUrl('h=256&w=256')" class="logo" />
         </a>
         <div>
@@ -178,7 +178,7 @@ export default defineComponent({
     ]),
     isShow() {
       if (this.$route.name) {
-        console.log(`view::${this.$route.name}`, 'SECOND PAINT')
+        console.log('view::loaded', this.$route.name)
       }
       return this.$route.name !== 'Play'
     },
@@ -191,34 +191,15 @@ export default defineComponent({
         : '/images/biketag-player.svg'
     },
   },
-  async created() {
-    if (!this.isDataInitialized) {
-      const initResults = []
-      /// Set it first thing
-      initResults.push(this.$store.dispatch('setDataInitialized'))
-
-      initResults.push(await this.$store.dispatch('setGame'))
-      initResults.push(await this.$store.dispatch('setTags'))
-      initResults.push(await this.$store.dispatch('setCurrentBikeTag'))
-      initResults.push(await this.$store.dispatch('setQueuedTags'))
-      initResults.push(await this.$store.dispatch('setPlayers'))
-
-      if (this.$auth.isAuthenticated && !this.getProfile?.nonce?.length) {
-        const claims = await this.$auth.getIdTokenClaims()
-        if (claims) {
-          const token = claims.__raw
-          this.$store.dispatch('setProfile', { ...this.$auth.user, token })
-        } else {
-          console.log('what is this?')
-        }
-      }
-      console.log(`view::data-init`, initResults)
-    }
-  },
   mounted() {
     this.checkForNewBikeTagPost()
   },
   methods: {
+    async clearTagCache() {
+      await this.$store.dispatch('setGame', true)
+      await this.$store.dispatch('setTags', true)
+      await this.$store.dispatch('setQueuedTags', true)
+    },
     checkForNewBikeTagPost() {
       if (
         this.getCurrentBikeTag.tagnumber > this.getMostRecentlyViewedTagnumber &&

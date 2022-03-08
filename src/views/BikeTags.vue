@@ -79,10 +79,6 @@ export default defineComponent({
       this.currentPage = Number(val)
     },
   },
-  async mounted() {
-    await this.$store.dispatch('setTags')
-    await this.$store.dispatch('setPlayers')
-  },
   created() {
     this.startLoading()
   },

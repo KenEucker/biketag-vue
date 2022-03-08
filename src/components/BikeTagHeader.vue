@@ -87,12 +87,6 @@ export default defineComponent({
         this.playingEaster = false
       }
     },
-    logout() {
-      this.$store.dispatch('setProfile')
-      this.$auth.logout({
-        returnTo: window.location.origin,
-      })
-    },
     goBikeTagsPage: function () {
       this.$router.push('/biketags')
     },

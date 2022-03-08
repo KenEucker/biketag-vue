@@ -51,9 +51,6 @@ export default defineComponent({
   computed: {
     ...mapGetters(['getAllGames', 'getLogoUrl']),
   },
-  async mounted() {
-    await this.$store.dispatch('setAllGames')
-  },
 })
 </script>
 <style scoped lang="scss">

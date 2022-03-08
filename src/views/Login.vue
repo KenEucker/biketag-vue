@@ -29,7 +29,7 @@ export default defineComponent({
     login() {
       if (this.$auth.loginWithRedirect) {
         this.$auth.loginWithRedirect().then(async () => {
-          // CLAIMS is undefined!
+          debugger
           const claims = await this.$auth.getIdTokenClaims()
           if (claims) {
             const token = claims.__raw

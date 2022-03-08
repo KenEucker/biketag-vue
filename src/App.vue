@@ -12,6 +12,7 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import { mapGetters } from 'vuex'
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
 import ServiceWorker from '@/components/ServiceWorker.vue'
 
@@ -26,12 +27,46 @@ export default defineComponent({
       gameIsSet: true,
     }
   },
+  computed: {
+    ...mapGetters(['getProfile']),
+  },
   async created() {
+    const initResults = []
+    /// Set it first thing
+    this.$store.dispatch('setDataInitialized')
     const game = await this.$store.dispatch('setGame')
-    if (!game) {
-      this.$router.push('/landing')
-      this.gameIsSet = false
+    initResults.push(await this.$store.dispatch('setAllGames'))
+
+    if (this.$auth.isAuthenticated) {
+      if (!this.getProfile?.nonce?.length) {
+        const claims = await this.$auth.getIdTokenClaims()
+        if (claims) {
+          const token = claims.__raw
+          this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+        } else {
+          console.log('what is this?')
+        }
+      }
     }
+
+    await setTimeout(
+      this.$nextTick(() => {
+        if (!game) {
+          this.$router.push('/landing')
+          this.gameIsSet = false
+          return
+        }
+      }),
+      100
+    )
+
+    initResults.push(await this.$store.dispatch('setTags'))
+    initResults.push(await this.$store.dispatch('setCurrentBikeTag'))
+    initResults.push(await this.$store.dispatch('setQueuedTags'))
+    initResults.push(await this.$store.dispatch('setPlayers'))
+    initResults.push(await this.$store.dispatch('setLeaderboard'))
+
+    console.log(`view::data-init`, initResults)
   },
   computed: {
     isNotLanding(){

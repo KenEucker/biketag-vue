@@ -23,9 +23,6 @@ export default defineComponent({
       return this.getLeaderboard
     },
   },
-  async created() {
-    await this.$store.dispatch('setLeaderboard')
-  },
 })
 </script>
 <style lang="scss" scoped>

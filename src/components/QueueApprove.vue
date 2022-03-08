@@ -136,7 +136,6 @@ export default defineComponent({
       'getQueuedTag',
       'getCurrentBikeTag',
       'isBikeTagAmbassador',
-      'getProfile',
       'getAmbassadorId',
     ]),
     currentIsReadyForApproval() {

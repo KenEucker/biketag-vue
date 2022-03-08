@@ -7,7 +7,7 @@
         @click="$router.push('/player/' + getCurrentBikeTag.mysteryPlayer)"
       />
     </div>
-    <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
+    <loading v-show="!getGame" class="loader" :is-full-page="true">
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
     <!-- Image and Number -->
@@ -83,7 +83,6 @@ export default defineComponent({
 
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      tagIsLoading: true,
       modalShow: false,
       // error,
     }
@@ -97,13 +96,6 @@ export default defineComponent({
       }
       return undefined
     },
-  },
-  async created() {
-    this.tagIsLoading = true
-    await this.$store.dispatch('setGame')
-    await this.$store.dispatch('setTags', true)
-    await this.$store.dispatch('setCurrentBikeTag')
-    this.tagIsLoading = false
   },
   methods: {
     tagLoaded() {

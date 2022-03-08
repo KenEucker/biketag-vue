@@ -18,11 +18,14 @@
         <img class="hamburger-image" src="/images/Hamburger.svg" alt="Burge menu" />
       </button>
 
-      <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse" @click="closeMenu">
+      <div
+        id="navbarSupportedContent"
+        ref="navList"
+        class="collapse navbar-collapse"
+        @click="closeMenu"
+      >
         <ul class="navbar-nav me-auto mb-lg-0">
-          <li class="nav-item" @click="toSection('What is BikeTag?')">
-            What is BikeTag?
-          </li>
+          <li class="nav-item" @click="toSection('What is BikeTag?')">What is BikeTag?</li>
           <li class="nav-item" @click="toSection('BikeTag Ambassador program?')">
             BikeTag Ambassador program?
           </li>
@@ -35,56 +38,74 @@
   </header>
   <div id="mg-top"></div>
   <main>
-    <bike-tag-blurb title="What is BikeTag?" 
+    <bike-tag-blurb
+      title="What is BikeTag?"
       subtitle="BikeTag is a mystery photo tag game played on bicycle"
-      :imgSrc="bikeTag" variant="left"
-      >
+      :img-src="BikeTagSvg"
+      variant="left"
+    >
       <p>
-        BikeTag is a mystery photo tag game played on bicycles. 
-        BikeTag.Org is a place for people to see the most recent Bike Tags in their city and participate in the game in an easy and simple way, without needing to login to anything. 
-        The origins of the game of BikeTag, as far as we have been able to track, put the game in Minneapolis, Minnesota, in 2007. 
-        BikeTag on Reddit was started on in 2011 on /r/BikingATX, that was then adopted by /r/bikeLA, that was then adopted by /r/chibike. 
-        The game in /r/CyclePDX was created in 2016 and this website was created in 2018 as a tool for the game in Portland, Oregon.
-      </p> <br />
-      <p>
-        When using biketag.org, you agree to our Terms Of Service. You can read those here.
-      </p> <br />
+        BikeTag is a mystery photo tag game played on bicycles. BikeTag.Org is a place for people to
+        see the most recent Bike Tags in their city and participate in the game in an easy and
+        simple way, without needing to login to anything. The origins of the game of BikeTag, as far
+        as we have been able to track, put the game in Minneapolis, Minnesota, in 2007. BikeTag on
+        Reddit was started on in 2011 on /r/BikingATX, that was then adopted by /r/bikeLA, that was
+        then adopted by /r/chibike. The game in /r/CyclePDX was created in 2016 and this website was
+        created in 2018 as a tool for the game in Portland, Oregon.
+      </p>
+      <br />
+      <p>When using biketag.org, you agree to our Terms Of Service. You can read those here.</p>
+      <br />
       <p>
         <b> Support the BikeTag Project on Patreon </b>
       </p>
     </bike-tag-blurb>
-    <bike-tag-blurb title="BikeTag Ambassador program?" 
+    <bike-tag-blurb
+      title="BikeTag Ambassador program?"
       subtitle="Start a new game of BikeTag in your area"
       link="/about"
-      :imgSrc="bikeTagAmabassadorSvg"
-      >
+      :img-src="BikeTagAmbassadorSvg"
+    >
       <p>
-        Our mission is to make the game of BikeTag easy for anyone to play and to support games of BikeTag all over the world. 
-        To that goal, we created BikeTag.Org and maintain the Open Source code that runs the website. We help integrate with existing BikeTag games and we help create new ones.
-      </p> <br />
+        Our mission is to make the game of BikeTag easy for anyone to play and to support games of
+        BikeTag all over the world. To that goal, we created BikeTag.Org and maintain the Open
+        Source code that runs the website. We help integrate with existing BikeTag games and we help
+        create new ones.
+      </p>
+      <br />
       <p>
-        The BikeTag Ambassador Program connects players of the game with the BikeTag team and gives those people access to resources for running games on BikeTag,Org. 
-        We provide resources to connect with other BikeTag Ambassadors all over the world, and to help you keep the games running smoothly.
-      </p> <br />
+        The BikeTag Ambassador Program connects players of the game with the BikeTag team and gives
+        those people access to resources for running games on BikeTag,Org. We provide resources to
+        connect with other BikeTag Ambassadors all over the world, and to help you keep the games
+        running smoothly.
+      </p>
+      <br />
       <p>
-        Would you like to learn more about the BikeTag Ambassador program and maybe start a new game of BikeTag in your area?
-      <a href="mailto://ambassadors@biketag.org"> Email us at ambassadors@biketag.org! </a>
+        Would you like to learn more about the BikeTag Ambassador program and maybe start a new game
+        of BikeTag in your area?
+        <a href="mailto://ambassadors@biketag.org"> Email us at ambassadors@biketag.org! </a>
       </p>
     </bike-tag-blurb>
-    <bike-tag-blurb title="BIKETAG IS AN Open Source Project" 
+    <bike-tag-blurb
+      title="BIKETAG IS AN Open Source Project"
       subtitle="Deployed on Netlify "
-      :imgSrc="netlifyLogoDark" variant="left"
-      >
+      :img-src="NetlifyLogoDarkSvg"
+      variant="left"
+    >
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum suscipit mi ut aenean. Non sodales pellentesque ac ultrices. Mauris vitae, a a blandit nunc eu egestas. Nisl in dui, at quisque est. Duis nec quam rhoncus elit. Netus dolor eu, sit sit. Pharetra quisque ornare amet cursus suspendisse leo. Ultrices dignissim   
-      </p> <br />
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum suscipit mi ut aenean.
+        Non sodales pellentesque ac ultrices. Mauris vitae, a a blandit nunc eu egestas. Nisl in
+        dui, at quisque est. Duis nec quam rhoncus elit. Netus dolor eu, sit sit. Pharetra quisque
+        ornare amet cursus suspendisse leo. Ultrices dignissim
+      </p>
+      <br />
       <p>
         <b>> Contribute to BikeTag</b>
       </p>
     </bike-tag-blurb>
   </main>
   <footer style="background-color: C4C4C4">
-    <div  class="container">
+    <div class="container">
       <ul>
         <li>
           <a href="https://github.com/KenEucker/biketag-vue/wiki/Privacy-Policy">
@@ -101,61 +122,59 @@
             CODE OF CONDUCT
           </a>
         </li>
-        <li class="nav-item" @click="toSection('FAQS')">
-            FAQS
-          </li>
+        <li class="nav-item" @click="toSection('FAQS')">FAQS</li>
         <li>
-          <a href="mailto:support@biketag.org">
-            SUPPORT
-          </a>
+          <a href="mailto:support@biketag.org"> SUPPORT </a>
         </li>
       </ul>
       <form>
         <span> JOIN OUR MAILING LIST </span>
-        <bike-tag-input required/>
-        <bike-tag-button text="SUBSCRIBE"/>
+        <bike-tag-input required />
+        <bike-tag-button text="SUBSCRIBE" />
       </form>
     </div>
     <div class="img-container">
       <a href=" https://biketag.bike/">
-        <img :src="bikeTag">
+        <img :src="bikeTag" />
       </a>
     </div>
-    <p> <i>© 2022 BIKE TAG. All Rights Reserved. </i> </p>
+    <p><i>© 2022 BIKE TAG. All Rights Reserved. </i></p>
   </footer>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import BikeTagBlurb from '@/components/BikeTagBlurb'
-import BikeTagAmbassador from "@/assets/images/biketag-ambassador.svg"
-import BikeTag from "@/assets/images/BikeTag.svg"
-import NetlifyLogoDark from "@/assets/images/netlify-logo-dark.svg"
+import BikeTagAmbassadorSvg from '@/assets/images/biketag-ambassador.svg'
+import BikeTagSvg from '@/assets/images/BikeTag.svg'
+import NetlifyLogoDarkSvg from '@/assets/images/netlify-logo-dark.svg'
 import BikeTagButton from '@/components/BikeTagButton'
 import BikeTagInput from '@/components/BikeTagInput'
 
 export default defineComponent({
-  name: "HomeView",
+  name: 'HomeView',
   components: {
     BikeTagBlurb,
     BikeTagButton,
-    BikeTagInput
+    BikeTagInput,
   },
   data() {
     return {
-      bikeTagAmabassadorSvg: BikeTagAmbassador,
-      bikeTag: BikeTag,
-      netlifyLogoDark: NetlifyLogoDark,
+      NetlifyLogoDarkSvg,
+      BikeTagAmbassadorSvg,
+      BikeTagSvg,
     }
   },
   methods: {
-    toSection(id){
-      document.getElementById(id.toLowerCase().replaceAll(' ', '-')).scrollIntoView({behavior: 'smooth'});
+    toSection(id) {
+      document
+        .getElementById(id.toLowerCase().replaceAll(' ', '-'))
+        .scrollIntoView({ behavior: 'smooth' })
     },
-    closeMenu(){
-      if (this.$refs["navList"].classList.contains('show')) {
-        this.$refs["navList"].classList.remove("show")
+    closeMenu() {
+      if (this.$refs['navList'].classList.contains('show')) {
+        this.$refs['navList'].classList.remove('show')
       }
-    }
+    },
   },
 })
 </script>
@@ -180,7 +199,7 @@ footer {
 }
 </style>
 <style lang="scss" scoped>
-#mg-top{
+#mg-top {
   height: calc(113px + 2rem);
 }
 header {
@@ -197,7 +216,8 @@ header {
     height: inherit;
     margin: auto;
     justify-content: space-between;
-    .navbar-brand, .navbar-toggler {
+    .navbar-brand,
+    .navbar-toggler {
       cursor: pointer;
       padding: 1rem 1rem;
     }
@@ -207,10 +227,10 @@ header {
     .navbar-nav {
       align-items: unset;
       height: 100vh;
-          
+
       .nav-item {
         background-color: #e5e5e5;
-        font-family: "Prequel";
+        font-family: 'Prequel';
         text-transform: uppercase;
         box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
         border-bottom: 1px solid black;
@@ -221,13 +241,14 @@ header {
     }
     @media (min-width: 992px) {
       width: 90%;
-      .navbar-brand, .navbar-toggler {
+      .navbar-brand,
+      .navbar-toggler {
         padding: 0;
       }
       .navbar-nav {
         align-items: unset;
         height: inherit;
-            
+
         .nav-item {
           font-size: 1rem;
           margin: 0 1rem !important;
@@ -241,12 +262,13 @@ header {
 main {
   min-height: 100%;
   margin-bottom: calc(-520px - 1rem);
-  &::after{
-    content: "";
+  &::after {
+    content: '';
     display: block;
   }
 }
-footer, main:after {
+footer,
+main:after {
   height: calc(520px + 1rem);
 }
 footer {
@@ -258,7 +280,7 @@ footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Prequel";
+    font-family: 'Prequel';
     text-transform: uppercase;
     flex-flow: column nowrap;
     li {
@@ -313,7 +335,8 @@ footer {
   main {
     margin-bottom: calc(-220px - 1rem);
   }
-  footer, main:after {
+  footer,
+  main:after {
     height: calc(250px + 1rem);
   }
 }

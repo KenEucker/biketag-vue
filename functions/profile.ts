@@ -157,6 +157,7 @@ const profileHandler: Handler = async (event) => {
           statusCode = 200
         })
         .catch(function (error) {
+          console.error(error)
           statusCode = 500
           body = error.message
         })

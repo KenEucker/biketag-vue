@@ -82,7 +82,7 @@ export interface AmbassadorProfile extends Profile {
   user_metadata?: AmbassadorMeta
   zipcode: string
 }
-export type BikeTagProfile = Partial<Profile> | Partial<AmbassadorProfile>
+export type BikeTagProfile = Partial<Profile> & Partial<AmbassadorProfile>
 export interface State {
   dataInitialized: boolean
   game: Game

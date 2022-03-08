@@ -130,8 +130,8 @@ export default defineComponent({
     this.uploadInProgress = false
   },
   async created() {
-    // await this.$store.dispatch('setCurrentBikeTag')
-    // await this.$store.dispatch('setQueuedTags', true)
+    await this.$store.dispatch('setCurrentBikeTag', true)
+    await this.$store.dispatch('setQueuedTags', true)
     this.countDownTimer()
   },
   methods: {
@@ -171,13 +171,12 @@ export default defineComponent({
       const errorAction = this.$refs.queueError.getAttribute('action')
 
       this.uploadInProgress = true
-      console.log('deleting', tag)
       const success = await this.$store.dispatch(storeAction, tag)
       this.uploadInProgress = false
 
       if (success === true) {
         /// Get a clean cache
-        await this.$store.dispatch('setTags')
+        await this.$store.dispatch('setTags', true)
         /// Update the queue
         this.$store.dispatch('setQueuedTags', true)
 

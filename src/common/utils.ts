@@ -102,22 +102,20 @@ export const getDomainInfo = (req: any): DomainInfo => {
   }
 }
 
-export const getBikeTagClientOpts = (win?: Window, authorized?: boolean) => {
+export const getBikeTagClientOpts = (win?: Window) => {
   const domainInfo = getDomainInfo(win)
-  const opts: any = {
+  return {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
+      clientSecret: process.env.IMGUR_CLIENT_SECRET,
+      refreshToken: process.env.IMGUR_REFRESH_TOKEN,
+    },
+    sanity: {
+      projectId: process.env.SANITY_PROJECT_ID,
+      dataset: process.env.SANITY_DATASET,
     },
   }
-
-  if (authorized) {
-    opts.sanity = opts.sanity ?? {}
-    opts.sanity.projectId = process.env.SANITY_PROJECT_ID
-    opts.sanity.dataset = process.env.SANITY_DATASET
-  }
-
-  return opts
 }
 
 export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfile => {
@@ -134,6 +132,7 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
       return existingProfile
     } catch (e) {
       /// Swallow anonymous
+      console.error('failed to decrypt profile in cookie')
     }
   }
 
@@ -147,6 +146,7 @@ export const getQueuedTagFromCookie = (biketagCookieKey = 'biketag'): Tag | unde
   const { cookies } = useCookies()
   const existingBikeTag = cookies.get(biketagCookieKey)
 
+  console.log('getQueuedTagFromCookie', { existingBikeTag })
   if (existingBikeTag) {
     return existingBikeTag as unknown as Tag
   }
@@ -155,6 +155,7 @@ export const getQueuedTagFromCookie = (biketagCookieKey = 'biketag'): Tag | unde
 export const setQueuedTagInCookie = (queuedTag?: Tag, biketagCookieKey = 'biketag'): boolean => {
   const { cookies } = useCookies()
 
+  console.log('setQueuedTagInCookie', { queuedTag })
   if (queuedTag) {
     cookies.set(biketagCookieKey, JSON.stringify(queuedTag))
   } else {

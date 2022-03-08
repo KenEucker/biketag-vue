@@ -1023,5 +1023,5 @@ export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): B
     picture: profile.picture ?? defaults.picture ?? '',
     user_metadata,
     zipcode: profile.zipcode ?? defaults.zipcode ?? '',
-  }
+  } as BikeTagProfile
 }

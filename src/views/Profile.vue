@@ -167,10 +167,6 @@ export default defineComponent({
       return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
     },
   },
-  async created() {
-    await this.$store.dispatch('setTags')
-    await this.$store.dispatch('setPlayers')
-  },
   mounted() {
     this.$nextTick(() => {
       this.profile = this.getProfile

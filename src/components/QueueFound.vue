@@ -171,8 +171,10 @@ export default defineComponent({
     this.$nextTick(() => (this.showPopover = true))
   },
   mounted() {
-    setTimeout(() => this.$nextTick(() => (this.showPopover = false)), 100)
-    this.player = this.getName
+    this.$nextTick(() => {
+      this.showPopover = false
+      this.player = this.getName
+    })
   },
   methods: {
     onSubmit(e) {
@@ -216,7 +218,6 @@ export default defineComponent({
       })
     },
     changeLocation(e) {
-      console.log({ changeLocation: e.target.value })
       this.location = e.target.value
       if (this.inputDOM == null) {
         this.inputDOM = e.target

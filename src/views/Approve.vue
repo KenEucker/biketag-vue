@@ -73,12 +73,11 @@ export default defineComponent({
     ]),
   },
   async mounted() {
+    await this.$store.dispatch('setQueuedTags', true)
     await this.$store.dispatch('fetchCredentials')
     this.uploadInProgress = false
   },
   async created() {
-    await this.$store.dispatch('setCurrentBikeTag')
-    await this.$store.dispatch('setQueuedTags', true)
     this.countDownTimer()
   },
   methods: {
