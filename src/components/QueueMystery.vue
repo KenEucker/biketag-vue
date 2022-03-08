@@ -98,6 +98,7 @@ import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import { stringifyNumber, ordinalSuffixOf } from '@/common/utils'
+import exifr from 'exifr'
 
 export default defineComponent({
   name: 'QueueMysteryTag',
@@ -148,6 +149,14 @@ export default defineComponent({
   methods: {
     onSubmit(e) {
       e.preventDefault()
+      if (!this.image) {
+        this.$toast.open({
+          message: "Invalid image, add a new one.",
+          type: 'error',
+          position: 'top',
+        })
+        return
+      }
       const formAction = this.$refs.mysteryTag.getAttribute('action')
       const formData = new FormData(this.$refs.mysteryTag)
       const mysteryTag = {
@@ -167,14 +176,38 @@ export default defineComponent({
     },
     setImage(event) {
       this.$store.dispatch('fetchCredentials')
-      var input = event.target
+      const input = event.target
       if (input.files) {
-        this.image = input.files[0]
-        const previewReader = new FileReader()
-        previewReader.onload = (e) => {
-          this.preview = e.target.result
+        try {
+          const previewReader = new FileReader()
+          previewReader.onload = (e) => {
+            this.preview = e.target.result
+          }
+          previewReader.readAsDataURL(input.files[0])
+          if (input.files[0].size / Math.pow(1024, 2) > 15) {
+              this.$toast.open({
+                message: "Image exceds 15mb",
+                type: 'error',
+                position: 'top',
+            })
+          } else {
+            input.files[0].arrayBuffer().then(async (value) => {
+              const results = await exifr.parse(value)
+              const createDate = results.CreateDate ?? results.DateTimeOriginal ?? Date.now() 
+              if (createDate < this.getCurrentBikeTag.mysteryTime) {
+                this.$toast.open({
+                  message: "Timestamp Error",
+                  type: 'error',
+                  position: 'top',
+                })
+              } else {
+                this.image = input.files[0]
+              }
+            })
+          }
+        } catch (e) {
+          console.log(e)
         }
-        previewReader.readAsDataURL(this.image)
       }
     },
     goViewQueue() {
