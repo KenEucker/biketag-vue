@@ -1,5 +1,5 @@
 <template>
-  <div class="col-lg-8 play-biketag">
+  <div class="play-biketag">
     <div class="home-screen__label-group-top">
       <bike-tag-header />
       <bike-tag-button
@@ -10,8 +10,8 @@
     <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
+    <!-- Image and Number -->
     <div v-if="getCurrentBikeTag" class="rel home-screen">
-      <!-- <img :src="getCurrentBikeTag.mysteryImageUrl" class="home-screen__image" alt="" /> -->
       <ExpandableImage
         class="home-screen__image"
         :src="getCurrentBikeTag.mysteryImageUrl"
@@ -124,26 +124,36 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+@import '../assets/styles/style.scss';
 .home-screen {
   position: relative;
-  //   margin-top: 4rem;
+  width: 80vw;
+  max-width: 750px;
+  height: auto;
+  margin: auto;
+
+  @media (max-width: $breakpoint-mobile-lg) {
+    width: 100vw;
+  }
 
   &__image {
-    height: 20.5rem;
-    width: 100%;
-    max-width: 40rem;
+    width: 80vw;
+    max-width: 750px;
+    height: auto;
     margin: auto;
-    // object-fit: cover;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+
+    @media (max-width: $breakpoint-mobile-lg) {
+      width: 100vw;
+    }
   }
 
   &__label-group {
     &-number {
-      //   margin-bottom: -2.5rem;
-      //   z-index: 2;
       position: absolute;
-      top: 0;
+      top: -3%;
       left: 0;
+      line-height: 1rem !important;
     }
 
     &-top {
