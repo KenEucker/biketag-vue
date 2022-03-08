@@ -36,7 +36,7 @@ export default defineComponent({
   computed: {
     isNotLanding(){
       return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
-    }
+    },
   },
 })
 </script>

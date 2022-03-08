@@ -24,7 +24,7 @@
     "bootstrap-vue-3": "^0.1.6",
     "core-js": "^3.21.0",
     "crypto-js": "^4.1.1",
-    "exif-parser": "^0.1.12",
+    "exifr": "^7.1.3",
     "jose": "^4.5.1",
     "liquidjs": "^9.34.0",
     "md5": "^2.3.0",

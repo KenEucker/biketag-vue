@@ -28,7 +28,9 @@ const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 const useAuth = process.env.USE_AUTHENTICATION === 'true'
 /// TODO: move these options to a method for FE use only
 const options: any = {
+  cached: false,
   biketag: {
+    cached: false,
     host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.io/api`,
     game: gameName,
     clientKey: getBikeTagHash(window.location.hostname),
