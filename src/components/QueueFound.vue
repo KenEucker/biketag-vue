@@ -253,7 +253,6 @@ export default defineComponent({
           this.image.arrayBuffer().then(async (value) => {
             const results = await exifr.gps(value)
             if (results) {
-              console.log({ results })
               if (results.latitude != null && results.longitude != null) {
                 this.gps = {
                   lat: this.round(results.latitude),
@@ -261,7 +260,6 @@ export default defineComponent({
                 }
               }
             } else {
-              console.log({ defaulting: this.getGame.boundary }, this.getGame)
               this.gps = this.getGame.boundary
             }
             this.center = { ...this.gps }

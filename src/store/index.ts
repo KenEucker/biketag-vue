@@ -121,9 +121,7 @@ export const store = createStore<State>({
           }
           return false
         })
-      }
-
-      return false
+     }
     },
     setAllGames({ commit }) {
       const biketagClient = new BikeTagClient({ ...options, game: undefined })

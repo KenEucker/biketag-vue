@@ -1,4 +1,40 @@
 <template>
+  <header class="biketag-header">
+    <nav class="biketag-header-nav navbar navbar-expand-lg">
+      <div class="navbar-brand" @click="toSection('mg-top')">
+        <img src="@/assets/images/biketag-logo.svg" class="logo" />
+      </div>
+
+      <!-- Hamburger Menu -->
+      <button
+        ref="buttonCollapse"
+        class="navbar-toggler"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <img class="hamburger-image" src="/images/Hamburger.svg" alt="Burge menu" />
+      </button>
+
+      <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse" @click="closeMenu">
+        <ul class="navbar-nav me-auto mb-lg-0">
+          <li class="nav-item" @click="toSection('What is BikeTag?')">
+            What is BikeTag?
+          </li>
+          <li class="nav-item" @click="toSection('BikeTag Ambassador program?')">
+            BikeTag Ambassador program?
+          </li>
+          <li class="nav-item" @click="toSection('BIKETAG IS AN Open Source Project')">
+            BIKETAG IS AN Open Source Project
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <div id="mg-top"></div>
+  <main>
     <bike-tag-blurb title="What is BikeTag?" 
       subtitle="BikeTag is a mystery photo tag game played on bicycle"
       :imgSrc="bikeTag" variant="left"
@@ -46,6 +82,47 @@
         <b>> Contribute to BikeTag</b>
       </p>
     </bike-tag-blurb>
+  </main>
+  <footer style="background-color: C4C4C4">
+    <div  class="container">
+      <ul>
+        <li>
+          <a href="https://github.com/KenEucker/biketag-vue/wiki/Privacy-Policy">
+            PRIVACY POLICY
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/KenEucker/biketag-vue/wiki/Terms-Of-Service">
+            TERMS OF SERVICE
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/KenEucker/biketag-vue/wiki/Code-Of-Conduct">
+            CODE OF CONDUCT
+          </a>
+        </li>
+        <li class="nav-item" @click="toSection('FAQS')">
+            FAQS
+          </li>
+        <li>
+          <a href="mailto:support@biketag.org">
+            SUPPORT
+          </a>
+        </li>
+      </ul>
+      <form>
+        <span> JOIN OUR MAILING LIST </span>
+        <bike-tag-input required/>
+        <bike-tag-button text="SUBSCRIBE"/>
+      </form>
+    </div>
+    <div class="img-container">
+      <a href=" https://biketag.bike/">
+        <img :src="bikeTag">
+      </a>
+    </div>
+    <p> <i>© 2022 BIKE TAG. All Rights Reserved. </i> </p>
+  </footer>
 </template>
 <script>
 import { defineComponent } from 'vue'
@@ -53,11 +130,15 @@ import BikeTagBlurb from '@/components/BikeTagBlurb'
 import BikeTagAmbassador from "@/assets/images/biketag-ambassador.svg"
 import BikeTag from "@/assets/images/BikeTag.svg"
 import NetlifyLogoDark from "@/assets/images/netlify-logo-dark.svg"
+import BikeTagButton from '@/components/BikeTagButton'
+import BikeTagInput from '@/components/BikeTagInput'
 
 export default defineComponent({
   name: "HomeView",
   components: {
     BikeTagBlurb,
+    BikeTagButton,
+    BikeTagInput
   },
   data() {
     return {
@@ -66,5 +147,174 @@ export default defineComponent({
       netlifyLogoDark: NetlifyLogoDark,
     }
   },
+  methods: {
+    toSection(id){
+      document.getElementById(id.toLowerCase().replaceAll(' ', '-')).scrollIntoView({behavior: 'smooth'});
+    },
+    closeMenu(){
+      if (this.$refs["navList"].classList.contains('show')) {
+        this.$refs["navList"].classList.remove("show")
+      }
+    }
+  },
 })
 </script>
+<style lang="scss">
+main {
+  section {
+    margin-bottom: 1.5rem;
+  }
+}
+footer {
+  form {
+    .scribble__button {
+      height: 3rem;
+      .scribble__text {
+        .scribble__text--inner {
+          font-size: 0.8rem !important;
+          line-height: 1;
+        }
+      }
+    }
+  }
+}
+</style>
+<style lang="scss" scoped>
+#mg-top{
+  height: calc(113px + 2rem);
+}
+header {
+  box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
+  position: fixed;
+  background-color: #e5e5e5;
+  width: 100%;
+  height: 113px;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  nav {
+    width: 100%;
+    height: inherit;
+    margin: auto;
+    justify-content: space-between;
+    .navbar-brand, .navbar-toggler {
+      cursor: pointer;
+      padding: 1rem 1rem;
+    }
+    #navbarSupportedContent {
+      flex-grow: unset;
+    }
+    .navbar-nav {
+      align-items: unset;
+      height: 100vh;
+          
+      .nav-item {
+        background-color: #e5e5e5;
+        font-family: "Prequel";
+        text-transform: uppercase;
+        box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+        border-bottom: 1px solid black;
+        padding: 1rem 0;
+        font-size: 2rem;
+        cursor: pointer;
+      }
+    }
+    @media (min-width: 992px) {
+      width: 90%;
+      .navbar-brand, .navbar-toggler {
+        padding: 0;
+      }
+      .navbar-nav {
+        align-items: unset;
+        height: inherit;
+            
+        .nav-item {
+          font-size: 1rem;
+          margin: 0 1rem !important;
+          box-shadow: unset;
+          border-bottom: unset;
+        }
+      }
+    }
+  }
+}
+main {
+  min-height: 100%;
+  margin-bottom: calc(-520px - 1rem);
+  &::after{
+    content: "";
+    display: block;
+  }
+}
+footer, main:after {
+  height: calc(520px + 1rem);
+}
+footer {
+  padding-top: 1rem;
+  position: relative;
+  bottom: 0;
+  background-color: #696969;
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Prequel";
+    text-transform: uppercase;
+    flex-flow: column nowrap;
+    li {
+      list-style: none;
+      a {
+        text-decoration: none;
+      }
+    }
+    form {
+      margin: 1rem;
+    }
+  }
+  .img-container {
+    width: 50vw;
+    margin: auto;
+    img {
+      height: 150px;
+    }
+  }
+  p {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+  }
+  ul {
+    padding: 0;
+  }
+  @media (min-width: 780px) {
+    display: flex;
+    flex-flow: row-reverse nowrap;
+    p {
+      margin: 0;
+      padding-left: 1rem;
+      text-align: left;
+    }
+    .container {
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      ul {
+        margin-top: 1rem;
+        padding: 0;
+        display: flex;
+        align-self: flex-start;
+        li {
+          margin: 1rem;
+        }
+      }
+    }
+  }
+}
+@media (min-width: 780px) {
+  main {
+    margin-bottom: calc(-220px - 1rem);
+  }
+  footer, main:after {
+    height: calc(250px + 1rem);
+  }
+}
+</style>

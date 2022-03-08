@@ -1,10 +1,14 @@
 <template>
-  <div class="spacer-top"></div>
-  <bike-tag-menu v-if="gameIsSet" variant="top" />
+  <template v-if="isNotLanding">
+    <div class="spacer-top"></div>
+    <bike-tag-menu variant="top" />
+  </template>
   <service-worker />
   <router-view />
-  <bike-tag-menu v-if="gameIsSet" variant="bottom" />
-  <div class="spacer-bottom"></div>
+  <template v-if="isNotLanding">
+    <bike-tag-menu  variant="bottom" />
+    <div class="spacer-bottom"></div>
+  </template>
 </template>
 <script>
 import { defineComponent } from 'vue'
@@ -28,6 +32,11 @@ export default defineComponent({
       this.$router.push('/landing')
       this.gameIsSet = false
     }
+  },
+  computed: {
+    isNotLanding(){
+      return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
+    },
   },
 })
 </script>
