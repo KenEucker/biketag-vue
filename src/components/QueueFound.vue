@@ -179,6 +179,14 @@ export default defineComponent({
   methods: {
     onSubmit(e) {
       e.preventDefault()
+      if (!this.image) {
+        this.$toast.open({
+          message: "Invalid image, add a new one.",
+          type: 'error',
+          position: 'top',
+        })
+        return
+      }
       if (this.location.length == 0) {
         if (this.gps.lat == null) {
           console.log('location must be set')
@@ -241,31 +249,49 @@ export default defineComponent({
     },
     setImage(event) {
       this.$store.dispatch('fetchCredentials')
-      var input = event.target
+      const input = event.target
       if (input.files) {
         this.locationDisabled = false
         try {
-          this.image = input.files[0]
           const previewReader = new FileReader()
           previewReader.onload = (e) => {
             this.preview = e.target.result
           }
-          previewReader.readAsDataURL(this.image)
-          this.image.arrayBuffer().then(async (value) => {
-            const results = await exifr.gps(value)
-            if (results) {
-              if (results.latitude != null && results.longitude != null) {
-                this.gps = {
-                  lat: this.round(results.latitude),
-                  lng: this.round(results.longitude),
-                }
+          previewReader.readAsDataURL(input.files[0])
+          if (input.files[0].size / Math.pow(1024, 2) > 15) {
+            this.$toast.open({
+              message: "Image exceds 15mb",
+              type: 'error',
+              position: 'top',
+            })
+          } else {
+            input.files[0].arrayBuffer().then(async (value) => {
+              const results = await exifr.parse(value)
+              const createDate = results.CreateDate ?? results.DateTimeOriginal ?? Date.now() 
+              if (createDate < this.getCurrentBikeTag.mysteryTime) {
+                this.$toast.open({
+                  message: "Timestamp Error",
+                  type: 'error',
+                  position: 'top',
+                })
+              } else {
+                this.image = input.files[0]
               }
-            } else {
-              this.gps = this.getGame.boundary
-            }
-            this.center = { ...this.gps }
-            this.location = this.getLocation
-          })
+              const GPSData = await exifr.gps(value)
+              if (GPSData) {
+                if (GPSData.latitude != null && GPSData.longitude != null) {
+                  this.gps = {
+                    lat: this.round(GPSData.latitude),
+                    lng: this.round(GPSData.longitude),
+                  }
+                }
+              } else {
+                this.gps = this.getGame.boundary
+              }
+              this.center = { ...this.gps }
+              this.location = this.getLocation
+            })
+          }
         } catch (e) {
           console.error(e)
         }
