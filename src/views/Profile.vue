@@ -5,7 +5,7 @@
   <b-modal
     v-if="profile?.user_metadata"
     v-model="modalShow"
-    title="BootstrapVue"
+    title="User Name"
     hide-footer
     hide-header
   >
@@ -41,7 +41,7 @@
         <div>
           <span
             v-for="(social, i) in Object.keys(profile?.user_metadata).filter(
-              (key) => profile?.user_metadata[key] != null && profile?.user_metadata[key].length > 0
+              (key) => profile?.user_metadata[key] != null && profile?.user_metadata[key].length > 0 && key != 'passcode'
             )"
             :key="i"
             class="player-name mt-4"
@@ -67,6 +67,15 @@
             name="name"
             :label="$t('pages.profile.name')"
             readonly
+          />
+        </div>
+        <div v-if="profile.user_metadata" class="mt-3">
+          <bike-tag-input
+            id="passcode"
+            v-model="profile.user_metadata.passcode"
+            name="passcode"
+            label="Passcode"
+            type="password"
           />
         </div>
         <div v-for="(social, i) in socialNetworkIcons" :key="i" class="mt-3 input-icon">

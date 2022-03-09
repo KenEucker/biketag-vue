@@ -184,6 +184,13 @@ export const setProfileCookie = (
   return true
 }
 
+export const setUsernamePasscode = (basic: string) : string => {
+  return CryptoJS.AES.encrypt(
+    basic,
+    process.env.HOST_KEY ?? 'BikeTag'
+  ).toString()
+}
+
 export const getMostRecentlyViewedBikeTagTagnumber = (
   currentTagnumber: number,
   mostRecentCookieKey = 'mostRecentlyViewedTagnumber'

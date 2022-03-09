@@ -2,6 +2,7 @@ import request from 'request'
 import { getDomainInfo } from '../../src/common/utils'
 import md5 from 'md5'
 import crypto from 'crypto'
+import CryptoJS from 'crypto-js'
 import nodemailer from 'nodemailer'
 import { Liquid } from 'liquidjs'
 import { join, extname } from 'path'
@@ -112,6 +113,7 @@ export const isValidJson = (data, type = 'none') => {
           user_metadata: {
             type: 'object',
             properties: {
+              passcode: {type: 'string'},
               social: {
                 type: 'object',
                 properties: {
@@ -125,7 +127,8 @@ export const isValidJson = (data, type = 'none') => {
                 additionalProperties: false,
               },
             },
-            required: ['social'],
+            minProperties: 1,
+            additionalProperties: false,
           },
         },
         required: ['user_metadata'],
@@ -139,6 +142,7 @@ export const isValidJson = (data, type = 'none') => {
           user_metadata: {
             type: 'object',
             properties: {
+              passcode: {type: 'string'},
               social: {
                 type: 'object',
                 properties: {
@@ -186,10 +190,11 @@ export const isValidJson = (data, type = 'none') => {
               },
             },
             minProperties: 1,
+            additionalProperties: false,
           },
         },
         required: ['user_metadata'],
-        // additionalProperties: false,
+        additionalProperties: false,
       }
       break
     case 'profile.put':
@@ -328,12 +333,13 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
   }
 
   if (isBasic) {
-    const usernamePasscodeString = decrypt(authorizationString)
-    /// Basic Auth: "Basic [username]::[password]""
-    const usernamePasscodeSplit = usernamePasscodeString.split('::')
+    const namePasscodeString = 
+      CryptoJS.AES.decrypt(authorizationString, process.env.HOST_KEY).toString(CryptoJS.enc.Utf8)
+    /// Basic Auth: "Basic [name]::[password]""
+    const namePasscodeSplit = namePasscodeString.split('::')
     return {
-      username: usernamePasscodeSplit[0],
-      passcode: usernamePasscodeSplit[1],
+      name: namePasscodeSplit[0],
+      passcode: namePasscodeSplit[1],
     }
   } else if (isBearer) {
     /// Try netlify Auth validation for BikeTag Ambassador
@@ -402,6 +408,7 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
     return jsonObject || decrypted
   } catch (e) {
     /// swallow exception
+    console.log(e)
     return null
   }
 }
@@ -941,6 +948,7 @@ export const constructAmbassadorProfile = (
 ): BikeTagProfile => {
   const user_metadata = {
     name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? '',
+    passcode: profile?.user_metadata?.passcode ?? defaults?.user_metadata?.passcode ?? '',
     social: {
       reddit:
         profile?.user_metadata?.social?.reddit ?? defaults?.user_metadata?.social?.reddit ?? '',

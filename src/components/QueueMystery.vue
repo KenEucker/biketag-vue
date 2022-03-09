@@ -62,7 +62,6 @@
         <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
         <div class="input-cnt mt-3 mb-3">
           <bike-tag-input
-            v-if="!$auth.isAuthenticated"
             id="player"
             v-model="player"
             name="player"
@@ -185,10 +184,10 @@ export default defineComponent({
           }
           previewReader.readAsDataURL(input.files[0])
           if (input.files[0].size / Math.pow(1024, 2) > 15) {
-              this.$toast.open({
-                message: "Image exceds 15mb",
-                type: 'error',
-                position: 'top',
+            this.$toast.open({
+              message: "Image exceds 15mb",
+              type: 'error',
+              position: 'top',
             })
           } else {
             input.files[0].arrayBuffer().then(async (value) => {

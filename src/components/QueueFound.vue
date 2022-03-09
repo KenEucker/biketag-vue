@@ -1,4 +1,27 @@
 <template>
+  <b-modal
+    v-model="showModal"
+    title="Authenticate"
+    hide-footer
+    hide-header
+  >
+    <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
+    <form @submit.prevent="onSubmit">
+      <div class="mt-3">
+        <bike-tag-input
+          id="passcode"
+          v-model="passcode"
+          name="passcode"
+          placeholder="passcode"
+        />
+        <bike-tag-button
+          class="modal-header"
+          variant="medium"
+          text="Submit"
+        />
+      </div>
+    </form>
+  </b-modal>
   <div class="queue-found-tag">
     <div class="title-cnt">
       <bike-tag-button variant="medium" class="title-q">
@@ -90,6 +113,7 @@
           v-model="player"
           name="player"
           required
+          :readonly="isAuthenticated"
           :placeholder="$t('pages.queue.name_placeholder')"
         />
       </div>
@@ -139,6 +163,8 @@ export default defineComponent({
       pinIcon: Pin,
       showPopover: false,
       inputDOM: null,
+      passcode: '',
+      showModal: false
     }
   },
   computed: {
@@ -166,6 +192,9 @@ export default defineComponent({
 
       return this.location
     },
+    isAuthenticated() {
+      return this.$auth.isAuthenticated
+    }
   },
   created() {
     this.$nextTick(() => (this.showPopover = true))
@@ -177,8 +206,38 @@ export default defineComponent({
     })
   },
   methods: {
-    onSubmit(e) {
+    sleep (time) {
+      return new Promise((resolve) => setTimeout(resolve, time));
+    },
+    hideModal() {
+      this.showModal = false
+    },
+    async onSubmit(e) {
       e.preventDefault()
+      if (!this.$auth.isAuthenticated) {
+        if (this.passcode) {
+          try {
+            await this.$store.dispatch('checkPasscode', {name: this.player, passcode: this.passcode})
+            this.showModal = false
+            await this.sleep(100)
+          } catch {
+            this.$toast.open({
+              message: "Incorrect passcode",
+              type: 'error',
+              position: 'top',
+            })
+            this.$nextTick(() => this.showModal = false)
+            return
+          }
+        } else {
+          try {
+            await this.$store.dispatch('checkPasscode', {name: this.player, passcode: ''})
+          } catch {
+            this.showModal = true
+            return
+          }
+        }
+      }
       if (!this.image) {
         this.$toast.open({
           message: "Invalid image, add a new one.",

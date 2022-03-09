@@ -32,6 +32,7 @@ export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight'
 
 export interface ProfileMeta {
   name: string
+  passcode: string
   social: {
     reddit: string
     instagram: string
