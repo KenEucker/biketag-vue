@@ -3,15 +3,30 @@
     <!-- Left Button -->
     <bike-tag-button class="button-group__left" :text="$t('menu.about')" @click="goAboutPage" />
     <!-- Middle Button -->
-    <bike-tag-button
-      class="button-group__middle"
-      :text="$t('menu.hint')"
-      :variant="'bold'"
-      @click="$emit('toggle-modal', true)"
-    />
+    <bike-tag-button class="button-group__middle" :text="$t('menu.hint')" variant="bold" />
     <!-- Right Button -->
-    <bike-tag-button class="button-group__right" :text="$t('menu.players')" @click="goPlayersPage" />
+    <bike-tag-button
+      class="button-group__right"
+      :text="$t('menu.players')"
+      @click="goPlayersPage"
+    />
   </div>
+  <!-- <b-modal title="Current BikeTag Hint" hide-footer hide-header>
+      <div class="modal-top">
+        <img class="close-btn" src="@/assets/images/lightbulb.svg" />
+        <bike-tag-button class="modal-top__mystery" variant="medium" :text="'Mystery Hint'" />
+        <img class="close-btn" src="@/assets/images/close.svg" @click="toggleModal(false)" />
+      </div>
+      <div class="modal-line-divide"></div>
+      <div class="modal-bottom">
+        <div class="modal-bottom__hint">{{ getCurrentBikeTag.hint }}</div>
+        <img
+          class="modal-bottom__underline"
+          :src="require('@/assets/images/underline.svg')"
+          alt="Underline"
+        />
+      </div>
+    </b-modal> -->
   <div class="row">
     <div class="col-md-2">
       <a href="https://github.com/KenEucker/biketag-vue">
@@ -29,17 +44,20 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 export default defineComponent({
   name: 'BikeTagFooter',
   components: {
     BikeTagButton,
   },
-  emits: ['toggle-modal'],
   data() {
     return {
       //   modalActive: false,
     }
+  },
+  computed: {
+    ...mapGetters(['getCurrentBikeTag']),
   },
   methods: {
     goAboutPage: function () {
