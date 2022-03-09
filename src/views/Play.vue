@@ -1,58 +1,64 @@
 <template>
   <div class="play-biketag">
-    <div class="home-screen__label-group-top">
+    <div class="play-screen__label-group-top">
       <bike-tag-header />
-      <bike-tag-button
-        :text="getCurrentBikeTag.mysteryPlayer"
-        @click="$router.push('/player/' + getCurrentBikeTag.mysteryPlayer)"
-      />
     </div>
     <loading v-show="!getGame" class="loader" :is-full-page="true">
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
     <!-- Image and Number -->
-    <div v-if="getCurrentBikeTag" class="rel home-screen">
-      <ExpandableImage
-        class="home-screen__image"
-        :src="getCurrentBikeTag.mysteryImageUrl"
-        :full-source="getCurrentBikeTag.mysteryImageUrl"
-        :alt="getCurrentBikeTag.hint"
-      />
-
-      <bike-tag-button
-        class="home-screen__label-group-number"
-        :text="'#' + getCurrentBikeTag.tagnumber"
-      />
-      <div class="home-screen__label-group-bottom">
-        <div>
-          <bike-tag-button :text="$t('menu.mysterylocation')" />
-        </div>
-
-        <!-- Modal -->
-        <b-modal v-model="modalShow" title="BootstrapVue" hide-footer hide-header>
-          <!-- Header Content -->
-          <div class="modal-top">
-            <img class="close-btn" src="@/assets/images/lightbulb.svg" />
-            <bike-tag-button class="modal-top__mystery" variant="medium" :text="'Mystery Hint'" />
-            <img class="close-btn" src="@/assets/images/close.svg" @click="toggleModal(false)" />
-          </div>
-          <!-- Line Separator -->
-          <div class="modal-line-divide"></div>
-          <!-- Hint Content -->
-          <div class="modal-bottom">
-            <div class="modal-bottom__hint">{{ getCurrentBikeTag.hint }}</div>
-            <img
-              class="modal-bottom__underline"
-              :src="require('@/assets/images/underline.svg')"
-              alt="Underline"
-            />
-          </div>
-        </b-modal>
-      </div>
+    <div v-if="tagnumber" :class="`tag-screen ${downloadingTag ? 'downloading flash' : ''}`">
+      <bike-tag id="the-tag" :tag="tag" :use-large-src-images="true" />
+      <bike-tag-button class="tag-screen-download__button" text="Download" @click="downloadTag" />
     </div>
     <div v-else>
-      <span>{{ $t('pages.play.game_not_exists') }}</span>
-      <span>{{ $t('pages.play.send_hello_email') }}</span>
+      <bike-tag-button
+        :text="getCurrentBikeTag.mysteryPlayer"
+        @click="$router.push('/player/' + getCurrentBikeTag.mysteryPlayer)"
+      />
+      <div v-if="getCurrentBikeTag" class="rel play-screen">
+        <ExpandableImage
+          class="play-screen__image"
+          :src="getCurrentBikeTag.mysteryImageUrl"
+          :full-source="getCurrentBikeTag.mysteryImageUrl"
+          :alt="getCurrentBikeTag.hint"
+        />
+
+        <bike-tag-button
+          class="play-screen__label-group-number"
+          :text="'#' + getCurrentBikeTag.tagnumber"
+        />
+        <div class="play-screen__label-group-bottom">
+          <div>
+            <bike-tag-label :text="$t('menu.mysterylocation')" />
+          </div>
+
+          <!-- Modal -->
+          <b-modal v-model="modalShow" title="BootstrapVue" hide-footer hide-header>
+            <!-- Header Content -->
+            <div class="modal-top">
+              <img class="close-btn" src="@/assets/images/lightbulb.svg" />
+              <bike-tag-button class="modal-top__mystery" variant="medium" :text="'Mystery Hint'" />
+              <img class="close-btn" src="@/assets/images/close.svg" @click="toggleModal(false)" />
+            </div>
+            <!-- Line Separator -->
+            <div class="modal-line-divide"></div>
+            <!-- Hint Content -->
+            <div class="modal-bottom">
+              <div class="modal-bottom__hint">{{ getCurrentBikeTag.hint }}</div>
+              <img
+                class="modal-bottom__underline"
+                :src="require('@/assets/images/underline.svg')"
+                alt="Underline"
+              />
+            </div>
+          </b-modal>
+        </div>
+      </div>
+      <div v-else>
+        <span>{{ $t('pages.play.game_not_exists') }}</span>
+        <span>{{ $t('pages.play.send_hello_email') }}</span>
+      </div>
     </div>
     <bike-tag-footer class="bike-tag-footer" @toggle-modal="toggleModal" />
   </div>
@@ -62,19 +68,24 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
+import BikeTag from '@/components/BikeTag.vue'
 import BikeTagHeader from '@/components/BikeTagHeader.vue'
 import BikeTagFooter from '@/components/BikeTagFooter.vue'
+import BikeTagLabel from '@/components/BikeTagLabel.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
+import { exportHtmlToDownload } from '@/common/utils'
 // import useSWRV from 'swrv'
 
 export default defineComponent({
   name: 'PlayView',
   components: {
     Loading,
+    BikeTag,
     BikeTagHeader,
     BikeTagFooter,
     BikeTagButton,
+    BikeTagLabel,
     ExpandableImage,
   },
   data() {
@@ -84,11 +95,18 @@ export default defineComponent({
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
       modalShow: false,
+      downloadingTag: false,
       // error,
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getTags', 'getPlayers', 'getImgurImageSized']),
+    ...mapGetters([
+      'getCurrentBikeTag',
+      'getTags',
+      'getGameName',
+      'getPlayers',
+      'getImgurImageSized',
+    ]),
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
@@ -100,6 +118,13 @@ export default defineComponent({
   methods: {
     tagLoaded() {
       this.tagIsLoading = false
+    },
+    async downloadTag() {
+      this.downloadingTag = true
+      const downloadPrefix = `BikeTag-${this.getGameName}-${this.tagnumber}--`
+      await exportHtmlToDownload(`${downloadPrefix}found`, undefined, '#the-tag .found-tag')
+      await exportHtmlToDownload(`${downloadPrefix}mystery`, undefined, '#the-tag .mystery-tag')
+      this.downloadingTag = false
     },
     getPlayer(playerName) {
       const playerList =
@@ -116,9 +141,18 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+.play-biketag {
+  .downloading {
+    .tag-number {
+      display: none;
+    }
+  }
+}
+</style>
+<style lang="scss">
 @import '../assets/styles/style';
 
-.home-screen {
+.play-screen {
   position: relative;
   width: 80vw;
   max-width: 750px;
@@ -135,6 +169,10 @@ export default defineComponent({
     height: auto;
     margin: auto;
     box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+
+    &.expanded {
+      max-width: unset;
+    }
 
     @media (max-width: $breakpoint-mobile-lg) {
       width: 100vw;
@@ -168,10 +206,6 @@ export default defineComponent({
       }
     }
   }
-}
-
-.clear-button-height {
-  min-height: 0 !important;
 }
 
 .bike-tag-footer {
@@ -221,6 +255,27 @@ export default defineComponent({
 
   &-body {
     padding-bottom: 0;
+  }
+
+  .flash {
+    opacity: 1;
+    animation: flash 1s;
+  }
+  @-webkit-keyframes flash {
+    0% {
+      opacity: 0.3;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes flash {
+    0% {
+      opacity: 0.3;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 }
 </style>

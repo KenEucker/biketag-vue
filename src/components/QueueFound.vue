@@ -1,24 +1,10 @@
 <template>
-  <b-modal
-    v-model="showModal"
-    title="Authenticate"
-    hide-footer
-    hide-header
-  >
+  <b-modal v-model="showModal" title="Authenticate" hide-footer hide-header>
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
       <div class="mt-3">
-        <bike-tag-input
-          id="passcode"
-          v-model="passcode"
-          name="passcode"
-          placeholder="passcode"
-        />
-        <bike-tag-button
-          class="modal-header"
-          variant="medium"
-          text="Submit"
-        />
+        <bike-tag-input id="passcode" v-model="passcode" name="passcode" placeholder="passcode" />
+        <bike-tag-button class="modal-header" variant="medium" text="Submit" />
       </div>
     </form>
   </b-modal>
@@ -164,7 +150,7 @@ export default defineComponent({
       showPopover: false,
       inputDOM: null,
       passcode: '',
-      showModal: false
+      showModal: false,
     }
   },
   computed: {
@@ -194,7 +180,7 @@ export default defineComponent({
     },
     isAuthenticated() {
       return this.$auth.isAuthenticated
-    }
+    },
   },
   created() {
     this.$nextTick(() => (this.showPopover = true))
@@ -206,8 +192,8 @@ export default defineComponent({
     })
   },
   methods: {
-    sleep (time) {
-      return new Promise((resolve) => setTimeout(resolve, time));
+    sleep(time) {
+      return new Promise((resolve) => setTimeout(resolve, time))
     },
     hideModal() {
       this.showModal = false
@@ -217,21 +203,24 @@ export default defineComponent({
       if (!this.$auth.isAuthenticated) {
         if (this.passcode) {
           try {
-            await this.$store.dispatch('checkPasscode', {name: this.player, passcode: this.passcode})
+            await this.$store.dispatch('checkPasscode', {
+              name: this.player,
+              passcode: this.passcode,
+            })
             this.showModal = false
             await this.sleep(100)
           } catch {
             this.$toast.open({
-              message: "Incorrect passcode",
+              message: 'Incorrect passcode',
               type: 'error',
               position: 'top',
             })
-            this.$nextTick(() => this.showModal = false)
+            this.$nextTick(() => (this.showModal = false))
             return
           }
         } else {
           try {
-            await this.$store.dispatch('checkPasscode', {name: this.player, passcode: ''})
+            await this.$store.dispatch('checkPasscode', { name: this.player, passcode: '' })
           } catch {
             this.showModal = true
             return

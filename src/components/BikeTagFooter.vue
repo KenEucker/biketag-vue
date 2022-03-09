@@ -10,7 +10,21 @@
       @click="$emit('toggle-modal', true)"
     />
     <!-- Right Button -->
-    <bike-tag-button class="button-group__right" :text="$t('menu.players')" @click="goUsersPage" />
+    <bike-tag-button class="button-group__right" :text="$t('menu.players')" @click="goPlayersPage" />
+  </div>
+  <div class="row">
+    <div class="col-md-2">
+      <a href="https://github.com/KenEucker/biketag-vue">
+        <img src="../assets/images/github-logo.png" alt="GitHub" />
+        <img src="../assets/images/github-mark.png" alt="GitHub Mark" />
+      </a>
+      <span><sup>0</sup>{{ $t('components.footer.sourced') }}</span>
+      <img class="flow" src="../assets/images/bidirectional-flow.svg" />
+      <span>{{ $t('components.footer.deployed') }}<sup>1</sup></span>
+      <a href="https://www.netlify.com/">
+        <img src="../assets/images/netlify-logo-dark.svg" alt="Netlify" />
+      </a>
+    </div>
   </div>
 </template>
 <script>
@@ -34,7 +48,7 @@ export default defineComponent({
     goLeaderboardPage: function () {
       this.$router.push('/leaderboard')
     },
-    goUsersPage: function () {
+    goPlayersPage: function () {
       this.$router.push('/players')
     },
   },

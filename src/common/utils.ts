@@ -4,6 +4,7 @@ import { useCookies } from 'vue3-cookies'
 import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
 import CryptoJS from 'crypto-js'
 import md5 from 'md5'
+import domtoimage from 'dom-to-image'
 
 export type DomainInfo = {
   host: string
@@ -184,11 +185,8 @@ export const setProfileCookie = (
   return true
 }
 
-export const setUsernamePasscode = (basic: string) : string => {
-  return CryptoJS.AES.encrypt(
-    basic,
-    process.env.HOST_KEY ?? 'BikeTag'
-  ).toString()
+export const setNPAuthorization = (basic: string): string => {
+  return CryptoJS.AES.encrypt(basic, process.env.HOST_KEY ?? 'BikeTag').toString()
 }
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
@@ -306,4 +304,28 @@ export const getApiUrl = (path = '') => {
       : `/api/${path}`
 
   return url
+}
+
+export const exportHtmlToDownload = (filename: string, node?: any, selector?: string) => {
+  if (!node && !selector) {
+    console.log('nothing to render')
+    return
+  }
+  node = node ?? document.querySelector(selector as string)
+  if (!node) {
+    console.log('node not found')
+    return
+  }
+
+  return domtoimage
+    .toPng(node)
+    .then(function (dataUrl) {
+      const link = document.createElement('a')
+      link.download = `${filename}.png`
+      link.href = dataUrl
+      link.click()
+    })
+    .catch(function (error) {
+      console.error('oops, something went wrong!', error)
+    })
 }

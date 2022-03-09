@@ -6,7 +6,7 @@
           <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
           <expandable-image
             class="image img-fluid"
-            :source="sizedFoundImage ? getImgurImageSized(_foundImageUrl) : _foundImageUrl"
+            :source="getFoundImageSrc"
             :full-source="_foundImageUrl"
             :alt="foundDescription"
             @load="tagImageLoaded('found')"
@@ -48,11 +48,7 @@
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _tagnumber }}</span>
           <expandable-image
-            :source="
-              sizedMysteryImage
-                ? getImgurImageSized(_mysteryImageUrl, _foundImageUrl ? 'm' : 'l')
-                : _mysteryImageUrl
-            "
+            :source="getMysteryImageSrc"
             :full-source="_mysteryImageUrl"
             :alt="_mysteryDescription"
             @load="tagImageLoaded('mystery')"
@@ -123,6 +119,10 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
+    useLargeSrcImages: {
+      type: Boolean,
+      default: false,
+    },
     tagnumber: {
       type: Number,
       default: 0,
@@ -188,6 +188,20 @@ export default defineComponent({
           ? null
           : this.mysteryImageUrl
         : this.tag?.mysteryImageUrl
+    },
+    getFoundImageSrc() {
+      return this.useLargeSrcImages
+        ? this.getImgurImageSized(this._mysteryImageUrl, 'l')
+        : this.sizedFoundImage
+        ? this.getImgurImageSized(this._foundImageUrl)
+        : this._foundImageUrl
+    },
+    getMysteryImageSrc() {
+      return this.useLargeSrcImages
+        ? this.getImgurImageSized(this._mysteryImageUrl, 'l')
+        : this.sizedMysteryImage
+        ? this.getImgurImageSized(this._mysteryImageUrl, this._foundImageUrl ? 'm' : 'l')
+        : this._mysteryImageUrl
     },
     _mysteryDescription() {
       return this.mysteryDescription

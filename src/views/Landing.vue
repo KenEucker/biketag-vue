@@ -27,10 +27,10 @@
         <ul class="navbar-nav me-auto mb-lg-0">
           <li class="nav-item" @click="toSection('What is BikeTag?')">What is BikeTag?</li>
           <li class="nav-item" @click="toSection('BikeTag Ambassador program?')">
-            BikeTag Ambassador program?
+            {{ $t('BikeTag Ambassadors') }}
           </li>
           <li class="nav-item" @click="toSection('BIKETAG IS AN Open Source Project')">
-            BIKETAG IS AN Open Source Project
+            {{ $t('Open Source Project') }}
           </li>
         </ul>
       </div>

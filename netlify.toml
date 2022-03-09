@@ -16,7 +16,7 @@
     Content-Type = "application/json"
     Access-Control-Allow-Methods = "*"
     Access-Control-Allow-Origin = "*"
-    Access-Control-Max-Age = 8640
+    Access-Control-Max-Age = "8640"
 
 [functions."cron-background"]
   schedule = "*/15 * * * *"

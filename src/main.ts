@@ -9,6 +9,7 @@ import i18nPlugin from './i18n'
 import VueToast from 'vue-toast-notification'
 import Markdown from 'vue3-markdown-it'
 import VueCookies from 'vue3-cookies'
+import VueIframe from 'vue-iframes'
 import VueGoogleMaps from '@fawmi/vue-google-maps'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
@@ -60,6 +61,7 @@ class BikeTagApp {
     this.app.use(VueToast)
     this.app.use(BootstrapVue3)
     this.app.use(Markdown)
+    this.app.use(VueIframe)
     this.app.use(VueGoogleMaps, {
       load: {
         key: process.env.GOOGLE_API_KEY,

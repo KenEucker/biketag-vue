@@ -102,29 +102,15 @@
     </nav>
   </header>
   <footer v-if="variant === 'bottom'" class="container mt-5 pb-5 footer">
-    <!-- The footer nav buttons and link to homepage go here -->
-    <div class="row">
-      <div class="col-md-2">
-        <a href="https://github.com/KenEucker/biketag-vue">
-          <img src="../assets/images/github-logo.png" alt="GitHub" />
-          <img src="../assets/images/github-mark.png" alt="GitHub Mark" />
-        </a>
-        <span><sup>0</sup>{{ $t('components.footer.sourced') }}</span>
-        <img class="flow" src="../assets/images/bidirectional-flow.svg" />
-        <span>{{ $t('components.footer.deployed') }}<sup>1</sup></span>
-        <a href="https://www.netlify.com/">
-          <img src="../assets/images/netlify-logo-dark.svg" alt="Netlify" />
-        </a>
-      </div>
-    </div>
-
     <!-- Fixed Footer -->
     <div class="footer-fixed__wrapper">
       <!-- Leaderboard -->
-      <div class="footer-fixed__group_column" @click="goLeaderboardPage">
-        <div>{{ $t('menu.top10') }}</div>
-        <img :src="require('@/assets/images/underline.svg')" alt="Underline" />
-      </div>
+      <bike-tag-button
+        class="footer-fixed__group_column"
+        :text="$t('menu.top10')"
+        @click="goLeaderboardPage"
+      >
+      </bike-tag-button>
 
       <!-- World -->
       <div>
@@ -137,10 +123,12 @@
         </bike-tag-button>
       </div>
       <!-- Players -->
-      <div class="footer-fixed__group_column" @click="goUsersPage">
-        <div>{{ $t('menu.players') }}</div>
-        <img :src="require('@/assets/images/underline-reverse.svg')" alt="Underline Reverse" />
-      </div>
+      <bike-tag-button
+        class="footer-fixed__group_column"
+        :text="$t('menu.players')"
+        @click="goPlayersPage"
+      >
+      </bike-tag-button>
     </div>
   </footer>
 </template>
@@ -229,6 +217,7 @@ export default defineComponent({
     },
     goWorldwide() {
       window.location = 'http://biketag.org/'
+      // this.$router.push('/worldwide')
     },
     goApprovePage: function () {
       this.closeCollapsible()
@@ -252,11 +241,11 @@ export default defineComponent({
       this.$router.push('/about')
     },
     goLeaderboardPage: function () {
-      this.closeCollapsible()
+      // this.closeCollapsible()
       this.$router.push('/leaderboard')
     },
-    goUsersPage: function () {
-      this.closeCollapsible()
+    goPlayersPage: function () {
+      // this.closeCollapsible()
       this.$router.push('/players')
     },
     goHowPage: function () {
@@ -374,7 +363,7 @@ header {
 
 .button-reset {
   min-height: auto;
-  padding: 0;
+  margin: auto;
 }
 
 .active-nav {

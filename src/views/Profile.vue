@@ -41,7 +41,10 @@
         <div>
           <span
             v-for="(social, i) in Object.keys(profile?.user_metadata).filter(
-              (key) => profile?.user_metadata[key] != null && profile?.user_metadata[key].length > 0 && key != 'passcode'
+              (key) =>
+                profile?.user_metadata[key] != null &&
+                profile?.user_metadata[key].length > 0 &&
+                key != 'passcode'
             )"
             :key="i"
             class="player-name mt-4"

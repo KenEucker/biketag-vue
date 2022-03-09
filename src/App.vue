@@ -82,15 +82,15 @@ export default defineComponent({
 }
 
 .spacer-bottom {
-  margin-bottom: 8rem;
+  margin-bottom: 50px;
 }
 
 .spacer-top {
-  margin-top: 8rem;
+  margin-top: 100px;
 }
 @media (min-width: 550px) {
   .spacer-top {
-    margin-top: 12rem;
+    margin-top: 150px;
   }
 }
 </style>

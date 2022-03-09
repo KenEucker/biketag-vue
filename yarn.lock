@@ -1936,6 +1936,11 @@
   resolved "https://registry.yarnpkg.com/@types/device-uuid/-/device-uuid-1.0.0.tgz#8fd7cf11b355fc9b285c2a8dafa238056a9c40ff"
   integrity sha512-bDhW4mvW9JYuAYV1cj6tNke/2vHSmPfJswXv7hU2RddnBvHRnl3sKGG5UQqWTNc/rRv90ZETo/fX1BnUIZK4wQ==
 
+"@types/dom-to-image@^2.6.4":
+  version "2.6.4"
+  resolved "https://registry.yarnpkg.com/@types/dom-to-image/-/dom-to-image-2.6.4.tgz#008411e23903cb0ee9e51a42ab8358c609541ee8"
+  integrity sha512-UddUdGF1qulrSDulkz3K2Ypq527MR6ixlgAzqLbxSiQ0icx0XDlIV+h4+edmjq/1dqn0KgN0xGSe1kI9t+vGuw==
+
 "@types/download@^8.0.0":
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/@types/download/-/download-8.0.1.tgz#9653e0deb52f1b47f659e8e8be1651c8515bc0a7"
@@ -4259,6 +4264,11 @@ dom-serializer@^1.0.1:
     domelementtype "^2.0.1"
     domhandler "^4.2.0"
     entities "^2.0.0"
+
+dom-to-image@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/dom-to-image/-/dom-to-image-2.6.0.tgz#8a503608088c87b1c22f9034ae032e1898955867"
+  integrity sha1-ilA2CAiMh7HCL5A0rgMuGJiVWGc=
 
 dom7@^4.0.4:
   version "4.0.4"
@@ -11342,6 +11352,14 @@ vue-i18n@^9.1.9:
     "@intlify/shared" "9.1.9"
     "@intlify/vue-devtools" "9.1.9"
     "@vue/devtools-api" "^6.0.0-beta.7"
+
+vue-iframes@^0.0.19:
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/vue-iframes/-/vue-iframes-0.0.19.tgz#ebbfa8b2bafdf2b572fe2952daa4d1938b8a9f57"
+  integrity sha512-E9fpI0qanue7GNIKrss3d7HY5CWW3H1Z4n8wZT/LAthA++JYrKKUyrNh8BMswJ7f4Wu0KAbgdbFbon/jeYK7QA==
+  dependencies:
+    lodash.debounce "^4.0.8"
+    uuid "^8.3.2"
 
 vue-loading-overlay@^5.0.3:
   version "5.0.3"
