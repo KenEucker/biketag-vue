@@ -17,6 +17,7 @@ import {
   getQueuedTagFromCookie,
 } from '@/common/utils'
 import { BiketagFormSteps, State } from '@/common/types'
+import { setUsernamePasscode } from '@/common/utils'
 
 // define injection key
 /// TODO: move these initializers to a method for FE use only
@@ -264,6 +265,15 @@ export const store = createStore<State>({
       })
 
       return commit('SET_PROFILE', updatedProfileResponse.data)
+    },
+    async checkPasscode({}, {name, passcode}) {
+      return await client.plainRequest({
+        method: 'GET',
+        url: getApiUrl('profile'),
+        headers: {
+          authorization: `Basic ${setUsernamePasscode(`${name}::${passcode}`)}`,
+        },
+      })
     },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === state.profile.sub) {

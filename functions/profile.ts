@@ -162,8 +162,42 @@ const profileHandler: Handler = async (event) => {
           body = error.message
         })
     }
-  } else if (event.httpMethod === 'GET' && profile.username && profile.passcode) {
+  } else if (event.httpMethod === 'GET' && profile.name) {
     /// Check in Auth0 that the credentials are valid
+    const authorizationHeaders = acceptCorsHeaders(true)
+    try {
+      const exists = (
+        await axios.request({
+          method: 'GET',
+          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
+          params: {
+            page: 0,
+            per_page: 1,
+            include_totals: false,
+            fields: 'sub,user_metadata.name,user_metadata.passcode',
+            q: `user_metadata.name:"${profile.name}"`,
+            search_engine: 'v3',
+          },
+          headers: authorizationHeaders,
+        })
+      ).data
+      console.log(exists)
+      if (exists.length) {
+        const user_metadata = exists[0].user_metadata
+        if (user_metadata.passcode && user_metadata.passcode == profile.passcode) {
+          body = exists[0].sub
+          statusCode = 200
+        } else {
+          body = "unauthorized"
+          statusCode = 401
+        }
+      } else {
+        body = "name not found"
+        statusCode = 200
+      }
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   if (statusCode !== 200) {
