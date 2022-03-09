@@ -108,7 +108,8 @@ export default defineComponent({
     z-index: 99;
     transform: rotate(-8deg);
     display: block;
-    animation: fadeIn 2s;
+    animation: fadein 2s;
+
     // word-break: break-word;
     // text-decoration-line: underline;
   }
@@ -121,27 +122,31 @@ export default defineComponent({
 
   .tag-count {
     position: absolute;
-    padding: 10px 0 10px 0;
+    padding: 10px 0;
     width: 4rem;
     text-align: center;
-    clip-path: url(#badge-clip);
+    clip-path: url('#badge-clip');
     z-index: 99;
   }
 
   .tag-count--color-one {
-    background-color: rgba(228, 178, 13, 0.9);
+    background-color: rgb(228 178 13 / 90%);
   }
+
   .tag-count--color-lessthanten {
-    background-color: rgba(26, 228, 13, 0.9);
+    background-color: rgb(26 228 13 / 90%);
   }
+
   .tag-count--color-fiftyormore {
-    background-color: rgba(31, 13, 228, 0.9);
+    background-color: rgb(31 13 228 / 90%);
   }
+
   .tag-count--color-onehundredormore {
-    background-color: rgba(228, 13, 219, 0.9);
+    background-color: rgb(228 13 219 / 90%);
   }
+
   .tag-count--color-fivehundredormore {
-    background-color: rgba(228, 13, 31, 0.87);
+    background-color: rgb(228 13 31 / 87%);
   }
 }
 
@@ -195,7 +200,6 @@ export default defineComponent({
   .tag-count {
     font-size: 1.5rem;
     width: 3.5rem;
-    top: 43%;
     left: 55%;
     top: 15%;
   }
@@ -227,7 +231,7 @@ export default defineComponent({
     font-size: 2rem;
     top: 2rem;
     right: 1rem;
-    padding: 2px 8px 2px 8px;
+    padding: 2px 8px;
   }
 }
 

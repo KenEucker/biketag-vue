@@ -183,10 +183,10 @@ export default defineComponent({
   }
 }
 
-.current-mystery,
-.queued-found,
-.queued-mystery {
-}
+// .current-mystery,
+// .queued-found,
+// .queued-mystery {
+// }
 
 .bike-pagination-bullet {
   position: relative;

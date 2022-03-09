@@ -49,12 +49,42 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
-@import '../assets/styles/style.scss';
+@import '../assets/styles/style';
+
 .scribble {
+  &__text {
+    display: flex;
+
+    &--inner {
+      background: transparent;
+      font-size: 2.5rem;
+      padding: 1rem;
+
+      @media (max-width: $breakpoint-desktop) {
+        font-size: 2rem;
+      }
+      @media (max-width: $breakpoint-laptop) {
+        font-size: 1.75rem;
+      }
+      @media (max-width: $breakpoint-tablet) {
+        font-size: 1.5rem;
+      }
+      @media (max-width: $breakpoint-mobile-lg) {
+        font-size: 1.25rem;
+      }
+      @media (max-width: $breakpoint-mobile-md) {
+        font-size: 1rem;
+      }
+      @media (max-width: $breakpoint-mobile-sm) {
+        font-size: 0.75rem;
+      }
+    }
+  }
+
   &__button {
     background: transparent;
     border: none;
-    font-family: PrequelRough;
+    font-family: $default-font-family;
     font-weight: bold;
     text-transform: uppercase;
     @include background-btn;
@@ -63,6 +93,7 @@ export default defineComponent({
       img {
         margin-top: 80px;
       }
+
       &-reverse {
         img {
           margin-top: 80px;
@@ -72,10 +103,10 @@ export default defineComponent({
       }
     }
 
-    &--circle {
-      &-circle-clean {
-      }
-    }
+    // &--circle {
+    //   &-circle-clean {
+    //   }
+    // }
 
     &--light {
       line-height: 8rem;
@@ -99,6 +130,7 @@ export default defineComponent({
       @media (max-width: $breakpoint-mobile-sm) {
         line-height: 2rem;
       }
+
       .scribble__text--inner {
         padding: 1.0625rem 1.3125rem;
         color: black;
@@ -133,6 +165,7 @@ export default defineComponent({
       @media (max-width: $breakpoint-mobile-sm) {
         // line-height: 3rem;
       }
+
       .scribble__text--inner {
         padding: 0 1.25rem;
         color: white;
@@ -142,36 +175,6 @@ export default defineComponent({
     &--children {
       z-index: 1;
       padding: 3%;
-    }
-  }
-
-  &__text {
-    display: flex;
-
-    &--inner {
-      background: transparent;
-
-      font-size: 2.5rem;
-      padding: 1rem;
-
-      @media (max-width: $breakpoint-desktop) {
-        font-size: 2rem;
-      }
-      @media (max-width: $breakpoint-laptop) {
-        font-size: 1.75rem;
-      }
-      @media (max-width: $breakpoint-tablet) {
-        font-size: 1.5rem;
-      }
-      @media (max-width: $breakpoint-mobile-lg) {
-        font-size: 1.25rem;
-      }
-      @media (max-width: $breakpoint-mobile-md) {
-        font-size: 1rem;
-      }
-      @media (max-width: $breakpoint-mobile-sm) {
-        font-size: 0.75rem;
-      }
     }
   }
 }

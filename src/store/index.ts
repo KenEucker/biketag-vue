@@ -13,8 +13,8 @@ import {
   getApiUrl,
   setProfileCookie,
   getBikeTagHash,
-  setQueuedTagInCookie,
-  getQueuedTagFromCookie,
+  // setQueuedTagInCookie,
+  // getQueuedTagFromCookie,
 } from '@/common/utils'
 import { BiketagFormSteps, State } from '@/common/types'
 import { setUsernamePasscode } from '@/common/utils'
@@ -119,7 +119,7 @@ export const store = createStore<State>({
           }
           return false
         })
-     }
+      }
     },
     setAllGames({ commit }) {
       const biketagClient = new BikeTagClient({ ...options, game: undefined })

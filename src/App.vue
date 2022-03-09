@@ -6,7 +6,7 @@
   <service-worker />
   <router-view />
   <template v-if="isNotLanding">
-    <bike-tag-menu  variant="bottom" />
+    <bike-tag-menu variant="bottom" />
     <div class="spacer-bottom"></div>
   </template>
 </template>
@@ -29,6 +29,9 @@ export default defineComponent({
   },
   computed: {
     ...mapGetters(['getProfile']),
+    isNotLanding() {
+      return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
+    },
   },
   async created() {
     const initResults = []
@@ -44,7 +47,7 @@ export default defineComponent({
           const token = claims.__raw
           this.$store.dispatch('setProfile', { ...this.$auth.user, token })
         } else {
-          console.log('what is this?')
+          console.log("what's this? no speaka da mda5hash, brah?")
         }
       }
     }
@@ -68,11 +71,6 @@ export default defineComponent({
 
     console.log(`view::data-init`, initResults)
   },
-  computed: {
-    isNotLanding(){
-      return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
-    },
-  },
 })
 </script>
 <style lang="scss">
@@ -82,9 +80,11 @@ export default defineComponent({
   text-align: center;
   overflow: hidden;
 }
+
 .spacer-bottom {
   margin-bottom: 8rem;
 }
+
 .spacer-top {
   margin-top: 8rem;
 }

@@ -131,7 +131,7 @@ export default defineComponent({
         return sendNetlifyForm(
           formAction,
           new URLSearchParams(formData).toString(),
-          (res) => {
+          () => {
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
               type: 'success',
@@ -162,4 +162,3 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped lang="scss"></style>

@@ -78,8 +78,8 @@ export default defineComponent({
 <style lang="scss" scoped>
 .player-list {
   display: flex;
+  flex-flow: row;
   flex-wrap: wrap;
-  flex-direction: row;
   justify-content: space-evenly;
   margin-bottom: 4em;
 }

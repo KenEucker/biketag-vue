@@ -9,7 +9,7 @@ const i18n = createI18n<[MessageSchema], 'en-US'>({
   messages: {
     'en-US': enUS,
     'ru-RU': ruRU,
-    'es-ES': esES
+    'es-ES': esES,
   },
 })
 

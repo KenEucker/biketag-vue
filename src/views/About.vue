@@ -71,11 +71,12 @@ export default defineComponent({
   flex-direction: column;
 }
 
+img {
+  width: 100%;
+}
+
 .biketag-game img {
   max-height: 20vh;
   height: auto;
-}
-img {
-  width: 100%;
 }
 </style>

@@ -194,7 +194,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import '../assets/styles/style.scss';
+@import '../assets/styles/style';
+
 .queue-approve {
   .card .tag-number {
     display: none;
@@ -206,6 +207,7 @@ export default defineComponent({
 
   .circle-button {
     max-width: 100px;
+
     img {
       max-width: 85px;
     }
@@ -217,20 +219,23 @@ i {
   color: #000;
   font-size: 20px;
 }
+
 .ambassador-icon {
   max-height: 10vh;
 }
+
 form {
   flex-basis: fit-content;
   display: flex;
 }
+
 .player-agree {
   max-width: 50%;
   margin: auto;
 }
 
 .approve-button {
-  font-family: PrequelRough;
+  font-family: $default-font-family;
   vertical-align: middle;
 
   span {

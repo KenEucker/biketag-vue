@@ -239,7 +239,7 @@ export default defineComponent({
 </script>
 <style lang="scss">
 .btn-hint {
-  .scribble-text--inner {
+  .scribble-text__inner {
     min-width: 6rem !important;
     font-size: 3.5rem !important;
   }
@@ -260,7 +260,7 @@ export default defineComponent({
 
   .tag-player {
     cursor: pointer;
-    animation: fadeIn 2s;
+    animation: fadein 2s;
     text-align: center;
     width: 100%;
     transform: rotate(-6deg);
@@ -285,6 +285,7 @@ export default defineComponent({
 .img-wrapper {
   position: relative;
 }
+
 .tag-number {
   position: absolute;
   top: -1em;

@@ -28,8 +28,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .player-list {
   display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
+  flex-flow: row;
   justify-content: space-evenly;
   margin-bottom: 4em;
 }

@@ -21,6 +21,7 @@ export default defineComponent({
   components: {
     BikeTagButton,
   },
+  emits: ['toggle-modal'],
   data() {
     return {
       //   modalActive: false,
@@ -45,8 +46,8 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
 
-  &__left {
-  }
+  // &__left {
+  // }
 
   &__middle {
     margin-left: 0.5rem;

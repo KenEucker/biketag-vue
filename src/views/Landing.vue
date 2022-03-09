@@ -10,8 +10,8 @@
         ref="buttonCollapse"
         class="navbar-toggler"
         data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
+        data-bs-target="#navbar-supported-content"
+        aria-controls="navbar-supported-content"
         aria-expanded="false"
         aria-label="Toggle navigation"
       >
@@ -19,7 +19,7 @@
       </button>
 
       <div
-        id="navbarSupportedContent"
+        id="navbar-supported-content"
         ref="navList"
         class="collapse navbar-collapse"
         @click="closeMenu"
@@ -104,7 +104,7 @@
       </p>
     </bike-tag-blurb>
   </main>
-  <footer style="background-color: C4C4C4">
+  <footer style="background-color: c4c4c4">
     <div class="container">
       <ul>
         <li>
@@ -184,10 +184,12 @@ main {
     margin-bottom: 1.5rem;
   }
 }
+
 footer {
   form {
     .scribble__button {
       height: 3rem;
+
       .scribble__text {
         .scribble__text--inner {
           font-size: 0.8rem !important;
@@ -199,9 +201,12 @@ footer {
 }
 </style>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 #mg-top {
   height: calc(113px + 2rem);
 }
+
 header {
   box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
   position: fixed;
@@ -211,26 +216,30 @@ header {
   top: 0;
   left: 0;
   z-index: 100;
+
   nav {
     width: 100%;
     height: inherit;
     margin: auto;
     justify-content: space-between;
+
     .navbar-brand,
     .navbar-toggler {
       cursor: pointer;
-      padding: 1rem 1rem;
+      padding: 1rem;
     }
-    #navbarSupportedContent {
+
+    #navbar-supported-content {
       flex-grow: unset;
     }
+
     .navbar-nav {
       align-items: unset;
       height: 100vh;
 
       .nav-item {
         background-color: #e5e5e5;
-        font-family: 'Prequel';
+        font-family: $default-secondary-font-family;
         text-transform: uppercase;
         box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
         border-bottom: 1px solid black;
@@ -241,10 +250,12 @@ header {
     }
     @media (min-width: 992px) {
       width: 90%;
+
       .navbar-brand,
       .navbar-toggler {
         padding: 0;
       }
+
       .navbar-nav {
         align-items: unset;
         height: inherit;
@@ -259,71 +270,87 @@ header {
     }
   }
 }
+
 main {
   min-height: 100%;
   margin-bottom: calc(-520px - 1rem);
+
   &::after {
     content: '';
     display: block;
   }
 }
+
 footer,
-main:after {
+main::after {
   height: calc(520px + 1rem);
 }
+
 footer {
   padding-top: 1rem;
   position: relative;
   bottom: 0;
   background-color: #696969;
+
   .container {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Prequel';
+    font-family: $default-secondary-font-family;
     text-transform: uppercase;
     flex-flow: column nowrap;
+
     li {
       list-style: none;
+
       a {
         text-decoration: none;
       }
     }
+
     form {
       margin: 1rem;
     }
   }
+
   .img-container {
     width: 50vw;
     margin: auto;
+
     img {
       height: 150px;
     }
   }
+
   p {
     position: absolute;
     bottom: 0;
     width: 100%;
   }
+
   ul {
     padding: 0;
   }
   @media (min-width: 780px) {
     display: flex;
     flex-flow: row-reverse nowrap;
+
     p {
       margin: 0;
       padding-left: 1rem;
       text-align: left;
     }
+
     .container {
       flex-flow: row nowrap;
       justify-content: flex-end;
+
       ul {
         margin-top: 1rem;
         padding: 0;
         display: flex;
         align-self: flex-start;
+
         li {
           margin: 1rem;
         }
@@ -335,8 +362,9 @@ footer {
   main {
     margin-bottom: calc(-220px - 1rem);
   }
+
   footer,
-  main:after {
+  main::after {
     height: calc(250px + 1rem);
   }
 }

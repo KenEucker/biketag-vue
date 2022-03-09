@@ -5,7 +5,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/landing',
     name: 'Landing',
-    component: () => import('@/views/Landing.vue')
+    component: () => import('@/views/Landing.vue'),
   },
   {
     path: '/:tagnumber?',

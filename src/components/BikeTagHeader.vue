@@ -106,8 +106,8 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
 
-  &__left {
-  }
+  // &__left {
+  // }
 
   &__middle {
     margin-left: 0.5rem;

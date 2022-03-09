@@ -150,7 +150,7 @@ export default defineComponent({
       e.preventDefault()
       if (!this.image) {
         this.$toast.open({
-          message: "Invalid image, add a new one.",
+          message: 'Invalid image, add a new one.',
           type: 'error',
           position: 'top',
         })
@@ -185,17 +185,17 @@ export default defineComponent({
           previewReader.readAsDataURL(input.files[0])
           if (input.files[0].size / Math.pow(1024, 2) > 15) {
             this.$toast.open({
-              message: "Image exceds 15mb",
+              message: 'Image exceeds 15mb',
               type: 'error',
               position: 'top',
             })
           } else {
             input.files[0].arrayBuffer().then(async (value) => {
               const results = await exifr.parse(value)
-              const createDate = results.CreateDate ?? results.DateTimeOriginal ?? Date.now() 
+              const createDate = results.CreateDate ?? results.DateTimeOriginal ?? Date.now()
               if (createDate < this.getCurrentBikeTag.mysteryTime) {
                 this.$toast.open({
-                  message: "Timestamp Error",
+                  message: 'Timestamp Error',
                   type: 'error',
                   position: 'top',
                 })
@@ -222,6 +222,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 .modal-header {
   display: flex;
   width: 100%;
@@ -229,15 +231,17 @@ export default defineComponent({
   align-items: center;
   margin-top: 1rem;
   font-size: 2rem;
-  font-family: 'PrequelRough';
+  font-family: $default-font-family;
   @media (min-width: 470px) {
     font-size: 3rem;
   }
 }
+
 .close-btn,
 .go-queue {
   cursor: pointer;
 }
+
 .close-btn {
   position: absolute;
   top: 10px;

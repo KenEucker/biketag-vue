@@ -116,7 +116,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import '../assets/styles/style.scss';
+@import '../assets/styles/style';
+
 .home-screen {
   position: relative;
   width: 80vw;
@@ -133,7 +134,7 @@ export default defineComponent({
     max-width: 750px;
     height: auto;
     margin: auto;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
 
     @media (max-width: $breakpoint-mobile-lg) {
       width: 100vw;
@@ -170,7 +171,7 @@ export default defineComponent({
 }
 
 .clear-button-height {
-  min-height: 0px !important;
+  min-height: 0 !important;
 }
 
 .bike-tag-footer {
@@ -199,23 +200,23 @@ export default defineComponent({
     align-items: center;
 
     &__underline {
-      height: 3rem;
       width: auto;
+      height: 3rem;
     }
 
     &__hint {
       margin-top: 1rem;
       font-size: 2rem;
-      font-family: 'Prequel';
+      font-family: $default-secondary-font-family;
       text-align: center;
     }
   }
 
   &-line-divide {
-    height: 1px;
     width: 90%;
+    height: 1px;
     margin: auto;
-    background: linear-gradient(45deg, rgba(100, 100, 100, 0.8), rgba(150, 150, 150, 0.5) 70.71%);
+    background: linear-gradient(45deg, rgb(100 100 100 / 80%), rgb(150 150 150 / 50%) 70.71%);
   }
 
   &-body {

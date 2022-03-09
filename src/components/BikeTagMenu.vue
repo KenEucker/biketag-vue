@@ -274,6 +274,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 header {
   background-color: #e5e5e5;
   position: fixed;
@@ -281,7 +283,8 @@ header {
   top: 0;
   left: 0;
   z-index: 100;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
+
   nav {
     .profile-icon {
       max-width: 25vw;
@@ -292,9 +295,11 @@ header {
         max-width: 10vh;
       }
     }
+
     .navbar-brand {
       margin: 0 2rem;
     }
+
     .navbar-collapse {
       flex-grow: unset;
 
@@ -302,44 +307,51 @@ header {
         // height: 85vh;
         // overflow: scroll;
       }
+
       ul > li {
         @media (min-width: 992px) {
           margin: 1rem;
         }
       }
     }
+
     .navbar-toggler {
       //   margin-right: 1rem;
       margin: 0.5rem;
     }
+
     .logo {
+      width: auto;
       height: 4.5rem;
-      width: auto;
     }
+
     .hamburger-image {
-      height: 3.5rem;
       width: auto;
+      height: 3.5rem;
     }
+
     .game-title {
       color: black;
-      font-family: 'Prequel';
+      font-family: $default-secondary-font-family;
 
       @media (max-width: 990px) {
         display: none;
       }
     }
+
     .nav-item {
-      font-family: 'Prequel';
+      font-family: $default-secondary-font-family;
       text-transform: uppercase;
       font-size: 2rem;
       cursor: pointer;
 
       @media (max-width: 990px) {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
         border-bottom: 1px solid black;
         padding: 1rem 0;
       }
     }
+
     .back-arrow {
       margin-left: 1rem;
     }
@@ -433,9 +445,10 @@ footer {
   .row > * {
     margin: auto;
   }
+
   .footer-fixed {
     &__wrapper {
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+      box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
       z-index: 100;
       width: 100%;
       background-color: #e5e5e5;
@@ -444,7 +457,7 @@ footer {
       left: 0;
       display: flex;
       justify-content: space-between;
-      font-family: 'Prequel';
+      font-family: $default-secondary-font-family;
       color: black;
       font-size: 0.75rem;
       padding: 0.25rem 0;

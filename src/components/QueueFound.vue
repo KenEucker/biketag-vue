@@ -240,7 +240,7 @@ export default defineComponent({
       }
       if (!this.image) {
         this.$toast.open({
-          message: "Invalid image, add a new one.",
+          message: 'Invalid image, add a new one.',
           type: 'error',
           position: 'top',
         })
@@ -319,17 +319,17 @@ export default defineComponent({
           previewReader.readAsDataURL(input.files[0])
           if (input.files[0].size / Math.pow(1024, 2) > 15) {
             this.$toast.open({
-              message: "Image exceds 15mb",
+              message: 'Image exceds 15mb',
               type: 'error',
               position: 'top',
             })
           } else {
             input.files[0].arrayBuffer().then(async (value) => {
               const results = await exifr.parse(value)
-              const createDate = results.CreateDate ?? results.DateTimeOriginal ?? Date.now() 
+              const createDate = results.CreateDate ?? results.DateTimeOriginal ?? Date.now()
               if (createDate < this.getCurrentBikeTag.mysteryTime) {
                 this.$toast.open({
-                  message: "Timestamp Error",
+                  message: 'Timestamp Error',
                   type: 'error',
                   position: 'top',
                 })
@@ -364,28 +364,34 @@ input#found {
   margin-left: 3.5rem;
   display: none;
 }
+
 #found {
   img {
     position: absolute;
     top: 33%;
     left: 1.5rem;
   }
+
   #google-input {
     left: 2rem;
   }
 }
+
 .popover {
   max-width: 320px;
   width: 320px;
+
   .popover-body {
     padding: 1rem 0.5rem;
   }
+
   .vue-map {
     height: 400px;
   }
   @media (min-width: 600px) {
     max-width: 420px;
     width: 420px;
+
     iframe {
       width: 400px;
     }

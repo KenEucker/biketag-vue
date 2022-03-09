@@ -106,10 +106,10 @@
             />
             <div :ref="credential" class="input-block mt-3 hide">
               <bike-tag-input
-                v-for="(inputField, i) in Object.keys(
+                v-for="(inputField, j) in Object.keys(
                   profile.user_metadata.credentials[credential]
                 )"
-                :key="i"
+                :key="j"
                 v-model="profile.user_metadata.credentials[credential][inputField]"
                 :name="`${firstToUperCase(credential)} ${splitCamelCase(inputField)}`"
                 :label="splitCamelCase(inputField)"
@@ -246,7 +246,7 @@ export default defineComponent({
   @include flx-center($flow: column nowrap, $al: flex-start);
 
   .scribble-button {
-    .scribble-text--inner {
+    .scribble-text__inner {
       font-size: 1.5rem !important;
     }
   }
@@ -254,7 +254,7 @@ export default defineComponent({
 
 .input-block {
   .scribble-button {
-    .scribble-text--inner {
+    .scribble-text__inner {
       font-size: 1.5rem !important;
     }
   }
@@ -333,19 +333,23 @@ export default defineComponent({
   }
 
   .player-name {
-    animation: fadeIn 2s;
+    animation: fadein 2s;
   }
 }
+
 .hide {
   display: none;
 }
+
 .modal-header {
   margin: auto;
 }
+
 .close-btn,
 .go-queue {
   cursor: pointer;
 }
+
 .close-btn {
   position: absolute;
   top: 10px;
