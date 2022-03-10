@@ -253,7 +253,7 @@ export default defineComponent({
 </script>
 <style lang="scss">
 .btn-hint {
-  .scribble-text__inner {
+  .biketag-text__inner {
     min-width: 6rem !important;
     font-size: 3.5rem !important;
   }

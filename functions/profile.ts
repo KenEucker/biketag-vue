@@ -181,7 +181,6 @@ const profileHandler: Handler = async (event) => {
           headers: authorizationHeaders,
         })
       ).data
-      console.log(exists)
       if (exists.length) {
         const user_metadata = exists[0].user_metadata
         /// If the passcode isn't set then it defaults to an empty string

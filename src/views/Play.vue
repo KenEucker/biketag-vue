@@ -7,7 +7,7 @@
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
     <!-- Image and Number -->
-    <div v-if="tagnumber" class="tag-screen">
+    <div v-if="tagnumber" class="tag-screen m-4 mt-5">
       <bike-tag id="the-tag" :tag="tag" :use-large-src-images="true" />
       <bike-tag-button
         class="tag-screen-download__button"
@@ -24,7 +24,7 @@
         <bike-tag-camera :tag="tag" />
       </b-modal>
     </div>
-    <div v-else>
+    <div class="mt-4 mb-5" v-else>
       <bike-tag-button
         :text="getCurrentBikeTag.mysteryPlayer"
         @click="$router.push('/player/' + getCurrentBikeTag.mysteryPlayer)"
@@ -43,7 +43,7 @@
         />
         <div class="play-screen__label-group-bottom">
           <div>
-            <bike-tag-label :text="$t('menu.mysterylocation')" />
+            <bike-tag-label :text="$t('menu.mysterylocation')" :onlyText="true"/>
           </div>
         </div>
       </div>

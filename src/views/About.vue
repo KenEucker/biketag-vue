@@ -56,7 +56,7 @@ export default defineComponent({
 <style lang="scss">
 .big-btn {
   min-height: 6rem;
-  .scribble {
+  .biketag {
     &__button {
       &--children {
         padding: 0 1rem;

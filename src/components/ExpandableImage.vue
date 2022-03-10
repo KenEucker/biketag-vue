@@ -6,9 +6,6 @@
     }"
     @click="expandClick"
   >
-    <i v-if="expanded" class="close-button">
-      <img src="@/assets/images/close.svg" />
-    </i>
     <b-spinner v-show="loading" />
     <img
       v-show="!loading"
@@ -17,6 +14,9 @@
       v-bind="$attrs"
       @load="loaded"
     />
+    <i v-if="expanded" class="close-button">
+      <img src="@/assets/images/close.svg" />
+    </i>
   </div>
 </template>
 <script type="ts">
@@ -144,12 +144,10 @@ body {
     align-items: center;
     opacity: 0;
     padding-bottom: 0 !important;
-    cursor: pointer;
+    cursor: zoom-out;
 
     img {
       z-index: 999999;
-      width: initial;
-      max-width: 1200px;
       max-height: 100%;
       object-fit: contain;
       margin: 0 auto;
@@ -158,6 +156,7 @@ body {
 
   .close-button {
     display: block;
+    z-index: 999999;
   }
 }
 

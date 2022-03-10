@@ -27,7 +27,7 @@
         />
       </div>
     </b-modal> -->
-  <div class="row">
+  <div class="brands-cnt">
     <div class="col-md-2">
       <a href="https://github.com/KenEucker/biketag-vue">
         <img src="../assets/images/github-logo.png" alt="GitHub" />
@@ -73,6 +73,10 @@ export default defineComponent({
 })
 </script>
 <style scoped lang="scss">
+.brands-cnt {
+  display: flex;
+  justify-content: center;
+}
 .button-group {
   display: flex;
   justify-content: center;

@@ -7,9 +7,6 @@ html {
 
 body {
   color: $app-color;
-  .expandable-image.expanded {
-    max-width: unset;
-  }
 }
 
 #app {
@@ -312,7 +309,7 @@ body {
       width: 100%;
     }
 
-    .scribble-button .button__children {
+    .biketag-button .button__children {
       padding: 0;
     }
 
@@ -326,7 +323,7 @@ body {
       position: relative;
       padding: 0;
       z-index: 4;
-      .scribble {
+      .biketag {
         &__button {
           height: 5rem;
           position: relative;
@@ -360,7 +357,7 @@ body {
       display: flex;
       justify-content: center;
       align-items: center;
-      .scribble__button {
+      .biketag__button {
         z-index: 3;
         position: absolute;
         transition-property: bottom, right;
@@ -387,7 +384,7 @@ body {
       }
     }
     .sub-cnt {
-      .scribble {
+      .biketag {
         &__button {
           width: 15rem;
           height: 6rem;
