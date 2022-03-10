@@ -8,12 +8,13 @@ import {
 import { BikeTagClient } from 'biketag'
 import request from 'request'
 import { Ambassador, Game } from 'biketag/lib/common/schema'
+import { HttpStatusCode } from './common/constants'
 
 const approveHandler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
       body: 'method not allowed',
-      statusCode: 405,
+      statusCode: HttpStatusCode.MethodNotAllowed,
     }
   }
 
@@ -58,13 +59,13 @@ const approveHandler: Handler = async (event) => {
   }
   if (results.length) {
     return {
-      statusCode: errors ? 400 : 200,
+      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: JSON.stringify(results),
     }
   } else {
     console.log('nothing to report')
     return {
-      statusCode: errors ? 400 : 200,
+      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: '',
     }
   }

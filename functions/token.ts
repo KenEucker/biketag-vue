@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions'
 import { BikeTagClient } from 'biketag'
 import request from 'request'
+import { HttpStatusCode } from './common/constants'
 import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadAuthorization } from './common/methods'
 
 const tokenHandler: Handler = async (event) => {
@@ -8,14 +9,14 @@ const tokenHandler: Handler = async (event) => {
   let headers = acceptCorsHeaders(false)
   if (event.httpMethod === 'OPTIONS') {
     return {
-      statusCode: 204,
+      statusCode: HttpStatusCode.NoContent,
       headers,
     }
   }
 
   const authorization = await getPayloadAuthorization(event)
   let body = 'missing authorization header'
-  let statusCode = 401
+  let statusCode = HttpStatusCode.Unauthorized
 
   if (authorization) {
     headers = acceptCorsHeaders(true)
@@ -31,7 +32,7 @@ const tokenHandler: Handler = async (event) => {
     const biketag = new BikeTagClient(biketagOpts)
     const credentials = await biketag.fetchCredentials(authorization)
     body = JSON.stringify(credentials)
-    statusCode = 200
+    statusCode = HttpStatusCode.Ok
   } else {
     body = 'invalid authorization'
   }

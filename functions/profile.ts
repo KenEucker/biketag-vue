@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions'
 import axios from 'axios'
-import { ErrorMessage, InfoMessage } from './common/constants'
+import { ErrorMessage, HttpStatusCode, InfoMessage } from './common/constants'
 import {
   isValidJson,
   getProfileAuthorization,
@@ -14,14 +14,14 @@ const profileHandler: Handler = async (event) => {
   const headers = acceptCorsHeaders(false)
   if (event.httpMethod === 'OPTIONS') {
     return {
-      statusCode: 204,
+      statusCode: HttpStatusCode.NoContent,
       headers,
     }
   }
 
   /// If all else fails
   let body = 'missing authorization header'
-  let statusCode = 401
+  let statusCode = HttpStatusCode.Unauthorized
   /// Retrieves the authorization and profile data, if present
   const profile = await getProfileAuthorization(event)
 
@@ -90,19 +90,19 @@ const profileHandler: Handler = async (event) => {
                 }
               } else {
                 body = ErrorMessage.NameTaken
-                statusCode = 400
+                statusCode = HttpStatusCode.BadRequest
               }
             } else {
               body = ErrorMessage.ProfileInitialized
-              statusCode = 403
+              statusCode = HttpStatusCode.Forbidden
             }
           } else {
             body = ErrorMessage.InvalidRequestData
-            statusCode = 400
+            statusCode = HttpStatusCode.BadRequest
           }
         } catch (e) {
           body = `${ErrorMessage.PatchFailed}: ${e.message ?? e}`
-          statusCode = 400
+          statusCode = HttpStatusCode.BadRequest
         }
         break
       case 'PATCH':
@@ -123,11 +123,11 @@ const profileHandler: Handler = async (event) => {
             console.log(data.user_metadata.credentials)
             console.log('data is not valid', data, validator)
             body = ErrorMessage.InvalidRequestData
-            statusCode = 400
+            statusCode = HttpStatusCode.BadRequest
           }
         } catch (e) {
           body = `${ErrorMessage.PatchFailed}: ${e.message ?? e}`
-          statusCode = 400
+          statusCode = HttpStatusCode.BadRequest
         }
         break
       case 'GET':
@@ -139,10 +139,10 @@ const profileHandler: Handler = async (event) => {
         break
       default:
         body = ErrorMessage.MethodNotAllowed
-        statusCode = 501
+        statusCode = HttpStatusCode.NotImplemented
     }
 
-    if (statusCode == 401) {
+    if (statusCode == HttpStatusCode.Unauthorized) {
       await axios
         .request(options)
         .then(function (response) {
@@ -154,11 +154,11 @@ const profileHandler: Handler = async (event) => {
               : constructPlayerProfile(response.data, profile)
             body = JSON.stringify(profileDataResponse)
           }
-          statusCode = 200
+          statusCode = HttpStatusCode.Ok
         })
         .catch(function (error) {
           console.error(error)
-          statusCode = 500
+          statusCode = HttpStatusCode.InternalServerError
           body = error.message
         })
     }
@@ -188,21 +188,21 @@ const profileHandler: Handler = async (event) => {
 
         if (user_metadata.passcode == profile.passcode) {
           body = exists[0].sub
-          statusCode = 200
+          statusCode = HttpStatusCode.Ok
         } else {
           body = 'unauthorized'
-          statusCode = 401
+          statusCode = HttpStatusCode.Unauthorized
         }
       } else {
         body = 'name not found'
-        statusCode = 200
+        statusCode = HttpStatusCode.Ok
       }
     } catch (e) {
       console.log(e)
     }
   }
 
-  if (statusCode !== 200) {
+  if (statusCode !== HttpStatusCode.Ok) {
     console.error(body)
   }
 

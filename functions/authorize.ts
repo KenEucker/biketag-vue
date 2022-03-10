@@ -1,6 +1,7 @@
 import { builder, Handler } from '@netlify/functions'
 import { BikeTagClient } from 'biketag'
 import request from 'request'
+import { HttpStatusCode } from './common/constants'
 import { getBikeTagClientOpts, getBikeTagHash, getPayloadOpts } from './common/methods'
 
 const authorizeHandler: Handler = async (event) => {
@@ -13,7 +14,7 @@ const authorizeHandler: Handler = async (event) => {
   const self = new URL(`http://${event.headers.host}`).hostname
   const controlCheck = getBikeTagHash(self)
   let body = 'missing client key and token information'
-  let statusCode = 401
+  let statusCode = HttpStatusCode.Unauthorized
 
   // console.log({ clientKey, clientToken, accessToken, grantType, controlCheck, self })
   if (clientKey?.length > 0 && clientToken?.length > 0 && accessToken?.length > 0) {
@@ -35,14 +36,14 @@ const authorizeHandler: Handler = async (event) => {
         config.twitter?.bearer_token === accessToken
 
       if (isValidAccessToken) {
-        statusCode = 200
         switch (grantType) {
           case 'refresh_token':
             body = getBikeTagHash(`${clientKey}${clientToken}${accessToken}`)
+            statusCode = HttpStatusCode.Ok
             break
           default:
             body = 'grant type not supported'
-            statusCode = 401
+            statusCode = HttpStatusCode.MethodNotAllowed
             break
         }
       } else {

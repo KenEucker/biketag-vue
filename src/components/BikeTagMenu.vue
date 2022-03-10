@@ -87,14 +87,16 @@
                 {{ $t('menu.logout') }}
               </li>
             </template>
-            <li
-              v-else
-              class="nav-item"
-              :class="{ 'active-nav': currentRoute === 'Login' }"
-              @click="login"
-            >
-              {{ $t('menu.login') }}
-            </li>
+            <template v-else>
+              <li
+                v-if="showLogin"
+                class="nav-item"
+                :class="{ 'active-nav': currentRoute === 'Login' }"
+                @click="login"
+              >
+                {{ $t('menu.login') }}
+              </li>
+            </template>
           </template>
         </ul>
       </div>
@@ -152,7 +154,9 @@ export default defineComponent({
     },
   },
   data() {
-    return {}
+    return {
+      showLogin: process.env.CONTEXT === 'dev',
+    }
   },
   computed: {
     ...mapGetters([
