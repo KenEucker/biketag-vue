@@ -1,12 +1,12 @@
 <template>
   <button
-    :class="`scribble__button scribble__button--${variant}`"
+    :class="`biketag__button biketag__button--${variant}`"
     :style="`background-image: url(${backgroundSrc})`"
   >
-    <span v-if="text" class="scribble__text"
-      ><span class="scribble__text--inner">{{ text }}</span></span
+    <span v-if="text" class="biketag__text"
+      ><span class="biketag__text--inner">{{ text }}</span></span
     >
-    <div v-else class="scribble__button--children scribble__text">
+    <div v-else class="biketag__button--children biketag__text">
       <slot></slot>
     </div>
   </button>
@@ -51,7 +51,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 
-.scribble {
+.biketag {
   &__text {
     display: flex;
 
@@ -109,7 +109,6 @@ export default defineComponent({
     // }
 
     &--light {
-      // line-height: 8rem;
       min-height: 5.5rem;
 
       @media (min-width: $breakpoint-desktop) {
@@ -133,29 +132,29 @@ export default defineComponent({
         // line-height: 2rem;
       }
 
-      .scribble__text--inner {
-        // padding: 1.0625rem 1.3125rem;
+      .biketag__text--inner {
         color: black;
       }
     }
 
     &--medium {
-      min-height: 6rem;
-      padding: 0 1rem;
-      margin: 0 auto;
-      // .scribble__text--inner {
-      //   padding: 0.75rem 0;
-      // }
-      @media (min-width: $breakpoint-tablet) {
-        min-height: 7rem;
-      }
-      @media (min-width: $breakpoint-laptop) {
-        min-height: 8rem;
-      }
-      @media (min-width: $breakpoint-desktop) {
-        min-height: 9rem;
-        .scribble__text--inner {
-          font-size: 2rem !important;
+      .biketag__text--inner {
+        padding: 0.75rem 0;
+        min-height: 6rem;
+        padding: 0 1rem;
+        margin: 0 auto;
+        
+        @media (min-width: $breakpoint-tablet) {
+          min-height: 7rem;
+        }
+        @media (min-width: $breakpoint-laptop) {
+          min-height: 8rem;
+        }
+        @media (min-width: $breakpoint-desktop) {
+          min-height: 9rem;
+          .scribble__text--inner {
+            font-size: 2rem !important;
+          }
         }
       }
     }
@@ -183,7 +182,7 @@ export default defineComponent({
         // line-height: 3rem;
       }
 
-      .scribble__text--inner {
+      .biketag__text--inner {
         padding: 0 1.25rem;
         color: white;
       }
@@ -203,7 +202,7 @@ export default defineComponent({
 // $breakpoint-laptop: 64rem; //1024px
 // $breakpoint-desktop: 75rem; //1200px
 
-.scribble-button {
+.biketag-button {
   //   background: transparent;
   //   border: none;
   //   font-family: PrequelRough;
@@ -211,11 +210,11 @@ export default defineComponent({
   //   font-size: 13px;
   //   @include background-btn;
 
-  //   .scribble-text {
+  //   .biketag-text {
   //     display: flex;
   //   }
 
-  //   .scribble-text--inner {
+  //   .biketag-text--inner {
   //     z-index: 2;
   //     background: transparent;
   //     // font-size: 2rem;
@@ -237,18 +236,18 @@ export default defineComponent({
 
   //   &.light {
   //     // .button--children,
-  //     // .scribble-text--inner {
+  //     // .biketag-text--inner {
   //     // font-family: UniSans;
   //     // margin-left: 10px;
   //     color: black;
   //   }
 
   //   &.medium {
-  //     .scribble-text--inner {
+  //     .biketag-text--inner {
   //       padding: 1rem;
   //     }
   //     @media (min-width: 550px) {
-  //       .scribble-text--inner {
+  //       .biketag-text--inner {
   //         font-size: 2rem;
   //       }
   //     }
@@ -258,7 +257,7 @@ export default defineComponent({
   //     font-size: 2rem;
   //     color: white;
 
-  //     .scribble-text--inner {
+  //     .biketag-text--inner {
   //       min-width: 6.8rem;
   //     }
   //   }

@@ -306,7 +306,7 @@ export const getApiUrl = (path = '') => {
   return url
 }
 
-export const exportHtmlToDownload = (filename: string, node?: any, selector?: string) => {
+export const exportHtmlToDownload = (filename: string, node?: any, selector?: string): any => {
   if (!node && !selector) {
     console.log('nothing to render')
     return
@@ -324,6 +324,7 @@ export const exportHtmlToDownload = (filename: string, node?: any, selector?: st
       link.download = `${filename}.png`
       link.href = dataUrl
       link.click()
+      return dataUrl
     })
     .catch(function (error) {
       console.error('oops, something went wrong!', error)

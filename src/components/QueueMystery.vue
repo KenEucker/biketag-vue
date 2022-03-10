@@ -1,6 +1,6 @@
 <template>
   <div class="queue-mystery-tag">
-    <b-modal v-model="modalShow" title="BootstrapVue" hide-footer hide-header>
+    <b-modal v-model="showModal" title="BootstrapVue" hide-footer hide-header>
       <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
       <h3 class="modal-header">
         {{ $t('You are ') }}{{ ordinalSuffixOf(numberInQueue) }}
@@ -122,7 +122,7 @@ export default defineComponent({
       player: '',
       hint: this.tag?.hint ?? '',
       image: this.tag?.mysteryImage,
-      modalShow: false,
+      showModal: false,
     }
   },
   computed: {
@@ -144,7 +144,7 @@ export default defineComponent({
   },
   mounted() {
     this.player = this.getQueuedTag?.foundPlayer
-    this.modalShow = true
+    this.showModal = true
   },
   methods: {
     onSubmit(e) {
@@ -215,7 +215,7 @@ export default defineComponent({
       this.$nextTick(() => this.$store.dispatch('resetFormStep'))
     },
     hideModal() {
-      this.modalShow = false
+      this.showModal = false
     },
     stringifyNumber,
     ordinalSuffixOf,

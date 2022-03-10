@@ -4,7 +4,7 @@
   </loading>
   <b-modal
     v-if="profile?.user_metadata"
-    v-model="modalShow"
+    v-model="showModal"
     title="User Name"
     hide-footer
     hide-header
@@ -162,7 +162,7 @@ export default defineComponent({
         ['imgur', Imgur],
         ['discord', Discord],
       ],
-      modalShow: false,
+      showModal: false,
     }
   },
   computed: {
@@ -185,13 +185,13 @@ export default defineComponent({
     this.$nextTick(() => {
       this.profile = this.getProfile
       this.profile.user_metadata = this.profile.user_metadata ?? { social: {} }
-      this.modalShow =
+      this.showModal =
         this.profile?.user_metadata?.name != null && !this.profile?.user_metadata?.name.length
     })
   },
   methods: {
     hideModal() {
-      this.modalShow = false
+      this.showModal = false
     },
     firstToUperCase(str) {
       return str[0].charAt(0).toUpperCase() + str.slice(1)
@@ -220,7 +220,7 @@ export default defineComponent({
             position: 'top',
           })
         }
-        this.modalShow = false
+        this.showModal = false
       }
     },
     async onSubmit() {
