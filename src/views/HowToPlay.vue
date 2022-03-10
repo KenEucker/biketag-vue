@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container mt-5">
     <swiper
       :autoplay="{ delay: 12500 }"
       :pagination="{ clickable: true }"
@@ -123,6 +123,8 @@ export default {
   max-width: 600px;
 
   .swiper-slide {
+    padding-top: 10px;
+
     p {
       line-height: 2vh;
     }

@@ -11,11 +11,7 @@
           minlength="3"
           maxlength="30"
         />
-        <bike-tag-button
-          class="modal-sub-btn"
-          variant="medium"
-          text="Submit"
-        />
+        <bike-tag-button class="modal-sub-btn" variant="medium" text="Submit" />
       </div>
     </form>
   </b-modal>
@@ -66,7 +62,7 @@
         @change="setImage"
       />
       <p class="queue-text">{{ $t('pages.queue.found_text') }}</p>
-      <div class="input-cnt mt-3 mb-3">
+      <div class="mt-3 mb-3 input-cnt">
         <bike-tag-input
           id="found"
           v-model="location"
@@ -162,7 +158,7 @@ export default defineComponent({
       pinIcon: Pin,
       showPopover: false,
       inputDOM: null,
-      passcode: '',
+      passcode: Date.now().toString(), // don't let them just get away with it
       showModal: false,
     }
   },

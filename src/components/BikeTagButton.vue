@@ -57,17 +57,18 @@ export default defineComponent({
 
     &--inner {
       background: transparent;
+
       // font-size: 2.5rem;
       padding: 1rem;
 
       @media (min-width: $breakpoint-mobile-sm) {
-        font-size: 0.75rem;
-      }
-      @media (min-width: $breakpoint-mobile-md) {
         font-size: 1rem;
       }
-      @media (min-width: $breakpoint-mobile-lg) {
+      @media (min-width: $breakpoint-mobile-md) {
         font-size: 1.25rem;
+      }
+      @media (min-width: $breakpoint-mobile-lg) {
+        font-size: 1.5rem;
       }
       @media (min-width: $breakpoint-tablet) {
         // font-size: 1.5rem;
@@ -141,12 +142,11 @@ export default defineComponent({
       .biketag__text--inner {
         padding: 0.75rem 0;
         min-height: 6rem;
-        padding: 0 1rem;
         margin: 0 auto;
         display: flex;
         justify-content: center;
         align-items: center;
-        
+
         // @media (min-width: $breakpoint-desktop) {
         //   font-size: 2rem !important;
         // }

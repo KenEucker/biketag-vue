@@ -273,12 +273,13 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
   const foundImageSet = queuedTag.foundImageUrl?.length > 0
   let queuedTagState = BiketagFormSteps.queueFound
   if (mysteryImageSet && foundImageSet) {
-    const discussionUrlIsSet = queuedTag.discussionUrl && queuedTag.discussionUrl.length > 0
-    const mentionUrlIsSet = queuedTag.mentionUrl && queuedTag.mentionUrl.length > 0
-    queuedTagState =
-      discussionUrlIsSet || mentionUrlIsSet
-        ? BiketagFormSteps.queuePosted
-        : BiketagFormSteps.queuePostedShare
+    // const discussionUrlIsSet = queuedTag.discussionUrl && queuedTag.discussionUrl.length > 0
+    // const mentionUrlIsSet = queuedTag.mentionUrl && queuedTag.mentionUrl.length > 0
+    // queuedTagState =
+    //   discussionUrlIsSet || mentionUrlIsSet
+    //     ? BiketagFormSteps.queuePosted
+    //     : BiketagFormSteps.queuePostedShare
+    queuedTagState = BiketagFormSteps.queuePosted
   } else {
     queuedTagState = foundImageSet ? BiketagFormSteps.queueMystery : BiketagFormSteps.queueFound
   }

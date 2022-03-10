@@ -1,7 +1,7 @@
 <template>
   <div class="biketag-label" :style="`background-image: url(${backgroundSrc})`">
     <label v-if="text && !onlyText">{{ text }}</label>
-    <p v-else> {{ text }} </p>
+    <p v-else>{{ text }}</p>
     <slot></slot>
   </div>
 </template>
@@ -17,8 +17,8 @@ export default defineComponent({
     },
     onlyText: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   computed: {
     backgroundSrc() {
@@ -58,7 +58,7 @@ export default defineComponent({
     font-size: 0.8rem;
   }
 
-  P {
+  p {
     font-weight: 800;
     height: 100%;
     display: flex;

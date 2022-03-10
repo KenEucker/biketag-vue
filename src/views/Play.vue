@@ -7,24 +7,10 @@
       <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
     </loading>
     <!-- Image and Number -->
-    <div v-if="tagnumber" class="tag-screen m-4 mt-5">
-      <bike-tag id="the-tag" :tag="tag" :use-large-src-images="true" />
-      <bike-tag-button
-        class="tag-screen-download__button"
-        text="Download"
-        @click="showCamera = true"
-      />
-      <b-modal
-        v-model="showCamera"
-        class="camera-modal"
-        title="BikeTag Camera"
-        hide-footer
-        hide-header
-      >
-        <bike-tag-camera :tag="tag" />
-      </b-modal>
+    <div v-if="tagnumber" class="m-4 mt-5 tag-screen">
+      <bike-tag id="the-tag" :tag="tag" image-size="l" />
     </div>
-    <div class="mt-4 mb-5" v-else>
+    <div v-else class="mt-4 mb-5">
       <bike-tag-button
         :text="getCurrentBikeTag.mysteryPlayer"
         @click="$router.push('/player/' + getCurrentBikeTag.mysteryPlayer)"
@@ -43,7 +29,7 @@
         />
         <div class="play-screen__label-group-bottom">
           <div>
-            <bike-tag-label :text="$t('menu.mysterylocation')" :onlyText="true"/>
+            <bike-tag-label :text="$t('menu.mysterylocation')" :only-text="true" />
           </div>
         </div>
       </div>
@@ -52,7 +38,12 @@
         <span>{{ $t('pages.play.send_hello_email') }}</span>
       </div>
     </div>
-    <bike-tag-footer class="bike-tag-footer" />
+    <bike-tag-footer
+      class="bike-tag-footer"
+      :variant="`${tagnumber ? 'single' : undefined}`"
+      @next="goNextSingle"
+      @previous="goPreviousSingle"
+    />
   </div>
 </template>
 <script>
@@ -65,7 +56,6 @@ import BikeTagHeader from '@/components/BikeTagHeader.vue'
 import BikeTagFooter from '@/components/BikeTagFooter.vue'
 import BikeTagLabel from '@/components/BikeTagLabel.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import BikeTagCamera from '@/components/BikeTagCamera.vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
 // import useSWRV from 'swrv'
 
@@ -79,7 +69,6 @@ export default defineComponent({
     BikeTagButton,
     BikeTagLabel,
     ExpandableImage,
-    BikeTagCamera,
   },
   data() {
     // const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
@@ -87,7 +76,6 @@ export default defineComponent({
 
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      showCamera: false,
       // error,
     }
   },
@@ -102,6 +90,7 @@ export default defineComponent({
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
+        console.log({ tag: tag[0] })
         return tag && tag.length ? tag[0] : {}
       }
       return undefined
@@ -117,6 +106,14 @@ export default defineComponent({
           return decodeURIComponent(encodeURIComponent(player.name)) == playerName
         }) ?? []
       return playerList[0]
+    },
+    goNextSingle() {
+      this.tagnumber++
+      this.$router.push(`/${this.tagnumber}`)
+    },
+    goPreviousSingle() {
+      this.tagnumber--
+      this.$router.push(`/${this.tagnumber}`)
     },
   },
 })
@@ -156,6 +153,7 @@ export default defineComponent({
       position: absolute;
       top: -3%;
       left: 0;
+
       // line-height: 1rem !important;
       min-width: 1rem;
       @media (min-width: $breakpoint-tablet) {

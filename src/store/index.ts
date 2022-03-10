@@ -531,7 +531,7 @@ export const store = createStore<State>({
           oldState?.discussionUrl !== data?.discussionUrl ||
           oldState?.mentionUrl !== data?.mentionUrl
         ) {
-          state.formStep = BiketagFormSteps.queuePostedShare
+          state.formStep = BiketagFormSteps.queuePosted
         } else {
           state.formStep = BiketagFormSteps.queueMystery
         }

@@ -323,6 +323,7 @@ body {
       position: relative;
       padding: 0;
       z-index: 4;
+
       .biketag {
         &__button {
           height: 5rem;
@@ -333,6 +334,7 @@ body {
             height: 6rem;
           }
         }
+
         &__text {
           .queue-title {
             font-size: 1.2rem!important;
@@ -341,11 +343,14 @@ body {
         }
       }
     }
+
     .click-me {
       cursor: pointer;
     }
+
     .icn {
       padding: 10px 16px 10px 10px;
+
       &--top {
         bottom: -20px;
         right: 0;
@@ -357,6 +362,7 @@ body {
       display: flex;
       justify-content: center;
       align-items: center;
+
       .biketag__button {
         z-index: 3;
         position: absolute;
@@ -378,11 +384,13 @@ body {
       .img-bck {
         z-index: 2;
         width: 100%;
+
         // @media (min-width: 400px){
         //   width: 100%;
         // }
       }
     }
+
     .sub-cnt {
       .biketag {
         &__button {

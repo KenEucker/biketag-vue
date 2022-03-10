@@ -223,7 +223,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import "../assets/styles/style";
+@import '../assets/styles/style';
+
 .modal-header {
   display: flex;
   width: 100%;
@@ -236,16 +237,19 @@ export default defineComponent({
     font-size: 3rem;
   }
 }
+
 .modal-sub-btn {
   width: 70%;
   margin: 1rem auto;
   display: flex;
   justify-content: center;
   align-items: center;
+
   &--big {
     width: 90%;
   }
 }
+
 .close-btn,
 .go-queue {
   cursor: pointer;

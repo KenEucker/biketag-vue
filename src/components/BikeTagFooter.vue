@@ -1,15 +1,43 @@
 <template>
-  <div class="button-group">
-    <!-- Left Button -->
-    <bike-tag-button class="button-group__left" :text="$t('menu.about')" @click="goAboutPage" />
-    <!-- Middle Button -->
-    <bike-tag-button class="button-group__middle" :text="$t('menu.hint')" variant="bold" />
-    <!-- Right Button -->
-    <bike-tag-button
-      class="button-group__right"
-      :text="$t('menu.players')"
-      @click="goPlayersPage"
-    />
+  <div :class="`${variant} button-group`">
+    <div v-if="variant === 'current'">
+      <!-- Left Button -->
+      <bike-tag-button class="button-group__left" :text="$t('menu.about')" @click="goAboutPage" />
+      <!-- Middle Button -->
+      <bike-tag-button class="button-group__middle" :text="$t('menu.hint')" variant="bold" />
+      <!-- Right Button -->
+      <bike-tag-button
+        class="button-group__right"
+        :text="$t('menu.players')"
+        @click="goPlayersPage"
+      />
+    </div>
+    <div v-if="variant === 'single'">
+      <!-- Left Button -->
+      <bike-tag-button
+        class="button-group__left"
+        :text="$t('menu.previous')"
+        @click="$emit('previous')"
+      />
+      <!-- Middle Button -->
+      <bike-tag-button
+        class="tag-screen-download__button"
+        variant="bold"
+        :text="$t('menu.download')"
+        @click="showCamera = true"
+      />
+      <b-modal
+        v-model="showCamera"
+        class="camera-modal"
+        title="BikeTag Camera"
+        hide-footer
+        hide-header
+      >
+        <bike-tag-camera :tag="tag" />
+      </b-modal>
+      <!-- Right Button -->
+      <bike-tag-button class="button-group__right" :text="$t('menu.next')" @click="$emit('next')" />
+    </div>
   </div>
   <!-- <b-modal title="Current BikeTag Hint" hide-footer hide-header>
       <div class="modal-top">
@@ -27,18 +55,21 @@
         />
       </div>
     </b-modal> -->
-  <div class="brands-cnt">
-    <div class="col-md-2">
+  <div class="mt-5 mb-5 foss-container">
+    <div class="row">
       <a href="https://github.com/KenEucker/biketag-vue">
         <img src="../assets/images/github-logo.png" alt="GitHub" />
         <img src="../assets/images/github-mark.png" alt="GitHub Mark" />
       </a>
-      <span><sup>0</sup>{{ $t('components.footer.sourced') }}</span>
-      <img class="flow" src="../assets/images/bidirectional-flow.svg" />
-      <span>{{ $t('components.footer.deployed') }}<sup>1</sup></span>
       <a href="https://www.netlify.com/">
         <img src="../assets/images/netlify-logo-dark.svg" alt="Netlify" />
       </a>
+    </div>
+    <div class="mt-2 row">
+      <i>
+        BikeTag is an entirely free and open-source project that is on GitHub for open collaboration
+        and graciously hosted by Netlify on their free open-source plan.
+      </i>
     </div>
   </div>
 </template>
@@ -46,37 +77,51 @@
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagCamera from '@/components/BikeTagCamera.vue'
+
 export default defineComponent({
   name: 'BikeTagFooter',
   components: {
     BikeTagButton,
+    BikeTagCamera,
   },
+  props: {
+    variant: {
+      type: String,
+      default: 'current',
+    },
+  },
+  emits: ['next', 'previous'],
   data() {
     return {
-      //   modalActive: false,
+      showCamera: false,
     }
   },
   computed: {
     ...mapGetters(['getCurrentBikeTag']),
   },
   methods: {
-    goAboutPage: function () {
+    goAboutPage() {
       this.$router.push('/about')
     },
-    goLeaderboardPage: function () {
+    goLeaderboardPage() {
       this.$router.push('/leaderboard')
     },
-    goPlayersPage: function () {
+    goPlayersPage() {
       this.$router.push('/players')
     },
   },
 })
 </script>
 <style scoped lang="scss">
-.brands-cnt {
-  display: flex;
-  justify-content: center;
+.foss-container {
+  i {
+    margin: auto;
+    padding: 2em;
+    max-width: 500px;
+  }
 }
+
 .button-group {
   display: flex;
   justify-content: center;

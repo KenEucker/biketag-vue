@@ -33,24 +33,33 @@ export default defineComponent({
       return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
     },
   },
-  async created() {
+  async mounted() {
     const initResults = []
     /// Set it first thing
     this.$store.dispatch('setDataInitialized')
     const game = await this.$store.dispatch('setGame')
     initResults.push(await this.$store.dispatch('setAllGames'))
 
-    if (this.$auth.isAuthenticated) {
-      if (!this.getProfile?.nonce?.length) {
-        const claims = await this.$auth.getIdTokenClaims()
-        if (claims) {
-          const token = claims.__raw
-          this.$store.dispatch('setProfile', { ...this.$auth.user, token })
-        } else {
-          console.log("what's this? no speaka da mda5hash, brah?")
+    console.log('auth', this.$auth.isAuthenticated, this.$auth)
+    await setTimeout(
+      this.$nextTick(async () => {
+        if (this.$auth.isAuthenticated) {
+          console.log('is authed')
+          if (!this.getProfile?.nonce?.length) {
+            console.log('no profile nonce, setting profile')
+            this.$auth.getIdTokenClaims().then((claims) => {
+              if (claims) {
+                const token = claims.__raw
+                this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+              } else {
+                console.log("what's this? no speaka da mda5hash, brah?")
+              }
+            })
+          }
         }
-      }
-    }
+      }),
+      100
+    )
 
     await setTimeout(
       this.$nextTick(() => {

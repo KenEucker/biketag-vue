@@ -1,5 +1,5 @@
 <template>
-  <div class="">
+  <div>
     <!-- Button Group -->
     <div class="button-group">
       <!-- Left Button -->

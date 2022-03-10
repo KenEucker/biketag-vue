@@ -20,7 +20,10 @@
     "login": "Login",
     "logout": "Logout",
     "hint": "Hint",
-    "mysterylocation": "Current Mystery Location"
+    "mysterylocation": "Current Mystery Location",
+    "previous": "Prev",
+    "next": "Next",
+    "download": "Capture"
   },
   "components": {
     "biketag": {

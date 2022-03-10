@@ -7,10 +7,16 @@ import mitt from 'mitt'
 import { Auth0Plugin } from './auth'
 import i18nPlugin from './i18n'
 import VueToast from 'vue-toast-notification'
-import Markdown from 'vue3-markdown-it'
 import VueCookies from 'vue3-cookies'
-import VueIframe from 'vue-iframes'
 import VueGoogleMaps from '@fawmi/vue-google-maps'
+
+// eslint-disable-next-line
+// @ts-ignore
+import Markdown from 'vue3-markdown-it'
+// eslint-disable-next-line
+// @ts-ignore
+import VueIframe from 'vue-iframes'
+
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
 import '@/assets/styles/style.scss'
@@ -77,10 +83,10 @@ class BikeTagApp {
   run() {
     this.init()
     this.cookies()
-    this.internationalization()
-    this.router()
     this.authentication()
+    this.internationalization()
     this.components()
+    this.router()
     this.mount()
   }
 }

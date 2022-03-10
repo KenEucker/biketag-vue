@@ -54,6 +54,7 @@ export default defineComponent({
 .btn-mystery {
   background-color: blue;
 }
+
 .mt-3 {
   .biketag {
     &__button {
@@ -61,9 +62,11 @@ export default defineComponent({
         min-height: 12rem;
         width: unset !important;
       }
+
       &--medium {
         min-height: 6rem;
       }
+
       width: 90%;
       @media (min-width: 48rem) {
         width: 60%;

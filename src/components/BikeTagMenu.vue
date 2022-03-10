@@ -34,7 +34,7 @@
 
       <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-lg-0">
-          <li class="nav-item" v-if="!authLoading && $auth.isAuthenticated">
+          <li v-if="!authLoading && $auth.isAuthenticated" class="nav-item">
             <img
               class="profile-icon"
               :src="getProfileImageSrc"
@@ -100,7 +100,7 @@
       </div>
     </nav>
   </header>
-  <footer v-if="variant === 'bottom'" class="container mt-5 pb-5 footer">
+  <footer v-if="variant === 'bottom'" class="container pb-5 mt-5 footer">
     <!-- Fixed Footer -->
     <div class="footer-fixed__wrapper">
       <!-- Leaderboard -->
@@ -362,8 +362,10 @@ header {
 
 .button-reset-cnt {
   display: flex;
+
   .button-reset {
     min-height: auto;
+
     // margin: auto;
   }
 }

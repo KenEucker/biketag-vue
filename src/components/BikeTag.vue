@@ -119,9 +119,9 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
-    useLargeSrcImages: {
-      type: Boolean,
-      default: false,
+    imageSize: {
+      type: String,
+      default: null,
     },
     tagnumber: {
       type: Number,
@@ -190,15 +190,15 @@ export default defineComponent({
         : this.tag?.mysteryImageUrl
     },
     getFoundImageSrc() {
-      return this.useLargeSrcImages
-        ? this.getImgurImageSized(this._mysteryImageUrl, 'l')
+      return this.imageSize
+        ? this.getImgurImageSized(this._foundImageUrl, this.imageSize)
         : this.sizedFoundImage
         ? this.getImgurImageSized(this._foundImageUrl)
         : this._foundImageUrl
     },
     getMysteryImageSrc() {
-      return this.useLargeSrcImages
-        ? this.getImgurImageSized(this._mysteryImageUrl, 'l')
+      return this.imageSize
+        ? this.getImgurImageSized(this._mysteryImageUrl, this.imageSize)
         : this.sizedMysteryImage
         ? this.getImgurImageSized(this._mysteryImageUrl, this._foundImageUrl ? 'm' : 'l')
         : this._mysteryImageUrl

@@ -56,6 +56,7 @@ export default defineComponent({
 <style lang="scss">
 .big-btn {
   min-height: 6rem;
+
   .biketag {
     &__button {
       &--children {
