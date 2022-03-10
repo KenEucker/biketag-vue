@@ -50,23 +50,26 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped lang="scss">
+<style lang="scss">
 .btn-mystery {
   background-color: blue;
 }
 .mt-3 {
-  .scribble {
+  .biketag {
     &__button {
       &--light {
         min-height: 12rem;
         width: unset !important;
+      }
+      &--medium {
+        min-height: 6rem;
       }
       width: 90%;
       @media (min-width: 48rem) {
         width: 60%;
       }
       @media (min-width: 64rem) {
-        width: 17rem;
+        width: 23rem;
       }
     }
   }

@@ -223,6 +223,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+@import "../assets/styles/style";
 .modal-header {
   display: flex;
   width: 100%;

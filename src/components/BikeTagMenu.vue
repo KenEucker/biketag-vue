@@ -112,7 +112,7 @@
       </bike-tag-button>
 
       <!-- World -->
-      <div>
+      <div class="button-reset-cnt">
         <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
           <img
             class="footer-fixed_image"
@@ -360,9 +360,12 @@ header {
   }
 }
 
-.button-reset {
-  min-height: auto;
-  margin: auto;
+.button-reset-cnt {
+  display: flex;
+  .button-reset {
+    min-height: auto;
+    // margin: auto;
+  }
 }
 
 .active-nav {

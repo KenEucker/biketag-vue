@@ -187,11 +187,11 @@ main {
 
 footer {
   form {
-    .scribble__button {
+    .biketag__button {
       height: 3rem;
 
-      .scribble__text {
-        .scribble__text--inner {
+      .biketag__text {
+        .biketag__text--inner {
           font-size: 0.8rem !important;
           line-height: 1;
         }

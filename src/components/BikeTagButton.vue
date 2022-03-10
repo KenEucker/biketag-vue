@@ -53,30 +53,30 @@ export default defineComponent({
 
 .biketag {
   &__text {
-    display: flex;
+    // display: flex;
 
     &--inner {
       background: transparent;
-      font-size: 2.5rem;
+      // font-size: 2.5rem;
       padding: 1rem;
 
-      @media (max-width: $breakpoint-desktop) {
-        font-size: 2rem;
+      @media (min-width: $breakpoint-mobile-sm) {
+        font-size: 0.75rem;
       }
-      @media (max-width: $breakpoint-laptop) {
-        font-size: 1.75rem;
-      }
-      @media (max-width: $breakpoint-tablet) {
-        font-size: 1.5rem;
-      }
-      @media (max-width: $breakpoint-mobile-lg) {
-        font-size: 1.25rem;
-      }
-      @media (max-width: $breakpoint-mobile-md) {
+      @media (min-width: $breakpoint-mobile-md) {
         font-size: 1rem;
       }
-      @media (max-width: $breakpoint-mobile-sm) {
-        font-size: 0.75rem;
+      @media (min-width: $breakpoint-mobile-lg) {
+        font-size: 1.25rem;
+      }
+      @media (min-width: $breakpoint-tablet) {
+        // font-size: 1.5rem;
+      }
+      @media (min-width: $breakpoint-laptop) {
+        // font-size: 1.75rem;
+      }
+      @media (min-width: $breakpoint-desktop) {
+        // font-size: 2rem;
       }
     }
   }
@@ -109,7 +109,7 @@ export default defineComponent({
     // }
 
     &--light {
-      min-height: 5.5rem;
+      min-height: 5.9rem;
 
       @media (min-width: $breakpoint-desktop) {
         //   font-size: 2rem;
@@ -143,19 +143,13 @@ export default defineComponent({
         min-height: 6rem;
         padding: 0 1rem;
         margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         
-        @media (min-width: $breakpoint-tablet) {
-          min-height: 7rem;
-        }
-        @media (min-width: $breakpoint-laptop) {
-          min-height: 8rem;
-        }
-        @media (min-width: $breakpoint-desktop) {
-          min-height: 9rem;
-          .scribble__text--inner {
-            font-size: 2rem !important;
-          }
-        }
+        // @media (min-width: $breakpoint-desktop) {
+        //   font-size: 2rem !important;
+        // }
       }
     }
 
@@ -190,7 +184,7 @@ export default defineComponent({
 
     &--children {
       z-index: 1;
-      padding: 3%;
+      padding: 0 3%;
     }
   }
 }

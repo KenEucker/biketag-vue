@@ -250,16 +250,16 @@ export default defineComponent({
 .flx-columns {
   @include flx-center($flow: column nowrap, $al: flex-start);
 
-  .scribble-button {
-    .scribble-text__inner {
+  .biketag-button {
+    .biketag-text__inner {
       font-size: 1.5rem !important;
     }
   }
 }
 
 .input-block {
-  .scribble-button {
-    .scribble-text__inner {
+  .biketag-button {
+    .biketag-text__inner {
       font-size: 1.5rem !important;
     }
   }
@@ -321,7 +321,7 @@ export default defineComponent({
       top: -1rem;
       left: 0;
 
-      .scribble-button {
+      .biketag-button {
         width: inherit;
         height: inherit;
       }
