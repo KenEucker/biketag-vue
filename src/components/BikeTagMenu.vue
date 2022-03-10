@@ -1,7 +1,7 @@
 <template>
   <header v-if="variant === 'top'" class="biketag-header">
     <!-- The header logo and profile and hamburger buttons go here -->
-    <nav class="biketag-header-nav navbar navbar-expand-lg">
+    <nav class="biketag-header-nav navbar navbar-expand-xl">
       <!-- Back Arrow -->
       <div v-if="isShow" class="back-arrow" @click="goBack">
         <img
@@ -274,10 +274,20 @@ header {
   width: 100%;
   top: 0;
   left: 0;
-  z-index: 100;
+  z-index: 999;
   box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
 
   nav {
+    .show {
+      height: calc(100vh - 82px);
+      ul {
+        height: inherit;
+        overflow: auto;
+      }
+      @media (min-width: 1200px) {
+        height: auto;
+      }
+    }
     .profile-icon {
       max-width: 25vw;
       height: auto;

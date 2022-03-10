@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="_playerName?.length"
-    :class="'player-wrapper mt-3 avatar-' + size"
+    :class="'player-wrapper mt-5 avatar-' + size"
     role="button"
     @click="goPlayerPage"
   >
@@ -17,7 +17,7 @@
       <span
         v-if="player?.tags?.length"
         :class="`tag-count tag-count--color-${tagColorNumber(player.tags.length)}`"
-        >{{ player.tags.length }}</span
+        >{{ getTagCount }}</span
       >
     </div>
     <img v-if="playerBiconUrl" class="player-bicon" :src="playerBiconUrl" :alt="_playerName" />
@@ -76,6 +76,11 @@ export default defineComponent({
       }
       return this.getImgurImageSized(url, this.size[0])
     },
+    getTagCount() {
+      if (this.size === "lg") {
+        return this.player.tags.length
+      } return this.player.tags.length > 99 ? "+99" : this.player.tags.length
+    }
   },
   methods: {
     goPlayerPage: function () {
@@ -109,6 +114,7 @@ export default defineComponent({
     transform: rotate(-8deg);
     display: block;
     animation: fadein 2s;
+    word-break: break-all;
 
     // word-break: break-word;
     // text-decoration-line: underline;
@@ -123,7 +129,7 @@ export default defineComponent({
   .tag-count {
     position: absolute;
     padding: 10px 0;
-    width: 4rem;
+    min-width: 4rem;
     text-align: center;
     clip-path: url('#badge-clip');
     z-index: 99;
@@ -223,8 +229,7 @@ export default defineComponent({
     left: 0;
     right: 0;
     transform: unset;
-    font-size: 3rem;
-    line-height: 3rem;
+    font-size: 2rem;
   }
 
   .tag-count {

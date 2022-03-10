@@ -2,7 +2,7 @@
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
-  <div class="container">
+  <div class="container mt-5">
     <div class="d-flex justify-content-center">
       <player size="lg" :player="player" :no-link="true" />
     </div>
