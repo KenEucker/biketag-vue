@@ -7,6 +7,7 @@
         {{ $t('in the current round!') }}
       </h3>
       <bike-tag-button
+        class="modal-sub-btn modal-sub-btn--big"
         variant="medium"
         :text="$t('components.queue.view_queue_button')"
         @click="goViewQueue"
@@ -30,7 +31,7 @@
         @click="$refs.file.click()"
       />
       <bike-tag-button
-        :class="`click-me ${preview ? 'icn-top' : ''}`"
+        :class="`click-me icn ${preview ? 'icn--top' : ''}`"
         variant="circle"
         @click="$refs.file.click()"
       >
@@ -221,9 +222,7 @@ export default defineComponent({
   },
 })
 </script>
-<style lang="scss" scoped>
-@import '../assets/styles/style';
-
+<style lang="scss">
 .modal-header {
   display: flex;
   width: 100%;
@@ -236,7 +235,16 @@ export default defineComponent({
     font-size: 3rem;
   }
 }
-
+.modal-sub-btn {
+  width: 70%;
+  margin: 1rem auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &--big {
+    width: 90%;
+  }
+}
 .close-btn,
 .go-queue {
   cursor: pointer;

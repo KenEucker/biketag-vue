@@ -184,7 +184,12 @@ export default defineComponent({
       position: absolute;
       top: -3%;
       left: 0;
-      line-height: 1rem !important;
+      // line-height: 1rem !important;
+      min-width: 1rem;
+      @media (min-width: $breakpoint-tablet) {
+        top: 0;
+        min-width: 8rem;
+      }
     }
 
     &-top {
@@ -195,7 +200,7 @@ export default defineComponent({
 
     &-bottom {
       position: absolute;
-      bottom: -4.5rem;
+      bottom: -3.5rem;
       display: flex;
       flex-direction: column;
       width: 100%;

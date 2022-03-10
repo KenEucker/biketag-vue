@@ -53,12 +53,19 @@ export default defineComponent({
   },
 })
 </script>
-<style scoped lang="scss">
+<style lang="scss">
 .big-btn {
-  min-height: 190px;
-  font-size: 1.8rem;
+  min-height: 6rem;
+  .scribble {
+    &__button {
+      &--children {
+        padding: 0 1rem;
+      }
+    }
+  }
 }
-
+</style>
+<style scoped lang="scss">
 .games {
   display: flex;
   flex-flow: wrap;

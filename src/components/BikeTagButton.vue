@@ -109,37 +109,54 @@ export default defineComponent({
     // }
 
     &--light {
-      line-height: 8rem;
+      // line-height: 8rem;
+      min-height: 5.5rem;
 
-      @media (max-width: $breakpoint-desktop) {
+      @media (min-width: $breakpoint-desktop) {
         //   font-size: 2rem;
-        line-height: 7rem;
+        // line-height: 7rem;
+        min-width: 10rem;
       }
-      @media (max-width: $breakpoint-laptop) {
-        line-height: 6rem;
+      @media (min-width: $breakpoint-laptop) {
+        // line-height: 6rem;
       }
-      @media (max-width: $breakpoint-tablet) {
-        line-height: 5rem;
+      @media (min-width: $breakpoint-tablet) {
+        // line-height: 5rem;
       }
-      @media (max-width: $breakpoint-mobile-lg) {
-        line-height: 4rem;
+      @media (min-width: $breakpoint-mobile-lg) {
+        // line-height: 4rem;
       }
-      @media (max-width: $breakpoint-mobile-md) {
-        line-height: 3rem;
+      @media (min-width: $breakpoint-mobile-md) {
+        // line-height: 3rem;
       }
-      @media (max-width: $breakpoint-mobile-sm) {
-        line-height: 2rem;
+      @media (min-width: $breakpoint-mobile-sm) {
+        // line-height: 2rem;
       }
 
       .scribble__text--inner {
-        padding: 1.0625rem 1.3125rem;
+        // padding: 1.0625rem 1.3125rem;
         color: black;
       }
     }
 
     &--medium {
-      .scribble__text--inner {
-        padding: 0.75rem 0;
+      min-height: 6rem;
+      padding: 0 1rem;
+      margin: 0 auto;
+      // .scribble__text--inner {
+      //   padding: 0.75rem 0;
+      // }
+      @media (min-width: $breakpoint-tablet) {
+        min-height: 7rem;
+      }
+      @media (min-width: $breakpoint-laptop) {
+        min-height: 8rem;
+      }
+      @media (min-width: $breakpoint-desktop) {
+        min-height: 9rem;
+        .scribble__text--inner {
+          font-size: 2rem !important;
+        }
       }
     }
 
