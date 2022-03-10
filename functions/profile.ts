@@ -184,15 +184,18 @@ const profileHandler: Handler = async (event) => {
       console.log(exists)
       if (exists.length) {
         const user_metadata = exists[0].user_metadata
-        if (user_metadata.passcode && user_metadata.passcode == profile.passcode) {
+        /// If the passcode isn't set then it defaults to an empty string
+        user_metadata.passcode = user_metadata.passcode ?? ''
+
+        if (user_metadata.passcode == profile.passcode) {
           body = exists[0].sub
           statusCode = 200
         } else {
-          body = "unauthorized"
+          body = 'unauthorized'
           statusCode = 401
         }
       } else {
-        body = "name not found"
+        body = 'name not found'
         statusCode = 200
       }
     } catch (e) {

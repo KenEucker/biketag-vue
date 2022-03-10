@@ -113,7 +113,7 @@ export const isValidJson = (data, type = 'none') => {
           user_metadata: {
             type: 'object',
             properties: {
-              passcode: {type: 'string'},
+              passcode: { type: 'string' },
               social: {
                 type: 'object',
                 properties: {
@@ -142,7 +142,7 @@ export const isValidJson = (data, type = 'none') => {
           user_metadata: {
             type: 'object',
             properties: {
-              passcode: {type: 'string'},
+              passcode: { type: 'string' },
               social: {
                 type: 'object',
                 properties: {
@@ -319,39 +319,45 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
   let authorizationString = event.headers.authorization
   const basic = 'Basic '
   const bearer = 'Bearer '
-  const clientId = 'Client-ID '
-  const isBasic = authorizationString?.indexOf(basic) === 0
-  const isBearer = authorizationString?.indexOf(bearer) === 0
-  const isClientId = authorizationString?.indexOf(clientId) === 0
+  const client = 'Client-ID '
 
-  if (isBearer) {
-    authorizationString = authorizationString.substr(bearer.length)
-  } else if (isClientId) {
-    authorizationString = authorizationString.substr(clientId.length)
-  } else if (isBasic) {
-    authorizationString = authorizationString.substr(basic.length)
-  }
+  const authorizationType: string =
+    authorizationString?.indexOf(basic) === 0
+      ? 'basic'
+      : authorizationString?.indexOf(client) === 0
+      ? 'client'
+      : authorizationString?.indexOf(bearer) === 0
+      ? 'bearer'
+      : null
 
-  if (isBasic) {
-    const namePasscodeString = 
-      CryptoJS.AES.decrypt(authorizationString, process.env.HOST_KEY).toString(CryptoJS.enc.Utf8)
+  const getBasicAuthProfile = (authorizationString: string) => {
     /// Basic Auth: "Basic [name]::[password]""
+    // console.log('basic', { authorizationString })
+    const namePasscodeString = CryptoJS.AES.decrypt(
+      authorizationString,
+      process.env.HOST_KEY
+    ).toString(CryptoJS.enc.Utf8)
     const namePasscodeSplit = namePasscodeString.split('::')
     return {
       name: namePasscodeSplit[0],
       passcode: namePasscodeSplit[1],
     }
-  } else if (isBearer) {
-    /// Try netlify Auth validation for BikeTag Ambassador
-    // try {
-    //   const verifierOpts = { issuer: '', audience: '' }
-    //   const verifier = new JwtVerifier(verifierOpts)
-    //   return await validateJWT(verifier, verifierOpts)
-    // } catch (e) {
-    //   console.error({ authorizationNetlifyValidationError: e })
-    // }
+  }
 
-    /// Try netlify Auth validation for BikeTag Ambassador
+  const getNetlifyAuthProfile = async (authorizationString: string) => {
+    // console.log('netlify', { authorizationString })
+    try {
+      const verifierOpts = { issuer: '', audience: '' }
+      const verifier = new JwtVerifier(verifierOpts)
+      return await validateJWT(verifier, verifierOpts)
+    } catch (e) {
+      console.error({ authorizationNetlifyValidationError: e })
+    }
+    return null
+  }
+
+  const getAuth0AuthProfile = async (authorizationString: string) => {
+    // console.log('auth0', { authorizationString })
     try {
       const JWKS = jose.createRemoteJWKSet(
         new URL(`https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`)
@@ -364,6 +370,28 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
       // console.error({ authorizationAuth0ValidationError: e })
       return authorizationString
     }
+  }
+
+  // console.log({ authorizationType, authorizationString })
+
+  switch (authorizationType) {
+    case 'basic':
+      authorizationString = authorizationString.substring(basic.length)
+      return getBasicAuthProfile(authorizationString)
+    case 'netlify':
+      authorizationString = authorizationString.substring(client.length)
+      return getNetlifyAuthProfile(authorizationString)
+    case 'client':
+      authorizationString = authorizationString.substring(client.length)
+      return getAuth0AuthProfile(authorizationString)
+    case 'bearer':
+      authorizationString = authorizationString.substring(bearer.length)
+      return getAuth0AuthProfile(authorizationString)
+    default:
+      authorizationString = authorizationString.length
+        ? 'authorization type not supported'
+        : authorizationString
+      break
   }
 
   return null
