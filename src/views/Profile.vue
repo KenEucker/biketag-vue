@@ -79,6 +79,8 @@
             name="passcode"
             label="Passcode"
             type="password"
+            minlength="3"
+            maxlength="30"
           />
         </div>
         <div v-for="(social, i) in socialNetworkIcons" :key="i" class="mt-3 input-icon">

@@ -2,21 +2,32 @@
   <b-modal v-model="showModal" title="Authenticate" hide-footer hide-header>
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
-      <div class="mt-3">
-        <bike-tag-input id="passcode" v-model="passcode" name="passcode" placeholder="passcode" />
-        <bike-tag-button class="modal-header" variant="medium" text="Submit" />
+      <div style="margin-top: 2rem">
+        <bike-tag-input
+          id="passcode"
+          v-model="passcode"
+          name="passcode"
+          placeholder="passcode"
+          minlength="3"
+          maxlength="30"
+        />
+        <bike-tag-button
+          class="modal-sub-btn"
+          variant="medium"
+          text="Submit"
+        />
       </div>
     </form>
   </b-modal>
   <div class="queue-found-tag">
     <div class="title-cnt">
-      <bike-tag-button variant="medium" class="title-q">
+      <bike-tag-button variant="medium">
         <h3 class="queue-title">{{ $t('pages.queue.found_title') }}</h3>
       </bike-tag-button>
     </div>
     <div class="preview-cnt">
       <template v-if="preview">
-        <img :src="preview" class="prev-img img-fluid" />
+        <img :src="preview" class="prev-img" />
         <img class="img-bck" src="@/assets/images/transparent_img.svg" />
       </template>
       <img
@@ -26,7 +37,7 @@
         @click="$refs.file.click()"
       />
       <bike-tag-button
-        :class="`click-me ${preview ? 'icn-top' : ''}`"
+        :class="`click-me icn ${preview ? 'icn--top' : ''}`"
         variant="circle"
         @click="$refs.file.click()"
       >
@@ -103,12 +114,14 @@
           :placeholder="$t('pages.queue.name_placeholder')"
         />
       </div>
-      <bike-tag-button
-        variant="medium"
-        type="submit"
-        :text="$t('pages.queue.queue_found_tag')"
-        @click="onSubmit"
-      />
+      <div class="sub-cnt">
+        <bike-tag-button
+          variant="medium"
+          type="submit"
+          :text="$t('pages.queue.queue_found_tag')"
+          @click="onSubmit"
+        />
+      </div>
     </form>
   </div>
 </template>
@@ -187,7 +200,8 @@ export default defineComponent({
   },
   mounted() {
     this.$nextTick(() => {
-      this.showPopover = false
+      setTimeout(() => this.$nextTick(() => (this.showPopover = false)), 100)
+      // this.showPopover = false
       this.player = this.getName
     })
   },

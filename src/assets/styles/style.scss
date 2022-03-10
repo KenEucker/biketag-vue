@@ -7,6 +7,9 @@ html {
 
 body {
   color: $app-color;
+  .expandable-image.expanded {
+    max-width: unset;
+  }
 }
 
 #app {
@@ -323,43 +326,32 @@ body {
       position: relative;
       padding: 0;
       z-index: 4;
-
-      .title-q {
-        position: relative;
-        padding: 0;
-        bottom: -37px;
-
-        .scribble-text {
+      .scribble {
+        &__button {
+          height: 5rem;
+          position: relative;
+          padding: 0;
+          bottom: -25px;
+          @media (min-width: $breakpoint-mobile-md) {
+            height: 6rem;
+          }
+        }
+        &__text {
           .queue-title {
-            font-size: 1.7rem!important;
+            font-size: 1.2rem!important;
             margin: 0 1rem;
           }
         }
       }
     }
-
-    .custom-file-upload {
-      border-radius: 2rem;
-      display: inline-block;
-      padding: 6px 12px;
-      cursor: pointer;
-    }
-
     .click-me {
       cursor: pointer;
     }
-
-    .icn-top {
-      bottom: -20px;
-      right: 0;
-    }
-
-    .input-cnt {
-      .biketag-input {
-        margin: 0 2rem;
-        @media (min-width: 470px) {
-          margin: 0 auto
-        }
+    .icn {
+      padding: 10px 16px 10px 10px;
+      &--top {
+        bottom: -20px;
+        right: 0;
       }
     }
 
@@ -368,8 +360,7 @@ body {
       display: flex;
       justify-content: center;
       align-items: center;
-
-      .scribble-button {
+      .scribble__button {
         z-index: 3;
         position: absolute;
         transition-property: bottom, right;
@@ -382,12 +373,24 @@ body {
         z-index: 0;
         position: absolute;
         object-fit: contain;
+        @media (min-width: 400px){
+          width: 98%;
+        }
       }
 
       .img-bck {
         z-index: 2;
-        @media (min-width: 400px){
-          width: 100%;
+        width: 100%;
+        // @media (min-width: 400px){
+        //   width: 100%;
+        // }
+      }
+    }
+    .sub-cnt {
+      .scribble {
+        &__button {
+          width: 15rem;
+          height: 6rem;
         }
       }
     }

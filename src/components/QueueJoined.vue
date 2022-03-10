@@ -54,4 +54,21 @@ export default defineComponent({
 .btn-mystery {
   background-color: blue;
 }
+.mt-3 {
+  .scribble {
+    &__button {
+      &--light {
+        min-height: 12rem;
+        width: unset !important;
+      }
+      width: 90%;
+      @media (min-width: 48rem) {
+        width: 60%;
+      }
+      @media (min-width: 64rem) {
+        width: 17rem;
+      }
+    }
+  }
+}
 </style>

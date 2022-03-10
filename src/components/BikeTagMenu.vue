@@ -34,9 +34,8 @@
 
       <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-lg-0">
-          <li class="nav-item">
+          <li class="nav-item" v-if="!authLoading && $auth.isAuthenticated">
             <img
-              v-if="!authLoading && $auth.isAuthenticated"
               class="profile-icon"
               :src="getProfileImageSrc"
               alt="Profile Icon"
