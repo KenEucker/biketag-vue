@@ -41,6 +41,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+@import '../assets/styles/style';
+
 .biketag-input {
   @include background-btn;
 
