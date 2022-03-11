@@ -75,12 +75,3 @@ export default defineComponent({
   },
 })
 </script>
-<style lang="scss" scoped>
-.player-list {
-  display: flex;
-  flex-flow: row;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-  margin-bottom: 4em;
-}
-</style>

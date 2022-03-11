@@ -96,10 +96,8 @@ export default defineComponent({
 
 .spacer-top {
   margin-top: 100px;
-}
-@media (min-width: 550px) {
-  .spacer-top {
-    margin-top: 150px;
+  @media (min-width: 990px) {
+    margin-top: 190px;
   }
 }
 </style>

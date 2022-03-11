@@ -81,8 +81,6 @@ hr {
 
 .header {
   text-align: left;
-  display: flex;
-  flex-flow: row wrap;
 
   h5 {
     height: 100%;
@@ -103,30 +101,30 @@ hr {
     }
   }
 
-  .right,
-  .left {
-    .container {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-    }
-  }
-
-  .right {
-    .container {
-      flex-flow: row wrap;
-    }
-  }
-
-  .left {
-    .container {
-      flex-flow: row-reverse wrap;
-    }
-  }
-
   .text-container {
     padding: 1rem;
     text-align: justify;
+  }
+}
+
+.right,
+.left {
+  .container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+}
+
+.right {
+  .container {
+    flex-flow: row wrap;
+  }
+}
+
+.left {
+  .container {
+    flex-flow: row-reverse wrap;
   }
 }
 @media (min-width: 600px) {
@@ -153,17 +151,8 @@ hr {
   }
 
   .header {
-    flex-wrap: nowrap;
-
     h5 {
-      margin-left: 1rem;
-    }
-  }
-}
-@media (min-width: 1077px) {
-  .header {
-    h5 {
-      align-self: end;
+      margin-left: 0.5rem;
     }
   }
 }

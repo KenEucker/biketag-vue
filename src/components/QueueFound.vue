@@ -3,14 +3,7 @@
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
       <div style="margin-top: 2rem">
-        <bike-tag-input
-          id="passcode"
-          v-model="passcode"
-          name="passcode"
-          placeholder="passcode"
-          minlength="3"
-          maxlength="30"
-        />
+        <bike-tag-input id="passcode" v-model="passcode" name="passcode" placeholder="passcode" />
         <bike-tag-button class="modal-sub-btn" variant="medium" text="Submit" />
       </div>
     </form>
@@ -200,6 +193,10 @@ export default defineComponent({
       // this.showPopover = false
       this.player = this.getName
     })
+    window.onpopstate = () => {
+      window.onpopstate = null
+      document.querySelector('.popover')?.remove()
+    }
   },
   methods: {
     sleep(time) {
@@ -210,31 +207,41 @@ export default defineComponent({
     },
     async onSubmit(e) {
       e.preventDefault()
+      if (!this.image) {
+        this.$toast.open({
+          message: 'Please add your Found Location image',
+          type: 'error',
+          position: 'top',
+        })
+        return
+      }
+      if (!this.player) {
+        this.$toast.open({
+          message: 'Please enter a name',
+          type: 'error',
+          position: 'top',
+        })
+        return
+      }
       if (!this.$auth.isAuthenticated) {
-        if (this.passcode) {
-          try {
-            await this.$store.dispatch('checkPasscode', {
-              name: this.player,
-              passcode: this.passcode,
-            })
-            this.showModal = false
-            await this.sleep(100)
-          } catch {
+        try {
+          await this.$store.dispatch('checkPasscode', {
+            name: this.player,
+            passcode: this.passcode,
+          })
+          this.showModal = false
+          await this.sleep(100)
+        } catch {
+          if (this.showModal) {
             this.$toast.open({
               message: 'Incorrect passcode',
               type: 'error',
               position: 'top',
             })
-            this.$nextTick(() => (this.showModal = false))
-            return
           }
-        } else {
-          try {
-            await this.$store.dispatch('checkPasscode', { name: this.player, passcode: '' })
-          } catch {
-            this.showModal = true
-            return
-          }
+          this.$nextTick(() => (this.showModal = !this.showModal))
+          this.passcode = ''
+          return
         }
       }
       if (!this.image) {

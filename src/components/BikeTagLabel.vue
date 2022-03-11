@@ -70,7 +70,11 @@ export default defineComponent({
 }
 </style>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 .biketag-label {
+  font-family: $default-secondary-font-family;
+  text-transform: uppercase;
   max-width: 25em;
   position: relative;
   margin: 0 auto;
