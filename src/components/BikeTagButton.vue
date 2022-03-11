@@ -142,7 +142,8 @@ export default defineComponent({
       }
     }
 
-    &--medium, &--medium-orange {
+    &--medium,
+    &--medium-orange {
       .biketag__text--inner {
         // padding: 0.75rem 0;
         min-height: 6rem;
