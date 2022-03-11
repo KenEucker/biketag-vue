@@ -3,7 +3,7 @@
     <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
   </loading>
   <b-modal
-    v-if="profile?.user_metadata"
+    v-if="profile?.user_metadata && profile.user_metadata?.name?.length > 0"
     v-model="showModal"
     title="User Name"
     hide-footer
@@ -13,9 +13,7 @@
     <form @submit.prevent="onSubmitName">
       <div class="mt-3">
         <bike-tag-input
-          id="name"
           v-model="profile.user_metadata.name"
-          name="name"
           :placeholder="profile.user_metadata.name || $t('pages.profile.set_name_placeholder')"
         />
         <bike-tag-button
@@ -46,7 +44,7 @@
                 profile?.user_metadata[key].length > 0 &&
                 key != 'passcode'
             )"
-            :key="i"
+            :key="`${i}_label`"
             class="player-name mt-4"
             style="font-size: 2.5rem"
           >
@@ -65,9 +63,7 @@
       >
         <div v-if="profile.user_metadata" class="mt-3">
           <bike-tag-input
-            id="name"
             v-model="profile.user_metadata.name"
-            name="name"
             :label="$t('pages.profile.name')"
             readonly
           />
@@ -76,18 +72,15 @@
           <bike-tag-input
             id="passcode"
             v-model="profile.user_metadata.passcode"
-            name="passcode"
             label="Passcode"
-            type="password"
             minlength="3"
             maxlength="30"
           />
         </div>
-        <div v-for="(social, i) in socialNetworkIcons" :key="i" class="mt-3 input-icon">
+        <div v-for="(social, i) in socialNetworkIcons" :key="`${i}_inputs`" class="mt-3 input-icon">
           <bike-tag-input
             :id="social[0]"
             v-model="profile.user_metadata.social[social[0]]"
-            :name="social[0]"
             :label="splitCamelCase(social[0])"
             :placeholder="
               (profile?.user_metadata?.length > i && profile?.user_metadata[i]) ||
@@ -102,7 +95,7 @@
         <template v-if="isBikeTagAmbassador">
           <template
             v-for="(credential, i) in Object.keys(profile.user_metadata.credentials)"
-            :key="i"
+            :key="`${i}_config`"
           >
             <bike-tag-button
               variant="medium"
@@ -114,9 +107,8 @@
                 v-for="(inputField, j) in Object.keys(
                   profile.user_metadata.credentials[credential]
                 )"
-                :key="j"
+                :key="`${j}_config_ipnuts`"
                 v-model="profile.user_metadata.credentials[credential][inputField]"
-                :name="`${firstToUperCase(credential)} ${splitCamelCase(inputField)}`"
                 :label="splitCamelCase(inputField)"
                 :placeholder="`${firstToUperCase(credential)} ${splitCamelCase(inputField)}`"
                 type="password"

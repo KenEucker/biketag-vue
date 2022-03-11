@@ -15,7 +15,7 @@
     </b-modal>
     <!-- <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3> -->
     <div class="title-cnt">
-      <bike-tag-button variant="medium" class="title-q">
+      <bike-tag-button variant="medium" class="title-q" @click="$refs.file.click()">
         <h3 class="queue-title">{{ $t('components.queue.queue_mystery_title') }}</h3>
       </bike-tag-button>
     </div>

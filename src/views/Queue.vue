@@ -20,7 +20,18 @@
         getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
       }}</span
     >
-    <bike-tag-queue v-if="!isViewingQueue()" :only-mine="true" />
+    <template v-if="!isViewingQueue()">
+      <bike-tag-queue  :only-mine="true" />
+      <div class="step">
+        <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'" text="1"/>
+        <img v-if="BiketagFormSteps[getFormStep] == 1.5" class="step__arrow" :src="arrowSvg"/>
+        <span v-else class="step__line" :style="`background-image: url(${lineSvg})`" />
+        <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'" text="2"/>
+        <img v-if="BiketagFormSteps[getFormStep] == 2.5" class="step__arrow" :src="arrowSvg" />
+        <span class="step__line" :style="`background-image: url(${lineSvg})`" />
+        <bike-tag-button :variant="BiketagFormSteps[getFormStep] > 3 && BiketagFormSteps[getFormStep] >= 4 ? 'circle-clean' : 'empty'" text="3"/>
+      </div>
+    </template>
     <!-- <div v-if="!uploadInProgress" class="container"> -->
     <div v-if="!uploadInProgress" class="queue-slider">
       <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]">
@@ -80,6 +91,9 @@ import QueueJoined from '@/components/QueueJoined.vue'
 import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import LineSvg from '@/assets/images/line.svg'
+import ArrowSvg from '@/assets/images/arrow.svg'
 
 export default defineComponent({
   name: 'QueueBikeTagView',
@@ -92,6 +106,7 @@ export default defineComponent({
     QueuePosted,
     QueuePostedShare,
     BikeTagQueue,
+    BikeTagButton
   },
   props: {
     usingTimer: {
@@ -115,6 +130,8 @@ export default defineComponent({
       BiketagFormSteps,
       uploadInProgress: false,
       countDown: 10,
+      lineSvg: LineSvg,
+      arrowSvg: ArrowSvg
     }
   },
   computed: {
@@ -246,6 +263,8 @@ export default defineComponent({
 }
 </style>
 <style scoped lang="scss">
+@import '../assets/styles/style';
+
 .queue-page {
   .clock-div > i {
     color: forestgreen;
@@ -266,6 +285,28 @@ export default defineComponent({
   margin-left: -15%;
   @media (min-width: 620px) {
     margin-left: 0;
+  }
+}
+.step {
+  .biketag__button {
+    min-height: 3.5rem;
+    cursor: initial;
+  }
+  &__line, &__arrow {
+    min-width: 2.5rem;
+    height: 1rem;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin: 0 1rem;
+    @media (min-width: $breakpoint-mobile-md) {
+      min-width: 5rem;
+    }
+  }
+  &__arrow {
+    transform: scaleX(-1);
+    height: 1.5rem;
+    margin-bottom: 0.5rem;
   }
 }
 </style>

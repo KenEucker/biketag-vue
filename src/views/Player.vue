@@ -5,7 +5,7 @@
   <div class="container mt-5">
     <div class="d-flex justify-content-center social">
       <player size="lg" :player="player" :no-link="true" />
-      <div v-if="playerSocial" class="social__cnt">
+      <div v-if="Object.keys(playerSocial).length" class="social__cnt">
         <a
           v-for="(social, i) in Object.keys(playerSocial).filter((s) => s.length)"
           :key="i"

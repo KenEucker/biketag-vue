@@ -82,8 +82,8 @@ class BikeTagApp {
 
   run() {
     this.init()
-    this.cookies()
     this.authentication()
+    this.cookies()
     this.internationalization()
     this.components()
     this.router()
