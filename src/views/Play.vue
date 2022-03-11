@@ -12,20 +12,20 @@
     </div>
     <div v-else class="mt-4 mb-5">
       <bike-tag-button
-        :text="getCurrentBikeTag.mysteryPlayer"
-        @click="$router.push('/player/' + getCurrentBikeTag.mysteryPlayer)"
+        :text="getCurrentBikeTag?.mysteryPlayer"
+        @click="$router.push('/player/' + getCurrentBikeTag?.mysteryPlayer)"
       />
       <div v-if="getCurrentBikeTag" class="rel play-screen">
         <ExpandableImage
           class="play-screen__image"
-          :src="getCurrentBikeTag.mysteryImageUrl"
-          :full-source="getCurrentBikeTag.mysteryImageUrl"
-          :alt="getCurrentBikeTag.hint"
+          :src="getCurrentBikeTag?.mysteryImageUrl"
+          :full-source="getCurrentBikeTag?.mysteryImageUrl"
+          :alt="getCurrentBikeTag?.hint"
         />
 
         <bike-tag-button
           class="play-screen__label-group-number"
-          :text="'#' + getCurrentBikeTag.tagnumber"
+          :text="'#' + getCurrentBikeTag?.tagnumber"
         />
         <div class="play-screen__label-group-bottom">
           <div>

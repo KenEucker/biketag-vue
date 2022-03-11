@@ -15,19 +15,19 @@
         align="center"
         @page-click="changePage"
       ></b-pagination>
-      <div class="player-tags m-auto">
-        <div v-for="tag in tagsForList" :key="tag.tagnumber">
+      <div class="m-auto player-tags">
+        <div v-for="tag in tagsForList" :key="tag?.tagnumber">
           <bike-tag
-            :key="tag.tagnumber"
+            :key="tag?.tagnumber"
             :tag="tag"
             :show-player="false"
-            :found-tagnumber="tag.tagnumber - 1"
-            :found-description="tag.foundLocation"
+            :found-tagnumber="tag?.tagnumber - 1"
+            :found-description="tag?.foundLocation"
           />
         </div>
       </div>
       <b-form-group>
-        <select v-model="perPage" class="form-select w-25 m-auto" @change="resetCurrentPage">
+        <select v-model="perPage" class="m-auto form-select w-25" @change="resetCurrentPage">
           <option v-for="i in 3" :key="Math.pow(10, i)" :value="Math.pow(10, i)">
             {{ Math.pow(10, i) }}
           </option>
