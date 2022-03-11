@@ -77,10 +77,11 @@ export default defineComponent({
       return this.getImgurImageSized(url, this.size[0])
     },
     getTagCount() {
-      if (this.size === "lg") {
+      if (this.size === 'lg') {
         return this.player.tags.length
-      } return this.player.tags.length > 99 ? "+99" : this.player.tags.length
-    }
+      }
+      return this.player.tags.length > 99 ? '+99' : this.player.tags.length
+    },
   },
   methods: {
     goPlayerPage: function () {

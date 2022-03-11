@@ -154,8 +154,10 @@ body {
       color: $tag-text-color;
       font-family: $default-font-family;
       font-weight: $tag-player-font-weight;
+
       // font-size: $tag-player-font-size;
       line-height: $tag-player-line-height;
+      text-transform: uppercase;
     }
 
     .tag-date {

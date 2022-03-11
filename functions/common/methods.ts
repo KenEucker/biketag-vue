@@ -388,7 +388,7 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
       authorizationString = authorizationString.substring(bearer.length)
       return getAuth0AuthProfile(authorizationString)
     default:
-      authorizationString = authorizationString.length
+      authorizationString = authorizationString?.length
         ? 'authorization type not supported'
         : authorizationString
       break

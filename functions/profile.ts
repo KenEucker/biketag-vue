@@ -162,7 +162,7 @@ const profileHandler: Handler = async (event) => {
           body = error.message
         })
     }
-  } else if (event.httpMethod === 'GET' && profile.name) {
+  } else if (event.httpMethod === 'GET' && profile?.name) {
     /// Check in Auth0 that the credentials are valid
     const authorizationHeaders = acceptCorsHeaders(true)
     try {
@@ -199,6 +199,40 @@ const profileHandler: Handler = async (event) => {
       }
     } catch (e) {
       console.log(e)
+    }
+  } else if (event.httpMethod === 'GET' && !profile) {
+    if (event.queryStringParameters?.name) {
+      const authorizationHeaders = acceptCorsHeaders(true)
+      await axios
+        .request({
+          method: 'GET',
+          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
+          params: {
+            page: 0,
+            per_page: 1,
+            include_totals: false,
+            fields: 'user_metadata.social',
+            q: `user_metadata.name:"${event.queryStringParameters.name}"`,
+            search_engine: 'v3',
+          },
+          headers: authorizationHeaders,
+        })
+        .then(function (response) {
+          if (typeof response.data === 'string') {
+            body = response.data
+          } else {
+            body = JSON.stringify(response.data)
+          }
+          statusCode = HttpStatusCode.Ok
+        })
+        .catch(function (error) {
+          console.error(error)
+          statusCode = HttpStatusCode.InternalServerError
+          body = error.message
+        })
+    } else {
+      body = ErrorMessage.InvalidRequestData
+      statusCode = HttpStatusCode.BadRequest
     }
   }
 

@@ -280,6 +280,7 @@ header {
   nav {
     .show {
       height: calc(100vh - 82px);
+
       ul {
         height: inherit;
         overflow: auto;
@@ -288,6 +289,7 @@ header {
         height: auto;
       }
     }
+
     .profile-icon {
       max-width: 25vw;
       height: auto;

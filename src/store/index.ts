@@ -276,6 +276,16 @@ export const store = createStore<State>({
         },
       })
     },
+    // eslint-disable-next-line no-empty-pattern
+    async getUserSocial({}, name) {
+      return await client.plainRequest({
+        method: 'GET',
+        url: getApiUrl('profile'),
+        params: {
+          name,
+        },
+      })
+    },
     async dequeueFoundTag({ commit, state }) {
       if (state.queuedTag?.playerId === state.profile.sub) {
         const queuedTag: any = state.queuedTag

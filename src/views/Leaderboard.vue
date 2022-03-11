@@ -27,7 +27,7 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .player-list {
-  @media (min-width: 1200px){
+  @media (min-width: 1200px) {
     margin-top: 13em;
   }
 }
