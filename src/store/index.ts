@@ -73,6 +73,25 @@ export const store = createStore<State>({
     credentialsFetched: false,
   },
   actions: {
+    // eslint-disable-next-line no-empty-pattern
+    async getRegionPolygon({}, region) {
+      try {
+        const results = (
+          await client.plainRequest({
+            method: 'GET',
+            url: 'https://nominatim.openstreetmap.org/search.php',
+            params: {
+              q: region,
+              polygon_geojson: 1,
+              format: 'json',
+            },
+          })
+        ).data
+        return results.filter((v: any) => v?.type == 'administrative' || v?.type == 'city')[0]
+      } catch (e) {
+        console.log(e)
+      }
+    },
     async fetchCredentials({ state }) {
       if (!state.credentialsFetched) {
         const credentials = await client.fetchCredentials()

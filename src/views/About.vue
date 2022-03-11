@@ -3,8 +3,8 @@
     <div class="about d-flex justify-content-center">
       <!-- <h2>{{ $t('pages.about.title') }}</h2> -->
       <div class="about__block">
-        <h3>{{ $t('pages.about.article1.title') }}</h3>
-        <hr class="about__hr" :style="`background-image: url(${styledHr})`"/>
+        <h3>{{ $t('pages.about.article1.title') }} <img class="about__icon" :src="pin" /></h3>
+        <hr class="about__hr" :style="`background-image: url(${styledHr})`" />
         <html-content filename="about-game.html" />
         <p>
           <bike-tag-button
@@ -18,7 +18,7 @@
       </div>
       <div class="about__block">
         <h3>{{ $t('pages.about.article2.title') }}</h3>
-        <hr class="about__hr" :style="`background-image: url(${styledHr})`"/>
+        <hr class="about__hr" :style="`background-image: url(${styledHr})`" />
         <html-content filename="about-app.html" />
         <p>
           <bike-tag-button
@@ -47,6 +47,7 @@ import { mapGetters } from 'vuex'
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import StyledHr from '@/assets/images/hr.svg'
+import Pin from '@/assets/images/pin.svg'
 
 export default defineComponent({
   name: 'AboutView',
@@ -56,8 +57,12 @@ export default defineComponent({
   },
   data() {
     return {
-      styledHr : StyledHr
+      styledHr: StyledHr,
+      pin: Pin,
     }
+  },
+  computed: {
+    ...mapGetters(['getAllGames', 'getLogoUrl']),
   },
   created() {
     document.getElementById('app').classList.add('white-bck')
@@ -66,15 +71,13 @@ export default defineComponent({
       document.getElementById('app').classList.remove('white-bck')
     }
   },
-  computed: {
-    ...mapGetters(['getAllGames', 'getLogoUrl']),
-  },
 })
 </script>
 <style lang="scss">
 .white-bck {
   background: white !important;
 }
+
 .big-btn {
   min-height: 6rem;
 
@@ -98,10 +101,6 @@ export default defineComponent({
   height: 100% !important;
 }
 
-.about {
-  flex-direction: column;
-}
-
 img {
   width: 100%;
 }
@@ -110,6 +109,7 @@ img {
   display: flex;
   justify-content: center;
   align-items: center;
+
   img {
     width: 8rem;
     height: auto;
@@ -117,11 +117,19 @@ img {
 }
 
 .about {
+  flex-direction: column;
+
+  &__icon {
+    width: unset;
+    margin-left: 1rem;
+  }
+
   &__block {
     border: 1px solid;
     padding: 1rem;
     margin-bottom: 2rem;
   }
+
   &__hr {
     height: 13px;
     background-color: transparent;
@@ -130,9 +138,10 @@ img {
     background-size: 100%;
   }
   @media (min-width: $breakpoint-desktop) {
-    display: grid!important;
+    display: grid !important;
     grid-template-columns: repeat(2, 1fr);
     grid-gap: 1rem;
+
     .games {
       grid-column: 1 / span 2;
     }

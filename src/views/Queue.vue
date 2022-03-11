@@ -21,15 +21,28 @@
       }}</span
     >
     <template v-if="!isViewingQueue()">
-      <bike-tag-queue  :only-mine="true" />
+      <bike-tag-queue :only-mine="true" />
       <div class="step">
-        <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'" text="1"/>
-        <img v-if="BiketagFormSteps[getFormStep] == 1.5" class="step__arrow" :src="arrowSvg"/>
+        <bike-tag-button
+          :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'"
+          text="1"
+        />
+        <img v-if="BiketagFormSteps[getFormStep] == 1.5" class="step__arrow" :src="arrowSvg" />
         <span v-else class="step__line" :style="`background-image: url(${lineSvg})`" />
-        <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'" text="2"/>
+        <bike-tag-button
+          :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'"
+          text="2"
+        />
         <img v-if="BiketagFormSteps[getFormStep] == 2.5" class="step__arrow" :src="arrowSvg" />
         <span class="step__line" :style="`background-image: url(${lineSvg})`" />
-        <bike-tag-button :variant="BiketagFormSteps[getFormStep] > 3 && BiketagFormSteps[getFormStep] >= 4 ? 'circle-clean' : 'empty'" text="3"/>
+        <bike-tag-button
+          :variant="
+            BiketagFormSteps[getFormStep] > 3 && BiketagFormSteps[getFormStep] >= 4
+              ? 'circle-clean'
+              : 'empty'
+          "
+          text="3"
+        />
       </div>
     </template>
     <!-- <div v-if="!uploadInProgress" class="container"> -->
@@ -106,7 +119,7 @@ export default defineComponent({
     QueuePosted,
     QueuePostedShare,
     BikeTagQueue,
-    BikeTagButton
+    BikeTagButton,
   },
   props: {
     usingTimer: {
@@ -131,7 +144,7 @@ export default defineComponent({
       uploadInProgress: false,
       countDown: 10,
       lineSvg: LineSvg,
-      arrowSvg: ArrowSvg
+      arrowSvg: ArrowSvg,
     }
   },
   computed: {
@@ -287,12 +300,15 @@ export default defineComponent({
     margin-left: 0;
   }
 }
+
 .step {
   .biketag__button {
     min-height: 3.5rem;
     cursor: initial;
   }
-  &__line, &__arrow {
+
+  &__line,
+  &__arrow {
     min-width: 2.5rem;
     height: 1rem;
     display: inline-block;
@@ -303,6 +319,7 @@ export default defineComponent({
       min-width: 5rem;
     }
   }
+
   &__arrow {
     transform: scaleX(-1);
     height: 1.5rem;
