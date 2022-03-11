@@ -1,30 +1,35 @@
 <template>
   <div class="container">
     <div class="about d-flex justify-content-center">
-      <h2>{{ $t('pages.about.title') }}</h2>
-      <hr />
-      <h3>{{ $t('pages.about.article1.title') }}</h3>
-      <html-content filename="about-game.html" />
-      <p>
-        <bike-tag-button
-          variant="medium"
-          class="m-1 big-btn"
-          onclick="window.open('https://patreon.com/biketag')"
-        >
-          {{ $t('pages.about.article1.support_biketag') }}
-        </bike-tag-button>
-      </p>
-      <h3>{{ $t('pages.about.article2.title') }}</h3>
-      <html-content filename="about-app.html" />
-      <p>
-        <bike-tag-button
-          variant="medium"
-          class="m-1 big-btn"
-          onclick="window.open('https://patreon.com/biketag')"
-        >
-          {{ $t('pages.about.article2.become_player') }}
-        </bike-tag-button>
-      </p>
+      <!-- <h2>{{ $t('pages.about.title') }}</h2> -->
+      <div class="about__block">
+        <h3>{{ $t('pages.about.article1.title') }}</h3>
+        <hr class="about__hr" :style="`background-image: url(${styledHr})`"/>
+        <html-content filename="about-game.html" />
+        <p>
+          <bike-tag-button
+            variant="medium-orange"
+            class="m-1 big-btn"
+            onclick="window.open('https://patreon.com/biketag')"
+          >
+            {{ $t('pages.about.article1.support_biketag') }}
+          </bike-tag-button>
+        </p>
+      </div>
+      <div class="about__block">
+        <h3>{{ $t('pages.about.article2.title') }}</h3>
+        <hr class="about__hr" :style="`background-image: url(${styledHr})`"/>
+        <html-content filename="about-app.html" />
+        <p>
+          <bike-tag-button
+            variant="medium-orange"
+            class="m-1 big-btn"
+            onclick="window.open('https://patreon.com/biketag')"
+          >
+            {{ $t('pages.about.article2.become_player') }}
+          </bike-tag-button>
+        </p>
+      </div>
       <div class="m-auto games">
         <div v-for="(game, index) in getAllGames" :key="index" class="biketag-game">
           <a :href="`https://${game.name}.biketag.io`">
@@ -41,6 +46,7 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import StyledHr from '@/assets/images/hr.svg'
 
 export default defineComponent({
   name: 'AboutView',
@@ -48,12 +54,27 @@ export default defineComponent({
     HtmlContent,
     BikeTagButton,
   },
+  data() {
+    return {
+      styledHr : StyledHr
+    }
+  },
+  created() {
+    document.getElementById('app').classList.add('white-bck')
+    window.onpopstate = () => {
+      window.onpopstate = null
+      document.getElementById('app').classList.remove('white-bck')
+    }
+  },
   computed: {
     ...mapGetters(['getAllGames', 'getLogoUrl']),
   },
 })
 </script>
 <style lang="scss">
+.white-bck {
+  background: white !important;
+}
 .big-btn {
   min-height: 6rem;
 
@@ -67,6 +88,8 @@ export default defineComponent({
 }
 </style>
 <style scoped lang="scss">
+@import '../assets/styles/style';
+
 .games {
   display: flex;
   flex-flow: wrap;
@@ -83,8 +106,36 @@ img {
   width: 100%;
 }
 
-.biketag-game img {
-  max-height: 20vh;
-  height: auto;
+.biketag-game {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  img {
+    width: 8rem;
+    height: auto;
+  }
+}
+
+.about {
+  &__block {
+    border: 1px solid;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  }
+  &__hr {
+    height: 13px;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100%;
+  }
+  @media (min-width: $breakpoint-desktop) {
+    display: grid!important;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 1rem;
+    .games {
+      grid-column: 1 / span 2;
+    }
+  }
 }
 </style>
