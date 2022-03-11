@@ -58,7 +58,7 @@ export default defineComponent({
           }
         }
       }),
-      100
+      1000
     )
 
     await setTimeout(
