@@ -9,6 +9,10 @@ body {
   color: $app-color;
 }
 
+.popover {
+  z-index: 99;
+}
+
 #app {
   min-height: 100vh;
   color: $app-color;
