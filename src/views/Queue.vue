@@ -22,8 +22,6 @@ import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 
 import QueueView from '@/components/QueueView.vue'
-import LineSvg from '@/assets/images/line.svg'
-import ArrowSvg from '@/assets/images/arrow.svg'
 
 export default defineComponent({
   name: 'QueueBikeTagView',
@@ -52,8 +50,6 @@ export default defineComponent({
       BiketagFormSteps,
       uploadInProgress: false,
       countDown: 10,
-      lineSvg: LineSvg,
-      arrowSvg: ArrowSvg,
     }
   },
   computed: {
@@ -207,32 +203,6 @@ export default defineComponent({
   margin-left: -15%;
   @media (min-width: 620px) {
     margin-left: 0;
-  }
-}
-
-.step {
-  .biketag__button {
-    min-height: 3.5rem;
-    cursor: initial;
-  }
-
-  &__line,
-  &__arrow {
-    min-width: 2.5rem;
-    height: 1rem;
-    display: inline-block;
-    background-repeat: no-repeat;
-    background-position: center;
-    margin: 0 1rem;
-    @media (min-width: $breakpoint-mobile-md) {
-      min-width: 5rem;
-    }
-  }
-
-  &__arrow {
-    transform: scaleX(-1);
-    height: 1.5rem;
-    margin-bottom: 0.5rem;
   }
 }
 </style>
