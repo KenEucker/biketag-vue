@@ -126,7 +126,6 @@ export default defineComponent({
     ]),
   },
   async mounted() {
-    console.log('getFormStep', this.getFormStep)
     this.uploadInProgress = false
   },
   async created() {

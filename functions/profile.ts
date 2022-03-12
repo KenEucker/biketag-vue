@@ -18,7 +18,6 @@ const profileHandler: Handler = async (event) => {
       headers,
     }
   }
-
   /// If all else fails
   let body = 'missing authorization header'
   let statusCode = HttpStatusCode.Unauthorized
@@ -29,6 +28,7 @@ const profileHandler: Handler = async (event) => {
   if (profile && profile.sub) {
     let options = {}
     const authorizationHeaders = acceptCorsHeaders(true)
+
 
     switch (event.httpMethod) {
       /// Create new profile fields (role, name)
@@ -198,7 +198,7 @@ const profileHandler: Handler = async (event) => {
         statusCode = HttpStatusCode.Ok
       }
     } catch (e) {
-      console.log(e)
+      console.error(e)
     }
   } else if (event.httpMethod === 'GET' && !profile) {
     if (event.queryStringParameters?.name) {

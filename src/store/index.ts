@@ -237,15 +237,22 @@ export const store = createStore<State>({
     async approveTag({ state }, d) {
       if (state.isBikeTagAmbassador) {
         d.hash = state.game.queuehash
-        return client.deleteTag(d.tag).then((t) => {
-          if (t.success) {
-            console.log('store::tag approved', d.tag)
-          } else {
-            console.log('error::approve BikeTag failed', t)
-            return t.error
-          }
-          return 'successfully approved tag'
+        const approveTagResponse = await client.request({
+          method: 'POST',
+          url: getApiUrl('approve'),
+          data: { tag: d, ambassadorId: state.profile.sub },
         })
+        console.log({ approveTagResponse })
+
+        // return client.deleteTag(d.tag).then((t) => {
+        //   if (t.success) {
+        //     console.log('store::tag approved', d.tag)
+        //   } else {
+        //     console.log('error::approve BikeTag failed', t)
+        //     return t.error
+        //   }
+        //   return 'successfully approved tag'
+        // })
       }
       return 'incorrect permissions'
     },

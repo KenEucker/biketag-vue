@@ -192,7 +192,6 @@ export default defineComponent({
       const formAction = this.$refs.approveTag.getAttribute('action')
       const formData = new FormData(this.$refs.approveTag)
       const approvedTag = this.currentlySelectedTag
-      approvedTag.ambassadorId = this.getAmbassadorId
 
       this.$emit('submit', {
         formAction,
