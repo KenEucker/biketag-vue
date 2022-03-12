@@ -64,13 +64,6 @@ export default defineComponent({
   computed: {
     ...mapGetters(['getAllGames', 'getLogoUrl']),
   },
-  created() {
-    document.getElementById('app').classList.add('white-bck')
-    window.onpopstate = () => {
-      window.onpopstate = null
-      document.getElementById('app').classList.remove('white-bck')
-    }
-  },
 })
 </script>
 <style lang="scss">

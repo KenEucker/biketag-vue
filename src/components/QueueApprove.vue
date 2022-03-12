@@ -215,6 +215,8 @@ export default defineComponent({
 }
 </style>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 i {
   color: #000;
   font-size: 20px;
