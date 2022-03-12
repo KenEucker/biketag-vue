@@ -1,14 +1,16 @@
 <template>
-  <template v-if="isNotLanding">
-    <div class="spacer-top"></div>
-    <bike-tag-menu variant="top" />
-  </template>
-  <service-worker />
-  <router-view />
-  <template v-if="isNotLanding">
-    <bike-tag-menu variant="bottom" />
-    <div class="spacer-bottom"></div>
-  </template>
+  <div :class="isWhiteBackground">
+    <template v-if="isNotLanding">
+      <div :class="`spacer-top ${isWhiteBackground}`"></div>
+      <bike-tag-menu variant="top" />
+    </template>
+    <service-worker />
+    <router-view />
+    <template v-if="isNotLanding">
+      <bike-tag-menu variant="bottom" />
+      <div class="spacer-bottom"></div>
+    </template>
+  </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
@@ -31,6 +33,9 @@ export default defineComponent({
     ...mapGetters(['getProfile']),
     isNotLanding() {
       return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
+    },
+    isWhiteBackground() {
+      return this.$router.currentRoute.value.name === 'About' ? 'white-bck' : ''
     },
   },
   async mounted() {
@@ -83,6 +88,10 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+.white-bck {
+  background: white !important;
+}
+
 #app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -95,7 +104,7 @@ export default defineComponent({
 }
 
 .spacer-top {
-  margin-top: 100px;
+  height: 100px;
   @media (min-width: 990px) {
     margin-top: 190px;
   }

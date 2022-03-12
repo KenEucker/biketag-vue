@@ -13,14 +13,6 @@
         {{ $t('pages.howto.browser_not_support_audio') }}
       </audio>
       <swiper-slide>
-        <GMapMap class="map" :click="true" :center="center" :zoom="11" map-type-id="terrain">
-          <template v-if="multipolygon">
-            <GMapPolygon v-for="(n_path, i) in paths" :key="i" :options="options" :paths="n_path" />
-          </template>
-          <GMapPolygon v-else :options="options" :paths="paths" />
-        </GMapMap>
-      </swiper-slide>
-      <swiper-slide>
         <p>{{ $t('pages.howto.swiper1.text1') }}</p>
         <p>
           {{ $t('pages.howto.swiper1.text2') }}
@@ -83,6 +75,9 @@
         <p>{{ $t('pages.howto.swiper8.text2') }}</p>
         <p>{{ $t('pages.howto.swiper8.text3') }}</p>
       </swiper-slide>
+      <swiper-slide>
+        <bike-tag-map />
+      </swiper-slide>
     </swiper>
   </div>
 </template>
@@ -101,50 +96,23 @@ import { mapGetters } from 'vuex'
 // install Swiper components
 SwiperCore.use([Autoplay, Navigation, Pagination])
 
+import BikeTagMap from '@/components/BikeTagMap.vue'
+
 // Import Swiper styles
 export default {
   name: 'HowToView',
   components: {
     Swiper,
     SwiperSlide,
+    BikeTagMap,
   },
   data() {
     return {
       playingEaster: false,
-      center: { lat: 0, lng: 0 },
-      multipolygon: false,
-      paths: [],
-      options: {
-        strokeColor: '#08E059',
-        strokeOpacity: 0.8,
-        strokeWeight: 3,
-        fillColor: '#7DFA11',
-        fillOpacity: 0.35,
-        clickable: false,
-      },
     }
   },
   computed: {
     ...mapGetters(['getGameSlug', 'getEasterEgg', 'getGame']),
-  },
-  async created() {
-    const regionData = await this.$store.dispatch('getRegionPolygon', this.getGame.region)
-    if (regionData) {
-      this.center['lat'] = regionData.lat ? parseFloat(regionData.lat) : 0
-      this.center['lng'] = regionData.lon ? parseFloat(regionData.lon) : 0
-      this.multipolygon = regionData?.geojson?.type === 'MultiPolygon'
-      if (this.multipolygon) {
-        this.paths = regionData?.geojson?.coordinates[0].map((v) => {
-          return v.map((u) => {
-            return { lng: u[0], lat: u[1] }
-          })
-        })
-      } else {
-        this.paths = regionData?.geojson?.coordinates[0].map((v) => {
-          return { lng: v[0], lat: v[1] }
-        })
-      }
-    }
   },
   methods: {
     playEasterEgg() {
@@ -167,9 +135,5 @@ export default {
       line-height: 2vh;
     }
   }
-}
-
-.map {
-  height: 80%;
 }
 </style>

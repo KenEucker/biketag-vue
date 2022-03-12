@@ -301,7 +301,11 @@ header {
     }
 
     .navbar-brand {
-      margin: 0 2rem;
+      margin: 0;
+      margin-left: 1rem;
+      @media (min-width: $breakpoint-desktop) {
+        margin: 0 2rem;
+      }
     }
 
     .navbar-collapse {
@@ -325,7 +329,7 @@ header {
     }
 
     .logo {
-      width: auto;
+      max-width: 10rem;
       height: 4.5rem;
     }
 
