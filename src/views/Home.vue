@@ -149,6 +149,7 @@ export default defineComponent({
   &__mystery-player {
     position: relative;
     z-index: 1;
+
     &__button {
       position: relative;
       bottom: -40px;

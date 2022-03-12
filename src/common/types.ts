@@ -122,7 +122,7 @@ export enum Settings {
 }
 
 export enum Notifications {
-  foundTag = "foundTag",
+  foundTag = 'foundTag',
 }
 export interface Payload {
   name: string

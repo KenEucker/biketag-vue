@@ -141,14 +141,15 @@ export default defineComponent({
       } else {
         mysteryLabel.innerText = this.$t('menu.mysterylocation')
       }
-      mysteryLabel.classList.toggle('hint_anim')
+      mysteryLabel.classList.toggle('hint-anim')
     },
   },
 })
 </script>
 <style lang="scss">
 @import '../assets/styles/style';
-.hint_anim {
+
+.hint-anim {
   animation: typewriter 0.5s 1 normal both;
 }
 </style>

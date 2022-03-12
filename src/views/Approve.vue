@@ -201,7 +201,6 @@ export default defineComponent({
 .loading-message {
   p {
     font-family: $default-font-family;
-
     text-transform: uppercase;
   }
 }
