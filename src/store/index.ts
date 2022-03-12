@@ -258,18 +258,23 @@ export const store = createStore<State>({
         d.hash = state.game.queuehash
         const token = d.token
         d.token = undefined
-        const approveTagResponse = await client.plainRequest({
-          method: 'POST',
-          url: getApiUrl('approve'),
-          data: { tag: d, ambassadorId: state.profile.sub },
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        })
-        if (approveTagResponse.status === 202) {
-          return true
-        } else if (approveTagResponse.status === 200) {
-          return `BikeTag round #${d.tagnumber} couldn't be posted`
+        try {
+          const approveTagResponse = await client.plainRequest({
+            method: 'POST',
+            url: getApiUrl('approve'),
+            data: { tag: d, ambassadorId: state.profile.sub },
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          })
+          if (approveTagResponse.status === 202) {
+            return true
+          } else if (approveTagResponse.status === 200) {
+            return `BikeTag round #${d.tagnumber} couldn't be posted`
+          }
+        } catch (e) {
+          console.error('error approving tag', e?.message ?? e)
+          return 'error approving tag'
         }
       }
 
