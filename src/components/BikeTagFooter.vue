@@ -86,6 +86,12 @@ export default defineComponent({
       type: String,
       default: 'current',
     },
+    tag: {
+      type: Object,
+      default: () => {
+        return {}
+      },
+    },
   },
   emits: ['next', 'previous'],
   data() {

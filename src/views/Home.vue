@@ -41,6 +41,7 @@
     <bike-tag-footer
       class="bike-tag-footer"
       :variant="`${tagnumber ? 'single' : 'current'}`"
+      :tag="tag"
       @next="goNextSingle"
       @previous="goPreviousSingle"
     />

@@ -132,6 +132,7 @@ export default defineComponent({
       }
       @media (min-width: $breakpoint-mobile-md) {
         min-height: 8.9rem;
+
         // line-height: 3rem;
       }
       @media (min-width: $breakpoint-mobile-sm) {

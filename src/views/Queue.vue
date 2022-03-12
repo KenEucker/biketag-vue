@@ -22,14 +22,6 @@ import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 
 import QueueView from '@/components/QueueView.vue'
-import QueueFound from '@/components/QueueFound.vue'
-import QueueMystery from '@/components/QueueMystery.vue'
-import QueueSubmit from '@/components/QueueSubmit.vue'
-import QueueJoined from '@/components/QueueJoined.vue'
-import QueuePosted from '@/components/QueuePosted.vue'
-import QueuePostedShare from '@/components/QueuePostedShare.vue'
-import BikeTagQueue from '@/components/BikeTagQueue.vue'
-import BikeTagButton from '@/components/BikeTagButton.vue'
 import LineSvg from '@/assets/images/line.svg'
 import ArrowSvg from '@/assets/images/arrow.svg'
 
@@ -37,14 +29,6 @@ export default defineComponent({
   name: 'QueueBikeTagView',
   components: {
     QueueView,
-    QueueFound,
-    QueueMystery,
-    QueueSubmit,
-    QueueJoined,
-    QueuePosted,
-    QueuePostedShare,
-    BikeTagQueue,
-    BikeTagButton,
   },
   props: {
     usingTimer: {

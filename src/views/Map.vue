@@ -11,7 +11,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
-import HtmlContent from '@/components/HtmlContent.vue'
+// import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import StyledHr from '@/assets/images/hr.svg'
 import Pin from '@/assets/images/pin.svg'
@@ -20,7 +20,7 @@ import BikeTagMap from '@/components/BikeTagMap.vue'
 export default defineComponent({
   name: 'MapView',
   components: {
-    HtmlContent,
+    // HtmlContent,
     BikeTagButton,
     BikeTagMap,
   },

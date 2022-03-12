@@ -201,7 +201,6 @@ export const store = createStore<State>({
               }
               commit('SET_QUEUED_TAG', fullyQueuedTag)
               commit('SET_QUEUED_TAG_STATE', fullyQueuedTag)
-
             }
 
             return commit('SET_QUEUED_TAGS', currentBikeTagQueue)

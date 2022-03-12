@@ -77,7 +77,7 @@
           method="POST"
           data-netlify="true"
           data-netlify-honeypot="bot-field"
-          @submit.prevent="dequeueTag"
+          @submit.prevent="dequeueTagConfirm"
         >
           <input type="hidden" name="form-name" value="dequeue-queued-tag" />
           <input type="hidden" name="ambassadorId" value="" />
@@ -86,6 +86,13 @@
           </bike-tag-button>
           <span>REMOVE</span>
         </form>
+        <b-modal
+          v-model="confirmRemove"
+          class="confirm-modal"
+          title="Confirm Removal of Queued Tag"
+        >
+          <p>{{ $t('pages.approve.confirm_remove') }}</p>
+        </b-modal>
       </div>
       <div class="row">
         <span class="player-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
@@ -130,6 +137,11 @@ export default defineComponent({
       setControlledSwiper,
     }
   },
+  data() {
+    return {
+      confirmRemove: false,
+    }
+  },
   computed: {
     ...mapGetters([
       'getQueuedTags',
@@ -156,6 +168,15 @@ export default defineComponent({
     }
   },
   methods: {
+    dequeueTagConfirm() {
+      this.confirmRemove = true
+    },
+    dequeueTagConfirmYes() {
+      this.confirmRemove = false
+    },
+    dequeueTagConfirmNo() {
+      this.confirmRemove = false
+    },
     dequeueTag() {
       const formAction = this.$refs.dequeueTag.getAttribute('action')
       const formData = new FormData(this.$refs.dequeueTag)

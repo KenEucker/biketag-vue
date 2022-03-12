@@ -82,6 +82,8 @@ export default defineComponent({
     return {
       animationDuration: 400,
       enableCSSFilters: true,
+      hasDownloadedMystery: false,
+      hasDownloadedFound: false,
 
       state: {
         currentAngle: 0,
@@ -107,11 +109,23 @@ export default defineComponent({
   methods: {
     async downloadTag() {
       this.downloadingTag = true
-      const downloadPrefix = `BikeTag-${this.getGameName}-${this.tagnumber}--`
-      // const foundImageDataUrl =
-      await exportHtmlToDownload(`${downloadPrefix}found`, undefined, '#the-tag .found-tag')
-      // const mysteryImageDataUrl =
-      await exportHtmlToDownload(`${downloadPrefix}mystery`, undefined, '#the-tag .mystery-tag')
+      console.log({ tag: this.tag })
+      const downloadPrefix = `BikeTag-${this.tag.game}-${this.tag.tagnumber}--`
+      if (!this.hasDownloadedMystery) {
+        const mysteryImageDataUrl = await exportHtmlToDownload(
+          `${downloadPrefix}mystery`,
+          undefined,
+          '#the-tag .mystery-tag'
+        )
+        this.hasDownloadedMystery = !!mysteryImageDataUrl
+      } else if (!this.hasDownloadedFound) {
+        const foundImageDataUrl = await exportHtmlToDownload(
+          `${downloadPrefix}found`,
+          undefined,
+          '#the-tag .found-tag'
+        )
+        this.hasDownloadedFound = !!foundImageDataUrl
+      }
       this.downloadingTag = false
     },
 
@@ -204,6 +218,8 @@ export default defineComponent({
           this.$refs.backgroundRef.style.transition = ''
           this.$refs.backroundContainerRef.style.backgroundColor = this.state.backgroundColor
         }, this.animationDuration * 2)
+
+        this.downloadTag()
       }
     },
 

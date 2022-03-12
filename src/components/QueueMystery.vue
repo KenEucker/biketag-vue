@@ -123,6 +123,7 @@ export default defineComponent({
       hint: this.tag?.hint ?? '',
       image: this.tag?.mysteryImage,
       showModal: false,
+      noLongerNew: false,
     }
   },
   computed: {
@@ -144,7 +145,7 @@ export default defineComponent({
   },
   mounted() {
     this.player = this.getQueuedTag?.foundPlayer
-    this.showModal = true
+    this.showModalIfNew()
   },
   methods: {
     onSubmit(e) {
@@ -166,6 +167,7 @@ export default defineComponent({
         tagnumber: this.getCurrentBikeTag?.tagnumber + 1 ?? 1,
         game: this.getGameName,
       }
+      this.noLongerNew = true
 
       this.$emit('submit', {
         formAction,
@@ -213,6 +215,9 @@ export default defineComponent({
     goViewQueue() {
       this.hideModal()
       this.$router.push('/queue')
+    },
+    showModalIfNew() {
+      this.showModal = true
     },
     hideModal() {
       this.showModal = false
