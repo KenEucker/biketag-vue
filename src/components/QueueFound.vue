@@ -332,7 +332,8 @@ export default defineComponent({
           } else {
             input.files[0].arrayBuffer().then(async (value) => {
               const results = await exifr.parse(value)
-              const createDate = results.CreateDate ?? results.DateTimeOriginal ?? Date.now()
+              const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
+
               if (createDate < this.getCurrentBikeTag.mysteryTime) {
                 this.$toast.open({
                   message: 'Timestamp Error',
@@ -342,7 +343,9 @@ export default defineComponent({
               } else {
                 this.image = input.files[0]
               }
+
               const GPSData = await exifr.gps(value)
+
               if (GPSData) {
                 if (GPSData.latitude != null && GPSData.longitude != null) {
                   this.gps = {

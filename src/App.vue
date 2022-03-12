@@ -45,13 +45,10 @@ export default defineComponent({
     const game = await this.$store.dispatch('setGame')
     initResults.push(await this.$store.dispatch('setAllGames'))
 
-    console.log('auth', this.$auth.isAuthenticated, this.$auth)
     await setTimeout(
       this.$nextTick(async () => {
         if (this.$auth.isAuthenticated) {
-          console.log('is authed')
           if (!this.getProfile?.nonce?.length) {
-            console.log('no profile nonce, setting profile')
             this.$auth.getIdTokenClaims().then((claims) => {
               if (claims) {
                 const token = claims.__raw
@@ -83,7 +80,7 @@ export default defineComponent({
     initResults.push(await this.$store.dispatch('setPlayers'))
     initResults.push(await this.$store.dispatch('setLeaderboard'))
 
-    console.log(`view::data-init`, initResults)
+    console.log(`view::data-init`)
   },
 })
 </script>

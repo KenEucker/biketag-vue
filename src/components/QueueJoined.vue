@@ -42,7 +42,7 @@ export default defineComponent({
   },
   methods: {
     goViewQueue() {
-      this.$store.dispatch('resetFormStep')
+      this.$router.push('/queue')
     },
     goMysteryQueue() {
       this.$store.dispatch('setFormStepToJoin', true)

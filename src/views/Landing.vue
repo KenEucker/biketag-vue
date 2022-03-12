@@ -42,6 +42,8 @@
       title="What is BikeTag?"
       subtitle="BikeTag is a mystery photo tag game played on bicycle"
       :img-src="BikeTagSvg"
+      link-text="Support BikeTag"
+      link="https://patreon.com/biketag"
       variant="left"
     >
       <p>
@@ -55,15 +57,10 @@
       </p>
       <br />
       <p>When using biketag.org, you agree to our Terms Of Service. You can read those here.</p>
-      <br />
-      <p>
-        <b> Support the BikeTag Project on Patreon </b>
-      </p>
     </bike-tag-blurb>
     <bike-tag-blurb
-      title="BikeTag Ambassador program?"
+      title="BikeTag Ambassador Program"
       subtitle="Start a new game of BikeTag in your area"
-      link="/about"
       :img-src="BikeTagAmbassadorSvg"
     >
       <p>
@@ -83,24 +80,25 @@
       <p>
         Would you like to learn more about the BikeTag Ambassador program and maybe start a new game
         of BikeTag in your area?
-        <a href="mailto://ambassadors@biketag.org"> Email us at ambassadors@biketag.org! </a>
+        <a href="mailto:hello@biketag.org?subject=BikeTag Ambassador Program">
+          Email us at ambassadors@biketag.org!
+        </a>
       </p>
     </bike-tag-blurb>
     <bike-tag-blurb
-      title="BIKETAG IS AN Open Source Project"
-      subtitle="Deployed on Netlify "
-      :img-src="NetlifyLogoDarkSvg"
+      title="Open Source"
+      subtitle="BikeTag is an Open-Source Project Deployed on Netlify "
+      img-src="/images/github-netlify.png"
+      link-text="Contribute to BikeTag"
+      link="https://github.com/KenEucker/biketag-vue/discussions/78"
       variant="left"
     >
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum suscipit mi ut aenean.
-        Non sodales pellentesque ac ultrices. Mauris vitae, a a blandit nunc eu egestas. Nisl in
-        dui, at quisque est. Duis nec quam rhoncus elit. Netus dolor eu, sit sit. Pharetra quisque
-        ornare amet cursus suspendisse leo. Ultrices dignissim
-      </p>
-      <br />
-      <p>
-        <b>> Contribute to BikeTag</b>
+        This project was started as an open source code repository on GitHub. The entirety of the
+        BikeTag platform lives on, there, and you can host/run the software if you are so inclined.
+        We also have a developer API that you can use to develop your own version of the BikeTag
+        App! Every aspect of the planning, volunteer coordination, software development, design, and
+        even stickers goes through the public attribution repository platform that GitHub Provides.
       </p>
     </bike-tag-blurb>
   </main>
@@ -127,11 +125,11 @@
           <a href="mailto:support@biketag.org"> SUPPORT </a>
         </li>
       </ul>
-      <form>
+      <!-- <form>
         <span> JOIN OUR MAILING LIST </span>
         <bike-tag-input required />
         <bike-tag-button text="SUBSCRIBE" />
-      </form>
+      </form> -->
     </div>
     <div class="img-container">
       <a href=" https://biketag.bike/">
@@ -146,20 +144,14 @@ import { defineComponent } from 'vue'
 import BikeTagBlurb from '@/components/BikeTagBlurb'
 import BikeTagAmbassadorSvg from '@/assets/images/biketag-ambassador.svg'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
-import NetlifyLogoDarkSvg from '@/assets/images/netlify-logo-dark.svg'
-import BikeTagButton from '@/components/BikeTagButton'
-import BikeTagInput from '@/components/BikeTagInput'
 
 export default defineComponent({
   name: 'HomeView',
   components: {
     BikeTagBlurb,
-    BikeTagButton,
-    BikeTagInput,
   },
   data() {
     return {
-      NetlifyLogoDarkSvg,
       BikeTagAmbassadorSvg,
       BikeTagSvg,
     }
@@ -182,6 +174,13 @@ export default defineComponent({
 main {
   section {
     margin-bottom: 1.5rem;
+  }
+
+  #open-source {
+    .img-container img {
+      width: 80% !important;
+      max-width: 280px;
+    }
   }
 }
 

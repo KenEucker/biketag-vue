@@ -52,7 +52,7 @@
           </li>
           <li
             class="nav-item"
-            :class="{ 'active-nav': currentRoute === 'Play' }"
+            :class="{ 'active-nav': currentRoute === 'Home' }"
             @click="goHomePage"
           >
             {{ $t('menu.home') }}
@@ -118,7 +118,7 @@
         <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
           <img
             class="footer-fixed_image"
-            src="../assets/images/npworld.png"
+            src="@/assets/images/npworld.png"
             alt="BikeTag World Wide"
           />
         </bike-tag-button>
@@ -171,7 +171,7 @@ export default defineComponent({
       if (this.$route.name) {
         console.log('view::loaded', this.$route.name)
       }
-      return this.$route.name !== 'Play'
+      return this.$route.name !== 'Home'
     },
     currentRoute() {
       return this.$route.name
