@@ -11,10 +11,13 @@
       <bike-tag id="the-tag" :tag="tag" image-size="l" />
     </div>
     <div v-else class="mt-4 mb-5">
-      <bike-tag-button
-        :text="getCurrentBikeTag?.mysteryPlayer"
-        @click="$router.push('/player/' + getCurrentBikeTag?.mysteryPlayer)"
-      />
+      <div class="play-screen__mystery-player">
+        <bike-tag-button variant="medium"
+          class="play-screen__mystery-player__button" 
+          :text="getCurrentBikeTag?.mysteryPlayer"
+          @click="$router.push('/player/' + getCurrentBikeTag?.mysteryPlayer)"
+        />
+      </div>
       <div v-if="getCurrentBikeTag" class="rel play-screen">
         <ExpandableImage
           class="play-screen__image"
@@ -29,7 +32,7 @@
         />
         <div class="play-screen__label-group-bottom">
           <div>
-            <bike-tag-label :text="$t('menu.mysterylocation')" :only-text="true" />
+            <bike-tag-label id="mystery-label" :text="$t('menu.mysterylocation')" :only-text="true" />
           </div>
         </div>
       </div>
@@ -130,6 +133,17 @@ export default defineComponent({
 
   @media (max-width: $breakpoint-mobile-lg) {
     width: 100vw;
+  }
+
+  &__mystery-player {
+    position: relative;
+    z-index: 1;
+    &__button {
+      position: relative;
+      bottom: -40px;
+      width: 80%;
+      max-width: 25em;
+    }
   }
 
   &__image {
