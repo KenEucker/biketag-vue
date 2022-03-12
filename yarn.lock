@@ -2951,10 +2951,10 @@ better-opn@^3.0.0:
   dependencies:
     open "^8.0.4"
 
-biketag@^2.0.10:
-  version "2.0.10"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-2.0.10.tgz#1663a2f2223ae7a3fcd982851ef61dcc353a1105"
-  integrity sha512-hL3P2QXU0Y81PldiGycNpr7kqgxY7vrgd0qP36DuWkMejgj7JqLxjAMJHJvMwsNdgcE1/lPd+eBSviEuYWsGCA==
+biketag@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-2.1.0.tgz#b890d6729130070eae10114e61f12e1227f222bd"
+  integrity sha512-GoyfyKoyqSe2dEFGq/DQYm8sx7bwvhrr27tKACZbO/x8+ERmE8EwM7HjEZiwd4o5csl5lIieaesvAF+UcZ5NoQ==
   dependencies:
     "@croquet/croquet" "^1.0.5"
     "@sanity/client" "^2.23.2"

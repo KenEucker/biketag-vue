@@ -57,6 +57,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Worldwide',
     component: () => import('@/views/Worldwide.vue'),
   },
+  {
+    path: '/map',
+    name: 'Map',
+    component: () => import('@/views/Map.vue'),
+  },
 ]
 
 let protectedRoutes: Array<RouteRecordRaw> = []

@@ -40,7 +40,7 @@
     </div>
     <bike-tag-footer
       class="bike-tag-footer"
-      :variant="`${tagnumber ? 'single' : undefined}`"
+      :variant="`${tagnumber ? 'single' : 'current'}`"
       @next="goNextSingle"
       @previous="goPreviousSingle"
     />
