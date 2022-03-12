@@ -4,9 +4,25 @@
       <!-- Left Button -->
       <bike-tag-button class="button-group__left" :text="$t('menu.map')" @click="goMapPage" />
       <!-- Middle Button -->
-      <bike-tag-button class="button-group__middle" :text="$t('menu.hint')" variant="bold" @click="showHint"/>
+      <bike-tag-button
+        class="button-group__middle"
+        :text="$t('menu.hint')"
+        variant="bold"
+        @click="showHint"
+      />
       <!-- Right Button -->
-      <bike-tag-button class="button-group__right" :text="$t('menu.queue')" @click="goQeueuPage" />
+      <bike-tag-button
+        v-if="getQueuedTags?.length"
+        class="button-group__right"
+        :text="$t('menu.queue')"
+        @click="goQeueuPage"
+      />
+      <bike-tag-button
+        v-else
+        class="button-group__right"
+        :text="$t('menu.last')"
+        @click="$emit('previous')"
+      />
     </div>
     <div v-if="variant === 'single'">
       <!-- Left Button -->
@@ -119,19 +135,19 @@ export default defineComponent({
       this.$router.push('/queue')
     },
     showHint() {
-      const mysteryLabel = document.querySelector("#mystery-label p")
+      const mysteryLabel = document.querySelector('#mystery-label p')
       if (mysteryLabel.innerText.toLowerCase() === this.$t('menu.mysterylocation').toLowerCase()) {
         mysteryLabel.innerText = this.getCurrentHint
       } else {
         mysteryLabel.innerText = this.$t('menu.mysterylocation')
       }
-      mysteryLabel.classList.toggle("hint_anim")
-    }
+      mysteryLabel.classList.toggle('hint_anim')
+    },
   },
 })
 </script>
 <style lang="scss">
-@import "../assets/styles/style";
+@import '../assets/styles/style';
 .hint_anim {
   animation: typewriter 0.5s 1 normal both;
 }

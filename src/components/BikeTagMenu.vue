@@ -43,7 +43,7 @@
             />
           </li>
           <li
-            v-if="isBikeTagAmbassador"
+            v-if="isBikeTagAmbassador && getQueuedTags?.length"
             class="nav-item"
             :class="{ 'active-nav': currentRoute === 'Approve' }"
             @click="goApprovePage"
@@ -165,6 +165,7 @@ export default defineComponent({
       'getCurrentBikeTag',
       'isDataInitialized',
       'isBikeTagAmbassador',
+      'getQueuedTags',
       'getProfile',
     ]),
     isShow() {
