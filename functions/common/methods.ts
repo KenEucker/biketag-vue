@@ -749,6 +749,7 @@ export const setNewBikeTagPost = async (
   biketagOpts.imgur.hash = game?.mainhash
   console.log({ biketagOpts })
   const biketag = new BikeTagClient(biketagOpts)
+  console.log('config', biketag.config())
   game = game ?? ((await biketag.game(winningBikeTagPost.game)) as Game)
   currentBikeTag = currentBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false

@@ -41,7 +41,7 @@ const approveHandler: Handler = async (event) => {
     const biketag = new BikeTagClient(biketagOpts)
     console.log({ c: biketag.config() })
     const { playerId, tagnumber } = approvePayload.tag
-    const game = (await biketag.game()) as Game
+    const game = (await biketag.game(undefined, { source: 'sanity' })) as Game
 
     if (game) {
       const activeQueue = await getActiveQueueForGame(game, undefined, approvePayload.ambassadorId)
