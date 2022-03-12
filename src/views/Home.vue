@@ -12,8 +12,9 @@
     </div>
     <div v-else class="mt-4 mb-5">
       <div class="play-screen__mystery-player">
-        <bike-tag-button variant="medium"
-          class="play-screen__mystery-player__button" 
+        <bike-tag-button
+          variant="medium"
+          class="play-screen__mystery-player__button"
           :text="getCurrentBikeTag?.mysteryPlayer"
           @click="$router.push('/player/' + getCurrentBikeTag?.mysteryPlayer)"
         />
@@ -32,7 +33,11 @@
         />
         <div class="play-screen__label-group-bottom">
           <div>
-            <bike-tag-label id="mystery-label" :text="$t('menu.mysterylocation')" :only-text="true" />
+            <bike-tag-label
+              id="mystery-label"
+              :text="$t('menu.mysterylocation')"
+              :only-text="true"
+            />
           </div>
         </div>
       </div>
@@ -112,9 +117,15 @@ export default defineComponent({
     },
     goNextSingle() {
       this.tagnumber++
-      this.$router.push(`/${this.tagnumber}`)
+      if (this.tagnumber === this.getCurrentBikeTag.tagnumber) {
+        this.tagnumber = 0
+      } else {
+        this.$router.push(`/${this.tagnumber}`)
+      }
     },
     goPreviousSingle() {
+      console.log(this.tagnumber, { getCurrentBikeTag: this.getCurrentBikeTag })
+      this.tagnumber = this.tagnumber > 0 ? this.tagnumber : this.getCurrentBikeTag.tagnumber
       this.tagnumber--
       this.$router.push(`/${this.tagnumber}`)
     },

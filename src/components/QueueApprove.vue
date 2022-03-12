@@ -1,6 +1,6 @@
 <template>
   <div></div>
-  <div v-if="!getQueuedTags.length" class="container queue-approve-tag">
+  <div v-if="!getQueuedTags?.length" class="container queue-approve-tag">
     <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.empty_text') }}</p>
   </div>
