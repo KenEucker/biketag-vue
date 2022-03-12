@@ -90,6 +90,7 @@
           v-model="confirmRemove"
           class="confirm-modal"
           title="Confirm Removal of Queued Tag"
+          @ok="dequeueTag"
         >
           <p>{{ $t('pages.approve.confirm_remove') }}</p>
         </b-modal>

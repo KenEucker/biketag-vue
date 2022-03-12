@@ -266,7 +266,7 @@ export const store = createStore<State>({
             console.log('error::dequeue BikeTag failed', t)
             return t.error ? t.error : Array.isArray(t.data) ? t.data.join(' - ') : t.data
           }
-          return 'successfully dequeued tag'
+          return true
         })
       }
       return 'incorrect permissions'
