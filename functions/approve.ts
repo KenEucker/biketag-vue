@@ -1,69 +1,94 @@
-import { builder, Handler } from '@netlify/functions'
+import { Handler } from '@netlify/functions'
 import {
+  acceptCorsHeaders,
   getActiveQueueForGame,
   getBikeTagClientOpts,
   getPayloadOpts,
+  getProfileAuthorization,
   setNewBikeTagPost,
 } from './common/methods'
 import { BikeTagClient } from 'biketag'
 import request from 'request'
-import { Ambassador, Game } from 'biketag/lib/common/schema'
+import { Game } from 'biketag/lib/common/schema'
+import { HttpStatusCode } from './common/constants'
 
 const approveHandler: Handler = async (event) => {
-  const adminBiketagOpts = getBikeTagClientOpts(event as unknown as request.Request, true, true)
-  const biketag = new BikeTagClient(adminBiketagOpts)
+  /// Bailout on OPTIONS requests
+  const headers = acceptCorsHeaders(false)
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: HttpStatusCode.NoContent,
+      headers,
+    }
+  }
+
+  if (event.httpMethod !== 'POST') {
+    return {
+      body: 'method not allowed',
+      statusCode: HttpStatusCode.MethodNotAllowed,
+    }
+  }
+
+  /// Retrieves the authorization and profile data, if present
+  const profile = await getProfileAuthorization(event)
   const approvePayload = getPayloadOpts(event)
   let results = []
   let errors = []
-  const approvePayloadIsValid =
-    approvePayload?.btaId?.length > 0 &&
-    approvePayload.tagnumber &&
-    approvePayload.playerId?.length > 0
 
-  if (approvePayloadIsValid) {
-    const { playerId, tagnumber, btaId } = approvePayload
-    const game = (await biketag.game()) as Game
+  /// We can only provide profile data if the profile already exists (created by Auth0)
+  if (profile && profile.sub === approvePayload.ambassadorId) {
+    const biketagOpts = getBikeTagClientOpts(event as unknown as request.Request, true)
+    const biketag = new BikeTagClient(biketagOpts)
+    console.log({ c: biketag.config() })
+    const { playerId, tagnumber } = approvePayload.tag
+    const game = (await biketag.game(undefined, { source: 'sanity' })) as Game
+
     if (game) {
-      const thisGamesAmbassadors = (await biketag.ambassadors()) as Ambassador[]
-      const approvingBikeTagAmbassadorList = thisGamesAmbassadors.filter((a) => a.id === btaId)
+      const activeQueue = await getActiveQueueForGame(game, undefined, approvePayload.ambassadorId)
+      const approvedTagList = activeQueue.completedTags.filter((t) => {
+        return t.tagnumber === tagnumber && t.playerId === playerId
+      })
 
-      if (approvingBikeTagAmbassadorList.length) {
-        const approvingBikeTagAmbassador = approvingBikeTagAmbassadorList[0]
-        const activeQueue = await getActiveQueueForGame(game, adminBiketagOpts)
-        const approvedTagList = activeQueue.queuedTags.filter((t) => {
-          return t.tagnumber === tagnumber && t.playerId === playerId
+      if (approvedTagList.length) {
+        const approvedTag = approvedTagList[0]
+        approvedTag.game = approvedTag.game.length ? approvedTag.game : game.name
+        console.log({ approvedTag, approvedTagList })
+
+        const newBikeTagPostedResults = await setNewBikeTagPost(approvedTag, game)
+        results.push({
+          message: `Approving BikeTag Ambassador: ${profile.name}`,
+          ambassador: profile.email,
+          tag: approvedTag.tagnumber,
         })
-        if (approvedTagList.length) {
-          const approvedTag = approvedTagList[0]
-          const newBikeTagPostedResults = await setNewBikeTagPost(approvedTag, game)
-          results.push({
-            message: `Approving BikeTag Ambassador: ${approvingBikeTagAmbassador.name}`,
-            ambassador: approvingBikeTagAmbassador.email,
-            tag: approvedTag.tagnumber,
-          })
-          results = results.concat(newBikeTagPostedResults.results)
-          errors = errors.concat(newBikeTagPostedResults.errors)
-        }
+        results = results.concat(newBikeTagPostedResults.results)
+        errors = errors.concat(newBikeTagPostedResults.errors)
+      } else {
+        errors.push(`tag could not be approved: ${biketagOpts.game}`)
       }
     } else {
-      errors.push(`no game found: ${adminBiketagOpts.game}`)
+      console.error({ biketagOpts })
+      errors.push(`no game found: ${biketagOpts.game}`)
+    }
+  } else {
+    return {
+      statusCode: HttpStatusCode.Unauthorized,
+      body: "you don't have permission to do that",
     }
   }
+
   if (results.length) {
-    console.log({ results })
     return {
-      statusCode: errors ? 400 : 200,
+      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted,
       body: JSON.stringify(results),
     }
   } else {
-    console.log('nothing to report')
+    console.log({ results, errors })
     return {
-      statusCode: errors ? 400 : 200,
+      statusCode: errors.length ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: '',
+      errors,
     }
   }
 }
 
-const handler = builder(approveHandler)
-
-export { handler }
+export { approveHandler as handler }

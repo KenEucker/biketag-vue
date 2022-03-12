@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container mt-5">
     <swiper
       :autoplay="{ delay: 12500 }"
       :pagination="{ clickable: true }"
@@ -75,6 +75,9 @@
         <p>{{ $t('pages.howto.swiper8.text2') }}</p>
         <p>{{ $t('pages.howto.swiper8.text3') }}</p>
       </swiper-slide>
+      <swiper-slide>
+        <bike-tag-map />
+      </swiper-slide>
     </swiper>
   </div>
 </template>
@@ -93,12 +96,15 @@ import { mapGetters } from 'vuex'
 // install Swiper components
 SwiperCore.use([Autoplay, Navigation, Pagination])
 
+import BikeTagMap from '@/components/BikeTagMap.vue'
+
 // Import Swiper styles
 export default {
   name: 'HowToView',
   components: {
     Swiper,
     SwiperSlide,
+    BikeTagMap,
   },
   data() {
     return {
@@ -106,10 +112,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getGameSlug', 'getEasterEgg']),
-  },
-  created() {
-    this.$store.dispatch('setGame')
+    ...mapGetters(['getGameSlug', 'getEasterEgg', 'getGame']),
   },
   methods: {
     playEasterEgg() {
@@ -126,6 +129,8 @@ export default {
   max-width: 600px;
 
   .swiper-slide {
+    padding-top: 10px;
+
     p {
       line-height: 2vh;
     }

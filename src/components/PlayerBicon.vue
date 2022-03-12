@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="_playerName?.length"
-    :class="'player-wrapper avatar-' + size"
+    :class="'player-wrapper mt-5 avatar-' + size"
     role="button"
     @click="goPlayerPage"
   >
@@ -17,14 +17,11 @@
       <span
         v-if="player?.tags?.length"
         :class="`tag-count tag-count--color-${tagColorNumber(player.tags.length)}`"
-        >{{ player.tags.length }}</span
+        >{{ getTagCount }}</span
       >
     </div>
     <img v-if="playerBiconUrl" class="player-bicon" :src="playerBiconUrl" :alt="_playerName" />
-    <div class="info-wrapper">
-      <span v-if="isPolaroid" class="player-name fnt">{{ biconDate }}</span> 
-      <span class="player-name p-1">{{ _playerName }}</span>
-    </div>
+    <span class="player-name p-1">{{ _playerName }}</span>
   </div>
 </template>
 
@@ -48,10 +45,6 @@ export default defineComponent({
     playerName: {
       type: String,
       default: null,
-    },
-    isPolaroid : {
-      type: Boolean,
-      default: false
     },
     noLink: {
       type: Boolean,
@@ -83,19 +76,12 @@ export default defineComponent({
       }
       return this.getImgurImageSized(url, this.size[0])
     },
-    biconDate(){
-      let date
-      if (this.player && typeof this.player === 'object') {
-        if (!this.player.bicon) {
-          if (this.player.tags[this.player.tags.length - 1].mysteryTime) {
-            date = new Date(this.player.tags[this.player.tags.length - 1].mysteryTime * 1000).toLocaleDateString()
-          } else {
-            date = new Date(this.player.tags[this.player.tags.length - 1].foundTime * 1000).toLocaleDateString()
-          }
-        }
+    getTagCount() {
+      if (this.size === 'lg') {
+        return this.player.tags.length
       }
-      return date
-    }
+      return this.player.tags.length > 99 ? '+99' : this.player.tags.length
+    },
   },
   methods: {
     goPlayerPage: function () {
@@ -121,39 +107,18 @@ export default defineComponent({
 </script>
 <style scoped lang="scss">
 .player-wrapper {
-  // position: relative;
-  margin-top: 2rem;
-
-  .info-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-flow: row wrap;
-    padding: 0 1rem;
-  }
+  position: relative;
+  padding-top: 2rem;
 
   .player-name {
-    // z-index: 99;
-    text-shadow: 3px -2px 3px #292828e6;
-    filter: invert(1) drop-shadow(2px 4px 6px white);
-    // transform: rotate(-8deg);
-    // display: block;
-    animation: fadeIn 2s;
+    z-index: 99;
+    transform: rotate(-8deg);
+    display: block;
+    animation: fadein 2s;
+    word-break: break-all;
+
     // word-break: break-word;
     // text-decoration-line: underline;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    min-height: 60px;
-    justify-content: start;
-    display: flex;
-    align-items: center;
-
-
-    &.fnt {
-      font-size: 3rem!important;
-      // margin-left: -4rem
-    }
   }
 
   .svg {
@@ -164,27 +129,31 @@ export default defineComponent({
 
   .tag-count {
     position: absolute;
-    padding: 10px 0 10px 0;
-    width: 4rem;
+    padding: 10px 0;
+    min-width: 4rem;
     text-align: center;
-    clip-path: url(#badge-clip);
+    clip-path: url('#badge-clip');
     z-index: 99;
   }
 
   .tag-count--color-one {
-    background-color: rgba(228, 178, 13, 0.9);
+    background-color: rgb(228 178 13 / 90%);
   }
+
   .tag-count--color-lessthanten {
-    background-color: rgba(26, 228, 13, 0.9);
+    background-color: rgb(26 228 13 / 90%);
   }
+
   .tag-count--color-fiftyormore {
-    background-color: rgba(31, 13, 228, 0.9);
+    background-color: rgb(31 13 228 / 90%);
   }
+
   .tag-count--color-onehundredormore {
-    background-color: rgba(228, 13, 219, 0.9);
+    background-color: rgb(228 13 219 / 90%);
   }
+
   .tag-count--color-fivehundredormore {
-    background-color: rgba(228, 13, 31, 0.87);
+    background-color: rgb(228 13 31 / 87%);
   }
 }
 
@@ -238,7 +207,6 @@ export default defineComponent({
   .tag-count {
     font-size: 1.5rem;
     width: 3.5rem;
-    top: 43%;
     left: 55%;
     top: 15%;
   }
@@ -262,16 +230,14 @@ export default defineComponent({
     left: 0;
     right: 0;
     transform: unset;
-    font-size: 3rem !important;
-    line-height: 3rem !important;
-    font-family: markernotes !important;
+    font-size: 2rem;
   }
 
   .tag-count {
     font-size: 2rem;
     top: 2rem;
     right: 1rem;
-    padding: 2px 8px 2px 8px;
+    padding: 2px 8px;
   }
 }
 

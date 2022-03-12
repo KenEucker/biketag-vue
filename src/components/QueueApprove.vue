@@ -1,12 +1,13 @@
 <template>
-  <div v-if="!getQueuedTags.length" class="queue-approve-tag container">
+  <div></div>
+  <div v-if="!getQueuedTags?.length" class="container queue-approve-tag">
     <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.empty_text') }}</p>
   </div>
-  <div v-else class="queue-approve-tag container queue-approve">
+  <div v-else class="container queue-approve-tag queue-approve">
     <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.approve_text') }}</p>
-
+    <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" />
     <swiper
       :modules="[Controller]"
       :pagination="{}"
@@ -29,11 +30,10 @@
           v-if="tag.mysteryImageUrl?.length && tag.foundImageUrl?.length"
           :key="tag.tagnumber"
           :reverse="true"
-          :show-posted-date-time="true"
+          :show-posted-date="true"
           :tag="tag"
           size="l"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
-          :found-description="`found at (${tag.foundLocation})`"
           :mystery-description="mysteryDescription(tag)"
         />
         <bike-tag
@@ -44,58 +44,60 @@
           size="l"
           :show-posted-date="false"
           :sized-mystery-image="false"
-          mystery-image-url="@/assets/images/blank.png"
+          mystery-image-url="/images/no_image.png"
           mystery-description="Mystery image not yet uploaded"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
           :found-description="stringifyNumber(index + 1)"
         />
       </swiper-slide>
     </swiper>
-    <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" />
     <div class="container">
+      <div class="approve-button row just-center">
+        <form
+          v-if="currentIsReadyForApproval"
+          ref="approveTag"
+          name="approve-queued-tag"
+          action="approve-queued-tag"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          @submit.prevent="approveTag"
+        >
+          <input type="hidden" name="form-name" value="approve-queued-tag" />
+          <input type="hidden" name="ambassadorId" value="" />
+          <span>APPROVE</span>
+          <bike-tag-button class="circle-button" variant="circle" type="submit" label="Approve">
+            <img src="/images/green-circle-check.png" alt="Approve This Tag" />
+          </bike-tag-button>
+        </form>
+        <form
+          ref="dequeueTag"
+          name="dequeue-queued-tag"
+          action="dequeue-queued-tag"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          @submit.prevent="dequeueTagConfirm"
+        >
+          <input type="hidden" name="form-name" value="dequeue-queued-tag" />
+          <input type="hidden" name="ambassadorId" value="" />
+          <bike-tag-button class="circle-button" variant="circle" type="submit" label="Remove">
+            <img src="/images/red-circle-x.png" alt="Delete This Tag" />
+          </bike-tag-button>
+          <span>REMOVE</span>
+        </form>
+        <b-modal
+          v-model="confirmRemove"
+          class="confirm-modal"
+          title="Confirm Removal of Queued Tag"
+          @ok="dequeueTag"
+        >
+          <p>{{ $t('pages.approve.confirm_remove') }}</p>
+        </b-modal>
+      </div>
       <div class="row">
-        <div class="col-md-6">
-          <form
-            ref="approveTag"
-            name="approve-queued-tag"
-            action="approve-queued-tag"
-            method="POST"
-            data-netlify="true"
-            data-netlify-honeypot="bot-field"
-            @submit.prevent="onSubmit"
-          >
-            <input type="hidden" name="form-name" value="approve-queued-tag" />
-            <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
-            <bike-tag-button
-              class="w-75 btn-approve mt-2 mb-2 border-0"
-              variant="primary"
-              @click="onSubmit"
-            >
-              {{ $t('pages.queue.approve_new_tag') }}&nbsp;
-              {{ $t('pages.queue.approve_new_tag_from') }}&nbsp;#{{ selectedTagPlayer() }}&nbsp;({{
-                mysteryPlayer()
-              }})
-            </bike-tag-button>
-          </form>
-        </div>
-        <div class="col-md-6">
-          <form
-            ref="dequeueTag"
-            name="dequeue-queued-tag"
-            action="dequeue-queued-tag"
-            method="POST"
-            data-netlify="true"
-            data-netlify-honeypot="bot-field"
-            @submit.prevent="dequeueTag"
-          >
-            <input type="hidden" name="form-name" value="dequeue-queued-tag" />
-            <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
-            <bike-tag-button class="w-75 mt-2 mb-2 border-0" variant="danger" @click="dequeueTag">
-              {{ $t('pages.queue.dequeue_queued_tag') }} &nbsp;
-            </bike-tag-button>
-          </form>
-        </div>
-        <span class="user-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
+        <span class="player-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
+        <img class="ambassador-icon" src="/images/biketag-ambassador.svg" alt="Ambassador Icon" />
       </div>
     </div>
   </div>
@@ -136,57 +138,67 @@ export default defineComponent({
       setControlledSwiper,
     }
   },
+  data() {
+    return {
+      confirmRemove: false,
+    }
+  },
   computed: {
     ...mapGetters([
       'getQueuedTags',
-      'setQueuedTags',
       'getQueuedTag',
       'getCurrentBikeTag',
+      'isBikeTagAmbassador',
       'getAmbassadorId',
-      'getExpiry',
     ]),
+    currentIsReadyForApproval() {
+      return this.currentlySelectedTag?.mysteryImageUrl && this.currentlySelectedTag?.foundImageUrl
+    },
+    currentlySelectedTag() {
+      return this.getQueuedTags[this.controlledSwiper?.activeIndex]
+    },
   },
-  mounted() {
-    if (!this.getAmbassadorId?.length > 0) {
+  async mounted() {
+    if (!this.isBikeTagAmbassador) {
       /// kick it sideways
+      for (let x = 0; x < 1000; ++x) {
+        const uhuhuh = () => console.log("YOU DIDN'T SAY THE MAGIC WORD!")
+        await setTimeout(uhuhuh, 1)
+      }
       this.$router.push('/')
     }
   },
   methods: {
+    dequeueTagConfirm() {
+      this.confirmRemove = true
+    },
+    dequeueTagConfirmYes() {
+      this.confirmRemove = false
+    },
+    dequeueTagConfirmNo() {
+      this.confirmRemove = false
+    },
     dequeueTag() {
-      const tagToDequeue = {}
-      return this.$store.dispatch('dequeueTag', tagToDequeue).then((dequeueSuccessful) => {
-        if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-          this.$toast.open({
-            message: `dequeue tag error: ${dequeueSuccessful}`,
-            type: 'error',
-            timeout: false,
-            position: 'bottom',
-          })
-          return this.$store.dispatch('setQueuedTags', true)
-        } else {
-          return this.$toast.open({
-            message: 'tag successfully dequeued',
-            type: 'success',
-            timeout: false,
-            position: 'top',
-          })
-        }
+      const formAction = this.$refs.dequeueTag.getAttribute('action')
+      const formData = new FormData(this.$refs.dequeueTag)
+
+      this.$emit('submit', {
+        formAction,
+        formData,
+        tag: this.currentlySelectedTag,
+        storeAction: 'dequeueTag',
       })
     },
-    onSubmit() {
+    approveTag() {
       const formAction = this.$refs.approveTag.getAttribute('action')
       const formData = new FormData(this.$refs.approveTag)
-      const approvedTag = {
-        ambassadorId: this.getAmbassadorId,
-        expiry: window.location.expiry,
-      }
+      const approvedTag = this.currentlySelectedTag
 
       this.$emit('submit', {
         formAction,
         formData,
         tag: approvedTag,
-        storeAction: 'getAmbassadorPermission',
+        storeAction: 'approveTag',
       })
     },
     mysteryDescription(tag) {
@@ -203,6 +215,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+@import '../assets/styles/style';
+
 .queue-approve {
   .card .tag-number {
     display: none;
@@ -211,11 +225,46 @@ export default defineComponent({
   .swiper-pagination {
     display: none;
   }
+
+  .circle-button {
+    max-width: 100px;
+
+    img {
+      max-width: 85px;
+    }
+  }
 }
 </style>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 i {
   color: #000;
   font-size: 20px;
+}
+
+.ambassador-icon {
+  max-height: 10vh;
+}
+
+form {
+  flex-basis: fit-content;
+  display: flex;
+}
+
+.player-agree {
+  max-width: 50%;
+  margin: auto;
+}
+
+.approve-button {
+  font-family: $default-font-family;
+  vertical-align: middle;
+
+  span {
+    margin: auto;
+    padding-left: 1em;
+    padding-right: 1em;
+  }
 }
 </style>

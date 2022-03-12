@@ -1,22 +1,34 @@
 @import 'fonts';
 @import 'colors';
 
-$how-font-family: MarkerNotes;
+$default-font-family: prequelrough;
+$default-secondary-font-family: prequel;
+$how-font-family: prequelrough;
 $how-font-size: 2vh;
 $btn-hint-font-weight: 1000;
 $btn-hint-font-family: 'Circular-Loom';
 $btn-hint-font-size: 1.2em;
 $btn-swiper-font-size: 20pt;
-$title-font-family: MarkerNotes;
+$title-font-family: prequelrough;
 $title-font-size: calc(1.375rem + 1.5vw);
 $title-font-weight: 600;
-$tag-number-font-family: MarkerNotes;
+$tag-number-font-family: prequelrough;
 $tag-description-font-size: 1.5rem;
 $tag-description-font-weight: 500;
-$tag-description-font-family: MarkerNotesItalic;
+$tag-description-font-family: prequelroughitalic;
 $tag-number-font-size: 2rem;
 $tag-number-font-weight: 500;
-$tag-player-font-weight: 800;
-$tag-player-font-family: bettergrade;
+$tag-player-font-weight: 300;
+$tag-player-font-family: blackpine;
 $tag-player-font-size: 4rem;
-$tag-player-line-height: 1rem;
+$tag-player-line-height: 2rem;
+$tag-date-font-weight: 100;
+$tag-date-font-family: kingthings;
+$tag-date-font-size: 1.5rem;
+$tag-date-line-height: 2rem;
+$breakpoint-mobile-sm: 20rem; // 320px
+$breakpoint-mobile-md: 26.25rem; // 420px
+$breakpoint-mobile-lg: 30rem; // 480px
+$breakpoint-tablet: 48rem; // 768px 
+$breakpoint-laptop: 64rem; // 1024px
+$breakpoint-desktop: 75rem; // 1200px

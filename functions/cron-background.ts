@@ -5,11 +5,13 @@ import {
   getWinningTagForCurrentRound,
   setNewBikeTagPost,
   archiveAndClearQueue,
+  sendEmail,
 } from './common/methods'
 import request from 'request'
 import { BackgroundProcessResults } from './common/types'
 import BikeTagClient from 'biketag'
 import { Game } from 'biketag/lib/common/schema'
+import { HttpStatusCode } from './common/constants'
 
 export const autoPostNewBikeTags = async (biketagOpts: any): Promise<BackgroundProcessResults> => {
   biketagOpts =
@@ -78,17 +80,18 @@ const autoPost: Handler = async (event) => {
     true
   )
   const { results, errors } = await autoPostNewBikeTags(adminBiketagOpts)
+  await sendEmail('keneucker@gmail.com', 'autoPostEmail test', { results, errors }, 'test')
 
   if (results.length) {
     console.log({ results })
     return {
-      statusCode: errors ? 400 : 200,
+      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: JSON.stringify(results),
     }
   } else {
     console.log('nothing to report')
     return {
-      statusCode: errors ? 400 : 200,
+      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: '',
     }
   }

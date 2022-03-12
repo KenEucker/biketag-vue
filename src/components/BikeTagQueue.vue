@@ -98,7 +98,8 @@ export default defineComponent({
     canReset() {
       return this.getQueuedTagState !== BiketagFormSteps.queuePosted
     },
-    resetToFound() {
+    async resetToFound() {
+      await this.$store.dispatch('fetchCredentials')
       return this.$store.dispatch('dequeueFoundTag').then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
           return this.$toast.open({
@@ -114,7 +115,8 @@ export default defineComponent({
         }
       })
     },
-    resetToMystery() {
+    async resetToMystery() {
+      await this.$store.dispatch('fetchCredentials')
       return this.$store.dispatch('dequeueMysteryTag').then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
           return this.$toast.open({
@@ -181,13 +183,14 @@ export default defineComponent({
   }
 }
 
-.current-mystery,
-.queued-found,
-.queued-mystery {
-}
+// .current-mystery,
+// .queued-found,
+// .queued-mystery {
+// }
 
 .bike-pagination-bullet {
   position: relative;
+
   img {
     display: flex;
     justify-content: center;
@@ -198,6 +201,7 @@ export default defineComponent({
     border-radius: 5rem;
     cursor: pointer;
   }
+
   span {
     position: absolute;
     top: 75%;

@@ -2,6 +2,7 @@ import { BikeTagClient } from 'biketag'
 import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
 import request from 'request'
 import { stringifyNumber } from '../src/common/utils'
+import { HttpStatusCode } from './common/constants'
 import {
   defaultLogo,
   getBikeTagClientOpts,
@@ -179,7 +180,7 @@ export const handler = async (event) => {
 
     return {
       data: success,
-      statusCode: success ? 200 : 400,
+      statusCode: success ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     }
   }
 }

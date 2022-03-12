@@ -5,6 +5,7 @@ import { BikeTagClient } from 'biketag'
 import request from 'request'
 import axios from 'axios'
 import { Game } from 'biketag/lib/common/schema'
+import { HttpStatusCode } from './common/constants'
 
 const currentTagHandler = async (event) => {
   const biketagOpts = getBikeTagClientOpts(
@@ -38,7 +39,7 @@ const currentTagHandler = async (event) => {
 
     if (biketagPayload.data) {
       return {
-        statusCode: 200,
+        statusCode: HttpStatusCode.Ok,
         body: JSON.stringify(data),
       }
     }

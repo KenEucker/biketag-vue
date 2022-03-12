@@ -24,7 +24,7 @@ export default defineComponent({
   },
   methods: {
     goViewQueue() {
-      this.$store.dispatch('resetFormStep')
+      this.$router.push('/queue')
     },
   },
 })

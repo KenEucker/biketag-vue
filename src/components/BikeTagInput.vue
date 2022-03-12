@@ -1,7 +1,7 @@
 <template>
   <div class="biketag-input" :style="`background-image: url(${backgroundSrc})`">
     <label v-if="label" :for="name">{{ label }}</label>
-    <b-form-input v-bind="$attrs" :type="type" />
+    <b-form-input :disabled="disabled" v-bind="$attrs" :type="type" />
     <span>
       <slot></slot>
     </span>
@@ -25,6 +25,10 @@ export default defineComponent({
       type: String,
       default: 'svg',
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     backgroundSrc() {
@@ -37,15 +41,33 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+@import '../assets/styles/style';
+
 .biketag-input {
   @include background-btn;
+
+  width: 100%;
+  height: 5.5rem;
+  position: relative;
+
+  input,
+  label {
+    position: absolute;
+  }
+
   input {
     border: none;
-    position: absolute;
     top: calc(100% / 3);
     margin-left: 2em;
     width: 80%;
     background-color: transparent;
+  }
+
+  label {
+    top: calc(100% / 6);
+    left: calc(100% / 2.5);
+    font-weight: bold;
+    font-size: 0.8rem;
   }
 }
 </style>

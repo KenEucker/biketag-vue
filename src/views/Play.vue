@@ -1,139 +1,308 @@
 <template>
-  <div class="container col-lg-8 play-biketag">
-    <loading v-if="tagIsLoading" v-model:active="tagIsLoading" class="loader" :is-full-page="true">
-      <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
-    </loading>
-    <div v-if="getCurrentBikeTag" class="rel">
-      <b-button
-        v-if="tagnumber === 0 && !tagIsLoading"
-        v-b-popover.click.left="getHint"
-        class="btn-hint"
-        :title="$t('pages.play.hint').toLocaleUpperCase()"
-        variant="primary"
-      >
-        ?
-      </b-button>
-      <bike-tag
-        v-if="tagnumber === 0"
-        :tagnumber="getCurrentBikeTag.tagnumber"
-        :mystery-image-url="getCurrentBikeTag.mysteryImageUrl"
-        :mystery-player="getPlayer(getCurrentBikeTag.mysteryPlayer)"
-        :player="getCurrentBikeTag.mysteryPlayer"
-        size="l"
-        :mystery-description="$t('pages.play.mystery').toLocaleUpperCase()"
-      />
-      <bike-tag
-        v-else
-        size="l"
-        :tag="tag"
-        :found-player="getPlayer(tag.foundPlayer)"
-        :mystery-player="getPlayer(tag.mysteryPlayer)"
-        @load="tagLoaded"
-      />
+  <loading
+    v-show="uploadInProgress"
+    v-model:active="uploadInProgress"
+    :is-full-page="true"
+    class="realign-spinner"
+  >
+    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+  </loading>
+  <!-- <div class="container col-md-8 col-lg-8 queue-page"> -->
+  <div class="queue-page">
+    <div v-if="usingTimer && isViewingQueue()" class="mt-2 clock-div">
+      <i class="far fa-clock" />
+      <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
-    <div v-else>
-      <span>{{ $t('pages.play.game_not_exists') }}</span>
-      <span>{{ $t('pages.play.send_hello_email') }}</span>
+    <span
+      v-if="!uploadInProgress && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
+      class="tag-number"
+      >#{{
+        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
+      }}</span
+    >
+    <bike-tag-queue :only-mine="true" />
+    <div class="step mt-2 mb-4" v-if="BiketagFormSteps[getFormStep] >= 1 && BiketagFormSteps[getFormStep] < 4">
+      <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'" text="1"/>
+      <img v-if="BiketagFormSteps[getFormStep] == 1.5" class="step__arrow" :src="arrowSvg"/>
+      <span v-else class="step__line" :style="`background-image: url(${lineSvg})`" />
+      <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'" text="2"/>
+      <img v-if="BiketagFormSteps[getFormStep] == 2.5" class="step__arrow" :src="arrowSvg" />
+      <span class="step__line" :style="`background-image: url(${lineSvg})`" />
+      <bike-tag-button :variant="BiketagFormSteps[getFormStep] >= 3 && BiketagFormSteps[getFormStep] <= 4 ? 'circle-clean' : 'empty'" text="3"/>
+    </div>
+
+    <!-- <div v-if="!uploadInProgress" class="container"> -->
+    <div v-if="!uploadInProgress">
+      <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueFound]">
+        <queue-found :tag="getQueuedTag" @submit="onQueueSubmit" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined]">
+        <queue-joined :tag="getQueuedTag" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueMystery]">
+        <queue-mystery :tag="getQueuedTag" @submit="onQueueSubmit" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueSubmit]">
+        <queue-submit :tag="getQueuedTag" @submit="onQueueSubmit" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]">
+        <queue-posted-share :tag="getQueuedTag" @submit="onQueueSubmit" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
+        <queue-posted :tag="getQueuedTag" />
+      </div>
+      <span v-if="isSubmittingData()" class="player-agree">
+        * {{ $t('pages.queue.user_agree') }}
+      </span>
+      <form
+        ref="queueError"
+        name="queue-tag-error"
+        action="queue-tag-error"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+        hidden
+      >
+        <input type="hidden" name="form-name" value="queue-tag-error" />
+        <input type="hidden" name="submission" />
+        <input type="hidden" name="playerId" :value="getPlayerId" />
+        <input type="hidden" name="message" />
+        <input type="hidden" name="ip" value="" />
+      </form>
     </div>
   </div>
 </template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, watchEffect, onMounted } from 'vue'
 import { mapGetters } from 'vuex'
-import BikeTag from '@/components/BikeTag.vue'
-import Loading from 'vue-loading-overlay'
-import 'vue-loading-overlay/dist/vue-loading.css'
-// import useSWRV from 'swrv'
+import { BiketagFormSteps } from '@/common/types'
+import { useTimer } from 'vue-timer-hook'
+import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
+
+import QueueFound from '@/components/QueueFound.vue'
+import QueueMystery from '@/components/QueueMystery.vue'
+import QueueSubmit from '@/components/QueueSubmit.vue'
+import QueueJoined from '@/components/QueueJoined.vue'
+import QueuePosted from '@/components/QueuePosted.vue'
+import QueuePostedShare from '@/components/QueuePostedShare.vue'
+import BikeTagQueue from '@/components/BikeTagQueue.vue'
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import LineSvg from '@/assets/images/line.svg'
+import ArrowSvg from '@/assets/images/arrow.svg'
 
 export default defineComponent({
-  name: 'PlayView',
+  name: 'QueueBikeTagView',
   components: {
-    BikeTag,
-    Loading,
+    QueueFound,
+    QueueMystery,
+    QueueSubmit,
+    QueueJoined,
+    QueuePosted,
+    QueuePostedShare,
+    BikeTagQueue,
+    BikeTagButton
+  },
+  props: {
+    usingTimer: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
-    // const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
-    // console.log({ data, error })
-
+    const time = new Date()
+    time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
+    const timer = useTimer(time.getSeconds())
+    onMounted(() => {
+      watchEffect(async () => {
+        if (timer.isExpired.value) {
+          console.warn('IsExpired')
+        }
+      })
+    })
     return {
-      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      tagIsLoading: true,
-      // error,
+      timer,
+      BiketagFormSteps,
+      uploadInProgress: false,
+      countDown: 10,
+      lineSvg: LineSvg,
+      arrowSvg: ArrowSvg,
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getTags', 'getPlayers']),
-    tag() {
-      if (this.tagnumber !== 0) {
-        const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
-        return tag && tag.length ? tag[0] : {}
-      }
-      return undefined
-    },
-    getHint() {
-      return this.getCurrentBikeTag?.hint?.length
-        ? this.getCurrentBikeTag.hint
-        : this.$t('pages.play.nohint')
-    },
+    ...mapGetters([
+      'getFormStep',
+      'getQueuedTag',
+      'getCurrentBikeTag',
+      'getGameName',
+      'getPlayerId',
+    ]),
+  },
+  async mounted() {
+    this.uploadInProgress = false
   },
   async created() {
-    this.tagIsLoading = true
-    await this.$store.dispatch('setGame')
-    await this.$store.dispatch('setTags')
-    await this.$store.dispatch('setCurrentBikeTag')
-    this.tagIsLoading = false
+    await this.$store.dispatch('setCurrentBikeTag', true)
+    await this.$store.dispatch('setQueuedTags', true)
+    console.log(BiketagFormSteps[this.getFormStep])
+    this.countDownTimer()
   },
   methods: {
-    hint() {
-      alert(this.getCurrentBikeTag.hint)
+    isViewingQueue() {
+      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
     },
-    tagLoaded() {
-      this.tagIsLoading = false
+    countDownTimer() {
+      if (this.countDown > 0) {
+        setTimeout(() => {
+          this.countDown -= 1
+          this.countDownTimer()
+        }, 500)
+      }
     },
-    getPlayer(playerName) {
-      const playerList =
-        this.getPlayers?.filter((player) => {
-          return decodeURIComponent(encodeURIComponent(player.name)) == playerName
-        }) ?? []
-      return playerList[0]
+    isSubmittingData() {
+      return !(
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted] ||
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]
+      )
+    },
+    async onQueueSubmit(newTagSubmission) {
+      const { tag, formAction, formData, storeAction } = newTagSubmission
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual'
+      }
+      window.scrollTo(0, 0)
+
+      this.$toast.open({
+        message: this.$t('notifications.uploading'),
+        type: 'info',
+        position: 'top',
+      })
+      const errorAction = this.$refs.queueError.getAttribute('action')
+
+      this.uploadInProgress = true
+      const success = await this.$store.dispatch(storeAction, tag)
+      this.uploadInProgress = false
+
+      if (success === true) {
+        /// Get a clean cache
+        await this.$store.dispatch('setTags', true)
+        /// Update the queue
+        this.$store.dispatch('setQueuedTags', true)
+
+        formData.set('game', this.getGameName)
+        formData.set('tag', JSON.stringify(this.getQueuedTag))
+        formData.set(
+          'submission',
+          `${this.getGameName}-${this.getQueuedTag.tagnumber}--${this.getQueuedTag.foundPlayer}`
+        )
+
+        if (tag.foundImage) {
+          formData.set('foundImageUrl', this.getQueuedTag.foundImageUrl)
+        } else if (tag.mysteryImage) {
+          formData.set('mysteryImageUrl', this.getQueuedTag.mysteryImageUrl)
+        }
+        return sendNetlifyForm(
+          formAction,
+          new URLSearchParams(formData).toString(),
+          () => {
+            this.$toast.open({
+              message: `${storeAction} ${this.$t('notifications.success')}`,
+              type: 'success',
+              position: 'top',
+            })
+          },
+          (m) => {
+            this.$toast.open({
+              message: `${this.$t('notifications.error')} ${m}`,
+              type: 'error',
+              timeout: false,
+              position: 'bottom',
+            })
+            return sendNetlifyError(m, undefined, errorAction)
+          }
+        )
+      } else {
+        const message = `${this.$t('notifications.error')}: ${success}`
+        this.$toast.open({
+          message,
+          type: 'error',
+          timeout: false,
+          position: 'bottom',
+        })
+        return sendNetlifyError(message, undefined, errorAction)
+      }
     },
   },
 })
 </script>
 <style lang="scss">
-.play-biketag {
-  .polaroid img {
-    animation: fadeIn 2s;
-    max-height: 45vh;
-  }
-}
-@media (min-width: 1024px) {
-  .play-biketag {
-    .polaroid img {
-      animation: fadeIn 2s;
-      max-height: 60vh;
+#app {
+  .queue-page {
+    .card.polaroid .player-wrapper .player-name {
+      font-weight: 100;
+      font-size: 3rem;
+      transform: unset;
+    }
+
+    .queue-title {
+      font-size: 2rem;
+    }
+
+    .queue-text {
+      font-size: 1.5rem;
     }
   }
 }
 </style>
 <style scoped lang="scss">
-.play-biketag {
-  .rel {
-    position: relative;
+@import '../assets/styles/style';
+
+.queue-page {
+  .clock-div > i {
+    color: forestgreen;
+    cursor: pointer;
+    font-size: 25px;
+    margin-right: 10px;
   }
 
-  .container {
-    min-height: 350px;
-    background-color: transparent;
-  }
-
-  .btn-hint {
-    position: absolute;
-    top: 20px;
-    left: 20px;
+  .tag-number {
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 99;
-    font-size: 1.25em;
+    padding: 0 1.5rem;
+  }
+}
+
+.realign-spinner {
+  margin-left: -15%;
+  @media (min-width: 620px) {
+    margin-left: 0;
+  }
+}
+
+.step {
+  .biketag__button {
+    min-height: 3.5rem;
+    cursor: initial;
+  }
+
+  &__line,
+  &__arrow {
+    min-width: 2.5rem;
+    height: 1rem;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin: 0 1rem;
+    @media (min-width: $breakpoint-mobile-md) {
+      min-width: 5rem;
+    }
+  }
+
+  &__arrow {
+    transform: scaleX(-1);
+    height: 1.5rem;
+    margin-bottom: 0.5rem;
   }
 }
 </style>

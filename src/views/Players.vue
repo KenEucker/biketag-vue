@@ -10,7 +10,7 @@
     ></b-pagination>
     <div class="player-list">
       <div v-for="player in playersForList" :key="player.name" class="p-lg-3 p-md-2 mb-2">
-        <player size="md" :player="player"/>
+        <player size="md" :player="player" />
       </div>
     </div>
     <b-form-group>
@@ -65,10 +65,6 @@ export default defineComponent({
       this.currentPage = Number(val)
     },
   },
-  async mounted() {
-    await this.$store.dispatch('setTags')
-    await this.$store.dispatch('setPlayers')
-  },
   methods: {
     resetCurrentPage() {
       this.currentPage = 1
@@ -79,12 +75,3 @@ export default defineComponent({
   },
 })
 </script>
-<style lang="scss" scoped>
-.player-list {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  justify-content: space-evenly;
-  margin-bottom: 4em;
-}
-</style>

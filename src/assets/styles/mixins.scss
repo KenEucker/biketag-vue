@@ -1,6 +1,14 @@
-@mixin background-btn ($max-h : 100px) {
+@mixin background-btn($max-h : 100px) {
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100%;
-    min-height: $max-h;
+
+    // min-height: $max-h;
+}
+
+@mixin flx-center($jc : space-around ,$flow : row wrap, $al: center) {
+    display: flex;
+    justify-content: $jc;
+    align-items: $al;
+    flex-flow: $flow;
 }

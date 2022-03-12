@@ -28,10 +28,11 @@ export default defineConfig({
     vue(),
     EnvironmentPlugin({
       /* Application Configuration */
+      CONTEXT: process.env.CONTEXT ?? null,
       USE_AUTHENTICATION: process.env.USE_AUTHENTICATION ?? null,
       SUPER_ADMIN: process.env.SUPER_ADMIN ?? 'biketag@biketag.org',
       /* BikeTag Configuration */
-      GAME_NAME: process.env.GAME_NAME ?? 'test',
+      GAME_NAME: process.env.GAME_NAME ?? 'null',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,
       HOST: process.env.HOST ?? 'biketag.io',
       HOST_KEY: process.env.HOST_KEY ?? 'ItsABikeTagGame',
@@ -49,7 +50,13 @@ export default defineConfig({
       /* Sanity Configuration */
       SANITY_PROJECT_ID: process.env.SANITY_PROJECT_ID ?? null,
       SANITY_DATASET: process.env.SANITY_DATASET ?? null,
+      SANITY_TOKEN: process.env.SANITY_TOKEN ?? null,
       SANITY_CDN_URL: process.env.SANITY_CDN_URL ?? 'https://cdn.sanity.io/images/',
+      /* Sanity Admin Configuration */
+      SANITY_ADMIN_PROJECT_ID: process.env.SANITY_ADMIN_PROJECT_ID ?? null,
+      SANITY_ADMIN_DATASET: process.env.SANITY_ADMIN_DATASET ?? null,
+      SANITY_ADMIN_TOKEN: process.env.SANITY_ADMIN_TOKEN ?? null,
+      SANITY_ADMIN_CDN_URL: process.env.SANITY_ADMIN_CDN_URL ?? 'https://cdn.sanity.io/images/',
       /* Reddit Configuration */
       REDDIT_CLIENT_ID: process.env.REDDIT_CLIENT_ID ?? null,
       REDDIT_CLIENT_SECRET: process.env.REDDIT_CLIENT_SECRET ?? null,
@@ -70,6 +77,11 @@ export default defineConfig({
       GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? null,
       GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN ?? null,
       GOOGLE_PASSWORD: process.env.GOOGLE_PASSWORD ?? null,
+      GOOGLE_API_KEY: process.env.GOOGLE_API_KEY ?? null,
+      /* Croket Configuration */
+      CROQUET_API_KEY: process.env.CROQUET_API_KEY ?? null,
+      CROQUET_SESSION_NAME: process.env.CROQUET_SESSION_NAME ?? 'biketag',
+      CROQUET_SESSION_PASSWORD: process.env.CROQUET_SESSION_PASSWORD ?? 'secret'
     }),
     VitePWA({
       strategies: 'injectManifest',

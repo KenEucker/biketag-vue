@@ -618,63 +618,63 @@ export class DeviceUUID {
     }
   }
 
-  getBrowser(string: string | string[]) {
+  getBrowser(s: string | string[]) {
     switch (true) {
-      case this._Browsers.Edge.test(string):
+      case this._Browsers.Edge.test(s):
         this.Agent.isEdge = true
         return 'Edge'
-      case this._Browsers.PhantomJS.test(string):
+      case this._Browsers.PhantomJS.test(s):
         this.Agent.isPhantomJS = true
         return 'PhantomJS'
-      case this._Browsers.Konqueror.test(string):
+      case this._Browsers.Konqueror.test(s):
         this.Agent.isKonqueror = true
         return 'Konqueror'
-      case this._Browsers.Amaya.test(string):
+      case this._Browsers.Amaya.test(s):
         this.Agent.isAmaya = true
         return 'Amaya'
-      case this._Browsers.Epiphany.test(string):
+      case this._Browsers.Epiphany.test(s):
         this.Agent.isEpiphany = true
         return 'Epiphany'
-      case this._Browsers.SeaMonkey.test(string):
+      case this._Browsers.SeaMonkey.test(s):
         this.Agent.isSeaMonkey = true
         return 'SeaMonkey'
-      case this._Browsers.Flock.test(string):
+      case this._Browsers.Flock.test(s):
         this.Agent.isFlock = true
         return 'Flock'
-      case this._Browsers.OmniWeb.test(string):
+      case this._Browsers.OmniWeb.test(s):
         this.Agent.isOmniWeb = true
         return 'OmniWeb'
-      case this._Browsers.Opera.test(string):
+      case this._Browsers.Opera.test(s):
         this.Agent.isOpera = true
         return 'Opera'
-      case this._Browsers.Chromium.test(string):
+      case this._Browsers.Chromium.test(s):
         this.Agent.isChrome = true
         return 'Chromium'
-      case this._Browsers.Chrome.test(string):
+      case this._Browsers.Chrome.test(s):
         this.Agent.isChrome = true
         return 'Chrome'
-      case this._Browsers.Safari.test(string):
+      case this._Browsers.Safari.test(s):
         this.Agent.isSafari = true
         return 'Safari'
-      case this._Browsers.WinJs.test(string):
+      case this._Browsers.WinJs.test(s):
         this.Agent.isWinJs = true
         return 'WinJs'
-      case this._Browsers.IE.test(string):
+      case this._Browsers.IE.test(s):
         this.Agent.isIE = true
         return 'IE'
-      case this._Browsers.PS3.test(string):
+      case this._Browsers.PS3.test(s):
         return 'ps3'
-      case this._Browsers.PSP.test(string):
+      case this._Browsers.PSP.test(s):
         return 'psp'
-      case this._Browsers.Firefox.test(string):
+      case this._Browsers.Firefox.test(s):
         this.Agent.isFirefox = true
         return 'Firefox'
-      case this._Browsers.UC.test(string):
+      case this._Browsers.UC.test(s):
         this.Agent.isUC = true
         return 'UCBrowser'
       default:
         // If the UA does not start with Mozilla guess the user agent.
-        if (string.indexOf('Mozilla') !== 0 && /^([\d\w\-\.]+)\/[\d\w\.\-]+/i.test(string)) {
+        if (s.indexOf('Mozilla') !== 0 && /^([\d\w\-\.]+)\/[\d\w\.\-]+/i.test(s)) {
           this.Agent.isAuthoritative = false
           return RegExp.$1
         }

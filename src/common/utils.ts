@@ -1,7 +1,10 @@
 import { DeviceUUID } from '@/common/uuid'
 import { Tag } from 'biketag/lib/common/schema'
 import { useCookies } from 'vue3-cookies'
-import { BiketagFormSteps } from '../../src/common/types'
+import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
+import CryptoJS from 'crypto-js'
+import md5 from 'md5'
+import domtoimage from 'dom-to-image'
 
 export type DomainInfo = {
   host: string
@@ -37,6 +40,22 @@ export const stringifyNumber = (n: number): string => {
   if (n % 10 === 0) return deca[Math.floor(n / 10) - 2] + 'ieth'
   return deca[Math.floor(n / 10) - 2] + 'y-' + special[n % 10]
 }
+// https://stackoverflow.com/questions/13627308/add-st-nd-rd-and-th-ordinal-suffix-to-a-number
+export const ordinalSuffixOf = (n: number) => {
+  const j = n % 10,
+    k = n % 100
+  if (j == 1 && k != 11) {
+    return n + 'st'
+  }
+  if (j == 2 && k != 12) {
+    return n + 'nd'
+  }
+  if (j == 3 && k != 13) {
+    return n + 'rd'
+  }
+  return n + 'th'
+}
+export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 
 export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
   imgurUrl
@@ -84,45 +103,95 @@ export const getDomainInfo = (req: any): DomainInfo => {
   }
 }
 
-export const getBikeTagClientOpts = (win?: Window, authorized?: boolean) => {
+export const getBikeTagClientOpts = (win?: Window) => {
   const domainInfo = getDomainInfo(win)
-  const opts: any = {
+  return {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
+      clientSecret: process.env.IMGUR_CLIENT_SECRET,
+      refreshToken: process.env.IMGUR_REFRESH_TOKEN,
+    },
+    sanity: {
+      projectId: process.env.SANITY_PROJECT_ID,
+      dataset: process.env.SANITY_DATASET,
     },
   }
-
-  if (authorized) {
-    opts.imgur = opts.imgur ?? {}
-    opts.imgur.clientSecret = process.env.IMGUR_CLIENT_SECRET
-    opts.imgur.accessToken = process.env.IMGUR_ACCESS_TOKEN
-    opts.imgur.refreshToken = process.env.IMGUR_REFRESH_TOKEN
-
-    opts.sanity = opts.sanity ?? {}
-    opts.sanity.projectId = process.env.SANITY_PROJECT_ID
-    opts.sanity.dataset = process.env.SANITY_DATASET
-  }
-
-  return opts
 }
 
-export const getUuid = (playerIdCookieKey = 'playerId'): string => {
+export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfile => {
   const { cookies } = useCookies()
-  const existingPlayerId = cookies.get(playerIdCookieKey)
+  const existingProfileString = cookies.get(profileCookieKey)
 
-  if (existingPlayerId) {
-    return existingPlayerId
+  if (existingProfileString) {
+    try {
+      const existingProfileDecodedString = CryptoJS.AES.decrypt(
+        existingProfileString,
+        process.env.HOST_KEY ?? 'BikeTag'
+      )
+      const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
+      return existingProfile
+    } catch (e) {
+      /// Swallow anonymous
+      console.error('failed to decrypt profile in cookie')
+    }
   }
-  const playerId = new DeviceUUID().get()
-  cookies.set(playerIdCookieKey, playerId)
 
-  return playerId
+  const profile = { sub: new DeviceUUID().get() }
+  setProfileCookie(profile)
+
+  return profile
+}
+
+export const getQueuedTagFromCookie = (biketagCookieKey = 'biketag'): Tag | undefined => {
+  const { cookies } = useCookies()
+  const existingBikeTag = cookies.get(biketagCookieKey)
+
+  console.log('getQueuedTagFromCookie', { existingBikeTag })
+  if (existingBikeTag) {
+    return existingBikeTag as unknown as Tag
+  }
+}
+
+export const setQueuedTagInCookie = (queuedTag?: Tag, biketagCookieKey = 'biketag'): boolean => {
+  const { cookies } = useCookies()
+
+  console.log('setQueuedTagInCookie', { queuedTag })
+  if (queuedTag) {
+    cookies.set(biketagCookieKey, JSON.stringify(queuedTag))
+  } else {
+    cookies.remove(biketagCookieKey)
+  }
+
+  return true
+}
+
+export const setProfileCookie = (
+  profile?: BikeTagProfile,
+  profileCookieKey = 'profile'
+): boolean => {
+  const { cookies } = useCookies()
+
+  if (profile) {
+    const encryptedProfileString = CryptoJS.AES.encrypt(
+      JSON.stringify(profile),
+      process.env.HOST_KEY ?? 'BikeTag'
+    ).toString()
+    cookies.set(profileCookieKey, encryptedProfileString)
+  } else {
+    cookies.remove(profileCookieKey)
+  }
+
+  return true
+}
+
+export const setNPAuthorization = (basic: string): string => {
+  return CryptoJS.AES.encrypt(basic, process.env.HOST_KEY ?? 'BikeTag').toString()
 }
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
   currentTagnumber: number,
-  mostRecentCookieKey = 'recentTagnumber'
+  mostRecentCookieKey = 'mostRecentlyViewedTagnumber'
 ): number => {
   const { cookies } = useCookies()
   const existingMostRecent = cookies.get(mostRecentCookieKey)
@@ -143,23 +212,6 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
   }
 
   return 0
-}
-
-export const getAmbassadorUuid = (win: Window, ambassadorIdCookieKey = 'ambassadorId'): string => {
-  const { cookies } = useCookies()
-  const existingAmbassadorId = cookies.get('ambassadorId')
-
-  if (existingAmbassadorId) {
-    return existingAmbassadorId
-  }
-  const ambassadorId = GetQueryString(win, 'btaId')
-
-  if (ambassadorId) {
-    cookies.set(ambassadorIdCookieKey, ambassadorId)
-    return ambassadorId
-  }
-
-  return ''
 }
 
 export const sendNetlifyError = function (
@@ -221,12 +273,13 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
   const foundImageSet = queuedTag.foundImageUrl?.length > 0
   let queuedTagState = BiketagFormSteps.queueFound
   if (mysteryImageSet && foundImageSet) {
-    const discussionUrlIsSet = queuedTag.discussionUrl && queuedTag.discussionUrl.length > 0
-    const mentionUrlIsSet = queuedTag.mentionUrl && queuedTag.mentionUrl.length > 0
-    queuedTagState =
-      discussionUrlIsSet || mentionUrlIsSet
-        ? BiketagFormSteps.queuePosted
-        : BiketagFormSteps.queuePostedShare
+    // const discussionUrlIsSet = queuedTag.discussionUrl && queuedTag.discussionUrl.length > 0
+    // const mentionUrlIsSet = queuedTag.mentionUrl && queuedTag.mentionUrl.length > 0
+    // queuedTagState =
+    //   discussionUrlIsSet || mentionUrlIsSet
+    //     ? BiketagFormSteps.queuePosted
+    //     : BiketagFormSteps.queuePostedShare
+    queuedTagState = BiketagFormSteps.queuePosted
   } else {
     queuedTagState = foundImageSet ? BiketagFormSteps.queueMystery : BiketagFormSteps.queueFound
   }
@@ -243,4 +296,38 @@ export const getSanityImageUrl = (
     .replace('image-', '')
     .replace('-png', '.png')
     .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
+}
+
+export const getApiUrl = (path = '') => {
+  const url =
+    process.env.CONTEXT === 'dev'
+      ? `${window.location.protocol}//${window.location.hostname}:7200/.netlify/functions/${path}`
+      : `/api/${path}`
+
+  return url
+}
+
+export const exportHtmlToDownload = (filename: string, node?: any, selector?: string): any => {
+  if (!node && !selector) {
+    console.log('nothing to render')
+    return
+  }
+  node = node ?? document.querySelector(selector as string)
+  if (!node) {
+    console.log('node not found')
+    return
+  }
+
+  return domtoimage
+    .toPng(node)
+    .then(function (dataUrl) {
+      const link = document.createElement('a')
+      link.download = `${filename}.png`
+      link.href = dataUrl
+      link.click()
+      return dataUrl
+    })
+    .catch(function (error) {
+      console.error('oops, something went wrong!', error)
+    })
 }

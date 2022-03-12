@@ -1,11 +1,16 @@
 import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
-// import Auth from '../auth'
+import { authGuard } from '@/auth/authGuard'
 
 const routes: Array<RouteRecordRaw> = [
   {
+    path: '/landing',
+    name: 'Landing',
+    component: () => import('@/views/Landing.vue'),
+  },
+  {
     path: '/:tagnumber?',
-    name: 'Play',
-    component: () => import('@/views/Play.vue'),
+    name: 'Home',
+    component: () => import('@/views/Home.vue'),
   },
   {
     path: '/biketags/:currentPage?',
@@ -24,6 +29,11 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/play',
+    name: 'Play',
+    component: () => import('@/views/Play.vue'),
+  },
+  {
+    path: '/queue',
     name: 'Queue',
     component: () => import('@/views/Queue.vue'),
   },
@@ -42,20 +52,43 @@ const routes: Array<RouteRecordRaw> = [
     name: 'About',
     component: () => import('@/views/About.vue'),
   },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login.vue'),
+  },
+  {
+    path: '/worldwide',
+    name: 'Worldwide',
+    component: () => import('@/views/Worldwide.vue'),
+  },
+  {
+    path: '/map',
+    name: 'Map',
+    component: () => import('@/views/Map.vue'),
+  },
 ]
 
-const protectedRoutes: Array<RouteRecordRaw> = []
+let protectedRoutes: Array<RouteRecordRaw> = []
 
-// if (process.env.AUTH0_DOMAIN?.length) {
-//   protectedRoutes = [
-//     {
-//       path: '/profile',
-//       name: 'Profile',
-//       beforeEnter: Auth.routeGuard,
-//       component: () => import('@/views/Profile.vue'),
-//     },
-//   ]
-// }
+if (process.env.AUTH0_DOMAIN?.length) {
+  protectedRoutes = [
+    {
+      path: '/profile',
+      name: 'Profile',
+      beforeEnter: authGuard,
+      component: () => import('@/views/Profile.vue'),
+    },
+    {
+      path: '/approve',
+      name: 'Approve',
+      beforeEnter: authGuard,
+      component: () => import('@/views/Approve.vue'),
+    },
+  ]
+}
+
+console.log('init::router', { sitemap: routes })
 
 const router = createRouter({
   history: createWebHashHistory(),

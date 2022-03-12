@@ -1,5 +1,6 @@
 {
   "notifications": {
+    "approving": "Approving new BikeTag",
     "uploading": "Uploading tag information...",
     "error": "ERROR",
     "success": "successfully completed"
@@ -12,11 +13,23 @@
     "about": "About",
     "players": "Players",
     "top10": "Top10",
+    "queue": "Queue",
     "external": "External",
-    "language": "Languages"
+    "language": "Languages",
+    "profile": "Profile",
+    "map": "Map",
+    "last": "Last",
+    "login": "Login",
+    "logout": "Logout",
+    "hint": "Hint",
+    "mysterylocation": "Current Mystery Location",
+    "previous": "Prev",
+    "next": "Next",
+    "download": "Capture"
   },
   "components": {
     "biketag": {
+      "unknown": "unknown",
       "found_at": "found at",
       "posted_on": "posted"
     },
@@ -30,8 +43,9 @@
       "view_mystery_image": "Queued Mystery Image",
       "view_found_image": "Queued Found Image",
       "current_mystery_location": "Current Mystery Location",
-      "view_queue_button": "VIEW",
-      "reset_queue_button": "RESET"
+      "view_queue_button": "View tags in this round",
+      "reset_queue_button": "RESET",
+      "queue_mystery_title": "Add your new Mystery Location"
     }
   },
   "pages": {
@@ -41,6 +55,17 @@
       "mystery": "current Mystery Location to find",
       "send_hello_email": "Send an email to hello@biketag.org to ask about how you can start one!",
       "game_not_exists": "Uh, oh. Does this game not exist.. yet?"
+    },
+    "login":{
+      "player": "BikeTag Player Login",
+      "ambassador": "BikeTag Ambassador Login"
+    },
+    "profile": {
+      "name": "name",
+      "save": "Update Profile",
+      "set_name": "Save my name",
+      "set_name_placeholder": "Your new name",
+      "set_name_description": "Your name will be unique and only you will be able to make BikeTag posts using this name moving forward. Note: you cannot change your name after you set it."
     },
     "queue": {
       "join_queue": "Join round",
@@ -54,7 +79,7 @@
       "queue_posted": "You did it!",
       "mystery_title": "Next, you must add a new Mystery Location for the next round.",
       "mystery_text": "Complete your pair of images with the new Mystery Location in order to create a new BikeTag Post",
-      "mystery_button": "Add new Mystery Location",
+      "mystery_button": "Add Your New Mystery Image Now",
       "joined_button": "See all tags in round",
       "submit_title": "Submit your BikeTag Post to win the round!",
       "submit_text": "You can have the BikeTag RoBot post on your behalf or you can choose to post to other platforms on your own. Once approved, the 'winning' BikeTag Post will become the new Mystery Location to find.",
@@ -70,8 +95,8 @@
       "hint_placeholder": "Enter your Hint",
       "post_to_reddit": "Reddit",
       "post_to_twitter": "Twitter",
-      "queue_found_tag": "Add your Found Image",
-      "submit_new_tag": "Add your Mystery Image",
+      "queue_found_tag": "I found it!",
+      "submit_new_tag": "Complete Your BikeTag!",
       "queue_postfix": "",
       "post_new_tag": "Share BikeTag Post For Me",
       "approve_new_tag": "Approve this BikeTag post",
@@ -79,7 +104,8 @@
       "approve_agree": "By approving this content to be posted to all BikeTag supported platforms, you agree that this submission meets the requirements within the terms of use set by the BikeTag Project",
       "dequeue_queued_tag": "Delete this BikeTag post",
       "reset_tag": "Reset tag submission",
-      "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project"
+      "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project",
+      "image_first": "Please upload your image first!"
     },
     "howto": {
       "browser_not_support_audio": "Your browser does not support the audio element.",
@@ -130,6 +156,10 @@
         "title": "The Bike Tag App",
         "become_player": "Become a subscribing player"
       }
+    },
+    "approve": {
+      "confirm_remove": "Removing this Queued Tag will delete the images and the user will be removed from the round. You should only be doing this if the tag images are invalid. When a tag is approved, all queued 'found' images are archived on behalf of that BikeTag Player. There is no need to remove valid submissions.",
+      "confirm_approve": "Are you sure this is the winning tag? "
     }
   }
 }

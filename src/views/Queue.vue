@@ -1,70 +1,16 @@
 <template>
-  <loading
-    v-show="uploadInProgress"
-    v-model:active="uploadInProgress"
-    :is-full-page="true"
-    class="realign-spinner"
-  >
-    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
-  </loading>
-  <div class="container col-md-8 col-lg-8 queue-page">
-    <div v-if="usingTimer && isViewingQueue()" class="clock-div mt-2">
+  <div class="queue-page">
+    <div v-if="usingTimer && isViewingQueue()" class="mt-2 clock-div">
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
-    <span
-      v-if="!uploadInProgress && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
-      class="tag-number"
+    <span class="tag-number"
       >#{{
-        getCurrentBikeTag?.tagnumber +
-        (BiketagFormSteps[getFormStep] > BiketagFormSteps.queueFound ? 1 : 0)
+        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
       }}</span
     >
-    <bike-tag-queue v-if="!isViewingQueue()" :only-mine="true" />
-    <div v-if="!uploadInProgress" class="container">
-      <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]">
-        <queue-view />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueFound]">
-        <queue-found :tag="getQueuedTag" @submit="onQueueSubmit" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined]">
-        <queue-joined :tag="getQueuedTag" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueMystery]">
-        <queue-mystery :tag="getQueuedTag" @submit="onQueueSubmit" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueSubmit]">
-        <queue-submit :tag="getQueuedTag" @submit="onQueueSubmit" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]">
-        <queue-posted-share :tag="getQueuedTag" @submit="onQueueSubmit" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
-        <queue-posted :tag="getQueuedTag" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueApprove]">
-        <queue-approve />
-      </div>
-      <span v-if="isSubmittingData()" class="user-agree">
-        * {{ $t('pages.queue.user_agree') }}
-      </span>
-      <form
-        ref="queueError"
-        name="queue-tag-error"
-        action="queue-tag-error"
-        method="POST"
-        data-netlify="true"
-        data-netlify-honeypot="bot-field"
-        hidden
-        @submit.prevent="onSubmit"
-      >
-        <input type="hidden" name="form-name" value="queue-tag-error" />
-        <input type="hidden" name="submission" />
-        <input type="hidden" name="playerId" :value="getPlayerId" />
-        <input type="hidden" name="message" />
-        <input type="hidden" name="ip" value="" />
-      </form>
+    <div>
+      <queue-view />
     </div>
   </div>
 </template>
@@ -76,27 +22,11 @@ import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 
 import QueueView from '@/components/QueueView.vue'
-import QueueFound from '@/components/QueueFound.vue'
-import QueueMystery from '@/components/QueueMystery.vue'
-import QueueSubmit from '@/components/QueueSubmit.vue'
-import QueueJoined from '@/components/QueueJoined.vue'
-import QueuePosted from '@/components/QueuePosted.vue'
-import QueuePostedShare from '@/components/QueuePostedShare.vue'
-import QueueApprove from '@/components/QueueApprove.vue'
-import BikeTagQueue from '@/components/BikeTagQueue.vue'
 
 export default defineComponent({
   name: 'QueueBikeTagView',
   components: {
     QueueView,
-    QueueFound,
-    QueueMystery,
-    QueueSubmit,
-    QueueJoined,
-    QueuePosted,
-    QueuePostedShare,
-    QueueApprove,
-    BikeTagQueue,
   },
   props: {
     usingTimer: {
@@ -107,7 +37,7 @@ export default defineComponent({
   data() {
     const time = new Date()
     time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
-    const timer = useTimer(time)
+    const timer = useTimer(time.getSeconds())
     onMounted(() => {
       watchEffect(async () => {
         if (timer.isExpired.value) {
@@ -135,7 +65,7 @@ export default defineComponent({
     this.uploadInProgress = false
   },
   async created() {
-    await this.$store.dispatch('setCurrentBikeTag')
+    await this.$store.dispatch('setCurrentBikeTag', true)
     await this.$store.dispatch('setQueuedTags', true)
     this.countDownTimer()
   },
@@ -159,17 +89,13 @@ export default defineComponent({
       )
     },
     isViewingQueue() {
-      return (
-        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView] ||
-        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueApprove]
-      )
+      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual'
       }
-      // This is needed if the user scrolls down during page load and you want to make sure the page is scrolled to the top once it's fully loaded. This has Cross-browser support.
       window.scrollTo(0, 0)
 
       this.$toast.open({
@@ -184,6 +110,8 @@ export default defineComponent({
       this.uploadInProgress = false
 
       if (success === true) {
+        /// Get a clean cache
+        await this.$store.dispatch('setTags', true)
         /// Update the queue
         this.$store.dispatch('setQueuedTags', true)
 
@@ -202,7 +130,7 @@ export default defineComponent({
         return sendNetlifyForm(
           formAction,
           new URLSearchParams(formData).toString(),
-          (res) => {
+          () => {
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
               type: 'success',
@@ -237,14 +165,15 @@ export default defineComponent({
 #app {
   .queue-page {
     .card.polaroid .player-wrapper .player-name {
-      font-family: MarkerNotes;
       font-weight: 100;
       font-size: 3rem;
       transform: unset;
     }
+
     .queue-title {
       font-size: 2rem;
     }
+
     .queue-text {
       font-size: 1.5rem;
     }
@@ -252,6 +181,8 @@ export default defineComponent({
 }
 </style>
 <style scoped lang="scss">
+@import '../assets/styles/style';
+
 .queue-page {
   .clock-div > i {
     color: forestgreen;
@@ -268,9 +199,10 @@ export default defineComponent({
   }
 }
 
-@media (max-width: 620px) {
-  .realign-spinner {
-    margin-left: -15%;
+.realign-spinner {
+  margin-left: -15%;
+  @media (min-width: 620px) {
+    margin-left: 0;
   }
 }
 </style>

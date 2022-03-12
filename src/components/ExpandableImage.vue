@@ -6,14 +6,6 @@
     }"
     @click="expandClick"
   >
-    <i v-if="expanded" class="close-button">
-      <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
-        <path
-          fill="#666666"
-          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-        />
-      </svg>
-    </i>
     <b-spinner v-show="loading" />
     <img
       v-show="!loading"
@@ -22,6 +14,9 @@
       v-bind="$attrs"
       @load="loaded"
     />
+    <i v-if="expanded" class="close-button">
+      <img src="@/assets/images/close.svg" />
+    </i>
   </div>
 </template>
 <script type="ts">
@@ -50,9 +45,18 @@ export default defineComponent({
     expanded(status) {
       this.$nextTick(() => {
         if (status) {
+          const closeImageMethod = this.closeImage
           this.cloned = this.$el.cloneNode(true)
           this.closeButtonRef = this.cloned.querySelector('.close-button')
           this.closeButtonRef.addEventListener('click', this.closeImage)
+          // const clonedImg = this.cloned.querySelector('img')
+          // console.log({clonedImg})
+          // clonedImg.addEventListener('click', (e) => e.stopPropagation())
+          this.cloned.addEventListener('click', function doCloseImageBackground(event) {
+            if(event.target==this) {
+              closeImageMethod(event)
+            }
+          })
           document.addEventListener('keydown', this.doCloseImage)
           document.addEventListener('backbutton', this.doCloseImage)
           document.body.appendChild(this.cloned)
@@ -89,6 +93,7 @@ export default defineComponent({
       this.expanded = false
       document.removeEventListener('keydown', this.doCloseImage)
       document.removeEventListener('backbutton', this.doCloseImage)
+      document.addEventListener('gesturestart', function() { /* */ });
       event.stopPropagation()
     },
     freezeVp(e) {
@@ -104,8 +109,8 @@ export default defineComponent({
 <style scoped lang="scss">
 .close-button {
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: 15px;
+  right: 15px;
   display: none;
   cursor: pointer;
 }
@@ -120,24 +125,29 @@ export default defineComponent({
   }
 }
 
+.close-button img {
+  width: 3em;
+  height: 3em;
+  filter: invert(1);
+}
+
 body {
   .expandable-image.expanded {
     position: fixed;
-    z-index: 999999;
+    z-index: 99999;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: black;
+    background: rgb(0 0 0 / 90%);
     display: flex;
     align-items: center;
     opacity: 0;
     padding-bottom: 0 !important;
-    cursor: default;
+    cursor: zoom-out;
 
     img {
-      width: 100%;
-      max-width: 1200px;
+      z-index: 999999;
       max-height: 100%;
       object-fit: contain;
       margin: 0 auto;
@@ -146,6 +156,7 @@ body {
 
   .close-button {
     display: block;
+    z-index: 999999;
   }
 }
 

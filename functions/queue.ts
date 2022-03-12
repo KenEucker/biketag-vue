@@ -28,7 +28,6 @@ const queueHandler: Handler = async (event) => {
     source: 'imgur',
   })
   const { success, data } = queueResponse
-  console.log({ queueResponse, biketagPayload, biketagOpts })
   return {
     statusCode: queueResponse.status,
     body: JSON.stringify(success ? data : queueResponse),

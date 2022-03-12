@@ -9,6 +9,10 @@ body {
   color: $app-color;
 }
 
+.popover {
+  z-index: 99;
+}
+
 #app {
   min-height: 100vh;
   color: $app-color;
@@ -17,6 +21,7 @@ body {
   .align-center {
     display: flex;
     justify-content: center;
+    align-items: center;
   }
 
   .flex-columns {
@@ -39,7 +44,15 @@ body {
     }
   }
 
-  .container {
+  @keyframes typewriter {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  // .container {
     a {
       color: $primary-color;
     }
@@ -52,11 +65,13 @@ body {
         .btn-hint {
           color: $btn-hint-text-color;
           font-weight: $btn-hint-font-weight;
-          background-color: $btn-hint-color;
+
+          // background-color: $btn-hint-color;
           border-color: $btn-hint-color;
           font-size: $btn-hint-font-size;
-          font-family: $btn-hint-font-family;
-          transform: rotate(30deg);
+
+          // font-family: $btn-hint-font-family;
+          // transform: rotate(30deg);
 
           &:focus {
             box-shadow: 0 0 0 0.25rem $btn-hint-shadow-color;
@@ -130,10 +145,6 @@ body {
       }
     }
 
-    button.biketag-button {
-      
-    }
-
     .tag-number {
       color: $tag-number-color;
       background-color: $tag-number-bg-color;
@@ -143,12 +154,30 @@ body {
       filter: saturate(0.75);
     }
 
+    .player-list {
+      display: flex;
+      flex-flow: row;
+      flex-wrap: wrap;
+      justify-content: space-evenly;
+      margin-bottom: 4em;
+    }
+
     .player-name {
       color: $tag-text-color;
-      font-family: $tag-player-font-family;
+      font-family: $default-font-family;
       font-weight: $tag-player-font-weight;
-      font-size: $tag-player-font-size;
+
+      // font-size: $tag-player-font-size;
       line-height: $tag-player-line-height;
+      text-transform: uppercase;
+    }
+
+    .tag-date {
+      color: $tag-text-color;
+      font-family: $tag-date-font-family;
+      font-weight: $tag-date-font-weight;
+      font-size: $tag-date-font-size;
+      line-height: $tag-date-line-height;
     }
 
     .description {
@@ -257,15 +286,14 @@ body {
       }
     }
 
-    .img-wrapper {
-      .tag-player {
-        color: $tag-text-color;
-        font-family: $tag-player-font-family;
-        font-weight: $tag-player-font-weight;
-        font-size: $tag-player-font-size;
-        text-shadow: 2px 2px #292828e6;
-        filter: invert(1);
-      }
+    .tag-player {
+      color: $tag-text-color;
+      font-family: $tag-player-font-family;
+      font-weight: $tag-player-font-weight;
+      font-size: $tag-player-font-size;
+
+      // text-shadow: 2px 2px #292828e6;
+      // filter: invert(1);
     }
 
     .vld-overlay .vld-background {
@@ -279,7 +307,7 @@ body {
     }
 
     .body-text {
-      font-family: MarkerNotes;
+      font-family: $default-font-family;
       font-weight: 100;
       font-size: 1.5rem;
       transform: unset;
@@ -289,5 +317,111 @@ body {
       font-size: 0.75rem;
       font-style: italic;
     }
+
+    .just-center {
+      justify-content: center;
+      align-items: center;
+    }
+  
+  .queue-found-tag, .queue-mystery-tag {
+    max-width: 600px;
+    margin: auto;
+
+    .biketag-button {
+      width: 100%;
+    }
+
+    .biketag-button .button__children {
+      padding: 0;
+    }
+
+    .queue-text {
+      font-size: 1.2rem!important;
+      margin: 1rem;
+      text-align: justify;
+    }
+
+    .title-cnt {
+      position: relative;
+      padding: 0;
+      z-index: 4;
+
+      .biketag {
+        &__button {
+          height: 5rem;
+          position: relative;
+          padding: 0;
+          bottom: -25px;
+          @media (min-width: $breakpoint-mobile-md) {
+            height: 6rem;
+          }
+        }
+
+        &__text {
+          .queue-title {
+            font-size: 1.2rem!important;
+            margin: 0 1rem;
+          }
+        }
+      }
+    }
+
+    .click-me {
+      cursor: pointer;
+    }
+
+    .icn {
+      padding: 10px 16px 10px 10px;
+
+      &--top {
+        bottom: -20px;
+        right: 0;
+      }
+    }
+
+    .preview-cnt {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .biketag__button {
+        z-index: 3;
+        position: absolute;
+        transition-property: bottom, right;
+        transition-duration: 1s;
+      }
+
+      .prev-img{
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        position: absolute;
+        object-fit: contain;
+        @media (min-width: 400px){
+          width: 98%;
+        }
+      }
+
+      .img-bck {
+        z-index: 2;
+        width: 100%;
+
+        // @media (min-width: 400px){
+        //   width: 100%;
+        // }
+      }
+    }
+
+    .sub-cnt {
+      .biketag {
+        &__button {
+          width: 15rem;
+          height: 6rem;
+        }
+      }
+    }
   }
 }
+
+// }

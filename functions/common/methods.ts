@@ -2,17 +2,22 @@ import request from 'request'
 import { getDomainInfo } from '../../src/common/utils'
 import md5 from 'md5'
 import crypto from 'crypto'
+import CryptoJS from 'crypto-js'
 import nodemailer from 'nodemailer'
 import { Liquid } from 'liquidjs'
 import { join, extname } from 'path'
-import { readFileSync, existsSync } from 'fs'
+import { readFileSync } from 'fs'
 import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
 import { activeQueue, BackgroundProcessResults } from './types'
+import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import BikeTagClient from 'biketag'
 import axios from 'axios'
+import Ajv from 'Ajv'
+import * as jose from 'jose'
+import { BikeTagProfile } from '../../src/common/types'
 
-export const getBikeTagHash = (key: string): string => md5(`${key}${process.env.HOST_KEY}`)
-
+const ajv = new Ajv()
+export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 export const getBikeTagClientOpts = (
   req?: request.Request,
   authorized?: boolean,
@@ -24,6 +29,7 @@ export const getBikeTagClientOpts = (
   const opts: any = {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     cached: isGET || !isAuthenticatedPOST,
+    accessToken: process.env.ACCESS_TOKEN,
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
     },
@@ -35,9 +41,9 @@ export const getBikeTagClientOpts = (
     opts.imgur.accessToken = process.env.IMGUR_ACCESS_TOKEN
     opts.imgur.refreshToken = process.env.IMGUR_REFRESH_TOKEN
 
-    opts.reddit = opts.reddit ?? {}
-    opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
-    opts.reddit.clientSecret = process.env.REDDIT_CLIENT_SECRET
+    // opts.reddit = opts.reddit ?? {}
+    // opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
+    // opts.reddit.clientSecret = process.env.REDDIT_CLIENT_SECRET
     /// TODO: comes from sanity game settings
     // opts.reddit.username = process.env.REDDIT_USERNAME
     // opts.reddit.password = process.env.REDDIT_PASSWORD
@@ -45,6 +51,7 @@ export const getBikeTagClientOpts = (
     opts.sanity = opts.sanity ?? {}
     opts.sanity.projectId = process.env.SANITY_PROJECT_ID
     opts.sanity.dataset = process.env.SANITY_DATASET
+    opts.sanity.token = process.env.SANITY_TOKEN
 
     if (admin) {
       opts.imgur.clientId = process.env.IMGUR_ADMIN_CLIENT_ID ?? opts.imgur.clientId
@@ -52,10 +59,15 @@ export const getBikeTagClientOpts = (
       opts.imgur.accessToken = process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? ''
       opts.imgur.refreshToken = process.env.IMGUR_ADMIN_REFRESH_TOKEN ?? opts.imgur.refreshToken
 
-      opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
-      opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
-      opts.reddit.username = process.env.REDDIT_ADMIN_USERNAME
-      opts.reddit.password = process.env.REDDIT_ADMIN_PASSWORD
+      opts.sanity = opts.sanity ?? {}
+      opts.sanity.projectId = process.env.SANITY_ADMIN_PROJECT_ID
+      opts.sanity.dataset = process.env.SANITY_ADMIN_DATASET
+      opts.sanity.token = process.env.SANITY_ADMIN_TOKEN
+
+      // opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
+      // opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
+      // opts.reddit.username = process.env.REDDIT_ADMIN_USERNAME
+      // opts.reddit.password = process.env.REDDIT_ADMIN_PASSWORD
     }
   }
 
@@ -88,18 +100,300 @@ export const getPayloadOpts = (event: any, base = {}): any => {
   }
 }
 
-export const getPayloadAuthorization = (event: any) => {
-  const { authorization } = event.headers
-  const bearer = 'Bearer '
-  const clientId = 'Client-ID '
+export const isValidJson = (data, type = 'none') => {
+  let schema = {}
 
-  if (authorization?.indexOf(bearer) === 0) {
-    return authorization.substr(bearer.length)
-  } else if (authorization?.indexOf(clientId) === 0) {
-    return authorization.substr(clientId.length)
-  } else {
-    return authorization
+  switch (type) {
+    case 'profile.patch':
+      schema = {
+        type: 'object',
+        properties: {
+          user_metadata: {
+            type: 'object',
+            properties: {
+              passcode: { type: 'string' },
+              social: {
+                type: 'object',
+                properties: {
+                  reddit: { type: 'string' },
+                  instagram: { type: 'string' },
+                  twitter: { type: 'string' },
+                  imgur: { type: 'string' },
+                  discord: { type: 'string' },
+                },
+                minProperties: 1,
+                additionalProperties: false,
+              },
+            },
+            minProperties: 1,
+            additionalProperties: false,
+          },
+        },
+        required: ['user_metadata'],
+        additionalProperties: false,
+      }
+      break
+    case 'profile.patch.ambassador':
+      schema = {
+        type: 'object',
+        properties: {
+          user_metadata: {
+            type: 'object',
+            properties: {
+              passcode: { type: 'string' },
+              social: {
+                type: 'object',
+                properties: {
+                  reddit: { type: 'string' },
+                  instagram: { type: 'string' },
+                  twitter: { type: 'string' },
+                  imgur: { type: 'string' },
+                  discord: { type: 'string' },
+                },
+                minProperties: 1,
+                additionalProperties: false,
+              },
+              credentials: {
+                type: 'object',
+                properties: {
+                  imgur: {
+                    type: 'object',
+                    properties: {
+                      clientId: { type: 'string' },
+                      clientSecret: { type: 'string' },
+                      refreshToken: { type: 'string' },
+                    },
+                    additionalProperties: false,
+                  },
+                  sanity: {
+                    type: 'object',
+                    properties: {
+                      projectId: { type: 'string' },
+                      dataset: { type: 'string' },
+                    },
+                    additionalProperties: false,
+                  },
+                  reddit: {
+                    type: 'object',
+                    properties: {
+                      clientId: { type: 'string' },
+                      clientSecret: { type: 'string' },
+                      username: { type: 'string' },
+                      password: { type: 'string' },
+                    },
+                    additionalProperties: false,
+                  },
+                },
+                additionalProperties: false,
+              },
+            },
+            minProperties: 1,
+            additionalProperties: false,
+          },
+        },
+        required: ['user_metadata'],
+        additionalProperties: false,
+      }
+      break
+    case 'profile.put':
+      schema = {
+        type: 'object',
+        properties: {
+          user_metadata: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+            },
+            required: ['name'],
+            additionalProperties: false,
+          },
+        },
+        required: ['user_metadata'],
+        additionalProperties: false,
+      }
+      break
   }
+
+  const validate = ajv.compile(schema)
+
+  return validate(data)
+}
+
+interface Event {
+  headers: Record<string, unknown>
+}
+
+export interface IdentityContext {
+  /**
+   * The token that was provided.
+   */
+  token: string
+
+  /**
+   * Claims for the authenticated user.
+   */
+  claims: Record<string, unknown>
+}
+
+/// For netlify identity JWT decoding
+const validateJWT = (verifier: JwtVerifier, options: any) => {
+  return (handler: any) => async (event: Event, context: any, cb: any) => {
+    let claims
+    let accessToken
+
+    try {
+      accessToken = getTokenFromHeader(event.headers.authorization as string)
+      claims = await verifier.verifyAccessToken(accessToken)
+    } catch (err) {
+      if (typeof options.handleError !== 'undefined' && options.handleError !== null) {
+        return options.handleError(err)
+      }
+
+      return {
+        statusCode: 401,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          error: err.code,
+          error_description: err.message,
+        }),
+      }
+    }
+
+    // Expose the identity in the client context.
+    const ctx: IdentityContext = {
+      token: accessToken,
+      claims,
+    }
+    context.identityContext = ctx
+
+    // Continue.
+    return handler(event, context, cb)
+  }
+}
+
+export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTagOpts?: any) => {
+  if (!client) {
+    adminBikeTagOpts =
+      adminBikeTagOpts ??
+      getBikeTagClientOpts(
+        {
+          method: 'get',
+        } as unknown as request.Request,
+        true,
+        true
+      )
+  }
+  client = client ?? new BikeTagClient(adminBikeTagOpts)
+  const thisGamesAmbassadors = await client.ambassadors(undefined, {
+    source: 'sanity',
+  })
+
+  return thisGamesAmbassadors
+}
+
+export const getProfileAuthorization = async (event: any): Promise<any> => {
+  const authorization = await getPayloadAuthorization(event)
+  let profile: any = authorization
+
+  if (authorization) {
+    const biketagOpts = getBikeTagClientOpts(event, true, true)
+    const biketag = new BikeTagClient(biketagOpts)
+    const thisGamesAmbassadors = (await getThisGamesAmbassadors(biketag)) as Ambassador[]
+    const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
+
+    if (profileAmbassadorMatch.length) {
+      profile.isBikeTagAmbassador = true
+      profile = { ...profile, ...profileAmbassadorMatch[0] }
+    }
+  }
+
+  /// TODO: pear down this object to only the things we care about
+  return profile
+}
+
+export const getPayloadAuthorization = async (event: any): Promise<any> => {
+  let authorizationString = event.headers.authorization
+  const basic = 'Basic '
+  const bearer = 'Bearer '
+  const client = 'Client-ID '
+
+  const authorizationType: string =
+    authorizationString?.indexOf(basic) === 0
+      ? 'basic'
+      : authorizationString?.indexOf(client) === 0
+      ? 'client'
+      : authorizationString?.indexOf(bearer) === 0
+      ? 'bearer'
+      : null
+
+  const getBasicAuthProfile = (authorizationString: string) => {
+    /// Basic Auth: "Basic [name]::[password]""
+    // console.log('basic', { authorizationString })
+    const namePasscodeString = CryptoJS.AES.decrypt(
+      authorizationString,
+      process.env.HOST_KEY
+    ).toString(CryptoJS.enc.Utf8)
+    const namePasscodeSplit = namePasscodeString.split('::')
+    return {
+      name: namePasscodeSplit[0],
+      passcode: namePasscodeSplit[1],
+    }
+  }
+
+  const getNetlifyAuthProfile = async (authorizationString: string) => {
+    // console.log('netlify', { authorizationString })
+    try {
+      const verifierOpts = { issuer: '', audience: '' }
+      const verifier = new JwtVerifier(verifierOpts)
+      return await validateJWT(verifier, verifierOpts)
+    } catch (e) {
+      console.error({ authorizationNetlifyValidationError: e })
+    }
+    return null
+  }
+
+  const getAuth0AuthProfile = async (authorizationString: string) => {
+    // console.log('auth0', { authorizationString })
+    try {
+      const JWKS = jose.createRemoteJWKSet(
+        new URL(`https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`)
+      )
+
+      const { payload } = await jose.jwtVerify(authorizationString, JWKS)
+      return payload
+    } catch (e) {
+      /// Swallow error
+      // console.error({ authorizationAuth0ValidationError: e })
+      return authorizationString
+    }
+  }
+
+  /// DEBUG: uncomment to check incoming authorization credentials
+  // console.log({ orign: event.headers.authorization, authorizationType, authorizationString })
+
+  switch (authorizationType) {
+    case 'basic':
+      authorizationString = authorizationString.substring(basic.length)
+      return getBasicAuthProfile(authorizationString)
+    case 'netlify':
+      authorizationString = authorizationString.substring(client.length)
+      return getNetlifyAuthProfile(authorizationString)
+    case 'client':
+      authorizationString = authorizationString.substring(client.length)
+      return getAuth0AuthProfile(authorizationString)
+    case 'bearer':
+      authorizationString = authorizationString.substring(bearer.length)
+      return getAuth0AuthProfile(authorizationString)
+    default:
+      authorizationString = authorizationString?.length
+        ? 'authorization type not supported'
+        : authorizationString
+      break
+  }
+
+  return null
 }
 
 export const defaultLogo = '/images/BikeTag.svg'
@@ -141,6 +435,7 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
     return jsonObject || decrypted
   } catch (e) {
     /// swallow exception
+    console.log(e)
     return null
   }
 }
@@ -381,7 +676,8 @@ export const archiveAndClearQueue = async (
 
 export const getActiveQueueForGame = async (
   game: Game,
-  adminBikeTagOpts?: any
+  adminBikeTagOpts?: any,
+  approvingAmbassador?: string
 ): Promise<activeQueue> => {
   let queuedTags: Tag[] = []
   let completedTags: Tag[] = []
@@ -391,9 +687,11 @@ export const getActiveQueueForGame = async (
     game.settings && !!game.settings['queue::autoPost']
       ? parseInt(game.settings['queue::autoPost'])
       : 0
+  /// TODO: check for the right ambassador here
+  const approvingAmbassadorIsApproved = approvingAmbassador?.length
 
   // console.log({ autoPostSetting, queuehash: game.queuehash })
-  if (autoPostSetting && game.queuehash?.length) {
+  if ((autoPostSetting && game.queuehash?.length) || approvingAmbassadorIsApproved) {
     /************** GET WINNING QUEUE *****************/
     adminBikeTagOpts =
       adminBikeTagOpts ??
@@ -451,6 +749,7 @@ export const setNewBikeTagPost = async (
   biketagOpts.imgur.hash = game?.mainhash
   console.log({ biketagOpts })
   const biketag = new BikeTagClient(biketagOpts)
+  console.log('config', biketag.config())
   game = game ?? ((await biketag.game(winningBikeTagPost.game)) as Game)
   currentBikeTag = currentBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
@@ -655,4 +954,129 @@ export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag
   }
 
   return undefined
+}
+
+export const acceptCorsHeaders = (withAuthorization = true) => {
+  const corsHeaders = {
+    Accept: '*',
+    'Access-Control-Allow-Headers': '*',
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Methods': '*',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Max-Age': '8640',
+  }
+
+  if (withAuthorization) {
+    corsHeaders['authorization'] = `Bearer ${process.env.AUTH0_TOKEN}`
+  }
+
+  return corsHeaders
+}
+
+export const constructAmbassadorProfile = (
+  profile: any = {},
+  defaults: any = {}
+): BikeTagProfile => {
+  const user_metadata = {
+    name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? '',
+    passcode: profile?.user_metadata?.passcode ?? defaults?.user_metadata?.passcode ?? '',
+    social: {
+      reddit:
+        profile?.user_metadata?.social?.reddit ?? defaults?.user_metadata?.social?.reddit ?? '',
+      instagram:
+        profile?.user_metadata?.social?.instagram ??
+        defaults?.user_metadata?.social?.instagram ??
+        '',
+      twitter:
+        profile?.user_metadata?.social?.twitter ?? defaults?.user_metadata?.social?.twitter ?? '',
+      imgur: profile?.user_metadata?.social?.imgur ?? defaults?.user_metadata?.social?.imgur ?? '',
+      discord:
+        profile?.user_metadata?.social?.discord ?? defaults?.user_metadata?.social?.discord ?? '',
+    },
+    credentials: {
+      imgur: {
+        clientId:
+          profile?.user_metadata?.credentials?.imgur.clientId ??
+          defaults?.user_metadata?.credentials?.imgur.clientId ??
+          '',
+        clientSecret:
+          profile?.user_metadata?.credentials?.imgur.clientSecret ??
+          defaults?.user_metadata?.credentials?.imgur.clientSecret ??
+          '',
+        refreshToken:
+          profile?.user_metadata?.credentials?.imgur.refreshToken ??
+          defaults?.user_metadata?.credentials?.imgur.refreshToken ??
+          '',
+      },
+      sanity: {
+        projectId:
+          profile?.user_metadata?.credentials?.sanity.projectId ??
+          defaults?.user_metadata?.credentials?.sanity.projectId ??
+          '',
+        dataset:
+          profile?.user_metadata?.credentials?.sanity.dataset ??
+          defaults?.user_metadata?.credentials?.sanity.dataset ??
+          '',
+      },
+      reddit: {
+        clientId:
+          profile?.user_metadata?.credentials?.reddit.clientId ??
+          defaults?.user_metadata?.credentials?.reddit.clientId ??
+          '',
+        clientSecret:
+          profile?.user_metadata?.credentials?.reddit.clientSecret ??
+          defaults?.user_metadata?.credentials?.reddit.clientSecret ??
+          '',
+        username:
+          profile?.user_metadata?.credentials?.reddit.username ??
+          defaults?.user_metadata?.credentials?.reddit.username ??
+          '',
+        password:
+          profile?.user_metadata?.credentials?.reddit.password ??
+          defaults?.user_metadata?.credentials?.reddit.password ??
+          '',
+      },
+    },
+  }
+  return {
+    name: profile.name ?? defaults.name ?? '',
+    sub: profile.sub ?? defaults.sub ?? '',
+    slug: profile.slug ?? defaults.slug ?? '',
+    address1: profile.address1 ?? defaults.address1 ?? '',
+    address2: profile.address2 ?? defaults.address2 ?? '',
+    city: profile.city ?? defaults.city ?? '',
+    country: profile.country ?? defaults.country ?? '',
+    email: profile.email ?? defaults.email ?? '',
+    isBikeTagAmbassador: profile.isBikeTagAmbassador ?? defaults.isBikeTagAmbassador ?? '',
+    locale: profile.locale ?? defaults.locale ?? '',
+    nonce: profile.nonce ?? defaults.nonce ?? '',
+    phone: profile.phone ?? defaults.phone ?? '',
+    picture: profile.picture ?? defaults.picture ?? '',
+    user_metadata,
+    zipcode: profile.zipcode ?? defaults.zipcode ?? '',
+  }
+}
+
+export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): BikeTagProfile => {
+  const user_metadata = {
+    name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? '',
+    social: {
+      reddit: profile?.user_metadata?.reddit ?? defaults?.user_metadata?.reddit ?? '',
+      instagram: profile?.user_metadata?.instagram ?? defaults?.user_metadata?.instagram ?? '',
+      twitter: profile?.user_metadata?.twitter ?? defaults?.user_metadata?.twitter ?? '',
+      imgur: profile?.user_metadata?.imgur ?? defaults?.user_metadata?.imgur ?? '',
+      discord: profile?.user_metadata?.discord ?? defaults?.user_metadata?.discord ?? '',
+    },
+  }
+  return {
+    name: profile.name ?? defaults.name ?? '',
+    sub: profile.sub ?? defaults.sub ?? '',
+    slug: profile.slug ?? defaults.slug ?? '',
+    email: profile.email ?? defaults.email ?? '',
+    locale: profile.locale ?? defaults.locale ?? '',
+    nonce: profile.nonce ?? defaults.nonce ?? '',
+    picture: profile.picture ?? defaults.picture ?? '',
+    user_metadata,
+    zipcode: profile.zipcode ?? defaults.zipcode ?? '',
+  } as BikeTagProfile
 }

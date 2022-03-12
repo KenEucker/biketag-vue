@@ -23,17 +23,12 @@ export default defineComponent({
       return this.getLeaderboard
     },
   },
-  async created() {
-    await this.$store.dispatch('setLeaderboard')
-  },
 })
 </script>
 <style lang="scss" scoped>
 .player-list {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  justify-content: space-evenly;
-  margin-bottom: 4em;
+  @media (min-width: 1200px) {
+    margin-top: 13em;
+  }
 }
 </style>

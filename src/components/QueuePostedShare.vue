@@ -8,7 +8,7 @@
           <template #title>
             <img
               v-b-popover.click.blur.top="'Copied!'"
-              src="../assets/images/Reddit.svg"
+              src="@/assets/images/Reddit.svg"
               class="tab-logo img-fluid"
               @click="copyTabContents(redditPostText)"
             />
@@ -22,7 +22,7 @@
           <template #title>
             <img
               v-b-popover.click.blur.top="'Copied!'"
-              src="../assets/images/Twitter.svg"
+              src="@/assets/images/Twitter.svg"
               class="tab-logo img-fluid"
               @click="copyTabContents(twitterPostText)"
             />
@@ -36,7 +36,7 @@
           <template #title>
             <img
               v-b-popover.click.blur.top="'Copied!'"
-              src="../assets/images/Instagram.svg"
+              src="@/assets/images/Instagram.svg"
               class="tab-logo img-fluid"
               @click="copyTabContents(instagramPostText)"
             />
@@ -206,7 +206,7 @@ See all BikeTags and more, for ${this.getGameName}:
       navigator.clipboard.writeText(text)
     },
     goViewQueue() {
-      this.$store.dispatch('resetFormStep')
+      this.$router.push('/queue')
     },
     onSubmit() {
       const formAction = this.$refs.submitTag.getAttribute('action')
@@ -254,12 +254,14 @@ See all BikeTags and more, for ${this.getGameName}:
   .tab-logo {
     max-width: 2em;
   }
+
   .reddit-post {
     background-color: white;
     padding: 1em;
     text-align: left;
     margin-bottom: 1em;
   }
+
   .twitter-post {
     background-color: black;
     padding: 1em;
@@ -274,9 +276,10 @@ See all BikeTags and more, for ${this.getGameName}:
       font-size: 1.5rem;
       margin-right: 1em;
     }
+
     input[type='checkbox'] {
-      height: 1rem;
       width: 1rem;
+      height: 1rem;
     }
   }
 }

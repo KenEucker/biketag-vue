@@ -5,10 +5,19 @@ import { store } from './store'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import mitt from 'mitt'
 import { Auth0Plugin } from './auth'
+// import { createSession } from './notifications'
 import i18nPlugin from './i18n'
 import VueToast from 'vue-toast-notification'
-import Markdown from 'vue3-markdown-it'
 import VueCookies from 'vue3-cookies'
+import VueGoogleMaps from '@fawmi/vue-google-maps'
+
+// eslint-disable-next-line
+// @ts-ignore
+import Markdown from 'vue3-markdown-it'
+// eslint-disable-next-line
+// @ts-ignore
+import VueIframe from 'vue-iframes'
+
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
 import '@/assets/styles/style.scss'
@@ -49,7 +58,7 @@ class BikeTagApp {
           )
         },
       }
-      console.log('init::setting up authentication with Auth0 credentials')
+      console.log('init::authentication')
       this.app.use(Auth0Plugin, auth0Opts)
     } else {
       this.app.config.globalProperties.$auth = () => () => null
@@ -59,6 +68,17 @@ class BikeTagApp {
     this.app.use(VueToast)
     this.app.use(BootstrapVue3)
     this.app.use(Markdown)
+    this.app.use(VueIframe)
+    this.app.use(VueGoogleMaps, {
+      load: {
+        key: process.env.GOOGLE_API_KEY,
+        libraries: 'places',
+      },
+    })
+    // this.app.use(NotificationsPlugin)
+  }
+  async notifications() {
+    // this.app.config.globalProperties.$croquet = await createSession(this.app)
   }
 
   mount() {
@@ -67,11 +87,12 @@ class BikeTagApp {
 
   run() {
     this.init()
-    this.cookies()
-    this.internationalization()
-    this.router()
     this.authentication()
+    this.cookies()
+    // this.notifications()
+    this.internationalization()
     this.components()
+    this.router()
     this.mount()
   }
 }

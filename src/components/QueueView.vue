@@ -24,7 +24,6 @@
           size="l"
           :mystery-image-url="''"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
-          :show-found-posted-date-time="true"
           :found-description="stringifyNumber(index + 1)"
         />
       </swiper-slide>
@@ -32,7 +31,7 @@
     <div class="container align-center">
       <bike-tag-queue :pagination-ref="controlledSwiper" />
       <bike-tag-button
-        v-if="showGoNextButton()"
+        v-if="showGoNextButton"
         class="go-next-button"
         variant="medium"
         :text="goNextQueueStepButtonText"
@@ -88,14 +87,14 @@ export default defineComponent({
           : this.$t('pages.queue.join_queue')
       } #${this.getCurrentBikeTag?.tagnumber ?? 1}!`
     },
+    showGoNextButton() {
+      return this.getQueuedTagState !== BiketagFormSteps.queuePosted
+    },
   },
   methods: {
     stringifyNumber,
     goNextQueueStep: function () {
-      this.$store.dispatch('setFormStepToJoin', true)
-    },
-    showGoNextButton() {
-      return this.getQueuedTagState !== BiketagFormSteps.queuePosted
+      this.$router.push('/play')
     },
   },
 })
@@ -107,6 +106,7 @@ export default defineComponent({
       .tag-number {
         display: none;
       }
+
       .player-name {
         line-height: 75%;
       }

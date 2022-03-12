@@ -10,14 +10,7 @@
     ></b-pagination>
     <div class="m-auto">
       <div v-for="tag in tagsList" :key="tag.tagnumber">
-        <bike-tag
-          :key="tag.tagnumber"
-          :tag="tag"
-          :reverse="true"
-          :found-player="getPlayer(tag.foundPlayer)"
-          :mystery-player="getPlayer(tag.mysteryPlayer)"
-          @load="tagLoaded(tagsList.tagnumber)"
-        />
+        <bike-tag :key="tag.tagnumber" :tag="tag" :reverse="true" />
       </div>
     </div>
     <b-form-group>
@@ -42,7 +35,7 @@
     </span>
   </div>
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
-    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
+    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
   </loading>
 </template>
 
@@ -70,7 +63,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getTags', 'getPlayers']),
+    ...mapGetters(['getTags']),
     tagsList() {
       return this.getTags.slice(
         (this.currentPage - 1) * this.perPage + (this.currentPage === 1 ? 1 : 0), // exclude current mystery tag
@@ -85,10 +78,6 @@ export default defineComponent({
     '$route.params.currentPage': function (val) {
       this.currentPage = Number(val)
     },
-  },
-  async mounted() {
-    await this.$store.dispatch('setTags')
-    await this.$store.dispatch('setPlayers')
   },
   created() {
     this.startLoading()
@@ -111,33 +100,6 @@ export default defineComponent({
         }, 500)
       }
     },
-    getPlayer(playerName) {
-      const playerList =
-        this.getPlayers?.filter((player) => {
-          return decodeURIComponent(encodeURIComponent(player.name)) == playerName
-        }) ?? []
-      return playerList[0]
-    },
-    tagLoaded() {
-      /// Remove?
-    },
-    //   const tagNotLoaded = this.tagsLoaded.indexOf(loadedTagNumber) === -1
-
-    //   if (tagNotLoaded) {
-    //     this.tagsLoaded.push(loadedTagNumber)
-    //   }
-
-    //   const currentTags = this.tagsList()
-    //   if (this.tagsLoaded.length === currentTags.length) {
-    //     const allTagsLoaded = currentTags.reduce(
-    //       (loaded, t) => loaded && this.tagsLoaded.indexOf(t.tagnumber) !== -1,
-    //       true
-    //     )
-    //     if (allTagsLoaded) {
-    //       this.tagsAreLoading = false
-    //     }
-    //   }
-    // },
   },
 })
 </script>
