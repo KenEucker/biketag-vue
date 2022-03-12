@@ -61,7 +61,9 @@ export default defineComponent({
   }
 
   p {
-    font-weight: 800;
+    font-weight: 900;
+    font-size: 1.4rem;
+    font-family: $default-secondary-font-family;
     height: 100%;
     display: flex;
     justify-content: center;

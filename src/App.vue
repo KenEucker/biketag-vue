@@ -45,23 +45,28 @@ export default defineComponent({
     const game = await this.$store.dispatch('setGame')
     initResults.push(await this.$store.dispatch('setAllGames'))
 
-    await setTimeout(
-      this.$nextTick(async () => {
-        if (this.$auth.isAuthenticated) {
-          if (!this.getProfile?.nonce?.length) {
-            this.$auth.getIdTokenClaims().then((claims) => {
-              if (claims) {
-                const token = claims.__raw
-                this.$store.dispatch('setProfile', { ...this.$auth.user, token })
-              } else {
-                console.log("what's this? no speaka da mda5hash, brah?")
-              }
-            })
-          }
+    const checkAuth = () => {
+      if (this.$auth.isAuthenticated) {
+        if (!this.getProfile?.nonce?.length) {
+          this.$auth.getIdTokenClaims().then((claims) => {
+            if (claims) {
+              const token = claims.__raw
+              this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+            } else {
+              console.log("what's this? no speaka da mda5hash, brah?")
+            }
+          })
         }
-      }),
-      1000
-    )
+        return true
+      }
+      return false
+    }
+
+    setTimeout(() => {
+      if (!checkAuth()) {
+        setTimeout(() => checkAuth, 1000)
+      }
+    },1000)
 
     await setTimeout(
       this.$nextTick(() => {
