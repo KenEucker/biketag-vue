@@ -2,15 +2,11 @@
   <div :class="`${variant} button-group`">
     <div v-if="variant === 'current'">
       <!-- Left Button -->
-      <bike-tag-button class="button-group__left" :text="$t('menu.about')" @click="goAboutPage" />
+      <bike-tag-button class="button-group__left" :text="$t('menu.map')" @click="goMapPage" />
       <!-- Middle Button -->
       <bike-tag-button class="button-group__middle" :text="$t('menu.hint')" variant="bold" />
       <!-- Right Button -->
-      <bike-tag-button
-        class="button-group__right"
-        :text="$t('menu.players')"
-        @click="goPlayersPage"
-      />
+      <bike-tag-button class="button-group__right" :text="$t('menu.queue')" @click="goQeueuPage" />
     </div>
     <div v-if="variant === 'single'">
       <!-- Left Button -->
@@ -109,6 +105,12 @@ export default defineComponent({
     },
     goPlayersPage() {
       this.$router.push('/players')
+    },
+    goMapPage() {
+      this.$router.push('/map')
+    },
+    goQeueuPage() {
+      this.$router.push('/queue')
     },
   },
 })
