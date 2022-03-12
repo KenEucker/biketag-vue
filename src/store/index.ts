@@ -81,13 +81,21 @@ export const store = createStore<State>({
             method: 'GET',
             url: 'https://nominatim.openstreetmap.org/search.php',
             params: {
-              q: region,
+              q: region.description,
+              postalcode: region.zipcode,
               polygon_geojson: 1,
               format: 'json',
             },
           })
         ).data
-        return results.filter((v: any) => v?.type == 'administrative' || v?.type == 'city')[0]
+        return results
+          .filter((v: any) => v?.type == 'administrative' || v?.type == 'city')
+          .sort((v1: any) => {
+            if (v1?.geojson?.type === 'Polygon' || v1?.geojson?.type === 'MultiPolygon') {
+              return -1
+            }
+            return 1
+          })[0]
       } catch (e) {
         console.log(e)
       }
