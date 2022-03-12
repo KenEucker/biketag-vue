@@ -15,7 +15,7 @@
         <bike-tag-button variant="medium"
           class="play-screen__mystery-player__button" 
           :text="getCurrentBikeTag?.mysteryPlayer"
-          @click="$router.push('/player/' + getCurrentBikeTag?.mysteryPlayer)"
+          @click="$router.push('/player/' + encodeURIComponent(getCurrentBikeTag?.mysteryPlayer))"
         />
       </div>
       <div v-if="getCurrentBikeTag" class="rel play-screen">
