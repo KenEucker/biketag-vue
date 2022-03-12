@@ -21,6 +21,16 @@
       }}</span
     >
     <bike-tag-queue :only-mine="true" />
+    <div class="step mt-2 mb-4" v-if="BiketagFormSteps[getFormStep] >= 1 && BiketagFormSteps[getFormStep] < 4">
+      <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'" text="1"/>
+      <img v-if="BiketagFormSteps[getFormStep] == 1.5" class="step__arrow" :src="arrowSvg"/>
+      <span v-else class="step__line" :style="`background-image: url(${lineSvg})`" />
+      <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'" text="2"/>
+      <img v-if="BiketagFormSteps[getFormStep] == 2.5" class="step__arrow" :src="arrowSvg" />
+      <span class="step__line" :style="`background-image: url(${lineSvg})`" />
+      <bike-tag-button :variant="BiketagFormSteps[getFormStep] >= 3 && BiketagFormSteps[getFormStep] <= 4 ? 'circle-clean' : 'empty'" text="3"/>
+    </div>
+
     <!-- <div v-if="!uploadInProgress" class="container"> -->
     <div v-if="!uploadInProgress">
       <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueFound]">
@@ -76,6 +86,7 @@ import QueueJoined from '@/components/QueueJoined.vue'
 import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
+import BikeTagButton from '@/components/BikeTagButton.vue'
 import LineSvg from '@/assets/images/line.svg'
 import ArrowSvg from '@/assets/images/arrow.svg'
 
@@ -89,6 +100,7 @@ export default defineComponent({
     QueuePosted,
     QueuePostedShare,
     BikeTagQueue,
+    BikeTagButton
   },
   props: {
     usingTimer: {
@@ -131,9 +143,13 @@ export default defineComponent({
   async created() {
     await this.$store.dispatch('setCurrentBikeTag', true)
     await this.$store.dispatch('setQueuedTags', true)
+    console.log(BiketagFormSteps[this.getFormStep])
     this.countDownTimer()
   },
   methods: {
+    isViewingQueue() {
+      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
+    },
     countDownTimer() {
       if (this.countDown > 0) {
         setTimeout(() => {
