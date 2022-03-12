@@ -21,14 +21,30 @@
       }}</span
     >
     <bike-tag-queue :only-mine="true" />
-    <div class="step mt-2 mb-4" v-if="BiketagFormSteps[getFormStep] >= 1 && BiketagFormSteps[getFormStep] < 4">
-      <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'" text="1"/>
-      <img v-if="BiketagFormSteps[getFormStep] == 1.5" class="step__arrow" :src="arrowSvg"/>
+    <div
+      v-if="BiketagFormSteps[getFormStep] >= 1 && BiketagFormSteps[getFormStep] < 4"
+      class="step mt-2 mb-4"
+    >
+      <bike-tag-button
+        :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'"
+        text="1"
+      />
+      <img v-if="BiketagFormSteps[getFormStep] == 1.5" class="step__arrow" :src="arrowSvg" />
       <span v-else class="step__line" :style="`background-image: url(${lineSvg})`" />
-      <bike-tag-button :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'" text="2"/>
+      <bike-tag-button
+        :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'"
+        text="2"
+      />
       <img v-if="BiketagFormSteps[getFormStep] == 2.5" class="step__arrow" :src="arrowSvg" />
       <span class="step__line" :style="`background-image: url(${lineSvg})`" />
-      <bike-tag-button :variant="BiketagFormSteps[getFormStep] >= 3 && BiketagFormSteps[getFormStep] <= 4 ? 'circle-clean' : 'empty'" text="3"/>
+      <bike-tag-button
+        :variant="
+          BiketagFormSteps[getFormStep] >= 3 && BiketagFormSteps[getFormStep] <= 4
+            ? 'circle-clean'
+            : 'empty'
+        "
+        text="3"
+      />
     </div>
 
     <!-- <div v-if="!uploadInProgress" class="container"> -->
@@ -100,7 +116,7 @@ export default defineComponent({
     QueuePosted,
     QueuePostedShare,
     BikeTagQueue,
-    BikeTagButton
+    BikeTagButton,
   },
   props: {
     usingTimer: {

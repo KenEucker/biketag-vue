@@ -12,7 +12,7 @@ import { activeQueue, BackgroundProcessResults } from './types'
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import BikeTagClient from 'biketag'
 import axios from 'axios'
-import Ajv from 'Ajv'
+import Ajv from 'ajv'
 import * as jose from 'jose'
 import { BikeTagProfile } from '../../src/common/types'
 

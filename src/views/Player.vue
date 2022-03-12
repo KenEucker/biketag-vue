@@ -2,7 +2,7 @@
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
   </loading>
-  <div class="container mt-5" v-if="player">
+  <div v-if="player" class="container mt-5">
     <div class="d-flex justify-content-center social">
       <player size="lg" :player="player" :no-link="true" />
       <div v-if="Object.keys(playerSocial ?? {}).length" class="social__cnt">
@@ -52,7 +52,7 @@
       ></b-pagination>
     </div>
   </div>
-  <div class="container mt-5"> SOME MESSAGE HERE! </div>
+  <div class="container mt-5">SOME MESSAGE HERE!</div>
 </template>
 
 <script>
@@ -165,7 +165,9 @@ export default defineComponent({
         }, 500)
       }
       this.playerSocial = (await this.$store.dispatch('getUserSocial', this.playerName())).data
-      this.playerSocial = this.playerSocial.length ? this.playerSocial[0]?.user_metadata?.social : {}
+      this.playerSocial = this.playerSocial.length
+        ? this.playerSocial[0]?.user_metadata?.social
+        : {}
       this.playerSocial?.discord && (this.playerSocial.discord = '')
     },
   },
