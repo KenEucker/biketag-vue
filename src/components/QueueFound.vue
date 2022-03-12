@@ -121,6 +121,7 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import exifr from 'exifr'
 import Pin from '@/assets/images/pin.svg'
+// import { Notifications } from '@/common/types'
 
 export default defineComponent({
   name: 'QueueFoundTag',
@@ -195,8 +196,13 @@ export default defineComponent({
     })
     window.onpopstate = () => {
       window.onpopstate = null
-      document.querySelector('.popover')?.remove()
+      document.querySelector('.popover')?.remove() ///
     }
+    // this.$croquet.sendNotification({
+    //   name: this.getProfile?.user_metadata?.name,
+    //   msg: "HELLO",
+    //   type: Notifications.foundTag
+    // })
   },
   methods: {
     sleep(time) {

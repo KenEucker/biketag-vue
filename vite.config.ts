@@ -79,9 +79,9 @@ export default defineConfig({
       GOOGLE_PASSWORD: process.env.GOOGLE_PASSWORD ?? null,
       GOOGLE_API_KEY: process.env.GOOGLE_API_KEY ?? null,
       /* Croket Configuration */
-      CROKET_API_KEY: process.env.CROKET_API_KEY ?? null,
-      CROKET_SESSION_NAME: process.env.CROKET_SESSION_NAME ?? 'biketag',
-      CROKET_SESSION_PASSWORD: process.env.CROKET_SESSION_PASSWORD ?? 'secret'
+      CROQUET_API_KEY: process.env.CROQUET_API_KEY ?? null,
+      CROQUET_SESSION_NAME: process.env.CROQUET_SESSION_NAME ?? 'biketag',
+      CROQUET_SESSION_PASSWORD: process.env.CROQUET_SESSION_PASSWORD ?? 'secret'
     }),
     VitePWA({
       strategies: 'injectManifest',

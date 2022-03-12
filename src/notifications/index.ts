@@ -1,15 +1,6 @@
 import { createApp } from 'vue'
 import * as Croquet from '@croquet/croquet'
-
-//move to types
-enum Notifications {
-  foundTag,
-}
-interface Payload {
-  name: string
-  msg: string
-  type: Notifications
-}
+import { Notifications, Payload } from '@/common/types'
 
 let instace: any
 
@@ -20,27 +11,32 @@ export const croquetSession = (app: any) => {
 
   class BikeTagNotificationsModel extends Croquet.Model {
     init() {
-      for (const value of Object.values(Notification)) {
-        this.subscribe('notification', value, this.sendNotification)
+      for (const value in Notifications) {
+        this.subscribe('notification', value, this.pubNotification)
       }
     }
 
-    sendNotification(payload: Payload) {
-      if (app.$store.getters.getProfile.user_metadata.name !== payload.name) {
-        app.$toast.success(payload.msg, {
-          position: top,
+    pubNotification(payload: Payload) {
+      if (
+        app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !== payload.name
+      ) {
+        app.config.globalProperties.$toast.success(payload.msg, {
+          position: 'top',
         })
       }
     }
   }
+
+  BikeTagNotificationsModel.register('BikeTagNotificationsModel')
   class BikeTagNotificationsView extends Croquet.View {
+    model: BikeTagNotificationsModel
     constructor(model: BikeTagNotificationsModel) {
       super(model)
-      // this.model = model;
+      this.model = model
     }
 
-    pubEvent(payload: Payload) {
-      this.publish('notification', payload.type.toString(), payload)
+    sendNotification(payload: Payload) {
+      this.publish('notification', 'foundTag', payload)
     }
   }
 
@@ -51,26 +47,82 @@ export const croquetSession = (app: any) => {
       }
     },
     async created() {
-      BikeTagNotificationsModel.register('BikeTagNotificationsModel')
       this.session = await Croquet.Session.join({
-        apiKey: process.env.NOTIFICATION_KEY ?? '',
+        apiKey: process.env.CROQUET_API_KEY ?? '',
         appId: process.env.HOST ?? '',
-        name: process.env.CROKET_SESSION_NAME ?? 'biketag',
-        password: process.env.CROKET_SESSION_PASSWORD ?? 'secret',
+        name: process.env.CROQUET_SESSION_NAME ?? 'biketag',
+        password: process.env.CROQUET_SESSION_PASSWORD ?? 'secret',
         model: BikeTagNotificationsModel,
         view: BikeTagNotificationsView,
       })
     },
     methods: {
       sendNotification(payload: any) {
-        this.session?.view.sendNotification(payload)
+        this.session?.view.sendNotification(payload) //error
       },
     },
   }).mount(document.createElement('div'))
+
+  return instace
 }
 
 export const NotificationsPlugin = {
   install(app: any) {
     app.config.globalProperties.$croquet = croquetSession(app)
   },
+}
+
+export const createSession = async (app: any) => {
+  class BikeTagNotificationsModel extends Croquet.Model {
+    init() {
+      for (const value in Notifications) {
+        this.subscribe('notification', value, this.pubNotification)
+      }
+    }
+
+    pubNotification(payload: Payload) {
+      if (
+        app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !== payload.name
+      ) {
+        app.config.globalProperties.$toast.success(payload.msg, {
+          position: 'top',
+        })
+      }
+    }
+  }
+
+  BikeTagNotificationsModel.register('BikeTagNotificationsModel')
+  class BikeTagNotificationsView extends Croquet.View {
+    model: BikeTagNotificationsModel
+    constructor(model: BikeTagNotificationsModel) {
+      super(model)
+      this.model = model
+    }
+
+    sendNotification(payload: Payload) {
+      this.publish('notification', 'foundTag', payload)
+    }
+  }
+
+  class NotificationsPlugin {
+    session: Croquet.CroquetSession<BikeTagNotificationsView>
+    constructor(session: Croquet.CroquetSession<BikeTagNotificationsView>) {
+      this.session = session
+    }
+
+    sendNotification(payload: any) {
+      this.session.view.sendNotification(payload)
+    }
+  }
+
+  return new NotificationsPlugin(
+    await Croquet.Session.join({
+      apiKey: process.env.CROQUET_API_KEY ?? '',
+      appId: process.env.HOST ?? '',
+      name: process.env.CROQUET_SESSION_NAME ?? 'biketag',
+      password: process.env.CROQUET_SESSION_PASSWORD ?? 'secret',
+      model: BikeTagNotificationsModel,
+      view: BikeTagNotificationsView,
+    })
+  )
 }
