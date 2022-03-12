@@ -120,3 +120,12 @@ export enum Settings {
   SupportsTwitter = 'social::twitter',
   SupportsInstagram = 'social::instagram',
 }
+
+export enum Notifications {
+  foundTag = "foundTag",
+}
+export interface Payload {
+  name: string
+  msg: string
+  type: Notifications
+}
