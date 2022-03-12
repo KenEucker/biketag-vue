@@ -29,9 +29,7 @@ export const getBikeTagClientOpts = (
   const opts: any = {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     cached: isGET || !isAuthenticatedPOST,
-    biketag: {
-      accessToken: process.env.ACCESS_TOKEN,
-    },
+    accessToken: process.env.ACCESS_TOKEN,
     imgur: {
       clientId: process.env.IMGUR_CLIENT_ID,
     },
@@ -678,7 +676,8 @@ export const archiveAndClearQueue = async (
 
 export const getActiveQueueForGame = async (
   game: Game,
-  adminBikeTagOpts?: any
+  adminBikeTagOpts?: any,
+  approvingAmbassador?: string
 ): Promise<activeQueue> => {
   let queuedTags: Tag[] = []
   let completedTags: Tag[] = []
@@ -688,9 +687,11 @@ export const getActiveQueueForGame = async (
     game.settings && !!game.settings['queue::autoPost']
       ? parseInt(game.settings['queue::autoPost'])
       : 0
+  /// TODO: check for the right ambassador here
+  const approvingAmbassadorIsApproved = approvingAmbassador?.length
 
   // console.log({ autoPostSetting, queuehash: game.queuehash })
-  if (autoPostSetting && game.queuehash?.length) {
+  if ((autoPostSetting && game.queuehash?.length) || approvingAmbassadorIsApproved) {
     /************** GET WINNING QUEUE *****************/
     adminBikeTagOpts =
       adminBikeTagOpts ??

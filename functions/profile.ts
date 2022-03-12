@@ -29,7 +29,6 @@ const profileHandler: Handler = async (event) => {
     let options = {}
     const authorizationHeaders = acceptCorsHeaders(true)
 
-
     switch (event.httpMethod) {
       /// Create new profile fields (role, name)
       case 'PUT':

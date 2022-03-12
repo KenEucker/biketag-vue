@@ -66,7 +66,7 @@ export default defineComponent({
       if (!checkAuth()) {
         setTimeout(() => checkAuth, 1000)
       }
-    },1000)
+    }, 1000)
 
     await setTimeout(
       this.$nextTick(() => {

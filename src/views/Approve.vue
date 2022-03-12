@@ -8,7 +8,10 @@
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
   </loading>
   <div class="queue-page">
-    <queue-approve @submit="onApproveSubmit" />
+    <queue-approve v-if="!uploadInProgress" @submit="onApproveSubmit" />
+    <div v-else class="loading-message">
+      <p>The next BikeTag Round is loading!</p>
+    </div>
     <form
       ref="queueError"
       name="queue-approve-error"
@@ -75,6 +78,13 @@ export default defineComponent({
   async mounted() {
     await this.$store.dispatch('setQueuedTags', true)
     await this.$store.dispatch('fetchCredentials')
+
+    /// Get the user credentials for BikeTag Ambassador functions
+    await setTimeout(() => {
+      if (!this.checkAuth()) {
+        setTimeout(() => this.checkAuth, 1000)
+      }
+    }, 1000)
     this.uploadInProgress = false
   },
   async created() {
@@ -88,6 +98,24 @@ export default defineComponent({
           this.countDownTimer()
         }, 500)
       }
+    },
+    async checkAuth() {
+      if (this.$auth.isAuthenticated) {
+        if (!this.getProfile?.nonce?.length) {
+          return this.$auth.getIdTokenClaims().then((claims) => {
+            if (claims) {
+              const token = claims.__raw
+              this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+              return true
+            } else {
+              console.log('BikeTag Ambassador profile could not be authenticated')
+              return false
+            }
+          })
+        }
+        return true
+      }
+      return false
     },
     async onApproveSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
@@ -106,6 +134,11 @@ export default defineComponent({
       })
       const errorAction = this.$refs.queueError.getAttribute('action')
 
+      const claims = await this.$auth.getIdTokenClaims()
+      if (claims) {
+        /// If no token, the request will be rejected
+        tag.token = claims.__raw
+      }
       console.log('onApproveSubmit', { storeAction, tag })
 
       this.uploadInProgress = true
@@ -162,3 +195,14 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="scss" scoped>
+@import '../assets/styles/style';
+
+.loading-message {
+  p {
+    font-family: $default-font-family;
+
+    text-transform: uppercase;
+  }
+}
+</style>

@@ -28,12 +28,12 @@ const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 /// TODO: move these options to a method for FE use only
 const options: any = {
-  biketag: {
-    host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.io/api`,
-    game: gameName,
-    clientKey: getBikeTagHash(window.location.hostname),
-    clientToken: process.env.ACCESS_TOKEN,
-  },
+  // biketag: {
+  host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.io/api`,
+  // game: gameName,
+  clientKey: getBikeTagHash(window.location.hostname),
+  clientToken: process.env.ACCESS_TOKEN,
+  // },
   ...getBikeTagClientOpts(window),
 }
 const gameOpts = { source: 'sanity' }
@@ -105,6 +105,25 @@ export const store = createStore<State>({
         const credentials = await client.fetchCredentials()
         await client.config(credentials, false, true)
         state.credentialsFetched = true
+        // if (state.profile?.isBikeTagAmbassador) {
+        //   /// fetch auth token for admin purposes
+        //   const checkAuth = () => {
+        //     if (this.$auth.isAuthenticated) {
+        //       if (!this.getProfile?.nonce?.length) {
+        //         this.$auth.getIdTokenClaims().then((claims) => {
+        //           if (claims) {
+        //             const token = claims.__raw
+        //             this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+        //           } else {
+        //             console.log("what's this? no speaka da mda5hash, brah?")
+        //           }
+        //         })
+        //       }
+        //       return true
+        //     }
+        //     return false
+        //   }
+        // }
       }
     },
     async setProfile({ commit }, profile) {
@@ -235,25 +254,25 @@ export const store = createStore<State>({
       return commit('SET_DATA_INITIALIZED')
     },
     async approveTag({ state }, d) {
-      if (state.isBikeTagAmbassador) {
+      if (state.profile?.isBikeTagAmbassador) {
         d.hash = state.game.queuehash
-        const approveTagResponse = await client.request({
+        const token = d.token
+        d.token = undefined
+        const approveTagResponse = await client.plainRequest({
           method: 'POST',
           url: getApiUrl('approve'),
           data: { tag: d, ambassadorId: state.profile.sub },
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
         })
-        console.log({ approveTagResponse })
-
-        // return client.deleteTag(d.tag).then((t) => {
-        //   if (t.success) {
-        //     console.log('store::tag approved', d.tag)
-        //   } else {
-        //     console.log('error::approve BikeTag failed', t)
-        //     return t.error
-        //   }
-        //   return 'successfully approved tag'
-        // })
+        if (approveTagResponse.status === 202) {
+          return true
+        } else if (approveTagResponse.status === 200) {
+          return `BikeTag round #${d.tagnumber} couldn't be posted`
+        }
       }
+
       return 'incorrect permissions'
     },
     async dequeueTag({ state }, d) {
@@ -450,6 +469,7 @@ export const store = createStore<State>({
       const oldState = state.profile
       state.profile = profile
       state.isBikeTagAmbassador = profile?.isBikeTagAmbassador
+      console.trace('stale::profile', profile)
       setProfileCookie(profile)
 
       if (!profile) {
@@ -738,7 +758,7 @@ export const store = createStore<State>({
       return state.dataInitialized
     },
     isBikeTagAmbassador(state) {
-      return state.isBikeTagAmbassador
+      return state.profile?.isBikeTagAmbassador
     },
   },
   modules: {},

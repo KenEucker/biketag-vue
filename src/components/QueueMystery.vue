@@ -145,8 +145,6 @@ export default defineComponent({
   },
   mounted() {
     this.player = this.getQueuedTag?.foundPlayer
-    console.log("SSSSSSSSSSSSSSSSSSSSS",this.getCurrentBikeTag)
-    console.log("SSSSSSSSSSSSSSSSSSSSS",this.getQueuedTag)
     this.showModalIfNew()
   },
   methods: {
