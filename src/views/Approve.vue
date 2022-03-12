@@ -5,7 +5,7 @@
     :is-full-page="true"
     class="realign-spinner"
   >
-    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
+    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
   </loading>
   <div class="queue-page">
     <queue-approve @submit="onApproveSubmit" />

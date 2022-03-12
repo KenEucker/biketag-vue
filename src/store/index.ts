@@ -97,7 +97,7 @@ export const store = createStore<State>({
             return 1
           })[0]
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
     },
     async fetchCredentials({ state }) {

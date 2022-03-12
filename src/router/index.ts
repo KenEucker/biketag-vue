@@ -9,8 +9,8 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/:tagnumber?',
-    name: 'Play',
-    component: () => import('@/views/Play.vue'),
+    name: 'Home',
+    component: () => import('@/views/Home.vue'),
   },
   {
     path: '/biketags/:currentPage?',
@@ -29,6 +29,11 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/play',
+    name: 'Play',
+    component: () => import('@/views/Play.vue'),
+  },
+  {
+    path: '/queue',
     name: 'Queue',
     component: () => import('@/views/Queue.vue'),
   },
@@ -83,7 +88,7 @@ if (process.env.AUTH0_DOMAIN?.length) {
   ]
 }
 
-console.log('init::router', { protectedRoutes })
+console.log('init::router', { sitemap: routes })
 
 const router = createRouter({
   history: createWebHashHistory(),

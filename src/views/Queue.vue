@@ -1,91 +1,16 @@
 <template>
-  <loading
-    v-show="uploadInProgress"
-    v-model:active="uploadInProgress"
-    :is-full-page="true"
-    class="realign-spinner"
-  >
-    <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
-  </loading>
-  <!-- <div class="container col-md-8 col-lg-8 queue-page"> -->
   <div class="queue-page">
-    <div v-if="usingTimer && isViewingQueue()" class="clock-div mt-2">
+    <div v-if="usingTimer && isViewingQueue()" class="mt-2 clock-div">
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
-    <span
-      v-if="!uploadInProgress && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
-      class="tag-number"
+    <span class="tag-number"
       >#{{
         getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
       }}</span
     >
-    <template v-if="!isViewingQueue()">
-      <bike-tag-queue :only-mine="true" />
-      <div class="step">
-        <bike-tag-button
-          :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'"
-          text="1"
-        />
-        <img v-if="BiketagFormSteps[getFormStep] == 1.5" class="step__arrow" :src="arrowSvg" />
-        <span v-else class="step__line" :style="`background-image: url(${lineSvg})`" />
-        <bike-tag-button
-          :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'"
-          text="2"
-        />
-        <img v-if="BiketagFormSteps[getFormStep] == 2.5" class="step__arrow" :src="arrowSvg" />
-        <span class="step__line" :style="`background-image: url(${lineSvg})`" />
-        <bike-tag-button
-          :variant="
-            BiketagFormSteps[getFormStep] > 3 && BiketagFormSteps[getFormStep] >= 4
-              ? 'circle-clean'
-              : 'empty'
-          "
-          text="3"
-        />
-      </div>
-    </template>
-    <!-- <div v-if="!uploadInProgress" class="container"> -->
-    <div v-if="!uploadInProgress" class="queue-slider">
-      <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]">
-        <queue-view />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueFound]">
-        <queue-found :tag="getQueuedTag" @submit="onQueueSubmit" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined]">
-        <queue-joined :tag="getQueuedTag" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueMystery]">
-        <queue-mystery :tag="getQueuedTag" @submit="onQueueSubmit" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueSubmit]">
-        <queue-submit :tag="getQueuedTag" @submit="onQueueSubmit" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]">
-        <queue-posted-share :tag="getQueuedTag" @submit="onQueueSubmit" />
-      </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
-        <queue-posted :tag="getQueuedTag" />
-      </div>
-      <span v-if="isSubmittingData()" class="player-agree">
-        * {{ $t('pages.queue.user_agree') }}
-      </span>
-      <form
-        ref="queueError"
-        name="queue-tag-error"
-        action="queue-tag-error"
-        method="POST"
-        data-netlify="true"
-        data-netlify-honeypot="bot-field"
-        hidden
-      >
-        <input type="hidden" name="form-name" value="queue-tag-error" />
-        <input type="hidden" name="submission" />
-        <input type="hidden" name="playerId" :value="getPlayerId" />
-        <input type="hidden" name="message" />
-        <input type="hidden" name="ip" value="" />
-      </form>
+    <div>
+      <queue-view />
     </div>
   </div>
 </template>

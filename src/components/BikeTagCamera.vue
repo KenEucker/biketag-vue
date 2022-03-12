@@ -30,7 +30,7 @@
       <div class="size-toggle-container">
         <div
           ref="sizeToggleRef"
-          class="toggle clickable transition lighten"
+          class="transition toggle clickable lighten"
           @mousedown="sizeToggleClick"
         ></div>
       </div>
@@ -52,7 +52,7 @@
     </div>
   </div>
   <div ref="backroundContainerRef" class="background-container">
-    <div ref="backgroundRef" class="background-image transition"></div>
+    <div ref="backgroundRef" class="transition background-image"></div>
   </div>
 </template>
 <script>

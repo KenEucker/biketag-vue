@@ -1,263 +1,294 @@
 <template>
-  <div class="play-biketag">
-    <div class="play-screen__label-group-top">
-      <bike-tag-header />
+  <loading
+    v-show="uploadInProgress"
+    v-model:active="uploadInProgress"
+    :is-full-page="true"
+    class="realign-spinner"
+  >
+    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+  </loading>
+  <!-- <div class="container col-md-8 col-lg-8 queue-page"> -->
+  <div class="queue-page">
+    <div v-if="usingTimer && isViewingQueue()" class="mt-2 clock-div">
+      <i class="far fa-clock" />
+      <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
-    <loading v-show="!getGame" class="loader" :is-full-page="true">
-      <img class="spinner" src="../assets/images/SpinningBikeV1.svg" />
-    </loading>
-    <!-- Image and Number -->
-    <div v-if="tagnumber" class="m-4 mt-5 tag-screen">
-      <bike-tag id="the-tag" :tag="tag" image-size="l" />
-    </div>
-    <div v-else class="mt-4 mb-5">
-      <bike-tag-button
-        :text="getCurrentBikeTag?.mysteryPlayer"
-        @click="$router.push('/player/' + getCurrentBikeTag?.mysteryPlayer)"
-      />
-      <div v-if="getCurrentBikeTag" class="rel play-screen">
-        <ExpandableImage
-          class="play-screen__image"
-          :src="getCurrentBikeTag?.mysteryImageUrl"
-          :full-source="getCurrentBikeTag?.mysteryImageUrl"
-          :alt="getCurrentBikeTag?.hint"
-        />
-
-        <bike-tag-button
-          class="play-screen__label-group-number"
-          :text="'#' + getCurrentBikeTag?.tagnumber"
-        />
-        <div class="play-screen__label-group-bottom">
-          <div>
-            <bike-tag-label :text="$t('menu.mysterylocation')" :only-text="true" />
-          </div>
-        </div>
+    <span
+      v-if="!uploadInProgress && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
+      class="tag-number"
+      >#{{
+        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
+      }}</span
+    >
+    <bike-tag-queue :only-mine="true" />
+    <!-- <div v-if="!uploadInProgress" class="container"> -->
+    <div v-if="!uploadInProgress">
+      <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueFound]">
+        <queue-found :tag="getQueuedTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else>
-        <span>{{ $t('pages.play.game_not_exists') }}</span>
-        <span>{{ $t('pages.play.send_hello_email') }}</span>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined]">
+        <queue-joined :tag="getQueuedTag" />
       </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueMystery]">
+        <queue-mystery :tag="getQueuedTag" @submit="onQueueSubmit" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueSubmit]">
+        <queue-submit :tag="getQueuedTag" @submit="onQueueSubmit" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]">
+        <queue-posted-share :tag="getQueuedTag" @submit="onQueueSubmit" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
+        <queue-posted :tag="getQueuedTag" />
+      </div>
+      <span v-if="isSubmittingData()" class="player-agree">
+        * {{ $t('pages.queue.user_agree') }}
+      </span>
+      <form
+        ref="queueError"
+        name="queue-tag-error"
+        action="queue-tag-error"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+        hidden
+      >
+        <input type="hidden" name="form-name" value="queue-tag-error" />
+        <input type="hidden" name="submission" />
+        <input type="hidden" name="playerId" :value="getPlayerId" />
+        <input type="hidden" name="message" />
+        <input type="hidden" name="ip" value="" />
+      </form>
     </div>
-    <bike-tag-footer
-      class="bike-tag-footer"
-      :variant="`${tagnumber ? 'single' : 'current'}`"
-      @next="goNextSingle"
-      @previous="goPreviousSingle"
-    />
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, watchEffect, onMounted } from 'vue'
 import { mapGetters } from 'vuex'
-import Loading from 'vue-loading-overlay'
-import 'vue-loading-overlay/dist/vue-loading.css'
-import BikeTag from '@/components/BikeTag.vue'
-import BikeTagHeader from '@/components/BikeTagHeader.vue'
-import BikeTagFooter from '@/components/BikeTagFooter.vue'
-import BikeTagLabel from '@/components/BikeTagLabel.vue'
+import { BiketagFormSteps } from '@/common/types'
+import { useTimer } from 'vue-timer-hook'
+import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
+
+import QueueFound from '@/components/QueueFound.vue'
+import QueueMystery from '@/components/QueueMystery.vue'
+import QueueSubmit from '@/components/QueueSubmit.vue'
+import QueueJoined from '@/components/QueueJoined.vue'
+import QueuePosted from '@/components/QueuePosted.vue'
+import QueuePostedShare from '@/components/QueuePostedShare.vue'
+import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import ExpandableImage from '@/components/ExpandableImage.vue'
-// import useSWRV from 'swrv'
+import LineSvg from '@/assets/images/line.svg'
+import ArrowSvg from '@/assets/images/arrow.svg'
 
 export default defineComponent({
-  name: 'PlayView',
+  name: 'QueueBikeTagView',
   components: {
-    Loading,
-    BikeTag,
-    BikeTagHeader,
-    BikeTagFooter,
+    QueueFound,
+    QueueMystery,
+    QueueSubmit,
+    QueueJoined,
+    QueuePosted,
+    QueuePostedShare,
+    BikeTagQueue,
     BikeTagButton,
-    BikeTagLabel,
-    ExpandableImage,
+  },
+  props: {
+    usingTimer: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
-    // const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
-    // console.log({ data, error })
-
+    const time = new Date()
+    time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
+    const timer = useTimer(time.getSeconds())
+    onMounted(() => {
+      watchEffect(async () => {
+        if (timer.isExpired.value) {
+          console.warn('IsExpired')
+        }
+      })
+    })
     return {
-      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      // error,
+      timer,
+      BiketagFormSteps,
+      uploadInProgress: false,
+      countDown: 10,
+      lineSvg: LineSvg,
+      arrowSvg: ArrowSvg,
     }
   },
   computed: {
     ...mapGetters([
+      'getFormStep',
+      'getQueuedTag',
       'getCurrentBikeTag',
-      'getTags',
       'getGameName',
-      'getPlayers',
-      'getImgurImageSized',
+      'getPlayerId',
     ]),
-    tag() {
-      if (this.tagnumber !== 0) {
-        const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
-        console.log({ tag: tag[0] })
-        return tag && tag.length ? tag[0] : {}
-      }
-      return undefined
-    },
+  },
+  async mounted() {
+    this.uploadInProgress = false
+  },
+  async created() {
+    await this.$store.dispatch('setCurrentBikeTag', true)
+    await this.$store.dispatch('setQueuedTags', true)
+    this.countDownTimer()
   },
   methods: {
-    tagLoaded() {
-      this.tagIsLoading = false
+    countDownTimer() {
+      if (this.countDown > 0) {
+        setTimeout(() => {
+          this.countDown -= 1
+          this.countDownTimer()
+        }, 500)
+      }
     },
-    getPlayer(playerName) {
-      const playerList =
-        this.getPlayers?.filter((player) => {
-          return decodeURIComponent(encodeURIComponent(player.name)) == playerName
-        }) ?? []
-      return playerList[0]
+    isSubmittingData() {
+      return !(
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted] ||
+        this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]
+      )
     },
-    goNextSingle() {
-      this.tagnumber++
-      this.$router.push(`/${this.tagnumber}`)
-    },
-    goPreviousSingle() {
-      this.tagnumber--
-      this.$router.push(`/${this.tagnumber}`)
+    async onQueueSubmit(newTagSubmission) {
+      const { tag, formAction, formData, storeAction } = newTagSubmission
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual'
+      }
+      window.scrollTo(0, 0)
+
+      this.$toast.open({
+        message: this.$t('notifications.uploading'),
+        type: 'info',
+        position: 'top',
+      })
+      const errorAction = this.$refs.queueError.getAttribute('action')
+
+      this.uploadInProgress = true
+      const success = await this.$store.dispatch(storeAction, tag)
+      this.uploadInProgress = false
+
+      if (success === true) {
+        /// Get a clean cache
+        await this.$store.dispatch('setTags', true)
+        /// Update the queue
+        this.$store.dispatch('setQueuedTags', true)
+
+        formData.set('game', this.getGameName)
+        formData.set('tag', JSON.stringify(this.getQueuedTag))
+        formData.set(
+          'submission',
+          `${this.getGameName}-${this.getQueuedTag.tagnumber}--${this.getQueuedTag.foundPlayer}`
+        )
+
+        if (tag.foundImage) {
+          formData.set('foundImageUrl', this.getQueuedTag.foundImageUrl)
+        } else if (tag.mysteryImage) {
+          formData.set('mysteryImageUrl', this.getQueuedTag.mysteryImageUrl)
+        }
+        return sendNetlifyForm(
+          formAction,
+          new URLSearchParams(formData).toString(),
+          () => {
+            this.$toast.open({
+              message: `${storeAction} ${this.$t('notifications.success')}`,
+              type: 'success',
+              position: 'top',
+            })
+          },
+          (m) => {
+            this.$toast.open({
+              message: `${this.$t('notifications.error')} ${m}`,
+              type: 'error',
+              timeout: false,
+              position: 'bottom',
+            })
+            return sendNetlifyError(m, undefined, errorAction)
+          }
+        )
+      } else {
+        const message = `${this.$t('notifications.error')}: ${success}`
+        this.$toast.open({
+          message,
+          type: 'error',
+          timeout: false,
+          position: 'bottom',
+        })
+        return sendNetlifyError(message, undefined, errorAction)
+      }
     },
   },
 })
 </script>
 <style lang="scss">
+#app {
+  .queue-page {
+    .card.polaroid .player-wrapper .player-name {
+      font-weight: 100;
+      font-size: 3rem;
+      transform: unset;
+    }
+
+    .queue-title {
+      font-size: 2rem;
+    }
+
+    .queue-text {
+      font-size: 1.5rem;
+    }
+  }
+}
+</style>
+<style scoped lang="scss">
 @import '../assets/styles/style';
 
-.play-screen {
-  position: relative;
-  width: 80vw;
-  max-width: 750px;
-  height: auto;
-  margin: auto;
-
-  @media (max-width: $breakpoint-mobile-lg) {
-    width: 100vw;
+.queue-page {
+  .clock-div > i {
+    color: forestgreen;
+    cursor: pointer;
+    font-size: 25px;
+    margin-right: 10px;
   }
 
-  &__image {
-    width: 80vw;
-    max-width: 750px;
-    height: auto;
-    margin: auto;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
-
-    &.expanded {
-      max-width: unset;
-    }
-
-    @media (max-width: $breakpoint-mobile-lg) {
-      width: 100vw;
-    }
-  }
-
-  &__label-group {
-    &-number {
-      position: absolute;
-      top: -3%;
-      left: 0;
-
-      // line-height: 1rem !important;
-      min-width: 1rem;
-      @media (min-width: $breakpoint-tablet) {
-        top: 0;
-        min-width: 8rem;
-      }
-    }
-
-    &-top {
-      margin-bottom: -1.25rem;
-      z-index: 1;
-      position: relative;
-    }
-
-    &-bottom {
-      position: absolute;
-      bottom: -3.5rem;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-
-      &-number {
-        margin-bottom: -2.5rem;
-        z-index: 2;
-      }
-    }
+  .tag-number {
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99;
+    padding: 0 1.5rem;
   }
 }
 
-.bike-tag-footer {
-  margin-top: 4rem;
+.realign-spinner {
+  margin-left: -15%;
+  @media (min-width: 620px) {
+    margin-left: 0;
+  }
 }
 
-.play-biketag {
-  margin: auto;
-}
-
-.camera-modal {
-  background: transparent;
-
-  .modal-content {
-    background: none;
-    border: none;
+.step {
+  .biketag__button {
+    min-height: 3.5rem;
+    cursor: initial;
   }
 
-  //   &-top {
-  //     display: flex;
-  //     padding: 0;
-  //     justify-content: space-around;
+  &__line,
+  &__arrow {
+    min-width: 2.5rem;
+    height: 1rem;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin: 0 1rem;
+    @media (min-width: $breakpoint-mobile-md) {
+      min-width: 5rem;
+    }
+  }
 
-  //     &__mystery {
-  //       min-height: auto !important;
-  //     }
-  //   }
-
-  //   &-bottom {
-  //     display: flex;
-  //     flex-direction: column;
-  //     justify-content: center;
-  //     align-items: center;
-
-  //     &__underline {
-  //       width: auto;
-  //       height: 3rem;
-  //     }
-
-  //     &__hint {
-  //       margin-top: 1rem;
-  //       font-size: 2rem;
-  //       font-family: $default-secondary-font-family;
-  //       text-align: center;
-  //     }
-  //   }
-
-  //   &-line-divide {
-  //     width: 90%;
-  //     height: 1px;
-  //     margin: auto;
-  //     background: linear-gradient(45deg, rgb(100 100 100 / 80%), rgb(150 150 150 / 50%) 70.71%);
-  //   }
-
-  //   &-body {
-  //     padding-bottom: 0;
-  //   }
-
-  //   .flash {
-  //     opacity: 1;
-  //     animation: flash 1s;
-  //   }
-  //   @-webkit-keyframes flash {
-  //     0% {
-  //       opacity: 0.3;
-  //     }
-  //     100% {
-  //       opacity: 1;
-  //     }
-  //   }
-  //   @keyframes flash {
-  //     0% {
-  //       opacity: 0.3;
-  //     }
-  //     100% {
-  //       opacity: 1;
-  //     }
-  //   }
+  &__arrow {
+    transform: scaleX(-1);
+    height: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
 }
 </style>

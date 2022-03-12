@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <img v-if="isBikeTagAmbassador" :src="bikeTag" />
-    <p class="description mt-5 mb-5">
+    <p class="mt-5 mb-5 description">
       {{ isBikeTagAmbassador ? $t('pages.login.ambassador') : $t('pages.login.player') }}
     </p>
     <bike-tag-button variant="bold" :text="$t('menu.login')" @click="login" />
@@ -35,7 +35,7 @@ export default defineComponent({
             const token = claims.__raw
             this.$store.dispatch('setProfile', { ...this.$auth.user, token })
           } else {
-            console.log('what is this?')
+            console.log('what is this? No sprechen sie Deutsch?')
           }
         })
       } else {

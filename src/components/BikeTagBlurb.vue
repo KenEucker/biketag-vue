@@ -11,11 +11,7 @@
       </article>
       <article class="img-container">
         <img :src="imgSrc" />
-        <bike-tag-button
-          v-if="link"
-          :text="link.replace('/', '').toUpperCase()"
-          @click="pushLink"
-        />
+        <bike-tag-button v-if="link" :text="_linkText()" @click="buttonClick" />
       </article>
     </div>
   </section>
@@ -47,6 +43,10 @@ export default defineComponent({
       type: String,
       default: null,
     },
+    linkText: {
+      type: String,
+      default: null,
+    },
     variant: {
       type: String,
       default: 'right',
@@ -58,7 +58,13 @@ export default defineComponent({
     }
   },
   methods: {
-    pushLink() {
+    _linkText() {
+      return this.linkText ?? this.link
+    },
+    buttonClick() {
+      if (this.link.indexOf('://') !== -1) {
+        window.location = this.link
+      }
       this.$router.push({ path: this.link })
     },
   },

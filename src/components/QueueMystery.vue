@@ -61,7 +61,7 @@
           @change="setImage"
         />
         <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
-        <div class="input-cnt mt-3 mb-3">
+        <div class="mt-3 mb-3 input-cnt">
           <bike-tag-input
             id="player"
             v-model="player"
@@ -206,13 +206,13 @@ export default defineComponent({
             })
           }
         } catch (e) {
-          console.log(e)
+          console.error(e)
         }
       }
     },
     goViewQueue() {
       this.hideModal()
-      this.$nextTick(() => this.$store.dispatch('resetFormStep'))
+      this.$router.push('/queue')
     },
     hideModal() {
       this.showModal = false

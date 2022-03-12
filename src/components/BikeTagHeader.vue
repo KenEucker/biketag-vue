@@ -54,9 +54,6 @@ export default defineComponent({
     showAuth() {
       return false
     },
-    // isShow() {
-    //   return this.$route.name === 'Play' && !this.$route.params?.tagnumber?.length ? false : true
-    // },
     ...mapGetters([
       'getGameTitle',
       'getLogoUrl',
