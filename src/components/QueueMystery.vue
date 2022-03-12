@@ -145,6 +145,8 @@ export default defineComponent({
   },
   mounted() {
     this.player = this.getQueuedTag?.foundPlayer
+    console.log("SSSSSSSSSSSSSSSSSSSSS",this.getCurrentBikeTag)
+    console.log("SSSSSSSSSSSSSSSSSSSSS",this.getQueuedTag)
     this.showModalIfNew()
   },
   methods: {
@@ -217,7 +219,9 @@ export default defineComponent({
       this.$router.push('/queue')
     },
     showModalIfNew() {
-      this.showModal = true
+      if (!this.getQueuedTag?.mysteryImageUrl?.length) {
+        this.showModal = true
+      }
     },
     hideModal() {
       this.showModal = false
