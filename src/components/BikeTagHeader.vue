@@ -13,7 +13,7 @@
         class="button-group__middle"
         variant="bold"
         :text="$t('menu.play')"
-        @click="goQueuePlay"
+        @click="goPlayPage"
       />
       <!-- Right Button -->
       <bike-tag-button class="button-group__right" :text="$t('menu.howto')" @click="goHowPage" />
@@ -87,8 +87,7 @@ export default defineComponent({
     goBikeTagsPage: function () {
       this.$router.push('/biketags')
     },
-    goQueuePlay: function () {
-      this.$store.dispatch('setFormStepToJoin', true)
+    goPlayPage: function () {
       this.$router.push('/play')
     },
     goHowPage: function () {

@@ -307,6 +307,7 @@ export default defineComponent({
   transform: translateX(-50%);
   z-index: 99;
   padding: 0 1.5rem;
+  cursor: pointer;
 }
 
 .card-bottom {

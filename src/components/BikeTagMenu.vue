@@ -74,7 +74,7 @@
           <li
             class="nav-item"
             :class="{ 'active-nav': currentRoute === 'Queue' }"
-            @click="goQueuePlay"
+            @click="goPlayPage"
           >
             {{ $t('menu.play') }}
           </li>
@@ -230,9 +230,8 @@ export default defineComponent({
       this.closeCollapsible()
       this.$router.push('/biketags')
     },
-    goQueuePlay: function () {
+    goPlayPage: function () {
       this.closeCollapsible()
-      this.$store.dispatch('setFormStepToJoin', true)
       this.$router.push('/play')
     },
     goProfile: function () {
@@ -362,6 +361,7 @@ header {
 
     .back-arrow {
       margin-left: 1rem;
+      cursor: pointer;
     }
   }
 }

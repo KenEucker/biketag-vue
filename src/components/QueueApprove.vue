@@ -1,10 +1,10 @@
 <template>
   <div></div>
-  <div v-if="!getQueuedTags.length" class="queue-approve-tag container">
+  <div v-if="!getQueuedTags.length" class="container queue-approve-tag">
     <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.empty_text') }}</p>
   </div>
-  <div v-else class="queue-approve-tag container queue-approve">
+  <div v-else class="container queue-approve-tag queue-approve">
     <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.approve_text') }}</p>
     <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" />
@@ -159,19 +159,19 @@ export default defineComponent({
     dequeueTag() {
       const formAction = this.$refs.dequeueTag.getAttribute('action')
       const formData = new FormData(this.$refs.dequeueTag)
-      const tagToRemove = this.$emit('submit', {
+
+      this.$emit('submit', {
         formAction,
         formData,
-        tag: tagToRemove,
+        tag: this.currentlySelectedTag,
         storeAction: 'dequeueTag',
       })
     },
     approveTag() {
       const formAction = this.$refs.approveTag.getAttribute('action')
       const formData = new FormData(this.$refs.approveTag)
-      const approvedTag = {
-        ambassadorId: this.getAmbassadorId,
-      }
+      const approvedTag = this.currentlySelectedTag
+      approvedTag.ambassadorId = this.getAmbassadorId
 
       this.$emit('submit', {
         formAction,

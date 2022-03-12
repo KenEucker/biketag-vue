@@ -64,7 +64,7 @@ export const store = createStore<State>({
     players: [] as Player[],
     leaderboard: [] as Player[],
     html: '',
-    formStep: BiketagFormSteps.queueView,
+    formStep: BiketagFormSteps.queueFound,
     // queuedTag: getQueuedTagFromCookie() ?? ({} as Tag),
     queuedTag: {} as Tag,
     profile,
@@ -200,8 +200,9 @@ export const store = createStore<State>({
                 fullyQueuedTag.mysteryPlayer = queuedMysteryTag[0].mysteryPlayer
               }
               commit('SET_QUEUED_TAG', fullyQueuedTag)
+              commit('SET_QUEUED_TAG_STATE', fullyQueuedTag)
+
             }
-            if (!cached) commit('SET_FORM_STEP_TO_JOIN')
 
             return commit('SET_QUEUED_TAGS', currentBikeTagQueue)
           }
@@ -239,12 +240,12 @@ export const store = createStore<State>({
         d.hash = state.game.queuehash
         return client.deleteTag(d.tag).then((t) => {
           if (t.success) {
-            console.log('store::tag dequeued', d.tag)
+            console.log('store::tag approved', d.tag)
           } else {
-            console.log('error::dequeue BikeTag failed', t)
+            console.log('error::approve BikeTag failed', t)
             return t.error
           }
-          return 'successfully dequeued tag'
+          return 'successfully approved tag'
         })
       }
       return 'incorrect permissions'
@@ -400,9 +401,9 @@ export const store = createStore<State>({
       }
       return false
     },
-    async resetFormStep({ commit }) {
-      return commit('RESET_FORM_STEP')
-    },
+    // async resetFormStep({ commit }) {
+    //   return commit('RESET_FORM_STEP')
+    // },
     async resetFormStepToFound({ commit }) {
       await commit('SET_QUEUED_TAG')
       return commit('RESET_FORM_STEP_TO_FOUND')
@@ -622,11 +623,14 @@ export const store = createStore<State>({
         console.log('state::queue', BiketagFormSteps[state.formStep])
       }
     },
-    RESET_FORM_STEP(state) {
-      state.formStep =
-        state.queuedTags?.length > 0 ? BiketagFormSteps.queueView : BiketagFormSteps.queueFound
-      // console.log('state::queue', BiketagFormSteps[state.formStep])
+    SET_QUEUED_TAG_STATE(state, tag) {
+      state.formStep = getQueuedTagState(tag ?? this.queuedTag)
     },
+    // RESET_FORM_STEP(state) {
+    //   state.formStep =
+    //     state.queuedTags?.length > 0 ? BiketagFormSteps.queueView : BiketagFormSteps.queueFound
+    //   console.log('state::queue', BiketagFormSteps[state.formStep])
+    // },
     RESET_FORM_STEP_TO_FOUND(state) {
       state.formStep = BiketagFormSteps.queueFound
       // console.log('state::queue', BiketagFormSteps[state.formStep])

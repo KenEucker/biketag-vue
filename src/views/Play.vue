@@ -76,7 +76,6 @@ import QueueJoined from '@/components/QueueJoined.vue'
 import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
-import BikeTagButton from '@/components/BikeTagButton.vue'
 import LineSvg from '@/assets/images/line.svg'
 import ArrowSvg from '@/assets/images/arrow.svg'
 
@@ -90,7 +89,6 @@ export default defineComponent({
     QueuePosted,
     QueuePostedShare,
     BikeTagQueue,
-    BikeTagButton,
   },
   props: {
     usingTimer: {
@@ -128,6 +126,7 @@ export default defineComponent({
     ]),
   },
   async mounted() {
+    console.log('getFormStep', this.getFormStep)
     this.uploadInProgress = false
   },
   async created() {

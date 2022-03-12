@@ -193,7 +193,7 @@ export default defineComponent({
           } else {
             input.files[0].arrayBuffer().then(async (value) => {
               const results = await exifr.parse(value)
-              const createDate = results.CreateDate ?? results.DateTimeOriginal ?? Date.now()
+              const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
               if (createDate < this.getCurrentBikeTag.mysteryTime) {
                 this.$toast.open({
                   message: 'Timestamp Error',
