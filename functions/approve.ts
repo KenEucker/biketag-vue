@@ -39,7 +39,6 @@ const approveHandler: Handler = async (event) => {
   if (profile && profile.sub === approvePayload.ambassadorId) {
     const biketagOpts = getBikeTagClientOpts(event as unknown as request.Request, true)
     const biketag = new BikeTagClient(biketagOpts)
-    console.log({ c: biketag.config() })
     const { playerId, tagnumber } = approvePayload.tag
     const game = (await biketag.game(undefined, { source: 'sanity' })) as Game
 

@@ -59,10 +59,10 @@
           </li>
           <li
             class="nav-item"
-            :class="{ 'active-nav': currentRoute === 'About' }"
-            @click="goAboutPage"
+            :class="{ 'active-nav': currentRoute === 'Play' }"
+            @click="goPlayPage"
           >
-            {{ $t('menu.about') }}
+            {{ $t('menu.play') }}
           </li>
           <li
             class="nav-item"
@@ -71,15 +71,15 @@
           >
             {{ $t('menu.biketags') }}
           </li>
-          <li
-            class="nav-item"
-            :class="{ 'active-nav': currentRoute === 'Play' }"
-            @click="goPlayPage"
-          >
-            {{ $t('menu.play') }}
-          </li>
           <li class="nav-item" :class="{ 'active-nav': currentRoute === 'How' }" @click="goHowPage">
             {{ $t('menu.howto') }}
+          </li>
+          <li
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'About' }"
+            @click="goAboutPage"
+          >
+            {{ $t('menu.about') }}
           </li>
           <template v-if="!authLoading">
             <template v-if="$auth.isAuthenticated">

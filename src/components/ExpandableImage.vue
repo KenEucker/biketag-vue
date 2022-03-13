@@ -37,7 +37,6 @@ export default defineComponent({
   },
   computed: {
     imgSrc() {
-      console.log({expanded: this.expanded, fullSource: this.fullSource, source: this.source})
       return this.expanded ? this.fullSource : this.source
     }
   },

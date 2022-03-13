@@ -53,7 +53,7 @@
       "hint": "need a hint?",
       "nohint": "no hint provided, sorry",
       "mystery": "current Mystery Location to find",
-      "send_hello_email": "Send an email to hello@biketag.org to ask about how you can start one!",
+      "send_hello_email": "Send an email to ask about how you can start one!",
       "game_not_exists": "Uh, oh. Does this game not exist.. yet?"
     },
     "login":{
@@ -94,7 +94,7 @@
       "name_placeholder": "Enter your Name",
       "hint_placeholder": "Enter your Hint",
       "current_round_description": "The tags below are from players who are actively playing RIGHT NOW! Watch the game unfold as players make it from the current mystery location to a new mystery location of their choosing.",
-      "current_round_win_description": "Who will become \"it\" next?!",
+      "current_round_win_description": "Who will become 'it' next?!",
       "current_round_description_empty": "Tags added to the current round will show up here once the first person has uploaded their found image.",
       "post_to_reddit": "Reddit",
       "post_to_twitter": "Twitter",

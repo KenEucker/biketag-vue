@@ -2930,10 +2930,10 @@ better-opn@^3.0.0:
   dependencies:
     open "^8.0.4"
 
-biketag@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-2.1.0.tgz#b890d6729130070eae10114e61f12e1227f222bd"
-  integrity sha512-GoyfyKoyqSe2dEFGq/DQYm8sx7bwvhrr27tKACZbO/x8+ERmE8EwM7HjEZiwd4o5csl5lIieaesvAF+UcZ5NoQ==
+biketag@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-2.1.1.tgz#33b1351367ec70187b251a0f223095f85f78db03"
+  integrity sha512-ANjoT96ylrGKGz8to0EXytCy/nkf0PLfiqXMkVLQ90LABgCEbor9JAQwZBptZeCyedidQ3vbuxIvCPsQSVvPdQ==
   dependencies:
     "@croquet/croquet" "^1.0.5"
     "@sanity/client" "^2.23.2"
@@ -6211,9 +6211,9 @@ http-errors@2.0.0:
     toidentifier "1.0.1"
 
 http-proxy-middleware@^2.0.0:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/http-proxy-middleware/-/http-proxy-middleware-2.0.3.tgz#5df04f69a89f530c2284cd71eeaa51ba52243289"
-  integrity sha512-1bloEwnrHMnCoO/Gcwbz7eSVvW50KPES01PecpagI+YLNLci4AcuKJrujW4Mc3sBLpFxMSlsLNHS5Nl/lvrTPA==
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/http-proxy-middleware/-/http-proxy-middleware-2.0.4.tgz#03af0f4676d172ae775cb5c33f592f40e1a4e07a"
+  integrity sha512-m/4FxX17SUvz4lJ5WPXOHDUuCwIqXLfLHs1s0uZ3oYjhoXlx9csYxaOa0ElDEJ+h8Q4iJ1s+lTMbiCa4EXIJqg==
   dependencies:
     "@types/http-proxy" "^1.17.8"
     http-proxy "^1.18.1"
