@@ -403,6 +403,7 @@ export const store = createStore<State>({
     async queueMysteryTag({ commit, state }, d) {
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = state.profile.sub
+
         return client.queueTag(d).then((t) => {
           if (t.success) {
             commit('SET_QUEUE_MYSTERY', t.data)

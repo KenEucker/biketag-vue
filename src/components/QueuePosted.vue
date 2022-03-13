@@ -7,6 +7,52 @@
         {{ $t('pages.round.joined_button') }} #{{ getCurrentBikeTag?.tagnumber }}
       </bike-tag-button>
     </div>
+    <form
+      ref="submitTag"
+      name="post-new-biketag"
+      action="post-new-biketag"
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+    >
+      <input type="hidden" name="form-name" value="post-new-biketag" />
+      <input type="hidden" name="playerId" :value="getPlayerId" />
+      <fieldset v-if="supportsReddit">
+        <label for="postToReddit">{{ $t('pages.round.post_to_reddit') }}</label>
+        <input
+          v-model="postToReddit"
+          name="postToReddit"
+          type="checkbox"
+          @click="showReddit = !showReddit"
+        />
+      </fieldset>
+      <fieldset v-if="supportsTwitter">
+        <label for="postToTwitter">{{ $t('pages.round.post_to_twitter') }}</label>
+        <input
+          v-model="postToTwitter"
+          name="postToTwitter"
+          type="checkbox"
+          @click="showTwitter = !showTwitter"
+        />
+      </fieldset>
+      <fieldset v-if="supportsInstagram">
+        <label for="postToInstagram">{{ $t('pages.round.post_to_instagram') }}</label>
+        <input
+          v-model="postToInstagram"
+          name="postToInstagram"
+          type="checkbox"
+          @click="showInstagram = !showInstagram"
+        />
+      </fieldset>
+      <!-- <div class="mt-3 align-center">
+        <bike-tag-button
+          variant="medium"
+          class="mt-2 mb-2 border-0"
+          :text="$t('pages.round.post_new_tag')"
+          @click="onSubmit"
+        />
+      </div> -->
+    </form>
   </b-container>
 </template>
 <script>
@@ -19,12 +65,56 @@ export default defineComponent({
   components: {
     BikeTagButton,
   },
+  emits: ['submit'],
   computed: {
-    ...mapGetters(['getCurrentBikeTag']),
+    ...mapGetters(['getCurrentBikeTag', 'getPlayerTag']),
+  },
+  mounted() {
+    if (!this.getPlayerTag?.discussionUrl?.length) {
+      /// TODO: check game settings for queue and remove this hardcoded hack
+      const defaultShareSettings = {
+        postToReddit: this.postToReddit,
+        postToTwitter: this.postToTwitter,
+        postToInstagram: this.postToInstagram,
+      }
+      console.log('autosubmitting tag with default share settings', defaultShareSettings)
+      this.submitTag(defaultShareSettings)
+    }
   },
   methods: {
     goViewRound() {
       this.$router.push('/round')
+    },
+    submitTag(defaultShareSettings) {
+      const formAction = this.$refs.submitTag.getAttribute('action')
+      const formData = new FormData(this.$refs.submitTag)
+      const submittedTag = this.getPlayerTag
+      defaultShareSettings = defaultShareSettings ?? {
+        postToReddit: this.postToReddit,
+        postToTwitter: this.postToTwitter,
+        postToInstagram: this.postToInstagram,
+      }
+
+      submittedTag.discussionUrl = JSON.stringify({
+        postToReddit: defaultShareSettings.postToReddit,
+      })
+      submittedTag.mentionUrl = JSON.stringify({
+        postToTwitter: defaultShareSettings.postToTwitter,
+      })
+      submittedTag.shareUrl = JSON.stringify({
+        postToInstagram: defaultShareSettings.postToInstagram,
+      })
+
+      formData.append('discussionUrl', submittedTag.discussionUrl)
+      formData.append('mentionUrl', submittedTag.mentionUrl)
+      // formData.append('shareUrl', submittedTag.shareUrl)
+
+      this.$emit('submit', {
+        formAction,
+        formData,
+        tag: submittedTag,
+        storeAction: 'submitQueuedTag',
+      })
     },
   },
 })

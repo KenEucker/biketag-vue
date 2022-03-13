@@ -63,7 +63,7 @@
         <queue-posted-share :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.roundPosted]">
-        <queue-posted :tag="getPlayerTag" />
+        <queue-posted :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
       <span v-if="isSubmittingData()" class="player-agree">
         * {{ $t('pages.round.user_agree') }}

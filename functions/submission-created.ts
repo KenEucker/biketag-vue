@@ -149,9 +149,10 @@ export const handler = async (event) => {
           // send app notification
           break
         default:
+        case 'approve-tag-error':
         case 'post-tag-error':
           emailSent = await sendEmailsToAmbassadors(
-            'post-tag-error',
+            formName,
             `An error has occured for [${game.name}] BikeTag`,
             thisGamesAmbassadors,
             () => {

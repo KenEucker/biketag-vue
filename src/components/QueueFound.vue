@@ -3,6 +3,7 @@
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
       <div style="margin-top: 2rem">
+        <p>{{ $t('pages.round.player_name_reserved') }}</p>
         <bike-tag-input id="passcode" v-model="passcode" name="passcode" placeholder="passcode" />
         <bike-tag-button class="modal-sub-btn" variant="medium" text="Submit" />
       </div>
