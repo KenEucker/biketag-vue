@@ -80,6 +80,7 @@ export default defineComponent({
   z-index: 1;
   text-align: left;
   box-shadow: 3px 4px 5px 0 #8885;
+  z-index: 9999999999999;
 
   .message {
     margin-bottom: 8px;

@@ -21,9 +21,9 @@
           />
         </div>
         <div v-if="getCurrentBikeTag" class="rel play-screen">
-          <ExpandableImage
+          <expandable-image
             class="play-screen__image"
-            :src="getImgurImageSized(getCurrentBikeTag?.mysteryImageUrl, 'l')"
+            :source="getImgurImageSized(getCurrentBikeTag?.mysteryImageUrl, 'l')"
             :full-source="getCurrentBikeTag?.mysteryImageUrl"
             :alt="getCurrentBikeTag?.hint"
             @loaded="tagImageLoaded"

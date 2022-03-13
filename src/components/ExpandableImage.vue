@@ -7,13 +7,7 @@
     @click="expandClick"
   >
     <b-spinner v-show="loading" />
-    <img
-      v-show="!loading"
-      :src="expanded ? fullSource : source"
-      class="img-fluid"
-      v-bind="$attrs"
-      @load="loaded"
-    />
+    <img v-show="!loading" :src="imgSrc" class="img-fluid" v-bind="$attrs" @load="loaded" />
     <i v-if="expanded" class="close-button">
       <img src="@/assets/images/close.svg" />
     </i>
@@ -41,7 +35,12 @@ export default defineComponent({
       loading: this.$emit('loading') && true,
     }
   },
-
+  computed: {
+    imgSrc() {
+      console.log({expanded: this.expanded, fullSource: this.fullSource, source: this.source})
+      return this.expanded ? this.fullSource : this.source
+    }
+  },
   watch: {
     expanded(status) {
       this.$nextTick(() => {
