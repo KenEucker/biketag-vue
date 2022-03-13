@@ -59,7 +59,6 @@ export const handler = async (event) => {
         if (!game || !ambassadors.length || !currentMysteryTag) {
           console.log('insufficient game data to work with', {
             gameName,
-            c: biketag.config(),
             game,
             ambassadors,
             currentMysteryTag,
