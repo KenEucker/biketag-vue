@@ -40,10 +40,7 @@
   },
   "devDependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.2",
-    "@serverless-jwt/jwt-verifier": "^0.2.1",
-    "@types/crypto-js": "^4.1.1",
     "@types/device-uuid": "^1.0.0",
-    "@types/dom-to-image": "^2.6.4",
     "@types/markdown-it": "^12.2.3",
     "@types/md5": "^2.3.2",
     "@types/node": "^17.0.16",
