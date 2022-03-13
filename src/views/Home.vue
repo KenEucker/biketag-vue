@@ -88,7 +88,7 @@ export default defineComponent({
 
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      tagIsLoading: true,
+      tagIsLoading: !this.$route.params?.tagnumber?.length,
     }
   },
   computed: {
