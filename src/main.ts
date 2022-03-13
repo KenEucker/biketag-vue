@@ -9,14 +9,14 @@ import { Auth0Plugin } from './auth'
 import i18nPlugin from './i18n'
 import VueToast from 'vue-toast-notification'
 import VueCookies from 'vue3-cookies'
-import VueGoogleMaps from '@fawmi/vue-google-maps'
+// import VueGoogleMaps from '@fawmi/vue-google-maps'
 
 // eslint-disable-next-line
 // @ts-ignore
 import Markdown from 'vue3-markdown-it'
 // eslint-disable-next-line
 // @ts-ignore
-import VueIframe from 'vue-iframes'
+// import VueIframe from 'vue-iframes'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
@@ -68,13 +68,13 @@ class BikeTagApp {
     this.app.use(VueToast)
     this.app.use(BootstrapVue3)
     this.app.use(Markdown)
-    this.app.use(VueIframe)
-    this.app.use(VueGoogleMaps, {
-      load: {
-        key: process.env.G_AKEY,
-        libraries: 'places',
-      },
-    })
+    // this.app.use(VueIframe)
+    // this.app.use(VueGoogleMaps, {
+    //   load: {
+    //     key: process.env.G_AKEY,
+    //     libraries: 'places',
+    //   },
+    // })
     // this.app.use(NotificationsPlugin)
   }
   async notifications() {

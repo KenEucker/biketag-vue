@@ -2,9 +2,11 @@ import { DeviceUUID } from '@/common/uuid'
 import { Tag } from 'biketag/lib/common/schema'
 import { useCookies } from 'vue3-cookies'
 import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
-import CryptoJS from 'crypto-js'
+// import CryptoJS from 'crypto-js'
 import md5 from 'md5'
-import domtoimage from 'dom-to-image'
+// import domtoimage from 'dom-to-image'
+const domtoimage = {}
+const CryptoJS = {}
 
 export type DomainInfo = {
   host: string
@@ -170,19 +172,24 @@ export const setProfileCookie = (
   profile?: BikeTagProfile,
   profileCookieKey = 'profile'
 ): boolean => {
-  const { cookies } = useCookies()
+  try {
+    const { cookies } = useCookies()
 
-  if (profile) {
-    const encryptedProfileString = CryptoJS.AES.encrypt(
-      JSON.stringify(profile),
-      process.env.HOST_KEY ?? 'BikeTag'
-    ).toString()
-    cookies.set(profileCookieKey, encryptedProfileString)
-  } else {
-    cookies.remove(profileCookieKey)
+    if (profile) {
+      const encryptedProfileString = CryptoJS.AES.encrypt(
+        JSON.stringify(profile),
+        process.env.HOST_KEY ?? 'BikeTag'
+      ).toString()
+      cookies.set(profileCookieKey, encryptedProfileString)
+    } else {
+      cookies.remove(profileCookieKey)
+    }
+
+    return true
+  } catch (err) {
+    console.error('could not set profile cookie', err)
+    return false
   }
-
-  return true
 }
 
 export const setNPAuthorization = (basic: string): string => {

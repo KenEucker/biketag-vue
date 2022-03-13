@@ -1,8 +1,10 @@
 import request from 'request'
 import { getDomainInfo } from '../../src/common/utils'
 import md5 from 'md5'
-import crypto from 'crypto'
-import CryptoJS from 'crypto-js'
+// import crypto from 'crypto'
+const crypto = {}
+// import CryptoJS from 'crypto-js'
+const CryptoJS = {}
 import nodemailer from 'nodemailer'
 import { Liquid } from 'liquidjs'
 import { join, extname } from 'path'
@@ -13,7 +15,8 @@ import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import BikeTagClient from 'biketag'
 import axios from 'axios'
 import Ajv from 'ajv'
-import * as jose from 'jose'
+// import * as jose from 'jose'
+const jose = {}
 import { BikeTagProfile } from '../../src/common/types'
 import lzutf8 from 'lzutf8'
 

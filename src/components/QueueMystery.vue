@@ -98,7 +98,8 @@ import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import { stringifyNumber, ordinalSuffixOf } from '@/common/utils'
-import exifr from 'exifr'
+// import exifr from 'exifr'
+const exifr = {}
 
 export default defineComponent({
   name: 'QueueMysteryTag',
