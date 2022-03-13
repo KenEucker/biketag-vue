@@ -276,18 +276,22 @@ export const GetQueryString = (win: Window, name: string): string | null => {
 export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
   const mysteryImageSet = queuedTag.mysteryImageUrl?.length > 0
   const foundImageSet = queuedTag.foundImageUrl?.length > 0
-  let queuedTagState = BiketagFormSteps.queueFound
+  let queuedTagState = BiketagFormSteps.addFoundImage
   if (mysteryImageSet && foundImageSet) {
     // const discussionUrlIsSet = queuedTag.discussionUrl && queuedTag.discussionUrl.length > 0
     // const mentionUrlIsSet = queuedTag.mentionUrl && queuedTag.mentionUrl.length > 0
     // queuedTagState =
     //   discussionUrlIsSet || mentionUrlIsSet
-    //     ? BiketagFormSteps.queuePosted
-    //     : BiketagFormSteps.queuePostedShare
-    queuedTagState = BiketagFormSteps.queuePosted
+    //     ? BiketagFormSteps.roundPosted
+    //     : BiketagFormSteps.shareBikeTagPost
+    console.log('both')
+    queuedTagState = BiketagFormSteps.roundPosted
   } else {
-    queuedTagState = foundImageSet ? BiketagFormSteps.queueMystery : BiketagFormSteps.queueFound
-  }
+    queuedTagState = foundImageSet
+      ? BiketagFormSteps.addMysteryImage
+      : BiketagFormSteps.addFoundImage
+      console.log({ foundImageSet, queuedTagState })
+    }
 
   return queuedTagState
 }

@@ -13,7 +13,7 @@
     "about": "About",
     "players": "Players",
     "top10": "Top10",
-    "queue": "Queue",
+    "queue": "Current Round",
     "external": "External",
     "language": "Languages",
     "profile": "Profile",
@@ -40,8 +40,8 @@
       "biketag": "BikeTag"
     },
     "queue": {
-      "view_mystery_image": "Queued Mystery Image",
-      "view_found_image": "Queued Found Image",
+      "view_mystery_image": "Your Mystery Image",
+      "view_found_image": "Your Found Image",
       "current_mystery_location": "Current Mystery Location",
       "view_queue_button": "View tags in this round",
       "reset_queue_button": "RESET",

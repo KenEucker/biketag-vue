@@ -77,18 +77,18 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueuedTags', 'getQueuedTag', 'getCurrentBikeTag', 'getQueuedTagState']),
+    ...mapGetters(['getQueuedTags', 'getPlayerTag', 'getCurrentBikeTag', 'getQueuedTagState']),
     goNextQueueStepButtonText() {
       return `${
-        this.getQueuedTag?.mysteryImageUrl?.length > 0
+        this.getPlayerTag?.mysteryImageUrl?.length > 0
           ? this.$t('pages.queue.submit_queue')
-          : this.getQueuedTag?.foundImageUrl?.length > 0
+          : this.getPlayerTag?.foundImageUrl?.length > 0
           ? this.$t('pages.queue.complete_queue')
           : this.$t('pages.queue.join_queue')
       } #${this.getCurrentBikeTag?.tagnumber ?? 1}!`
     },
     showGoNextButton() {
-      return this.getQueuedTagState !== BiketagFormSteps.queuePosted
+      return this.getQueuedTagState !== BiketagFormSteps.roundPosted
     },
   },
   methods: {

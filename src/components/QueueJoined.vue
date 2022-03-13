@@ -38,7 +38,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueue', 'getQueuedTag', 'getCurrentBikeTag']),
+    ...mapGetters(['getQueue', 'getPlayerTag', 'getCurrentBikeTag']),
   },
   methods: {
     goViewRound() {

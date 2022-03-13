@@ -160,7 +160,7 @@ export default defineComponent({
     ...mapGetters([
       'getGameName',
       'getQueue',
-      'getQueuedTag',
+      'getPlayerTag',
       'getPlayerId',
       'getCurrentBikeTag',
       'getProfile',

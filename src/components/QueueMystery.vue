@@ -129,14 +129,14 @@ export default defineComponent({
   computed: {
     ...mapGetters([
       'getGameName',
-      'getQueuedTag',
+      'getPlayerTag',
       'getPlayerId',
       'getCurrentBikeTag',
       'getQueuedTags',
     ]),
     numberInQueue() {
       return this.getQueuedTags?.reduce((o, t, n) => {
-        if (t.playerId === this.getQueuedTag?.playerId) {
+        if (t.playerId === this.getPlayerTag?.playerId) {
           o = n + 1
         }
         return o
@@ -144,7 +144,8 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.player = this.getQueuedTag?.foundPlayer
+    console.log('HEYOOO')
+    this.player = this.getPlayerTag?.foundPlayer
     this.showModalIfNew()
   },
   methods: {
@@ -217,7 +218,7 @@ export default defineComponent({
       this.$router.push('/round')
     },
     showModalIfNew() {
-      if (!this.getQueuedTag?.mysteryImageUrl?.length) {
+      if (!this.getPlayerTag?.mysteryImageUrl?.length) {
         this.showModal = true
       }
     },

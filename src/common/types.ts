@@ -91,26 +91,25 @@ export interface State {
   gameName: string
   currentBikeTag: Tag
   tags: Tag[]
-  queuedTags: Tag[]
+  tagsInRound: Tag[]
   players: Player[]
   leaderboard: Player[]
   html: string
   profile: BikeTagProfile
   formStep: number
-  queuedTag: Tag
-  isBikeTagAmbassador: boolean
+  playerTag: Tag
   credentialsFetched: boolean
-  mostRecentlyViewedTagnumber: number
+  mostRecentlyViewedTagnumber: BiketagFormSteps
 }
 
 export enum BiketagFormSteps {
-  queueView = 0.5,
-  queueFound = 1,
-  queueJoined = 1.5,
-  queueMystery = 2,
-  queueSubmit = 2.5,
-  queuePosted = 3,
-  queuePostedShare = 3.5,
+  viewRound = 0.5,
+  addFoundImage = 1,
+  roundJoined = 1.5,
+  addMysteryImage = 2,
+  addNewBikeTag = 2.5,
+  roundPosted = 3,
+  shareBikeTagPost = 3.5,
 }
 
 export enum Settings {

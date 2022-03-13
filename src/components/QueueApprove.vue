@@ -146,7 +146,7 @@ export default defineComponent({
   computed: {
     ...mapGetters([
       'getQueuedTags',
-      'getQueuedTag',
+      'getPlayerTag',
       'getCurrentBikeTag',
       'isBikeTagAmbassador',
       'getAmbassadorId',

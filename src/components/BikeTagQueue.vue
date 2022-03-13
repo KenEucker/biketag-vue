@@ -14,18 +14,18 @@
         <img class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
       </b-popover>
 
-      <b-button v-if="getQueuedTag.foundImageUrl" id="queued-found-popover" class="navigation">
-        <img class="img-fluid" :src="getImgurImageSized(getQueuedTag.foundImageUrl, 's')" />
+      <b-button v-if="getPlayerTag.foundImageUrl" id="queued-found-popover" class="navigation">
+        <img class="img-fluid" :src="getImgurImageSized(getPlayerTag.foundImageUrl, 's')" />
       </b-button>
       <b-popover
-        v-if="getQueuedTag.foundImageUrl?.length > 0"
+        v-if="getPlayerTag.foundImageUrl?.length > 0"
         target="queued-found-popover"
         triggers="hover focus"
         placement="bottom"
         class="queued-found"
       >
         <template #title>{{ $t('components.queue.view_found_image') }}</template>
-        <img class="img-fluid" :src="getQueuedTag.foundImageUrl" />
+        <img class="img-fluid" :src="getPlayerTag.foundImageUrl" />
         <div v-if="canReset()" class="row">
           <b-button class="col" variant="danger" @click="resetToFound">{{
             $t('components.queue.reset_queue_button')
@@ -34,21 +34,21 @@
       </b-popover>
 
       <b-button
-        v-if="getQueuedTag.mysteryImageUrl?.length > 0"
+        v-if="getPlayerTag.mysteryImageUrl?.length > 0"
         id="queued-mystery-popover"
         class="navigation"
       >
-        <img class="img-fluid" :src="getImgurImageSized(getQueuedTag.mysteryImageUrl, 's')" />
+        <img class="img-fluid" :src="getImgurImageSized(getPlayerTag.mysteryImageUrl, 's')" />
       </b-button>
       <b-popover
-        v-if="getQueuedTag.mysteryImageUrl?.length > 0"
+        v-if="getPlayerTag.mysteryImageUrl?.length > 0"
         target="queued-mystery-popover"
         triggers="hover focus"
         placement="bottom"
         class="queued-mystery"
       >
         <template #title>{{ $t('components.queue.view_mystery_image') }}</template>
-        <img class="img-fluid" :src="getQueuedTag.mysteryImageUrl" />
+        <img class="img-fluid" :src="getPlayerTag.mysteryImageUrl" />
         <div v-if="canReset()" class="row">
           <b-button class="col" variant="danger" @click="resetToMystery">{{
             $t('components.queue.reset_queue_button')
@@ -89,14 +89,14 @@ export default defineComponent({
     ...mapGetters([
       'getQueuedTags',
       'getCurrentBikeTag',
-      'getQueuedTag',
+      'getPlayerTag',
       'getImgurImageSized',
       'getQueuedTagState',
     ]),
   },
   methods: {
     canReset() {
-      return this.getQueuedTagState !== BiketagFormSteps.queuePosted
+      return this.getQueuedTagState !== BiketagFormSteps.roundPosted
     },
     async resetToFound() {
       await this.$store.dispatch('fetchCredentials')

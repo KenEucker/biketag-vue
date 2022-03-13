@@ -6,7 +6,7 @@
     </div>
     <span class="tag-number"
       >#{{
-        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
+        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.addFoundImage ? 1 : 0)
       }}</span
     >
     <div>
@@ -38,13 +38,13 @@ export default defineComponent({
     const time = new Date()
     time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
     const timer = useTimer(time.getSeconds())
-    onMounted(() => {
-      watchEffect(async () => {
-        if (timer.isExpired.value) {
-          console.warn('IsExpired')
-        }
-      })
-    })
+    // onMounted(() => {
+    //   watchEffect(async () => {
+    //     if (timer.isExpired.value) {
+    //       console.warn('IsExpired')
+    //     }
+    //   })
+    // })
     return {
       timer,
       BiketagFormSteps,
@@ -55,7 +55,7 @@ export default defineComponent({
   computed: {
     ...mapGetters([
       'getFormStep',
-      'getQueuedTag',
+      'getPlayerTag',
       'getCurrentBikeTag',
       'getGameName',
       'getPlayerId',
@@ -67,7 +67,7 @@ export default defineComponent({
   async created() {
     await this.$store.dispatch('setCurrentBikeTag', true)
     await this.$store.dispatch('setQueuedTags', true)
-    this.countDownTimer()
+    // this.countDownTimer()
   },
   methods: {
     countDownTimer() {
@@ -82,14 +82,14 @@ export default defineComponent({
       return (
         !this.isViewingQueue() &&
         !(
-          this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
-          this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted] ||
-          this.getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]
+          this.getFormStep === BiketagFormSteps[BiketagFormSteps.roundJoined] ||
+          this.getFormStep === BiketagFormSteps[BiketagFormSteps.roundPosted] ||
+          this.getFormStep === BiketagFormSteps[BiketagFormSteps.shareBikeTagPost]
         )
       )
     },
     isViewingQueue() {
-      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
+      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.viewRound]
     },
     async onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
@@ -116,16 +116,16 @@ export default defineComponent({
         this.$store.dispatch('setQueuedTags', true)
 
         formData.set('game', this.getGameName)
-        formData.set('tag', JSON.stringify(this.getQueuedTag))
+        formData.set('tag', JSON.stringify(this.getPlayerTag))
         formData.set(
           'submission',
-          `${this.getGameName}-${this.getQueuedTag.tagnumber}--${this.getQueuedTag.foundPlayer}`
+          `${this.getGameName}-${this.getPlayerTag.tagnumber}--${this.getPlayerTag.foundPlayer}`
         )
 
         if (tag.foundImage) {
-          formData.set('foundImageUrl', this.getQueuedTag.foundImageUrl)
+          formData.set('foundImageUrl', this.getPlayerTag.foundImageUrl)
         } else if (tag.mysteryImage) {
-          formData.set('mysteryImageUrl', this.getQueuedTag.mysteryImageUrl)
+          formData.set('mysteryImageUrl', this.getPlayerTag.mysteryImageUrl)
         }
         return sendNetlifyForm(
           formAction,

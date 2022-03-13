@@ -52,13 +52,13 @@ export default defineComponent({
     const time = new Date()
     time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
     const timer = useTimer(time)
-    onMounted(() => {
-      watchEffect(async () => {
-        if (timer.isExpired.value) {
-          console.warn('IsExpired')
-        }
-      })
-    })
+    // onMounted(() => {
+    //   watchEffect(async () => {
+    //     if (timer.isExpired.value) {
+    //       console.warn('IsExpired')
+    //     }
+    //   })
+    // })
     return {
       timer,
       BiketagFormSteps,
@@ -69,7 +69,7 @@ export default defineComponent({
   computed: {
     ...mapGetters([
       'getFormStep',
-      'getQueuedTag',
+      'getPlayerTag',
       'getCurrentBikeTag',
       'getGameName',
       'getAmbassadorId',
@@ -88,7 +88,7 @@ export default defineComponent({
     this.uploadInProgress = false
   },
   async created() {
-    this.countDownTimer()
+    // this.countDownTimer()
   },
   methods: {
     countDownTimer() {
@@ -150,16 +150,16 @@ export default defineComponent({
         this.$store.dispatch('setQueuedTags', true)
 
         formData.set('game', this.getGameName)
-        formData.set('tag', JSON.stringify(this.getQueuedTag))
+        formData.set('tag', JSON.stringify(this.getPlayerTag))
         formData.set(
           'approve',
-          `${this.getGameName}-${this.getQueuedTag.tagnumber}--${this.getQueuedTag.foundPlayer}`
+          `${this.getGameName}-${this.getPlayerTag.tagnumber}--${this.getPlayerTag.foundPlayer}`
         )
 
         if (tag.foundImage) {
-          formData.set('foundImageUrl', this.getQueuedTag.foundImageUrl)
+          formData.set('foundImageUrl', this.getPlayerTag.foundImageUrl)
         } else if (tag.mysteryImage) {
-          formData.set('mysteryImageUrl', this.getQueuedTag.mysteryImageUrl)
+          formData.set('mysteryImageUrl', this.getPlayerTag.mysteryImageUrl)
         }
         return sendNetlifyForm(
           formAction,

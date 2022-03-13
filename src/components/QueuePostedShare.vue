@@ -145,7 +145,7 @@ export default defineComponent({
   computed: {
     ...mapGetters([
       'getQueue',
-      'getQueuedTag',
+      'getPlayerTag',
       'getCurrentBikeTag',
       'getPlayerId',
       'getGameName',
@@ -162,11 +162,11 @@ export default defineComponent({
     },
     redditPostText() {
       return `
-[#${this.getQueuedTag.tagnumber} tag by ${this.getQueuedTag.foundPlayer}](https://${this.getGameName}.biketag.io/#/${this.getQueuedTag.tagnumber})
+[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://${this.getGameName}.biketag.io/#/${this.getPlayerTag.tagnumber})
 
-Credit goes to ${this.getQueuedTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
+Credit goes to ${this.getPlayerTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
 
-"[${this.getQueuedTag.foundLocation}](https://${this.getGameName}.biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
+"[${this.getPlayerTag.foundLocation}](https://${this.getGameName}.biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
 
 See all BikeTags and more, for ${this.getGameName}:
 
@@ -177,18 +177,18 @@ See all BikeTags and more, for ${this.getGameName}:
       return `
   Seattle BikeTag!
   
-  This is bike tag number ${this.getQueuedTag.tagnumber} by ${this.getQueuedTag.foundPlayer}.
+  This is bike tag number ${this.getPlayerTag.tagnumber} by ${this.getPlayerTag.foundPlayer}.
   Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
   
   #SeattleBikeTag #SeaBikes #BikeSeattle`
     },
     instgramPostText() {
       return `
-[#${this.getQueuedTag.tagnumber} tag by ${this.getQueuedTag.foundPlayer}](https://${this.getGameName}biketag.io/#/${this.getQueuedTag.tagnumber})
+[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://${this.getGameName}biketag.io/#/${this.getPlayerTag.tagnumber})
 
-Credit goes to ${this.getQueuedTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
+Credit goes to ${this.getPlayerTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
 
-"[${this.getQueuedTag.foundLocation}](https://${this.getGameName}biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
+"[${this.getPlayerTag.foundLocation}](https://${this.getGameName}biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
 
 See all BikeTags and more, for ${this.getGameName}:
 
@@ -211,7 +211,7 @@ See all BikeTags and more, for ${this.getGameName}:
     onSubmit() {
       const formAction = this.$refs.submitTag.getAttribute('action')
       const formData = new FormData(this.$refs.submitTag)
-      const submittedTag = this.getQueuedTag
+      const submittedTag = this.getPlayerTag
 
       submittedTag.discussionUrl = JSON.stringify({
         postToReddit: this.postToReddit,

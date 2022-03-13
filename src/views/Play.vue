@@ -7,7 +7,6 @@
   >
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
   </loading>
-  <!-- <div class="container col-md-8 col-lg-8 queue-page"> -->
   <div class="queue-page">
     <div v-if="usingTimer && isViewingQueue()" class="mt-2 clock-div">
       <i class="far fa-clock" />
@@ -47,25 +46,24 @@
       />
     </div>
 
-    <!-- <div v-if="!uploadInProgress" class="container"> -->
     <div v-if="!uploadInProgress">
-      <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueFound]">
-        <queue-found :tag="getQueuedTag" @submit="onQueueSubmit" />
+      <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.addFoundImage]">
+        <queue-found :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueJoined]">
-        <queue-joined :tag="getQueuedTag" />
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.roundJoined]">
+        <queue-joined :tag="getPlayerTag" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueMystery]">
-        <queue-mystery :tag="getQueuedTag" @submit="onQueueSubmit" />
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.addMysteryImage]">
+        <queue-mystery :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queueSubmit]">
-        <queue-submit :tag="getQueuedTag" @submit="onQueueSubmit" />
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.addNewBikeTag]">
+        <queue-submit :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePostedShare]">
-        <queue-posted-share :tag="getQueuedTag" @submit="onQueueSubmit" />
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.shareBikeTagPost]">
+        <queue-posted-share :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.queuePosted]">
-        <queue-posted :tag="getQueuedTag" />
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.roundPosted]">
+        <queue-posted :tag="getPlayerTag" />
       </div>
       <span v-if="isSubmittingData()" class="player-agree">
         * {{ $t('pages.queue.user_agree') }}
@@ -147,7 +145,7 @@ export default defineComponent({
   computed: {
     ...mapGetters([
       'getFormStep',
-      'getQueuedTag',
+      'getPlayerTag',
       'getCurrentBikeTag',
       'getGameName',
       'getPlayerId',
@@ -164,7 +162,7 @@ export default defineComponent({
   },
   methods: {
     isViewingQueue() {
-      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.queueView]
+      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.viewPosted]
     },
     countDownTimer() {
       if (this.countDown > 0) {
@@ -206,16 +204,16 @@ export default defineComponent({
         this.$store.dispatch('setQueuedTags', true)
 
         formData.set('game', this.getGameName)
-        formData.set('tag', JSON.stringify(this.getQueuedTag))
+        formData.set('tag', JSON.stringify(this.getPlayerTag))
         formData.set(
           'submission',
-          `${this.getGameName}-${this.getQueuedTag.tagnumber}--${this.getQueuedTag.foundPlayer}`
+          `${this.getGameName}-${this.getPlayerTag.tagnumber}--${this.getPlayerTag.foundPlayer}`
         )
 
         if (tag.foundImage) {
-          formData.set('foundImageUrl', this.getQueuedTag.foundImageUrl)
+          formData.set('foundImageUrl', this.getPlayerTag.foundImageUrl)
         } else if (tag.mysteryImage) {
-          formData.set('mysteryImageUrl', this.getQueuedTag.mysteryImageUrl)
+          formData.set('mysteryImageUrl', this.getPlayerTag.mysteryImageUrl)
         }
         return sendNetlifyForm(
           formAction,
