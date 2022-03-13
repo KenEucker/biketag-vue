@@ -88,7 +88,7 @@ export default defineComponent({
 
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      tagIsLoading: !this.$route.params?.tagnumber?.length,
+      tagIsLoading: true,
     }
   },
   computed: {
@@ -107,6 +107,9 @@ export default defineComponent({
       }
       return undefined
     },
+  },
+  mounted() {
+    this.tagIsLoading = this.tagnumber === 0
   },
   methods: {
     tagImageLoaded() {

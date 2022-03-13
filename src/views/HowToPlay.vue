@@ -76,7 +76,10 @@
         <p>{{ $t('pages.howto.swiper8.text3') }}</p>
       </swiper-slide>
       <swiper-slide>
+        <p>{{ $t('pages.howto.swiper9.text1') }}</p>
         <bike-tag-map />
+        <br />
+        <p>{{ $t('pages.howto.swiper9.text2') }}</p>
       </swiper-slide>
     </swiper>
   </div>
