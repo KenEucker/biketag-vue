@@ -15,6 +15,7 @@ import axios from 'axios'
 import Ajv from 'ajv'
 import * as jose from 'jose'
 import { BikeTagProfile } from '../../src/common/types'
+import lzutf8 from 'lzutf8'
 
 const ajv = new Ajv()
 export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
@@ -439,6 +440,9 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
     return null
   }
 }
+
+export const compress = lzutf8.compress
+export const decompress = lzutf8.decompress
 
 export const sendEmail = async (to: string, subject: string, locals: any, template?: string) => {
   template = template ?? subject
@@ -967,7 +971,8 @@ export const acceptCorsHeaders = (withAuthorization = true) => {
   }
 
   if (withAuthorization) {
-    corsHeaders['authorization'] = `Bearer ${process.env.AUTH0_TOKEN}`
+    const token = getEnvironmentVariable('AUTH0_TOKEN')
+    corsHeaders['authorization'] = `Bearer ${token}`
   }
 
   return corsHeaders
@@ -1079,4 +1084,10 @@ export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): B
     user_metadata,
     zipcode: profile.zipcode ?? defaults.zipcode ?? '',
   } as BikeTagProfile
+}
+
+export const getEnvironmentVariable = (key: string) => {
+  if (process.env[key]) {
+    return decompress(process.env[key])
+  }
 }
