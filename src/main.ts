@@ -47,11 +47,11 @@ class BikeTagApp {
     this.app.use(router).use(store)
   }
   authentication() {
-    if (process.env.AUTH0_DOMAIN?.length) {
+    if (process.env.A_DOMAIN?.length) {
       const auth0Opts = {
-        domain: process.env.AUTH0_DOMAIN,
-        client_id: process.env.AUTH0_CLIENT_ID,
-        audience: process.env.AUTH0_AUDIENCE,
+        domain: process.env.A_DOMAIN,
+        client_id: process.env.A_CID,
+        audience: process.env.A_AUDIENCE,
         onRedirectCallback: (appState: any) => {
           router.push(
             appState && appState.targetUrl ? appState.targetUrl : window.location.pathname
@@ -71,7 +71,7 @@ class BikeTagApp {
     this.app.use(VueIframe)
     this.app.use(VueGoogleMaps, {
       load: {
-        key: process.env.GOOGLE_API_KEY,
+        key: process.env.G_AKEY,
         libraries: 'places',
       },
     })

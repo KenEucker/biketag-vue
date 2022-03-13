@@ -38,14 +38,14 @@ const profileHandler: Handler = async (event) => {
             const roles = (
               await axios.request({
                 method: 'GET',
-                url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}/roles`,
+                url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}/roles`,
                 headers: authorizationHeaders,
               })
             ).data
             const user_data = (
               await axios.request({
                 method: 'GET',
-                url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
+                url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
                 headers: authorizationHeaders,
               })
             ).data
@@ -54,7 +54,7 @@ const profileHandler: Handler = async (event) => {
               const exists = (
                 await axios.request({
                   method: 'GET',
-                  url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
+                  url: `https://${process.env.A_DOMAIN}/api/v2/users`,
                   params: {
                     page: 0,
                     per_page: 1,
@@ -69,7 +69,7 @@ const profileHandler: Handler = async (event) => {
               if (!exists.length) {
                 await axios.request({
                   method: 'POST',
-                  url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}/roles`,
+                  url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}/roles`,
                   headers: authorizationHeaders,
                   data: {
                     roles: [
@@ -83,7 +83,7 @@ const profileHandler: Handler = async (event) => {
                 /// Wire up the final request to be an update of the profile data
                 options = {
                   method: 'PATCH',
-                  url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}`,
+                  url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}`,
                   headers: authorizationHeaders,
                   data,
                 }
@@ -114,7 +114,7 @@ const profileHandler: Handler = async (event) => {
           if (isValid) {
             options = {
               method: 'PATCH',
-              url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}`,
+              url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}`,
               headers: authorizationHeaders,
               data,
             }
@@ -132,7 +132,7 @@ const profileHandler: Handler = async (event) => {
       case 'GET':
         options = {
           method: 'GET',
-          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
+          url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
           headers: authorizationHeaders,
         }
         break
@@ -168,7 +168,7 @@ const profileHandler: Handler = async (event) => {
       const exists = (
         await axios.request({
           method: 'GET',
-          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
+          url: `https://${process.env.A_DOMAIN}/api/v2/users`,
           params: {
             page: 0,
             per_page: 1,
@@ -205,7 +205,7 @@ const profileHandler: Handler = async (event) => {
       await axios
         .request({
           method: 'GET',
-          url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
+          url: `https://${process.env.A_DOMAIN}/api/v2/users`,
           params: {
             page: 0,
             per_page: 1,

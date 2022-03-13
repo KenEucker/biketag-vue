@@ -1,86 +1,86 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no,  user-scalable=yes" />
-  <meta name="referrer" content="no-referrer" />
-  <title>BikeTag</title>
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css">
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no,  user-scalable=yes" />
+    <meta name="referrer" content="no-referrer" />
+    <title>BikeTag</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" />
+  </head>
 
-<body>
-  <div id="app">
-    <form name="queue-found-tag" action="queue-found-tag" method="POST" data-netlify="true"
-      data-netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="queue-found-tag">
-      <input type="hidden" name="game" required>
-      <input type="hidden" name="playerId" required>
-      <input type="hidden" name="tag" required>
-      <input type="hidden" name="foundImageUrl" required>
-      <input name="submission" type="text" required>
-      <input name="game" type="text" required>
-      <input name="player" type="text" required>
-      <input name="found" type="text" required>
-      <input name="tag" type="text" required>
-    </form>
-    <form name="queue-mystery-tag" action="queue-mystery-tag" method="POST" data-netlify="true"
-      data-netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="queue-mystery-tag">
-      <input type="hidden" name="game" required>
-      <input type="hidden" name="playerId" required>
-      <input type="hidden" name="tag" required>
-      <input type="hidden" name="mysteryImageUrl" required>
-      <input name="submission" type="text" required>
-      <input name="game" type="text" required>
-      <input name="player" type="text" required>
-      <input name="hint" type="text">
-      <input name="tag" type="text" required>
-    </form>
-    <form name="submit-queued-tag" action="submit-queued-tag" method="POST" data-netlify="true"
-      data-netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="submit-queued-tag">
-      <input type="hidden" name="game" required>
-      <input type="hidden" name="playerId" required>
-      <input type="hidden" name="tag" required>
-      <input name="submission" type="text" required>
-      <input name="game" type="text" required>
-      <input name="player" type="text" required>
-      <input name="discussionUrl" type="text">
-      <input name="mentionUrl" type="text">
-      <input name="tag" type="text" required>
-    </form>
-    <form name="approve-queued-tag" action="approve-queued-tag" method="POST" data-netlify="true"
-      data-netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="approve-queued-tag">
-      <input type="hidden" name="game" required>
-      <input type="hidden" name="ambassadorId" required>
-      <input name="submission" type="text" required>
-      <input name="game" type="text" required>
-      <input name="tag" type="text" required>
-    </form>
-    <form name="queue-tag-error" action="queue-tag-error" method="POST" data-netlify="true"
-      data-netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="queue-tag-error">
-      <input type="hidden" name="playerId" required>
-      <input type="hidden" name="game" required>
-      <input type="hidden" name="message">
-      <input type="hidden" name="ip">
-      <input name="submission" type="text" required>
-    </form>
-    <form name="queue-approve-error" action="queue-tag-error" method="POST" data-netlify="true"
-      data-netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="queue-tag-error">
-      <input type="hidden" name="ambassadorId" required>
-      <input type="hidden" name="game" required>
-      <input type="hidden" name="message">
-      <input type="hidden" name="ip">
-      <input name="tag" type="text" required>
-      <input name="submission" type="text" required>
-    </form>
-  </div>
-  <script type="module" src="/src/main.ts"></script>
-</body>
+  <body>
+    <div id="app">
+      <form name="queue-found-tag" action="queue-found-tag" method="POST" data-netlify="true"
+        data-netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="queue-found-tag" />
+        <input type="hidden" name="game" required />
+        <input type="hidden" name="playerId" required />
+        <input type="hidden" name="tag" required />
+        <input type="hidden" name="foundImageUrl" required />
+        <input name="submission" type="text" required />
+        <input name="game" type="text" required />
+        <input name="player" type="text" required />
+        <input name="found" type="text" required />
+        <input name="tag" type="text" required />
+      </form>
+      <form name="queue-mystery-tag" action="queue-mystery-tag" method="POST" data-netlify="true"
+        data-netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="queue-mystery-tag" />
+        <input type="hidden" name="game" required />
+        <input type="hidden" name="playerId" required />
+        <input type="hidden" name="tag" required />
+        <input type="hidden" name="mysteryImageUrl" required />
+        <input name="submission" type="text" required />
+        <input name="game" type="text" required />
+        <input name="player" type="text" required />
+        <input name="hint" type="text" />
+        <input name="tag" type="text" required />
+      </form>
+      <form name="submit-queued-tag" action="submit-queued-tag" method="POST" data-netlify="true"
+        data-netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="submit-queued-tag" />
+        <input type="hidden" name="game" required />
+        <input type="hidden" name="playerId" required />
+        <input type="hidden" name="tag" required />
+        <input name="submission" type="text" required />
+        <input name="game" type="text" required />
+        <input name="player" type="text" required />
+        <input name="discussionUrl" type="text" />
+        <input name="mentionUrl" type="text" />
+        <input name="tag" type="text" required />
+      </form>
+      <form name="approve-queued-tag" action="approve-queued-tag" method="POST" data-netlify="true"
+        data-netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="approve-queued-tag" />
+        <input type="hidden" name="game" required />
+        <input type="hidden" name="ambassadorId" required />
+        <input name="submission" type="text" required />
+        <input name="game" type="text" required />
+        <input name="tag" type="text" required />
+      </form>
+      <form name="queue-tag-error" action="queue-tag-error" method="POST" data-netlify="true"
+        data-netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="queue-tag-error" />
+        <input type="hidden" name="playerId" required />
+        <input type="hidden" name="game" required />
+        <input type="hidden" name="message" />
+        <input type="hidden" name="ip" />
+        <input name="submission" type="text" required />
+      </form>
+      <form name="queue-approve-error" action="queue-tag-error" method="POST" data-netlify="true"
+        data-netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="queue-tag-error" />
+        <input type="hidden" name="ambassadorId" required />
+        <input type="hidden" name="game" required />
+        <input type="hidden" name="message" />
+        <input type="hidden" name="ip" />
+        <input name="tag" type="text" required />
+        <input name="submission" type="text" required />
+      </form>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 
 </html>
