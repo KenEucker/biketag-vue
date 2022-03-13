@@ -55,6 +55,14 @@ export const handler = async (event) => {
         const currentMysteryTagResponse = (await biketag.tags()) as Tag[]
         currentMysteryTag = currentMysteryTagResponse?.length ? currentMysteryTagResponse[0] : null
 
+        if (!game || !ambassadors.length || !currentMysteryTag) {
+          console.log('insufficient game data to work with', {
+            game,
+            ambassadors,
+            currentMysteryTag,
+          })
+        }
+
         const queuedTags = (await biketag.queue()) as Tag[]
         numberInQueue = queuedTags.reduce((o: number, t: Tag, i: number) => {
           o = t.foundPlayer === tag.foundPlayer && t.mysteryPlayer === tag.mysteryPlayer ? i + 1 : o
