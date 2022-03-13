@@ -88,7 +88,7 @@ if (process.env.A_DOMAIN?.length) {
   ]
 }
 
-console.log('init::router', { sitemap: routes })
+console.log('init::router', { sitemap: routes.map((r) => r.path) })
 
 const router = createRouter({
   history: createWebHashHistory(),
