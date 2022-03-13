@@ -11,7 +11,9 @@ import { join, extname } from 'path'
 import { readFileSync } from 'fs'
 import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
 import { activeQueue, BackgroundProcessResults } from './types'
-import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
+// import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
+const JwtVerifier = {}
+const getTokenFromHeader = {}
 import BikeTagClient from 'biketag'
 import axios from 'axios'
 import Ajv from 'ajv'
