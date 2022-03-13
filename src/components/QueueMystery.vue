@@ -144,7 +144,6 @@ export default defineComponent({
     },
   },
   mounted() {
-    console.log('HEYOOO')
     this.player = this.getPlayerTag?.foundPlayer
     this.showModalIfNew()
   },

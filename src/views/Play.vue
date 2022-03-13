@@ -157,7 +157,6 @@ export default defineComponent({
   async created() {
     await this.$store.dispatch('setCurrentBikeTag', true)
     await this.$store.dispatch('setQueuedTags', true)
-    console.log(BiketagFormSteps[this.getFormStep])
     this.countDownTimer()
   },
   methods: {

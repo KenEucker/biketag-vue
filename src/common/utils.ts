@@ -284,13 +284,11 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
     //   discussionUrlIsSet || mentionUrlIsSet
     //     ? BiketagFormSteps.roundPosted
     //     : BiketagFormSteps.shareBikeTagPost
-    console.log('both')
     queuedTagState = BiketagFormSteps.roundPosted
   } else {
     queuedTagState = foundImageSet
       ? BiketagFormSteps.addMysteryImage
       : BiketagFormSteps.addFoundImage
-    console.log({ foundImageSet, queuedTagState })
   }
 
   return queuedTagState

@@ -140,7 +140,6 @@ export default defineComponent({
         /// If no token, the request will be rejected
         tag.token = claims.__raw
       }
-      console.log('onApproveSubmit', { storeAction, tag })
 
       this.uploadInProgress = true
       const success = await this.$store.dispatch(storeAction, tag)

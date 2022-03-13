@@ -78,7 +78,6 @@ export default defineComponent({
     },
   },
   data() {
-    console.log('data')
     return {
       animationDuration: 400,
       enableCSSFilters: true,

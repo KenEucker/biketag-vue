@@ -128,7 +128,6 @@ export default defineComponent({
       }
     },
     goPreviousSingle() {
-      console.log(this.tagnumber, { getCurrentBikeTag: this.getCurrentBikeTag })
       this.tagnumber = this.tagnumber > 0 ? this.tagnumber : this.getCurrentBikeTag.tagnumber
       this.tagnumber--
       this.$router.push(`/${this.tagnumber}`)
