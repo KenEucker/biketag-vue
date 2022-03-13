@@ -9,7 +9,7 @@
             :source="getFoundImageSrc"
             :full-source="_foundImageUrl"
             :alt="foundDescription"
-            @load="tagImageLoaded('found')"
+            @loaded="tagImageLoaded('found')"
           ></expandable-image>
         </div>
         <div class="card-bottom">
@@ -51,7 +51,7 @@
             :source="getMysteryImageSrc"
             :full-source="_mysteryImageUrl"
             :alt="_mysteryDescription"
-            @load="tagImageLoaded('mystery')"
+            @loaded="tagImageLoaded('mystery')"
           ></expandable-image>
         </div>
         <div class="card-bottom">

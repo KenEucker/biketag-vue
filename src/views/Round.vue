@@ -4,6 +4,17 @@
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
+    <div class="container round-page-description">
+      <p v-if="getQueuedTags?.length">
+        {{ $t('pages.round.current_round_description') }}
+        <br />
+        <br />
+        {{ $t('pages.round.current_round_win_description') }}
+      </p>
+      <p v-else>
+        {{ $t('pages.round.current_round_description_empty') }}
+      </p>
+    </div>
     <span class="tag-number"
       >#{{
         getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.addFoundImage ? 1 : 0)
@@ -15,7 +26,8 @@
   </div>
 </template>
 <script>
-import { defineComponent, watchEffect, onMounted } from 'vue'
+import { defineComponent } from 'vue'
+// watchEffect, onMounted } from 'vue'
 import { mapGetters } from 'vuex'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
@@ -58,6 +70,7 @@ export default defineComponent({
       'getPlayerTag',
       'getCurrentBikeTag',
       'getGameName',
+      'getQueuedTags',
       'getPlayerId',
     ]),
   },
@@ -197,6 +210,11 @@ export default defineComponent({
     z-index: 99;
     padding: 0 1.5rem;
   }
+}
+
+.round-page-description {
+  font-family: $default-font-family;
+  text-transform: uppercase;
 }
 
 .realign-spinner {

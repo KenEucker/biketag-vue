@@ -73,7 +73,7 @@
           </li>
           <li
             class="nav-item"
-            :class="{ 'active-nav': currentRoute === 'Queue' }"
+            :class="{ 'active-nav': currentRoute === 'Play' }"
             @click="goPlayPage"
           >
             {{ $t('menu.play') }}

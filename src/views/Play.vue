@@ -46,7 +46,7 @@
       />
     </div>
 
-    <div v-if="!uploadInProgress">
+    <div v-if="!uploadInProgress" class="mb-5">
       <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.addFoundImage]">
         <queue-found :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
@@ -66,7 +66,7 @@
         <queue-posted :tag="getPlayerTag" />
       </div>
       <span v-if="isSubmittingData()" class="player-agree">
-        * {{ $t('pages.queue.user_agree') }}
+        * {{ $t('pages.round.user_agree') }}
       </span>
       <form
         ref="queueError"

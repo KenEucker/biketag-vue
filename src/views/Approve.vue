@@ -30,7 +30,8 @@
   </div>
 </template>
 <script>
-import { defineComponent, watchEffect, onMounted } from 'vue'
+import { defineComponent } from 'vue'
+// watchEffect, onMounted } from 'vue'
 import { mapGetters } from 'vuex'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'

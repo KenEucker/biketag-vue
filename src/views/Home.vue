@@ -1,49 +1,52 @@
 <template>
-  <div class="play-biketag">
+  <div class="play-biketag vld-parent">
     <div class="play-screen__label-group-top">
       <bike-tag-header />
     </div>
-    <loading v-show="!getGame" class="loader" :is-full-page="true">
+    <loading v-if="tagIsLoading" v-model:active="tagIsLoading" :is-full-page="false">
       <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
     </loading>
-    <!-- Image and Number -->
-    <div v-if="tagnumber" class="m-4 mt-5 tag-screen">
-      <bike-tag id="the-tag" :tag="tag" image-size="l" />
-    </div>
-    <div v-else class="mt-4 mb-5">
-      <div class="play-screen__mystery-player">
-        <bike-tag-button
-          variant="medium"
-          class="play-screen__mystery-player__button"
-          :text="getCurrentBikeTag?.mysteryPlayer"
-          @click="$router.push('/player/' + encodeURIComponent(getCurrentBikeTag?.mysteryPlayer))"
-        />
+    <div :class="`${tagIsLoading ? 'tag-hidden' : ''}`">
+      <!-- Image and Number -->
+      <div v-if="tagnumber" class="m-4 mt-5 tag-screen">
+        <bike-tag id="the-tag" :tag="tag" image-size="l" />
       </div>
-      <div v-if="getCurrentBikeTag" class="rel play-screen">
-        <ExpandableImage
-          class="play-screen__image"
-          :src="getCurrentBikeTag?.mysteryImageUrl"
-          :full-source="getCurrentBikeTag?.mysteryImageUrl"
-          :alt="getCurrentBikeTag?.hint"
-        />
+      <div v-else class="mt-4 mb-5">
+        <div class="play-screen__mystery-player">
+          <bike-tag-button
+            variant="medium"
+            class="play-screen__mystery-player__button"
+            :text="getCurrentBikeTag?.mysteryPlayer"
+            @click="$router.push('/player/' + encodeURIComponent(getCurrentBikeTag?.mysteryPlayer))"
+          />
+        </div>
+        <div v-if="getCurrentBikeTag" class="rel play-screen">
+          <ExpandableImage
+            class="play-screen__image"
+            :src="getImgurImageSized(getCurrentBikeTag?.mysteryImageUrl, 'l')"
+            :full-source="getCurrentBikeTag?.mysteryImageUrl"
+            :alt="getCurrentBikeTag?.hint"
+            @loaded="tagImageLoaded"
+          />
 
-        <bike-tag-button
-          class="play-screen__label-group-number"
-          :text="'#' + getCurrentBikeTag?.tagnumber"
-        />
-        <div class="play-screen__label-group-bottom">
-          <div>
-            <bike-tag-label
-              id="mystery-label"
-              :text="$t('menu.mysterylocation')"
-              :only-text="true"
-            />
+          <bike-tag-button
+            class="play-screen__label-group-number"
+            :text="'#' + getCurrentBikeTag?.tagnumber"
+          />
+          <div class="play-screen__label-group-bottom">
+            <div>
+              <bike-tag-label
+                id="mystery-label"
+                :text="$t('menu.mysterylocation')"
+                :only-text="true"
+              />
+            </div>
           </div>
         </div>
-      </div>
-      <div v-else>
-        <span>{{ $t('pages.play.game_not_exists') }}</span>
-        <span>{{ $t('pages.play.send_hello_email') }}</span>
+        <div v-else>
+          <span>{{ $t('pages.play.game_not_exists') }}</span>
+          <span>{{ $t('pages.play.send_hello_email') }}</span>
+        </div>
       </div>
     </div>
     <bike-tag-footer
@@ -85,13 +88,14 @@ export default defineComponent({
 
     return {
       tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      // error,
+      tagIsLoading: true,
     }
   },
   computed: {
     ...mapGetters([
       'getCurrentBikeTag',
       'getTags',
+      'getGame',
       'getGameName',
       'getPlayers',
       'getImgurImageSized',
@@ -105,7 +109,7 @@ export default defineComponent({
     },
   },
   methods: {
-    tagLoaded() {
+    tagImageLoaded() {
       this.tagIsLoading = false
     },
     getPlayer(playerName) {
@@ -134,6 +138,13 @@ export default defineComponent({
 </script>
 <style lang="scss">
 @import '../assets/styles/style';
+
+.tag-hidden {
+  margin-top: -350px;
+  visibility: hidden;
+  opacity: 0.1;
+  height: 400px;
+}
 
 .play-screen {
   position: relative;

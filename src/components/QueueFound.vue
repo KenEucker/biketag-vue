@@ -11,7 +11,7 @@
   <div class="add-found-tag">
     <div class="title-cnt">
       <bike-tag-button variant="medium" @click="$refs.file.click()">
-        <h3 class="queue-title">{{ $t('pages.queue.found_title') }}</h3>
+        <h3 class="queue-title">{{ $t('pages.round.found_title') }}</h3>
       </bike-tag-button>
     </div>
     <div class="preview-cnt">
@@ -54,7 +54,7 @@
         required
         @change="setImage"
       />
-      <p class="queue-text">{{ $t('pages.queue.found_text') }}</p>
+      <p class="queue-text">{{ $t('pages.round.found_text') }}</p>
       <div class="mt-3 mb-3 input-cnt">
         <bike-tag-input
           id="found"
@@ -62,7 +62,7 @@
           :disabled="locationDisabled"
           name="found"
           required
-          :placeholder="$t('pages.queue.location_placeholder')"
+          :placeholder="$t('pages.round.location_placeholder')"
         >
           <img :src="pinIcon" />
           <GMapAutocomplete
@@ -76,7 +76,7 @@
         </bike-tag-input>
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
-          <p v-if="locationDisabled">{{ $t('pages.queue.image_first') }}</p>
+          <p v-if="locationDisabled">{{ $t('pages.round.image_first') }}</p>
           <GMapMap
             v-if="isGps"
             :center="center"
@@ -100,14 +100,14 @@
           name="player"
           required
           :readonly="isAuthenticated"
-          :placeholder="$t('pages.queue.name_placeholder')"
+          :placeholder="$t('pages.round.name_placeholder')"
         />
       </div>
       <div class="sub-cnt">
         <bike-tag-button
           variant="medium"
           type="submit"
-          :text="$t('pages.queue.queue_found_tag')"
+          :text="$t('pages.round.queue_found_tag')"
           @click="onSubmit"
         />
       </div>

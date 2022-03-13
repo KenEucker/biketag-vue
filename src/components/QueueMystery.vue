@@ -13,7 +13,7 @@
         @click="goViewRound"
       />
     </b-modal>
-    <!-- <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3> -->
+    <!-- <h3 class="queue-title">{{ $t('pages.round.mystery_title') }}</h3> -->
     <div class="title-cnt">
       <bike-tag-button variant="medium" class="title-q" @click="$refs.file.click()">
         <h3 class="queue-title">{{ $t('components.queue.queue_mystery_title') }}</h3>
@@ -60,33 +60,33 @@
           required
           @change="setImage"
         />
-        <p class="queue-text">{{ $t('pages.queue.mystery_text') }}</p>
+        <p class="queue-text">{{ $t('pages.round.mystery_text') }}</p>
         <div class="mt-3 mb-3 input-cnt">
           <bike-tag-input
             id="player"
             v-model="player"
             name="player"
             readonly
-            :placeholder="$t('pages.queue.name_placeholder')"
+            :placeholder="$t('pages.round.name_placeholder')"
           />
           <bike-tag-input
             id="hint"
             v-model="hint"
             name="hint"
-            :placeholder="$t('pages.queue.hint_placeholder')"
+            :placeholder="$t('pages.round.hint_placeholder')"
           />
         </div>
         <!-- <div class="mt-3">
           <bike-tag-button
             variant="medium"
-            :text="`${$t('pages.queue.submit_new_tag')} ${$t('pages.queue.queue_postfix')}`"
+            :text="`${$t('pages.round.submit_new_tag')} ${$t('pages.round.queue_postfix')}`"
             @click="onSubmit"
           />
         </div> -->
         <bike-tag-button
           variant="medium"
           type="submit"
-          :text="`${$t('pages.queue.submit_new_tag')} ${$t('pages.queue.queue_postfix')}`"
+          :text="`${$t('pages.round.submit_new_tag')} ${$t('pages.round.queue_postfix')}`"
         />
       </form>
     </div>

@@ -1,4 +1,7 @@
 <template>
+  <div class="container align-center">
+    <bike-tag-queue :pagination-ref="controlledSwiper" />
+  </div>
   <div class="container queue-view">
     <swiper
       :modules="[Controller]"
@@ -29,7 +32,6 @@
       </swiper-slide>
     </swiper>
     <div class="container align-center">
-      <bike-tag-queue :pagination-ref="controlledSwiper" />
       <bike-tag-button
         v-if="showGoNextButton"
         class="go-next-button"
@@ -81,10 +83,10 @@ export default defineComponent({
     goNextQueueStepButtonText() {
       return `${
         this.getPlayerTag?.mysteryImageUrl?.length > 0
-          ? this.$t('pages.queue.submit_queue')
+          ? this.$t('pages.round.submit_queue')
           : this.getPlayerTag?.foundImageUrl?.length > 0
-          ? this.$t('pages.queue.complete_queue')
-          : this.$t('pages.queue.join_queue')
+          ? this.$t('pages.round.complete_queue')
+          : this.$t('pages.round.join_queue')
       } #${this.getCurrentBikeTag?.tagnumber ?? 1}!`
     },
     showGoNextButton() {

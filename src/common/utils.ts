@@ -290,8 +290,8 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
     queuedTagState = foundImageSet
       ? BiketagFormSteps.addMysteryImage
       : BiketagFormSteps.addFoundImage
-      console.log({ foundImageSet, queuedTagState })
-    }
+    console.log({ foundImageSet, queuedTagState })
+  }
 
   return queuedTagState
 }
