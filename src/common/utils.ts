@@ -108,13 +108,13 @@ export const getBikeTagClientOpts = (win?: Window) => {
   return {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     imgur: {
-      clientId: process.env.IMGUR_CLIENT_ID,
-      clientSecret: process.env.IMGUR_CLIENT_SECRET,
-      refreshToken: process.env.IMGUR_REFRESH_TOKEN,
+      clientId: process.env.I_CID,
+      clientSecret: process.env.I_CSECRET,
+      refreshToken: process.env.I_R,
     },
     sanity: {
-      projectId: process.env.SANITY_PROJECT_ID,
-      dataset: process.env.SANITY_DATASET,
+      projectId: process.env.S_PID,
+      dataset: process.env.S_DSET,
     },
   }
 }

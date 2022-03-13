@@ -71,7 +71,7 @@ const routes: Array<RouteRecordRaw> = [
 
 let protectedRoutes: Array<RouteRecordRaw> = []
 
-if (process.env.AUTH0_DOMAIN?.length) {
+if (process.env.A_DOMAIN?.length) {
   protectedRoutes = [
     {
       path: '/profile',

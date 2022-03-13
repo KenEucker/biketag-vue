@@ -32,15 +32,15 @@ export const getBikeTagClientOpts = (
     cached: isGET || !isAuthenticatedPOST,
     accessToken: process.env.ACCESS_TOKEN,
     imgur: {
-      clientId: process.env.IMGUR_CLIENT_ID,
+      clientId: process.env.I_CID,
     },
   }
 
   if (authorized) {
     opts.imgur = opts.imgur ?? {}
-    opts.imgur.clientSecret = process.env.IMGUR_CLIENT_SECRET
-    opts.imgur.accessToken = process.env.IMGUR_ACCESS_TOKEN
-    opts.imgur.refreshToken = process.env.IMGUR_REFRESH_TOKEN
+    opts.imgur.clientSecret = process.env.I_CSECRET
+    opts.imgur.accessToken = process.env.I_TOKEN
+    opts.imgur.refreshToken = process.env.I_R
 
     // opts.reddit = opts.reddit ?? {}
     // opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
@@ -50,20 +50,20 @@ export const getBikeTagClientOpts = (
     // opts.reddit.password = process.env.REDDIT_PASSWORD
 
     opts.sanity = opts.sanity ?? {}
-    opts.sanity.projectId = process.env.SANITY_PROJECT_ID
-    opts.sanity.dataset = process.env.SANITY_DATASET
+    opts.sanity.projectId = process.env.S_PID
+    opts.sanity.dataset = process.env.S_DSET
     opts.sanity.token = process.env.SANITY_TOKEN
 
     if (admin) {
       opts.imgur.clientId = process.env.IMGUR_ADMIN_CLIENT_ID ?? opts.imgur.clientId
       opts.imgur.clientSecret = process.env.IMGUR_ADMIN_CLIENT_SECRET ?? opts.imgur.clientSecret
       opts.imgur.accessToken = process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? ''
-      opts.imgur.refreshToken = process.env.IMGUR_ADMIN_REFRESH_TOKEN ?? opts.imgur.refreshToken
+      opts.imgur.refreshToken = process.env.IA_RTOKEN ?? opts.imgur.refreshToken
 
       opts.sanity = opts.sanity ?? {}
-      opts.sanity.projectId = process.env.SANITY_ADMIN_PROJECT_ID
-      opts.sanity.dataset = process.env.SANITY_ADMIN_DATASET
-      opts.sanity.token = process.env.SANITY_ADMIN_TOKEN
+      opts.sanity.projectId = process.env.SA_PID
+      opts.sanity.dataset = process.env.SA_DSET
+      opts.sanity.token = process.env.SA_TOKEN
 
       // opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
       // opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
@@ -359,7 +359,7 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
     // console.log('auth0', { authorizationString })
     try {
       const JWKS = jose.createRemoteJWKSet(
-        new URL(`https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`)
+        new URL(`https://${process.env.A_DOMAIN}/.well-known/jwks.json`)
       )
 
       const { payload } = await jose.jwtVerify(authorizationString, JWKS)
@@ -511,7 +511,7 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
   }
 
   const emailOpts = {
-    from: process.env.GOOGLE_EMAIL_ADDRESS, // sender address
+    from: process.env.G_EMAIL, // sender address
     to, // list of receivers
     subject, // subject
     text, // plain text body
@@ -520,8 +520,8 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
 
   const transporterOpts: any = {
     auth: {
-      user: process.env.GOOGLE_EMAIL_ADDRESS,
-      pass: process.env.GOOGLE_PASSWORD,
+      user: process.env.G_EMAIL,
+      pass: process.env.G_PASS,
     },
     service: 'gmail',
   }
@@ -971,7 +971,7 @@ export const acceptCorsHeaders = (withAuthorization = true) => {
   }
 
   if (withAuthorization) {
-    const token = getEnvironmentVariable('AUTH0_TOKEN')
+    const token = getEnvironmentVariable('A_TOKEN')
     corsHeaders['authorization'] = `Bearer ${token}`
   }
 
@@ -1088,6 +1088,6 @@ export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): B
 
 export const getEnvironmentVariable = (key: string) => {
   if (process.env[key]) {
-    return decompress(process.env[key])
+    return decompress(process.env[key], { inputEncoding: 'Base64' })
   }
 }
