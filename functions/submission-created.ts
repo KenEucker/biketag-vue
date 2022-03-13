@@ -40,6 +40,8 @@ export const handler = async (event) => {
           } as unknown as request.Request,
           true
         )
+        /// TODO: fix whatever is wrong with the biketag-api interface
+        biketagOpts.game = gameName
         const biketag = new BikeTagClient(biketagOpts)
         game = (await biketag.game(gameName, {
           source: 'sanity',
