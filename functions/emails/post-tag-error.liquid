@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style type="text/css">
+        body {
+            margin: 1em;
+            padding: 3em;
+        }
+        
+        @media only screen and (max-width: 480px) {
+            .biketagIcon {
+                text-align: center;
+                max-width: 15em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <table border="0" cellpadding="10" cellspacing="0" width="600">
+        {% if subdomainIcon %}
+        <tr>
+            <td align="center" width="50%" valign="top" class="middleColumnContent">
+                <img src="https://{{ host }}{{ subdomainIcon }}" class="biketagIcon">
+            </td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td align="center" width="50%" valign="bottom" class="middleColumnContent">
+                <h4> An Error has occured for the {{ game }} game.</h4>
+                <p> You are getting this email because you are listed as an admin on the site (<a href="https://{{ host }}">{{ host }}</a>).</p>
+            </td>
+        </tr>
+    </table>
+
+    <table border="0" cellpadding="10" cellspacing="0" width="600">
+        <tr>
+            <td align="center" width="50%" valign="top" class="middleColumnContent">
+                The Player who submitted the error has an IP address of ({{ playerIp }})
+                <br>
+                This was the payload sent with the error
+                <br>
+                <pre>({{ payload }})<pre>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

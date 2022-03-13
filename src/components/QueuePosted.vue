@@ -3,7 +3,7 @@
     <h3 class="queue-title">{{ $t('pages.queue.posted_title') }}</h3>
     <p class="queue-text">{{ $t('pages.queue.posted_text') }}</p>
     <div class="mt-3">
-      <bike-tag-button variant="medium" @click="goViewQueue">
+      <bike-tag-button variant="medium" @click="goViewRound">
         {{ $t('pages.queue.joined_button') }} #{{ getCurrentBikeTag?.tagnumber }}
       </bike-tag-button>
     </div>
@@ -23,8 +23,8 @@ export default defineComponent({
     ...mapGetters(['getCurrentBikeTag']),
   },
   methods: {
-    goViewQueue() {
-      this.$router.push('/queue')
+    goViewRound() {
+      this.$router.push('/round')
     },
   },
 })

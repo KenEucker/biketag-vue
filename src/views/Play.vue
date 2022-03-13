@@ -72,14 +72,14 @@
       </span>
       <form
         ref="queueError"
-        name="queue-tag-error"
-        action="queue-tag-error"
+        name="post-tag-error"
+        action="post-tag-error"
         method="POST"
         data-netlify="true"
         data-netlify-honeypot="bot-field"
         hidden
       >
-        <input type="hidden" name="form-name" value="queue-tag-error" />
+        <input type="hidden" name="form-name" value="post-tag-error" />
         <input type="hidden" name="submission" />
         <input type="hidden" name="playerId" :value="getPlayerId" />
         <input type="hidden" name="message" />

@@ -14,14 +14,14 @@
     </div>
     <form
       ref="queueError"
-      name="queue-approve-error"
-      action="queue-approve-error"
+      name="approve-tag-error"
+      action="approve-tag-error"
       method="POST"
       data-netlify="true"
       data-netlify-honeypot="bot-field"
       hidden
     >
-      <input type="hidden" name="form-name" value="queue-tag-error" />
+      <input type="hidden" name="form-name" value="post-tag-error" />
       <input type="hidden" name="submission" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
       <input type="hidden" name="message" />

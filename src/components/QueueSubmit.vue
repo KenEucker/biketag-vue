@@ -62,14 +62,14 @@
 
       <form
         ref="submitTag"
-        name="submit-queued-tag"
-        action="submit-queued-tag"
+        name="post-new-biketag"
+        action="post-new-biketag"
         method="POST"
         data-netlify="true"
         data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
-        <input type="hidden" name="form-name" value="submit-queued-tag" />
+        <input type="hidden" name="form-name" value="post-new-biketag" />
         <input type="hidden" name="playerId" :value="getPlayerId" />
         <fieldset v-if="supportsReddit">
           <label for="postToReddit">{{ $t('pages.queue.post_to_reddit') }}</label>

@@ -61,14 +61,14 @@
 
       <form
         ref="submitTag"
-        name="submit-queued-tag"
-        action="submit-queued-tag"
+        name="post-new-biketag"
+        action="post-new-biketag"
         method="POST"
         data-netlify="true"
         data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
-        <input type="hidden" name="form-name" value="submit-queued-tag" />
+        <input type="hidden" name="form-name" value="post-new-biketag" />
         <input type="hidden" name="playerId" :value="getPlayerId" />
         <fieldset v-if="supportsReddit">
           <label for="postToReddit">{{ $t('pages.queue.post_to_reddit') }}</label>
@@ -112,7 +112,7 @@
       <bike-tag-button
         class="border-0"
         :text="`${$t('pages.queue.joined_button')} #${getCurrentBikeTag?.tagnumber}`"
-        @click="goViewQueue"
+        @click="goViewRound"
       />
     </div>
   </b-container>
@@ -205,8 +205,8 @@ See all BikeTags and more, for ${this.getGameName}:
     copyTabContents(text) {
       navigator.clipboard.writeText(text)
     },
-    goViewQueue() {
-      this.$router.push('/queue')
+    goViewRound() {
+      this.$router.push('/round')
     },
     onSubmit() {
       const formAction = this.$refs.submitTag.getAttribute('action')

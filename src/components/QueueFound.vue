@@ -8,7 +8,7 @@
       </div>
     </form>
   </b-modal>
-  <div class="queue-found-tag">
+  <div class="add-found-tag">
     <div class="title-cnt">
       <bike-tag-button variant="medium" @click="$refs.file.click()">
         <h3 class="queue-title">{{ $t('pages.queue.found_title') }}</h3>
@@ -35,14 +35,14 @@
     </div>
     <form
       ref="foundTag"
-      name="queue-found-tag"
-      action="queue-found-tag"
+      name="add-found-tag"
+      action="add-found-tag"
       method="POST"
       data-netlify="true"
       data-netlify-honeypot="bot-field"
       @submit.prevent="onSubmit"
     >
-      <input type="hidden" name="form-name" value="queue-found-tag" />
+      <input type="hidden" name="form-name" value="add-found-tag" />
       <input type="hidden" name="playerId" :value="getPlayerId" />
       <input v-model="foundImageUrl" type="hidden" name="foundImageUrl" />
       <input

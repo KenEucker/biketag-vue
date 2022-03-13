@@ -56,14 +56,14 @@
         <form
           v-if="currentIsReadyForApproval"
           ref="approveTag"
-          name="approve-queued-tag"
-          action="approve-queued-tag"
+          name="approve-new-biketag"
+          action="approve-new-biketag"
           method="POST"
           data-netlify="true"
           data-netlify-honeypot="bot-field"
           @submit.prevent="approveTag"
         >
-          <input type="hidden" name="form-name" value="approve-queued-tag" />
+          <input type="hidden" name="form-name" value="approve-new-biketag" />
           <input type="hidden" name="ambassadorId" value="" />
           <span>APPROVE</span>
           <bike-tag-button class="circle-button" variant="circle" type="submit" label="Approve">

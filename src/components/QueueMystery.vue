@@ -1,5 +1,5 @@
 <template>
-  <div class="queue-mystery-tag">
+  <div class="add-mystery-tag">
     <b-modal v-model="showModal" title="BootstrapVue" hide-footer hide-header>
       <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
       <h3 class="modal-header">
@@ -10,7 +10,7 @@
         class="modal-sub-btn modal-sub-btn--big"
         variant="medium"
         :text="$t('components.queue.view_queue_button')"
-        @click="goViewQueue"
+        @click="goViewRound"
       />
     </b-modal>
     <!-- <h3 class="queue-title">{{ $t('pages.queue.mystery_title') }}</h3> -->
@@ -41,14 +41,14 @@
     <div class="container biketag-tagit-form">
       <form
         ref="mysteryTag"
-        name="queue-mystery-tag"
-        action="queue-mystery-tag"
+        name="add-mystery-tag"
+        action="add-mystery-tag"
         method="POST"
         data-netlify="true"
         data-netlify-honeypot="bot-field"
         @submit.prevent="onSubmit"
       >
-        <input type="hidden" name="form-name" value="queue-mystery-tag" />
+        <input type="hidden" name="form-name" value="add-mystery-tag" />
         <input type="hidden" name="playerId" :value="getPlayerId" />
         <input v-model="mysteryImageUrl" type="hidden" name="mysteryImageUrl" />
         <input
@@ -212,9 +212,9 @@ export default defineComponent({
         }
       }
     },
-    goViewQueue() {
+    goViewRound() {
       this.hideModal()
-      this.$router.push('/queue')
+      this.$router.push('/round')
     },
     showModalIfNew() {
       if (!this.getQueuedTag?.mysteryImageUrl?.length) {

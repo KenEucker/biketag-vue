@@ -12,9 +12,9 @@
 
   <body>
     <div id="app">
-      <form name="queue-found-tag" action="queue-found-tag" method="POST" data-netlify="true"
+      <form name="add-found-tag" action="add-found-tag" method="POST" data-netlify="true"
         data-netlify-honeypot="bot-field" hidden>
-        <input type="hidden" name="form-name" value="queue-found-tag" />
+        <input type="hidden" name="form-name" value="add-found-tag" />
         <input type="hidden" name="game" required />
         <input type="hidden" name="playerId" required />
         <input type="hidden" name="tag" required />
@@ -25,9 +25,9 @@
         <input name="found" type="text" required />
         <input name="tag" type="text" required />
       </form>
-      <form name="queue-mystery-tag" action="queue-mystery-tag" method="POST" data-netlify="true"
+      <form name="add-mystery-tag" action="add-mystery-tag" method="POST" data-netlify="true"
         data-netlify-honeypot="bot-field" hidden>
-        <input type="hidden" name="form-name" value="queue-mystery-tag" />
+        <input type="hidden" name="form-name" value="add-mystery-tag" />
         <input type="hidden" name="game" required />
         <input type="hidden" name="playerId" required />
         <input type="hidden" name="tag" required />
@@ -38,9 +38,9 @@
         <input name="hint" type="text" />
         <input name="tag" type="text" required />
       </form>
-      <form name="submit-queued-tag" action="submit-queued-tag" method="POST" data-netlify="true"
+      <form name="post-new-biketag" action="post-new-biketag" method="POST" data-netlify="true"
         data-netlify-honeypot="bot-field" hidden>
-        <input type="hidden" name="form-name" value="submit-queued-tag" />
+        <input type="hidden" name="form-name" value="post-new-biketag" />
         <input type="hidden" name="game" required />
         <input type="hidden" name="playerId" required />
         <input type="hidden" name="tag" required />
@@ -51,27 +51,27 @@
         <input name="mentionUrl" type="text" />
         <input name="tag" type="text" required />
       </form>
-      <form name="approve-queued-tag" action="approve-queued-tag" method="POST" data-netlify="true"
+      <form name="approve-new-biketag" action="approve-new-biketag" method="POST" data-netlify="true"
         data-netlify-honeypot="bot-field" hidden>
-        <input type="hidden" name="form-name" value="approve-queued-tag" />
+        <input type="hidden" name="form-name" value="approve-new-biketag" />
         <input type="hidden" name="game" required />
         <input type="hidden" name="ambassadorId" required />
         <input name="submission" type="text" required />
         <input name="game" type="text" required />
         <input name="tag" type="text" required />
       </form>
-      <form name="queue-tag-error" action="queue-tag-error" method="POST" data-netlify="true"
+      <form name="post-tag-error" action="post-tag-error" method="POST" data-netlify="true"
         data-netlify-honeypot="bot-field" hidden>
-        <input type="hidden" name="form-name" value="queue-tag-error" />
+        <input type="hidden" name="form-name" value="post-tag-error" />
         <input type="hidden" name="playerId" required />
         <input type="hidden" name="game" required />
         <input type="hidden" name="message" />
         <input type="hidden" name="ip" />
         <input name="submission" type="text" required />
       </form>
-      <form name="queue-approve-error" action="queue-tag-error" method="POST" data-netlify="true"
+      <form name="approve-tag-error" action="approve-tag-error" method="POST" data-netlify="true"
         data-netlify-honeypot="bot-field" hidden>
-        <input type="hidden" name="form-name" value="queue-tag-error" />
+        <input type="hidden" name="form-name" value="approve-tag-error" />
         <input type="hidden" name="ambassadorId" required />
         <input type="hidden" name="game" required />
         <input type="hidden" name="message" />

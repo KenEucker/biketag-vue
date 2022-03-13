@@ -15,7 +15,7 @@
         v-if="getQueuedTags?.length"
         class="button-group__right"
         :text="$t('menu.queue')"
-        @click="goQeueuPage"
+        @click="goRoundPage"
       />
       <bike-tag-button
         v-else
@@ -131,8 +131,8 @@ export default defineComponent({
     goMapPage() {
       this.$router.push('/map')
     },
-    goQeueuPage() {
-      this.$router.push('/queue')
+    goRoundPage() {
+      this.$router.push('/round')
     },
     showHint() {
       const mysteryLabel = document.querySelector('#mystery-label p')

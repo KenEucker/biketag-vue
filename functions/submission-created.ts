@@ -32,7 +32,7 @@ export const handler = async (event) => {
     let numberInQueue
 
     if (gameName) {
-      if (formName !== 'queue-found-tag' || formName !== 'queue-mystery-tag') {
+      if (formName !== 'add-found-tag' || formName !== 'add-mystery-tag') {
         const biketagOpts = getBikeTagClientOpts(
           {
             ...event,
@@ -75,16 +75,16 @@ export const handler = async (event) => {
       const tagQueuedNumber = stringifyNumber(numberInQueue)
 
       switch (formName) {
-        case 'queue-found-tag':
+        case 'add-found-tag':
           // send app notification
           break
-        case 'queue-mystery-tag':
+        case 'add-mystery-tag':
           // send app notification
           break
-        case 'submit-queued-tag':
+        case 'post-new-biketag':
           // send app notification
           emailSent = await sendEmailsToAmbassadors(
-            'submit-queued-tag',
+            'post-new-biketag',
             `A new BikeTag has been submitted for round #${tag.tagnumber} in [${gameName}]`,
             thisGamesAmbassadors,
             (a) => {
@@ -145,13 +145,13 @@ export const handler = async (event) => {
           successfulEmailsSent.concat(emailSent.accepted)
           rejectedEmails.concat(emailSent.rejected)
           break
-        case 'approve-queued-tag':
+        case 'approve-new-biketag':
           // send app notification
           break
         default:
-        case 'queue-tag-error':
+        case 'post-tag-error':
           emailSent = await sendEmailsToAmbassadors(
-            'queue-tag-error',
+            'post-tag-error',
             `An error has occured for [${game.name}] BikeTag`,
             thisGamesAmbassadors,
             () => {
