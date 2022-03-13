@@ -1,24 +1,19 @@
 import request from 'request'
 import { getDomainInfo } from '../../src/common/utils'
 import md5 from 'md5'
-// import crypto from 'crypto'
-const crypto = {}
-// import CryptoJS from 'crypto-js'
-const CryptoJS = {}
+import crypto from 'crypto'
+import CryptoJS from 'crypto-js'
 import nodemailer from 'nodemailer'
 import { Liquid } from 'liquidjs'
 import { join, extname } from 'path'
 import { readFileSync } from 'fs'
 import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
 import { activeQueue, BackgroundProcessResults } from './types'
-// import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
-const JwtVerifier = {}
-const getTokenFromHeader = {}
+import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import BikeTagClient from 'biketag'
 import axios from 'axios'
 import Ajv from 'ajv'
-// import * as jose from 'jose'
-const jose = {}
+import * as jose from 'jose'
 import { BikeTagProfile } from '../../src/common/types'
 import lzutf8 from 'lzutf8'
 
@@ -45,24 +40,24 @@ export const getBikeTagClientOpts = (
     opts.imgur = opts.imgur ?? {}
     opts.imgur.clientSecret = process.env.I_CSECRET
     opts.imgur.accessToken = process.env.I_TOKEN
-    opts.imgur.refreshToken = process.env.I_R
+    opts.imgur.refreshToken = process.env.I_RTOKEN
 
     // opts.reddit = opts.reddit ?? {}
-    // opts.reddit.clientId = process.env.REDDIT_CLIENT_ID
-    // opts.reddit.clientSecret = process.env.REDDIT_CLIENT_SECRET
+    // opts.reddit.clientId = process.env.R_CID
+    // opts.reddit.clientSecret = process.env.R_CSECRET
     /// TODO: comes from sanity game settings
-    // opts.reddit.username = process.env.REDDIT_USERNAME
-    // opts.reddit.password = process.env.REDDIT_PASSWORD
+    // opts.reddit.username = process.env.R_UNAME
+    // opts.reddit.password = process.env.R_PASS
 
     opts.sanity = opts.sanity ?? {}
     opts.sanity.projectId = process.env.S_PID
     opts.sanity.dataset = process.env.S_DSET
-    opts.sanity.token = process.env.SANITY_TOKEN
+    opts.sanity.token = process.env.S_TOKEN
 
     if (admin) {
-      opts.imgur.clientId = process.env.IMGUR_ADMIN_CLIENT_ID ?? opts.imgur.clientId
-      opts.imgur.clientSecret = process.env.IMGUR_ADMIN_CLIENT_SECRET ?? opts.imgur.clientSecret
-      opts.imgur.accessToken = process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? ''
+      opts.imgur.clientId = process.env.IA_CID ?? opts.imgur.clientId
+      opts.imgur.clientSecret = process.env.IA_CSECRET ?? opts.imgur.clientSecret
+      opts.imgur.accessToken = process.env.IA_TOKEN ?? ''
       opts.imgur.refreshToken = process.env.IA_RTOKEN ?? opts.imgur.refreshToken
 
       opts.sanity = opts.sanity ?? {}
@@ -70,10 +65,10 @@ export const getBikeTagClientOpts = (
       opts.sanity.dataset = process.env.SA_DSET
       opts.sanity.token = process.env.SA_TOKEN
 
-      // opts.reddit.clientId = process.env.REDDIT_ADMIN_CLIENT_ID
-      // opts.reddit.clientSecret = process.env.REDDIT_ADMIN_CLIENT_SECRET
-      // opts.reddit.username = process.env.REDDIT_ADMIN_USERNAME
-      // opts.reddit.password = process.env.REDDIT_ADMIN_PASSWORD
+      // opts.reddit.clientId = process.env.RA_CID
+      // opts.reddit.clientSecret = process.env.RA_CSECRET
+      // opts.reddit.username = process.env.RA_UNAME
+      // opts.reddit.password = process.env.RA_PASS
     }
   }
 
@@ -582,7 +577,7 @@ export const sendEmailsToAmbassadors = async (
     }
   }
   if (sendToSuperAdmin) {
-    const superAdmin = process.env.SUPER_ADMIN ?? ''
+    const superAdmin = process.env.ADMIN ?? ''
     if (superAdmin?.length) {
       console.log(`sending ${emailName} superAdmin email to: ${superAdmin}`)
       emailSent = await sendEmail(

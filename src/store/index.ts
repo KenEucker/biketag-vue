@@ -40,7 +40,7 @@ const gameOpts = { source: 'sanity' }
 /// TODO: move these constants to common
 const defaultLogo = '/images/BikeTag.svg'
 const defaultJingle = 'media/biketag-jingle-1.mp3'
-const sanityBaseCDNUrl = `${process.env.SANITY_CDN_URL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
+const sanityBaseCDNUrl = `${process.env.S_CURL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
 
 console.log('init::store', {
   subdomain: domain.subdomain,

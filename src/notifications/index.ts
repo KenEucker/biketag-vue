@@ -48,10 +48,10 @@ export const croquetSession = (app: any) => {
     },
     async created() {
       this.session = await Croquet.Session.join({
-        apiKey: process.env.CROQUET_API_KEY ?? '',
+        apiKey: process.env.C_AKEY ?? '',
         appId: process.env.HOST ?? '',
-        name: process.env.CROQUET_SESSION_NAME ?? 'biketag',
-        password: process.env.CROQUET_SESSION_PASSWORD ?? 'secret',
+        name: process.env.C_SNAME ?? 'biketag',
+        password: process.env.C_SPASS ?? 'secret',
         model: BikeTagNotificationsModel,
         view: BikeTagNotificationsView,
       })
@@ -117,10 +117,10 @@ export const createSession = async (app: any) => {
 
   return new NotificationsPlugin(
     await Croquet.Session.join({
-      apiKey: process.env.CROQUET_API_KEY ?? '',
+      apiKey: process.env.C_AKEY ?? '',
       appId: process.env.HOST ?? '',
-      name: process.env.CROQUET_SESSION_NAME ?? 'biketag',
-      password: process.env.CROQUET_SESSION_PASSWORD ?? 'secret',
+      name: process.env.C_SNAME ?? 'biketag',
+      password: process.env.C_SPASS ?? 'secret',
       model: BikeTagNotificationsModel,
       view: BikeTagNotificationsView,
     })

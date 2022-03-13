@@ -116,7 +116,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint']),
+    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getQueuedTags']),
   },
   methods: {
     goAboutPage() {

@@ -119,8 +119,7 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
-// import exifr from 'exifr'
-const exifr = {}
+import exifr from 'exifr'
 import Pin from '@/assets/images/pin.svg'
 // import { Notifications } from '@/common/types'
 

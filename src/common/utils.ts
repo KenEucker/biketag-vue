@@ -2,11 +2,9 @@ import { DeviceUUID } from '@/common/uuid'
 import { Tag } from 'biketag/lib/common/schema'
 import { useCookies } from 'vue3-cookies'
 import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
-// import CryptoJS from 'crypto-js'
+import CryptoJS from 'crypto-js'
 import md5 from 'md5'
-// import domtoimage from 'dom-to-image'
-const domtoimage = {}
-const CryptoJS = {}
+import domtoimage from 'dom-to-image'
 
 export type DomainInfo = {
   host: string
@@ -112,7 +110,7 @@ export const getBikeTagClientOpts = (win?: Window) => {
     imgur: {
       clientId: process.env.I_CID,
       clientSecret: process.env.I_CSECRET,
-      refreshToken: process.env.I_R,
+      refreshToken: process.env.I_RTOKEN,
     },
     sanity: {
       projectId: process.env.S_PID,

@@ -28,60 +28,63 @@ export default defineConfig({
     vue(),
     EnvironmentPlugin({
       /* Application Configuration */
+      ACCESS_TOKEN: process.env.ACCESS_TOKEN ?? '8b4e2b86a724bf3f39d6766de6e67212',
       CONTEXT: process.env.CONTEXT ?? null,
-      USE_AUTHENTICATION: process.env.USE_AUTHENTICATION ?? null,
-      SUPER_ADMIN: process.env.SUPER_ADMIN ?? 'biketag@biketag.org',
+      ADMIN: process.env.ADMIN ?? 'biketag@biketag.org',
+      AMBASSADOR_ROLE: process.env.AMBASSADOR_ROLE ?? 'rol_iET51vzIn8z6Utz0',
+      PLAYER_ROLE: process.env.ADMIN ?? 'rol_pcbQ68Q9L0yn1o3O',
+      /* Auth0 Configuration */
+      A_AUDIENCE: process.env.A_AUDIENCE ?? null,
+      A_CID: process.env.A_CID ?? null,
+      A_DOMAIN: process.env.A_DOMAIN ?? null,
+      A_TOKEN: process.env.A_TOKEN ?? null,
+      /* Croquet Configuration */
+      C_AKEY: process.env.C_AKEY ?? null,
+      C_SNAME: process.env.C_SNAME ?? 'biketag',
+      C_SPASS: process.env.C_SPASS ?? 'secret',
+      /* Google Configuration */
+      G_AKEY: process.env.G_AKEY ?? null,
+      G_CID: process.env.G_CID ?? null,
+      G_CSECRET: process.env.G_CSECRET ?? null,
+      G_EMAIL: process.env.G_EMAIL ?? null,
+      G_PASS: process.env.G_PASS ?? null,
+      G_RTOKEN: process.env.G_RTOKEN ?? null,
       /* BikeTag Configuration */
       GAME_NAME: process.env.GAME_NAME ?? 'null',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,
       HOST: process.env.HOST ?? 'biketag.io',
       HOST_KEY: process.env.HOST_KEY ?? 'ItsABikeTagGame',
-      ACCESS_TOKEN: process.env.ACCESS_TOKEN ?? '8b4e2b86a724bf3f39d6766de6e67212',
+      /* Imgur Admin Configuration */
+      IA_CID: process.env.IA_CID ?? null,
+      IA_CSECRET: process.env.IA_CSECRET ?? null,
+      IA_RTOKEN: process.env.IA_RTOKEN ?? null,
+      IA_TOKEN: process.env.IA_TOKEN ?? null,
       /* Imgur Configuration */
       I_CID: process.env.I_CID ?? null,
       I_CSECRET: process.env.I_CSECRET ?? null,
+      I_RTOKEN: process.env.I_RTOKEN ?? null,
       I_TOKEN: process.env.I_TOKEN ?? null,
-      I_R: process.env.I_R ?? null,
-      /* Imgur Admin Configuration */
-      IMGUR_ADMIN_CLIENT_ID: process.env.IA_CID ?? null,
-      IMGUR_ADMIN_CLIENT_SECRET: process.env.IA_CSECRET ?? null,
-      IMGUR_ADMIN_ACCESS_TOKEN: process.env.IA_TOKEN ?? null,
-      IA_RTOKEN: process.env.IA_RTOKEN ?? null,
-      /* Sanity Configuration */
-      S_PID: process.env.S_PID ?? null,
-      S_DSET: process.env.S_DSET ?? null,
-      SANITY_TOKEN: process.env.SANITY_TOKEN ?? null,
-      SANITY_CDN_URL: process.env.SANITY_CDN_URL ?? 'https://cdn.sanity.io/images/',
       /* Sanity Admin Configuration */
-      SA_PID: process.env.SA_PID ?? null,
-      SA_DSET: process.env.SA_DSET ?? null,
-      SA_TOKEN: process.env.SA_TOKEN ?? null,
       SA_CDN_URL: process.env.SA_CDN_URL ?? 'https://cdn.sanity.io/images/',
+      SA_DSET: process.env.SA_DSET ?? null,
+      SA_PID: process.env.SA_PID ?? null,
+      SA_TOKEN: process.env.SA_TOKEN ?? null,
+      /* Sanity Configuration */
+      S_CURL: process.env.S_CURL ?? 'https://cdn.sanity.io/images/',
+      S_DSET: process.env.S_DSET ?? null,
+      S_PID: process.env.S_PID ?? null,
+      S_TOKEN: process.env.S_TOKEN ?? null,
       /* Reddit Configuration */
-      REDDIT_CLIENT_ID: process.env.REDDIT_CLIENT_ID ?? null,
-      REDDIT_CLIENT_SECRET: process.env.REDDIT_CLIENT_SECRET ?? null,
-      REDDIT_USERNAME: process.env.REDDIT_USERNAME ?? null,
-      REDDIT_PASSWORD: process.env.REDDIT_PASSWORD ?? null,
-      REDDIT_ADMIN_SUBREDDIT: process.env.REDDIT_ADMIN_SUBREDDIT ?? 'biketag',
+      R_CID: process.env.R_CID ?? null,
+      R_CSECRET: process.env.R_CSECRET ?? null,
+      R_UNAME: process.env.R_UNAME ?? null,
+      R_PASS: process.env.R_PASS ?? null,
+      RA_SUB: process.env.RA_SUB ?? 'biketag',
       /* Reddit Admin Configuration */
-      REDDIT_ADMIN_CLIENT_ID: process.env.REDDIT_ADMIN_CLIENT_ID ?? null,
-      REDDIT_ADMIN_CLIENT_SECRET: process.env.REDDIT_ADMIN_CLIENT_SECRET ?? null,
-      REDDIT_ADMIN_USERNAME: process.env.REDDIT_ADMIN_USERNAME ?? null,
-      REDDIT_ADMIN_PASSWORD: process.env.REDDIT_ADMIN_PASSWORD ?? null,
-      /* Auth0 Configuration */
-      A_CID: process.env.A_CID ?? null,
-      A_DOMAIN: process.env.A_DOMAIN ?? null,
-      /* Google Configuration */
-      G_EMAIL: process.env.G_EMAIL ?? null,
-      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? null,
-      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? null,
-      GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN ?? null,
-      G_PASS: process.env.G_PASS ?? null,
-      G_AKEY: process.env.G_AKEY ?? null,
-      /* Croket Configuration */
-      CROQUET_API_KEY: process.env.CROQUET_API_KEY ?? null,
-      CROQUET_SESSION_NAME: process.env.CROQUET_SESSION_NAME ?? 'biketag',
-      CROQUET_SESSION_PASSWORD: process.env.CROQUET_SESSION_PASSWORD ?? 'secret'
+      RA_CID: process.env.RA_CID ?? null,
+      RA_CSECRET: process.env.RA_CSECRET ?? null,
+      RA_UNAME: process.env.RA_UNAME ?? null,
+      RA_PASS: process.env.RA_PASS ?? null,
     }),
     VitePWA({
       strategies: 'injectManifest',
