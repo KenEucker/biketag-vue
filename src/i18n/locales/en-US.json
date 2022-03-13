@@ -46,6 +46,9 @@
       "view_queue_button": "View tags in this round",
       "reset_queue_button": "RESET",
       "queue_mystery_title": "Add your new Mystery Location"
+    },
+    "games": {
+      "games_title": "Featuring games from all over the world!"
     }
   },
   "pages": {

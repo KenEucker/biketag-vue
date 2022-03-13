@@ -30,22 +30,16 @@
           </bike-tag-button>
         </p>
       </div>
-      <div class="m-auto games">
-        <div v-for="(game, index) in getAllGames" :key="index" class="biketag-game">
-          <a :href="`https://${game.name}.biketag.io`">
-            <img :src="getLogoUrl('s', game.logo)" /> </a
-          ><br />
-        </div>
-      </div>
+      <bike-tag-games />
     </div>
   </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagGames from '@/components/BikeTagGames.vue'
 import StyledHr from '@/assets/images/hr.svg'
 import Pin from '@/assets/images/pin.svg'
 
@@ -54,15 +48,13 @@ export default defineComponent({
   components: {
     HtmlContent,
     BikeTagButton,
+    BikeTagGames,
   },
   data() {
     return {
       styledHr: StyledHr,
       pin: Pin,
     }
-  },
-  computed: {
-    ...mapGetters(['getAllGames', 'getLogoUrl']),
   },
 })
 </script>
@@ -86,27 +78,8 @@ export default defineComponent({
 <style scoped lang="scss">
 @import '../assets/styles/style';
 
-.games {
-  display: flex;
-  flex-flow: wrap;
-  max-width: 80vw;
-  justify-content: center;
-  height: 100% !important;
-}
-
 img {
   width: 100%;
-}
-
-.biketag-game {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  img {
-    width: 8rem;
-    height: auto;
-  }
 }
 
 .about {
@@ -129,15 +102,6 @@ img {
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100%;
-  }
-  @media (min-width: $breakpoint-desktop) {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 1rem;
-
-    .games {
-      grid-column: 1 / span 2;
-    }
   }
 }
 </style>

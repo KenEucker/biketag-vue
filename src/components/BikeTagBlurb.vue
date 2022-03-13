@@ -49,7 +49,7 @@ export default defineComponent({
     },
     variant: {
       type: String,
-      default: 'right',
+      default: 'center',
     },
   },
   data() {
@@ -86,11 +86,19 @@ hr {
 }
 
 .header {
-  text-align: left;
-
   h5 {
     height: 100%;
     align-self: center;
+  }
+}
+
+.center {
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+
+  .header {
+    text-align: center;
   }
 }
 
@@ -124,13 +132,21 @@ hr {
 
 .right {
   .container {
-    flex-flow: row wrap;
+    flex-flow: row-reverse wrap;
+  }
+
+  .header {
+    text-align: right;
   }
 }
 
 .left {
   .container {
-    flex-flow: row-reverse wrap;
+    flex-flow: row wrap;
+  }
+
+  .header {
+    text-align: left;
   }
 }
 @media (min-width: 600px) {

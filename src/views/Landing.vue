@@ -59,9 +59,16 @@
       <p>When using biketag.org, you agree to our Terms Of Service. You can read those here.</p>
     </bike-tag-blurb>
     <bike-tag-blurb
+      title="A worldwide game of tag"
+      subtitle="Is there a BikeTag Game in your city?"
+    >
+      <bike-tag-games :show-heading="false" />
+    </bike-tag-blurb>
+    <bike-tag-blurb
       title="BikeTag Ambassador Program"
       subtitle="Start a new game of BikeTag in your area"
       :img-src="BikeTagAmbassadorSvg"
+      variant="right"
     >
       <p>
         Our mission is to make the game of BikeTag easy for anyone to play and to support games of
@@ -144,11 +151,13 @@ import { defineComponent } from 'vue'
 import BikeTagBlurb from '@/components/BikeTagBlurb'
 import BikeTagAmbassadorSvg from '@/assets/images/biketag-ambassador.svg'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
+import BikeTagGames from '@/components/BikeTagGames.vue'
 
 export default defineComponent({
   name: 'HomeView',
   components: {
     BikeTagBlurb,
+    BikeTagGames,
   },
   data() {
     return {
