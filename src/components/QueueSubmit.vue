@@ -1,7 +1,7 @@
 <template>
   <b-container class="queue-submit">
     <div>
-      <h3 class="queue-title">{{ $t('pages.queue.submit_title') }}</h3>
+      <h3 class="queue-title">{{ $t('pages.round.submit_title') }}</h3>
     </div>
     <div>
       <b-tabs nav-item-class="nav-item">
@@ -53,11 +53,11 @@
         </b-tab>
       </b-tabs>
       <p v-if="supportsReddit || supportsTwitter || supportsInstagram" class="queue-text">
-        {{ $t('pages.queue.submit_text') }}
+        {{ $t('pages.round.submit_text') }}
       </p>
       <p v-else class="queue-text">
-        {{ $t('pages.queue.submit_text_no_autopost') }}
-        {{ $t('pages.queue.submit_text_manual_social') }}
+        {{ $t('pages.round.submit_text_no_autopost') }}
+        {{ $t('pages.round.submit_text_manual_social') }}
       </p>
 
       <form
@@ -72,7 +72,7 @@
         <input type="hidden" name="form-name" value="post-new-biketag" />
         <input type="hidden" name="playerId" :value="getPlayerId" />
         <fieldset v-if="supportsReddit">
-          <label for="postToReddit">{{ $t('pages.queue.post_to_reddit') }}</label>
+          <label for="postToReddit">{{ $t('pages.round.post_to_reddit') }}</label>
           <input
             v-model="postToReddit"
             name="postToReddit"
@@ -81,7 +81,7 @@
           />
         </fieldset>
         <fieldset v-if="supportsTwitter">
-          <label for="postToTwitter">{{ $t('pages.queue.post_to_twitter') }}</label>
+          <label for="postToTwitter">{{ $t('pages.round.post_to_twitter') }}</label>
           <input
             v-model="postToTwitter"
             name="postToTwitter"
@@ -90,7 +90,7 @@
           />
         </fieldset>
         <fieldset v-if="supportsInstagram">
-          <label for="postToInstagram">{{ $t('pages.queue.post_to_instagram') }}</label>
+          <label for="postToInstagram">{{ $t('pages.round.post_to_instagram') }}</label>
           <input
             v-model="postToInstagram"
             name="postToInstagram"
@@ -100,7 +100,7 @@
         </fieldset>
         <bike-tag-button
           variant="medium"
-          :text="$t('pages.queue.post_new_tag')"
+          :text="$t('pages.round.post_new_tag')"
           @click="onSubmit"
         />
       </form>

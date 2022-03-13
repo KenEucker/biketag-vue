@@ -67,7 +67,7 @@
       "set_name_placeholder": "Your new name",
       "set_name_description": "Your name will be unique and only you will be able to make BikeTag posts using this name moving forward. Note: you cannot change your name after you set it."
     },
-    "queue": {
+    "round": {
       "join_queue": "Join round",
       "tape_title": "Round",
       "complete_queue": "Complete your tag for round",
@@ -93,6 +93,9 @@
       "location_placeholder": "Enter Found Location",
       "name_placeholder": "Enter your Name",
       "hint_placeholder": "Enter your Hint",
+      "current_round_description": "The tags below are from players who are actively playing RIGHT NOW! Watch the game unfold as players make it from the current mystery location to a new mystery location of their choosing.",
+      "current_round_win_description": "Who will become \"it\" next?!",
+      "current_round_description_empty": "Tags added to the current round will show up here once the first person has uploaded their found image.",
       "post_to_reddit": "Reddit",
       "post_to_twitter": "Twitter",
       "queue_found_tag": "I found it!",

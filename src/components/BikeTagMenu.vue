@@ -73,7 +73,7 @@
           </li>
           <li
             class="nav-item"
-            :class="{ 'active-nav': currentRoute === 'Queue' }"
+            :class="{ 'active-nav': currentRoute === 'Play' }"
             @click="goPlayPage"
           >
             {{ $t('menu.play') }}
@@ -475,6 +475,7 @@ footer {
       color: black;
       font-size: 0.75rem;
       padding: 0.25rem 0;
+      height: 115px;
     }
 
     &__group_column {

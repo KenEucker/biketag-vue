@@ -46,7 +46,7 @@
       "send_hello_email": "¡Envíe un correo electrónico a hello@biketag.org para preguntar cómo puede iniciar uno!",
       "game_not_exists": "¿Oh, oh. Este juego no existe.. todavía?"
     },
-    "queue": {
+    "round": {
       "join_queue": "Únete a la ronda",
       "tape_title": "Ronda",
       "complete_queue": "Complete su etiqueta para la ronda",

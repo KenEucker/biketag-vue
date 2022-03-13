@@ -2,14 +2,14 @@
   <b-container class="queue-joined col-md-8 col-lg-8">
     <div class="mt-3">
       <bike-tag-button @click="goMysteryQueue">
-        {{ $t('pages.queue.mystery_button') }}
+        {{ $t('pages.round.mystery_button') }}
       </bike-tag-button>
     </div>
-    <h3 class="queue-title">{{ $t('pages.queue.joined_title') }}</h3>
-    <p class="queue-text">{{ $t('pages.queue.joined_text') }}</p>
+    <h3 class="queue-title">{{ $t('pages.round.joined_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.round.joined_text') }}</p>
     <div class="mt-3">
       <bike-tag-button variant="medium" @click="goViewRound">
-        {{ $t('pages.queue.joined_button') }} {{ getCurrentBikeTag?.tagnumber }}
+        {{ $t('pages.round.joined_button') }} {{ getCurrentBikeTag?.tagnumber }}
       </bike-tag-button>
     </div>
   </b-container>

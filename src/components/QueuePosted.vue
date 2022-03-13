@@ -1,10 +1,10 @@
 <template>
   <b-container class="queue-posted">
-    <h3 class="queue-title">{{ $t('pages.queue.posted_title') }}</h3>
-    <p class="queue-text">{{ $t('pages.queue.posted_text') }}</p>
+    <h3 class="queue-title">{{ $t('pages.round.posted_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.round.posted_text') }}</p>
     <div class="mt-3">
       <bike-tag-button variant="medium" @click="goViewRound">
-        {{ $t('pages.queue.joined_button') }} #{{ getCurrentBikeTag?.tagnumber }}
+        {{ $t('pages.round.joined_button') }} #{{ getCurrentBikeTag?.tagnumber }}
       </bike-tag-button>
     </div>
   </b-container>

@@ -40,7 +40,7 @@
       "nohint": "подсказки нет, извините",
       "mystery": "текущее загадочное место, которое нужно найти"
     },
-    "queue": {
+    "round": {
       "join_queue": "Join the queue!",
       "complete_queue": "Complete queued tag!",
       "submit_queue": "Submit queued tag!",

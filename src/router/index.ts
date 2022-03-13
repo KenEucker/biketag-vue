@@ -35,7 +35,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/round',
     name: 'Round',
-    component: () => import('@/views/Queue.vue'),
+    component: () => import('@/views/Round.vue'),
   },
   {
     path: '/howtoplay',

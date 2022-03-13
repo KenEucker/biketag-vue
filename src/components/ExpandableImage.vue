@@ -33,11 +33,12 @@ export default defineComponent({
       default: null,
     },
   },
+  emits: ['loading', 'loaded'],
   data() {
     return {
       expanded: false,
       closeButtonRef: null,
-      loading: true,
+      loading: this.$emit('loading') && true,
     }
   },
 
@@ -100,6 +101,7 @@ export default defineComponent({
       e.preventDefault()
     },
     loaded() {
+      this.$emit('loaded')
       this.loading = false
     },
   },

@@ -1,12 +1,12 @@
 <template>
   <div></div>
   <div v-if="!getQueuedTags?.length" class="container queue-approve-tag">
-    <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
-    <p class="queue-text">{{ $t('pages.queue.empty_text') }}</p>
+    <h3 class="queue-title">{{ $t('pages.round.approve_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.round.empty_text') }}</p>
   </div>
   <div v-else class="container queue-approve-tag queue-approve">
-    <h3 class="queue-title">{{ $t('pages.queue.approve_title') }}</h3>
-    <p class="queue-text">{{ $t('pages.queue.approve_text') }}</p>
+    <h3 class="queue-title">{{ $t('pages.round.approve_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.round.approve_text') }}</p>
     <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" />
     <swiper
       :modules="[Controller]"
@@ -96,7 +96,7 @@
         </b-modal>
       </div>
       <div class="row">
-        <span class="player-agree"> * {{ $t('pages.queue.approve_agree') }} </span>
+        <span class="player-agree"> * {{ $t('pages.round.approve_agree') }} </span>
         <img class="ambassador-icon" src="/images/biketag-ambassador.svg" alt="Ambassador Icon" />
       </div>
     </div>

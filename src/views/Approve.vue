@@ -30,7 +30,8 @@
   </div>
 </template>
 <script>
-import { defineComponent, watchEffect, onMounted } from 'vue'
+import { defineComponent } from 'vue'
+// watchEffect, onMounted } from 'vue'
 import { mapGetters } from 'vuex'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
@@ -139,7 +140,6 @@ export default defineComponent({
         /// If no token, the request will be rejected
         tag.token = claims.__raw
       }
-      console.log('onApproveSubmit', { storeAction, tag })
 
       this.uploadInProgress = true
       const success = await this.$store.dispatch(storeAction, tag)
