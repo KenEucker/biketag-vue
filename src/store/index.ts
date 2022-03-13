@@ -385,7 +385,7 @@ export const store = createStore<State>({
         })
       }
     },
-    async queueFoundTag({ commit, state }, d) {
+    async addFoundTag({ commit, state }, d) {
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = state.profile.sub
         return client.queueTag(d).then((t) => {
@@ -400,7 +400,7 @@ export const store = createStore<State>({
       }
       return commit('SET_QUEUE_FOUND', d)
     },
-    async queueMysteryTag({ commit, state }, d) {
+    async addMysteryTag({ commit, state }, d) {
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = state.profile.sub
 
@@ -416,7 +416,7 @@ export const store = createStore<State>({
       }
       return commit('SET_QUEUE_MYSTERY', d)
     },
-    async submitQueuedTag({ commit, state }, d) {
+    async postNewBikeTag({ commit, state }, d) {
       if (d.mysteryImageUrl && d.foundImageUrl) {
         d.playerId = state.profile.sub
         return client.queueTag(d).then((t) => {

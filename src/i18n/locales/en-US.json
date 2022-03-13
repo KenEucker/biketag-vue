@@ -3,6 +3,7 @@
     "approving": "Approving new BikeTag",
     "uploading": "Uploading tag information...",
     "error": "ERROR",
+    "removing": "Removing player tag",
     "success": "successfully completed"
   },
   "menu": {

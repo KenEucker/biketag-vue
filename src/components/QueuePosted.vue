@@ -113,7 +113,7 @@ export default defineComponent({
         formAction,
         formData,
         tag: submittedTag,
-        storeAction: 'submitQueuedTag',
+        storeAction: 'postNewBikeTag',
       })
     },
   },

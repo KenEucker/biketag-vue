@@ -120,6 +120,7 @@ export default defineComponent({
       preview: null,
       mysteryImageUrl: null,
       player: '',
+      confirmNoHint: false,
       hint: this.tag?.hint ?? '',
       image: this.tag?.mysteryImage,
       showModal: false,
@@ -158,6 +159,15 @@ export default defineComponent({
         })
         return
       }
+      if (!this.hint.length && !this.confirmNoHint) {
+        this.confirmNoHint = true
+        this.$toast.open({
+          message: "You didn't add a hint, but it would sure be nice if you did.",
+          type: 'error',
+          position: 'top',
+        })
+        return
+      }
       const formAction = this.$refs.mysteryTag.getAttribute('action')
       const formData = new FormData(this.$refs.mysteryTag)
       const mysteryTag = {
@@ -173,7 +183,7 @@ export default defineComponent({
         formAction,
         formData,
         tag: mysteryTag,
-        storeAction: 'queueMysteryTag',
+        storeAction: 'addMysteryTag',
       })
     },
     setImage(event) {

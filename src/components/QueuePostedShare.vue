@@ -231,7 +231,7 @@ See all BikeTags and more, for ${this.getGameName}:
         formAction,
         formData,
         tag: submittedTag,
-        storeAction: 'submitQueuedTag',
+        storeAction: 'postNewBikeTag',
       })
     },
   },

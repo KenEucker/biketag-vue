@@ -59,7 +59,7 @@
       <div class="mt-3 mb-3 input-cnt">
         <bike-tag-input
           id="found"
-          v-model="location"
+          v-model="locationString"
           :disabled="locationDisabled"
           name="found"
           required
@@ -143,8 +143,9 @@ export default defineComponent({
     return {
       preview: null,
       image: this.tag?.foundImage ?? '',
-      location: this.tag?.foundLocation ?? '',
+      location: '',
       player: '',
+      locationString: this.tag?.foundLocation,
       foundImageUrl: null,
       tagNumber: 0,
       locationDisabled: true,
@@ -214,7 +215,7 @@ export default defineComponent({
     },
     async onSubmit(e) {
       e.preventDefault()
-      if (!this.image) {
+      if (!this.locationString?.length) {
         this.$toast.open({
           message: 'Please add your Found Location image',
           type: 'error',
@@ -294,11 +295,11 @@ export default defineComponent({
         formAction,
         formData,
         tag: foundTag,
-        storeAction: 'queueFoundTag',
+        storeAction: 'addFoundTag',
       })
     },
     changeLocation(e) {
-      this.location = e.target.value
+      this.location = this.locationString = e.target.value
       if (this.inputDOM == null) {
         this.inputDOM = e.target
       }
