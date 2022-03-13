@@ -7460,6 +7460,13 @@ luxon@^1.28.0:
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.28.0.tgz#e7f96daad3938c06a62de0fb027115d251251fbf"
   integrity sha512-TfTiyvZhwBYM/7QdAVDh+7dBTBA29v4ik0Ce9zda3Mnf8on1S5KJI8P2jKFZ8+5C0jhmr0KwJEO/Wdpm0VeWJQ==
 
+lzutf8@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/lzutf8/-/lzutf8-0.6.1.tgz#2e82d86cc19e73d070d5e52a836ca723ffa35a5e"
+  integrity sha512-XsaftVRx/OFJC85vuqWsz4ihvD+DOOL1gU0UbgAR/MMLNvZWWOMncEnAAQf9XOMOHBeVcRxmujvWUo37LYJyMg==
+  dependencies:
+    readable-stream "^3.6.0"
+
 macos-release@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/macos-release/-/macos-release-3.0.1.tgz#7d2a1329a616297db4a57f3d3ba8fa07a7caadd6"
