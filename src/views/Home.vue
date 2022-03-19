@@ -11,7 +11,7 @@
       <div v-if="tagnumber" class="m-4 mt-5 tag-screen">
         <bike-tag id="the-tag" :tag="tag" image-size="l" />
       </div>
-      <div v-else class="mt-4 mb-5">
+      <div v-else class="mb-5">
         <div class="play-screen__mystery-player">
           <bike-tag-button
             variant="medium"
@@ -152,20 +152,22 @@ export default defineComponent({
   position: relative;
   width: 80vw;
   max-width: 750px;
+  max-height: 70vh;
   height: auto;
   margin: auto;
 
-  @media (max-width: $breakpoint-mobile-lg) {
-    width: 100vw;
-  }
+  // @media (max-width: $breakpoint-mobile-lg) {
+  //   width: 100vw;
+  // }
 
   &__mystery-player {
     position: relative;
     z-index: 1;
 
     &__button {
-      position: relative;
+      margin-top: -40px;
       bottom: -40px;
+      position: relative;
       width: 80%;
       max-width: 25em;
     }
@@ -182,9 +184,9 @@ export default defineComponent({
       max-width: unset;
     }
 
-    @media (max-width: $breakpoint-mobile-lg) {
-      width: 100vw;
-    }
+    // @media (max-width: $breakpoint-mobile-lg) {
+    //   width: 100vw;
+    // }
   }
 
   &__label-group {

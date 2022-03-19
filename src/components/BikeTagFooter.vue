@@ -67,6 +67,12 @@
         />
       </div>
     </b-modal> -->
+  <!-- World -->
+  <div class="button-reset-cnt">
+    <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
+      <img class="footer-fixed_image" src="@/assets/images/npworld.png" alt="BikeTag World Wide" />
+    </bike-tag-button>
+  </div>
   <div class="mt-5 mb-5 foss-container">
     <div class="row">
       <a href="https://github.com/KenEucker/biketag-vue">

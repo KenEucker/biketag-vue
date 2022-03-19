@@ -11,7 +11,20 @@
 <script>
 import { defineComponent } from 'vue'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
-const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW()
+const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
+  immediate: true,
+  onRegistered(r) {
+    if (process.env.RELOAD_SW === 'true') {
+      r &&
+        setInterval(async () => {
+          console.log('Checking for sw update')
+          await r.update()
+        }, 20000 /* 20s for testing purposes */)
+    } else {
+      console.log('app::service worker registered', r)
+    }
+  },
+})
 import { mapGetters } from 'vuex'
 
 export default defineComponent({
@@ -33,30 +46,34 @@ export default defineComponent({
   },
   async created() {
     await this.$store.dispatch('setGame')
-    const manifestLinkEl = document.querySelector('link[rel="manifest"]')
+    try {
+      const manifestLinkEl = document.querySelector('link[rel="manifest"]')
 
-    if (manifestLinkEl) {
-      const existingManifest = await fetch(manifestLinkEl.href)
-      const applicationManifest = {
-        ...(await existingManifest.json()),
-        name: this.getGameTitle,
-        id: this.getGameSlug,
-        icons: [
-          {
-            src: await this.getLogoUrl('h=192&w=192'),
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: await this.getLogoUrl('h=512&w=512'),
-            sizes: '512x512',
-            type: 'image/png',
-          },
-        ],
+      if (manifestLinkEl) {
+        const existingManifest = await fetch(manifestLinkEl.href)
+        const applicationManifest = {
+          ...(await existingManifest.json()),
+          name: this.getGameTitle,
+          id: this.getGameSlug,
+          icons: [
+            {
+              src: await this.getLogoUrl('h=192&w=192'),
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: await this.getLogoUrl('h=512&w=512'),
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
+        }
+        const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
+        manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
+        console.log('app::application manifest updated', applicationManifest)
       }
-      const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
-      manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
-      console.log('app::application manifest updated', applicationManifest)
+    } catch (e) {
+      console.error('app::error loading manifest')
     }
   },
   methods: {

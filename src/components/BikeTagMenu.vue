@@ -71,6 +71,20 @@
           >
             {{ $t('menu.biketags') }}
           </li>
+          <li
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'How' }"
+            @click="goPlayersPage"
+          >
+            {{ $t('menu.players') }}
+          </li>
+          <li
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'How' }"
+            @click="goLeaderboardPage"
+          >
+            {{ $t('menu.top10') }}
+          </li>
           <li class="nav-item" :class="{ 'active-nav': currentRoute === 'How' }" @click="goHowPage">
             {{ $t('menu.howto') }}
           </li>

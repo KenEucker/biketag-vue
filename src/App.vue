@@ -6,10 +6,10 @@
     </template>
     <service-worker />
     <router-view />
-    <template v-if="isNotLanding">
+    <!-- <template v-if="isNotLanding">
       <bike-tag-menu variant="bottom" />
       <div class="spacer-bottom"></div>
-    </template>
+    </template> -->
   </div>
 </template>
 <script>
@@ -106,9 +106,9 @@ export default defineComponent({
 }
 
 .spacer-top {
-  height: 100px;
+  height: 85px;
   @media (min-width: 990px) {
-    height: 190px;
+    height: 105px;
   }
 }
 </style>
