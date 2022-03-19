@@ -343,10 +343,11 @@ body {
       text-align: justify;
     }
 
-    .title-cnt {
+    .title-container {
       position: relative;
       padding: 0;
       z-index: 4;
+      margin-top: -25px;
 
       .biketag {
         &__button {

@@ -22,7 +22,7 @@
     <bike-tag-queue :only-mine="true" />
     <div
       v-if="BiketagFormSteps[getFormStep] >= 1 && BiketagFormSteps[getFormStep] < 4"
-      class="step mt-2 mb-4"
+      class="step"
     >
       <bike-tag-button
         :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'"

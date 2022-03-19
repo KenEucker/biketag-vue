@@ -1,7 +1,7 @@
 <template>
-  <header v-if="variant === 'top'" class="biketag-header">
+  <header v-if="variant === 'top'" :class="`biketag-header ${!showHeader ? 'is-hidden' : ''}`">
     <!-- The header logo and profile and hamburger buttons go here -->
-    <nav class="biketag-header-nav navbar navbar-expand-xl">
+    <nav id="navmenu" class="biketag-header-nav navbar navbar-expand-xl">
       <!-- Back Arrow -->
       <div v-if="isShow" class="back-arrow" @click="goBack">
         <img
@@ -170,6 +170,9 @@ export default defineComponent({
   data() {
     return {
       showLogin: process.env.CONTEXT === 'dev',
+      showHeader: true,
+      lastScrollPosition: 0,
+      scrollOffset: 40,
     }
   },
   computed: {
@@ -199,8 +202,30 @@ export default defineComponent({
   },
   mounted() {
     this.checkForNewBikeTagPost()
+    this.lastScrollPosition = window.pageYOffset
+    window.addEventListener('scroll', this.onScroll)
+  },
+  beforeUnmount() {
+    window.removeEventListener('scroll', this.onScroll)
   },
   methods: {
+    // Toggle if navigation is shown or hidden
+    onScroll() {
+      console.log('onScroll', {
+        offset: window.pageYOffset,
+        showHeader: this.showHeader,
+        scrollOffset: this.scrollOffset,
+        lastScrollPosition: this.lastScrollPosition,
+      })
+      if (window.pageYOffset < 0) {
+        return
+      }
+      if (Math.abs(window.pageYOffset - this.lastScrollPosition) < this.scrollOffset) {
+        return
+      }
+      this.showHeader = window.pageYOffset < this.lastScrollPosition
+      this.lastScrollPosition = window.pageYOffset
+    },
     async clearTagCache() {
       await this.$store.dispatch('setGame', true)
       await this.$store.dispatch('setTags', true)
@@ -281,6 +306,9 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 @import '../assets/styles/style';
+.is-hidden {
+  transform: translateY(-100%);
+}
 
 header {
   background-color: #e5e5e5;
@@ -290,6 +318,7 @@ header {
   left: 0;
   z-index: 999;
   box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
+  transition: transform 0.5s ease-out;
 
   nav {
     .show {

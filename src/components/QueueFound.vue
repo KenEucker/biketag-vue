@@ -10,7 +10,7 @@
     </form>
   </b-modal>
   <div class="add-found-tag">
-    <div class="title-cnt">
+    <div class="title-container">
       <bike-tag-button variant="medium" @click="$refs.file.click()">
         <h3 class="queue-title">{{ $t('pages.round.found_title') }}</h3>
       </bike-tag-button>
