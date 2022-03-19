@@ -258,11 +258,11 @@ export default defineComponent({
       this.$router.push('/about')
     },
     goLeaderboardPage: function () {
-      // this.closeCollapsible()
+      this.closeCollapsible()
       this.$router.push('/leaderboard')
     },
     goPlayersPage: function () {
-      // this.closeCollapsible()
+      this.closeCollapsible()
       this.$router.push('/players')
     },
     goHowPage: function () {
