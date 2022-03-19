@@ -17,6 +17,7 @@ export const handler = async (event) => {
   let success = false
 
   console.log({ payload })
+
   if (payload) {
     const formName = payload.form_name
     const host = payload.site_url
@@ -84,6 +85,7 @@ export const handler = async (event) => {
       const gameHost = `${host.replace('://', `://${gameName}.`)}`
       const tagQueuedNumber = stringifyNumber(numberInQueue)
 
+      console.log('processing form::', formName)
       switch (formName) {
         case 'add-found-tag':
           // send app notification
@@ -184,9 +186,11 @@ export const handler = async (event) => {
         success = true
       } else if (rejectedEmails.length) {
         console.log('error sending emails', rejectedEmails)
+      } else {
+        console.log('nothing to do')
       }
     } else {
-      console.log('no game to work with', payload)
+      console.error('no game to work with', payload)
     }
 
     return {
