@@ -24,6 +24,7 @@ import '@/assets/styles/style.scss'
 import '@/assets/styles/flashy.scss'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import 'highlight.js/styles/monokai.css'
+import { debug } from './common/utils'
 class BikeTagApp {
   protected emitter
   protected app
@@ -58,7 +59,7 @@ class BikeTagApp {
           )
         },
       }
-      console.log('init::authentication')
+      debug('init::authentication')
       this.app.use(Auth0Plugin, auth0Opts)
     } else {
       this.app.config.globalProperties.$auth = () => () => null

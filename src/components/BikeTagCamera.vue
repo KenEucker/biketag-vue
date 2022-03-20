@@ -108,7 +108,6 @@ export default defineComponent({
   methods: {
     async downloadTag() {
       this.downloadingTag = true
-      console.log({ tag: this.tag })
       const downloadPrefix = `BikeTag-${this.tag.game}-${this.tag.tagnumber}--`
       if (!this.hasDownloadedMystery) {
         const mysteryImageDataUrl = await exportHtmlToDownload(

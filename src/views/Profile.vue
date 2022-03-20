@@ -69,6 +69,9 @@
           />
         </div>
         <div v-if="profile.user_metadata" class="mt-3">
+          <bike-tag-input v-model="profile.email" :label="$t('pages.profile.email')" readonly />
+        </div>
+        <div v-if="profile.user_metadata" class="mt-3">
           <bike-tag-input
             id="passcode"
             v-model="profile.user_metadata.passcode"

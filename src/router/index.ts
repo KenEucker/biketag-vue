@@ -1,5 +1,6 @@
 import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
 import { authGuard } from '@/auth/authGuard'
+import { debug } from '../common/utils'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -88,7 +89,7 @@ if (process.env.A_DOMAIN?.length) {
   ]
 }
 
-console.log('init::router', { sitemap: routes.map((r) => r.path) })
+debug('init::router', { sitemap: routes.map((r) => r.path) })
 
 const router = createRouter({
   history: createWebHashHistory(),

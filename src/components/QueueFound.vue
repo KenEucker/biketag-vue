@@ -123,6 +123,7 @@ import BikeTagInput from '@/components/BikeTagInput.vue'
 import exifr from 'exifr'
 import Pin from '@/assets/images/pin.svg'
 // import { Notifications } from '@/common/types'
+import { debug } from '@/common/utils'
 
 export default defineComponent({
   name: 'QueueFoundTag',
@@ -262,14 +263,14 @@ export default defineComponent({
       }
       if (this.location.length == 0) {
         if (this.gps.lat == null) {
-          console.log('location must be set')
+          debug('location must be set')
           return
         }
         this.location = this.getLocation
       }
       if (this.player.length == 0) {
         if (this.getName.length == 0) {
-          console.log('player name must set')
+          debug('player name must set')
           return
         } else {
           this.player = this.getName

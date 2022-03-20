@@ -12,6 +12,8 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTag from '@/assets/images/BikeTag.svg'
+import { debug } from '@/common/utils'
+
 export default defineComponent({
   name: 'LoginView',
   components: {
@@ -35,7 +37,7 @@ export default defineComponent({
             const token = claims.__raw
             this.$store.dispatch('setProfile', { ...this.$auth.user, token })
           } else {
-            console.log('what is this? No sprechen sie Deutsch?')
+            debug('what is this? No sprechen sie Deutsch?')
           }
         })
       } else {

@@ -151,6 +151,7 @@
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton'
+import { debug } from '@/common/utils'
 
 export default defineComponent({
   name: 'BikeTagMenu',
@@ -187,7 +188,7 @@ export default defineComponent({
     ]),
     isShow() {
       if (this.$route.name) {
-        console.log('view::loaded', this.$route.name)
+        debug('view::loaded', this.$route.name)
       }
       return this.$route.name !== 'Home'
     },
@@ -211,12 +212,6 @@ export default defineComponent({
   methods: {
     // Toggle if navigation is shown or hidden
     onScroll() {
-      console.log('onScroll', {
-        offset: window.pageYOffset,
-        showHeader: this.showHeader,
-        scrollOffset: this.scrollOffset,
-        lastScrollPosition: this.lastScrollPosition,
-      })
       if (window.pageYOffset < 0) {
         return
       }
@@ -236,7 +231,7 @@ export default defineComponent({
         this.getCurrentBikeTag.tagnumber > this.getMostRecentlyViewedTagnumber &&
         this.getMostRecentlyViewedTagnumber !== 0
       ) {
-        console.log('ui::new biketag posted!!')
+        debug('ui::new biketag posted!!')
         this.$toast.open({
           message: `Round #${this.getCurrentBikeTag.tagnumber} of BikeTag ${this.getGameName} has been posted!`,
           type: 'default',

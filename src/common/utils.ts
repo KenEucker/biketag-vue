@@ -5,6 +5,7 @@ import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
 import CryptoJS from 'crypto-js'
 import md5 from 'md5'
 import domtoimage from 'dom-to-image'
+import log from 'loglevel'
 
 export type DomainInfo = {
   host: string
@@ -147,7 +148,7 @@ export const getQueuedTagFromCookie = (biketagCookieKey = 'biketag'): Tag | unde
   const { cookies } = useCookies()
   const existingBikeTag = cookies.get(biketagCookieKey)
 
-  console.log('getQueuedTagFromCookie', { existingBikeTag })
+  debug('getQueuedTagFromCookie', { existingBikeTag })
   if (existingBikeTag) {
     return existingBikeTag as unknown as Tag
   }
@@ -156,7 +157,7 @@ export const getQueuedTagFromCookie = (biketagCookieKey = 'biketag'): Tag | unde
 export const setQueuedTagInCookie = (queuedTag?: Tag, biketagCookieKey = 'biketag'): boolean => {
   const { cookies } = useCookies()
 
-  console.log('setQueuedTagInCookie', { queuedTag })
+  debug('setQueuedTagInCookie', { queuedTag })
   if (queuedTag) {
     cookies.set(biketagCookieKey, JSON.stringify(queuedTag))
   } else {
@@ -316,12 +317,12 @@ export const getApiUrl = (path = '') => {
 
 export const exportHtmlToDownload = (filename: string, node?: any, selector?: string): any => {
   if (!node && !selector) {
-    console.log('nothing to render')
+    debug('nothing to render')
     return
   }
   node = node ?? document.querySelector(selector as string)
   if (!node) {
-    console.log('node not found')
+    debug('node not found')
     return
   }
 
@@ -337,4 +338,9 @@ export const exportHtmlToDownload = (filename: string, node?: any, selector?: st
     .catch(function (error) {
       console.error('oops, something went wrong!', error)
     })
+}
+
+export const debug = (message: string, context?: any) => {
+  console.log(message, { context })
+  log.debug(message, { context })
 }

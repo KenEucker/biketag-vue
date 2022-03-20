@@ -18,6 +18,7 @@ import {
 } from '@/common/utils'
 import { BiketagFormSteps, State } from '@/common/types'
 import { setNPAuthorization } from '@/common/utils'
+import { debug } from '../common/utils'
 
 // define injection key
 /// TODO: move these initializers to a method for FE use only
@@ -42,7 +43,7 @@ const defaultLogo = '/images/BikeTag.svg'
 const defaultJingle = 'media/biketag-jingle-1.mp3'
 const sanityBaseCDNUrl = `${process.env.S_CURL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
 
-console.log('init::store', {
+debug('init::store', {
   subdomain: domain.subdomain,
   domain,
   gameName,
@@ -114,7 +115,7 @@ export const store = createStore<State>({
         //             const token = claims.__raw
         //             this.$store.dispatch('setProfile', { ...this.$auth.user, token })
         //           } else {
-        //             console.log("what's this? no speaka da mda5hash, brah?")
+        //             debug("what's this? no speaka da mda5hash, brah?")
         //           }
         //         })
         //       }
@@ -284,9 +285,9 @@ export const store = createStore<State>({
         d.hash = state.game.queuehash
         return client.deleteTag(d).then((t) => {
           if (t.success) {
-            console.log('store::tag dequeued', d)
+            debug('store::tag dequeued', d)
           } else {
-            console.log('error::dequeue BikeTag failed', t)
+            debug('error::dequeue BikeTag failed', t)
             return t.error ? t.error : Array.isArray(t.data) ? t.data.join(' - ') : t.data
           }
           return true
@@ -349,7 +350,7 @@ export const store = createStore<State>({
         queuedTag.hash = state.game.queuehash
         return client.deleteTag(queuedTag).then(async (t) => {
           if (t.success) {
-            console.log('store::found tag dequeued', state.playerTag)
+            debug('store::found tag dequeued', state.playerTag)
             await commit('SET_QUEUED_TAG', {})
             await commit('RESET_FORM_STEP_TO_FOUND')
 
@@ -373,13 +374,13 @@ export const store = createStore<State>({
         queuedMysteryTag.hash = state.game.queuehash
         return client.deleteTag(queuedMysteryTag).then(async (t) => {
           if (t.success) {
-            console.log('store::mystery tag dequeued')
+            debug('store::mystery tag dequeued')
             await commit('SET_QUEUED_TAG', queuedFoundTag)
             await commit('RESET_FORM_STEP_TO_MYSTERY')
 
             return true
           } else {
-            console.log('error::dequeue BikeTag failed', t)
+            debug('error::dequeue BikeTag failed', t)
             return t.error
           }
         })
@@ -392,7 +393,7 @@ export const store = createStore<State>({
           if (t.success) {
             commit('SET_QUEUE_FOUND', t.data)
           } else {
-            console.log('error::queue (Found) BikeTag failed', t)
+            debug('error::queue (Found) BikeTag failed', t)
             return t.error
           }
           return t.success
@@ -408,7 +409,7 @@ export const store = createStore<State>({
           if (t.success) {
             commit('SET_QUEUE_MYSTERY', t.data)
           } else {
-            console.log('error::queue (Mystery) BikeTag failed', t)
+            debug('error::queue (Mystery) BikeTag failed', t)
             return t.error
           }
           return t.success
@@ -423,7 +424,7 @@ export const store = createStore<State>({
           if (t.success) {
             commit('SET_QUEUED_SUBMITTED', t.data)
           } else {
-            console.log('error::submit BikeTag failed', t)
+            debug('error::submit BikeTag failed', t)
             return t.error
           }
           return t.success
@@ -484,7 +485,7 @@ export const store = createStore<State>({
         profile?.name !== oldState?.name ||
         profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
       ) {
-        console.log('state::profile', profile)
+        debug('state::profile', profile)
       }
     },
     SET_GAME(state, game) {
@@ -492,7 +493,7 @@ export const store = createStore<State>({
       state.game = game
 
       if (oldState?.name !== game?.name) {
-        console.log('store::game', { game })
+        debug('store::game', { game })
       }
     },
     SET_ALL_GAMES(state, allGames) {
@@ -500,7 +501,7 @@ export const store = createStore<State>({
       state.allGames = allGames
 
       if (oldState?.length !== allGames?.length) {
-        console.log('store::allGames', { allGames })
+        debug('store::allGames', { allGames })
       }
     },
     SET_CURRENT_TAG(state, tag) {
@@ -508,7 +509,7 @@ export const store = createStore<State>({
       state.currentBikeTag = tag
 
       if (oldState?.tagnumber !== tag?.tagnumber) {
-        console.log('store::currentBikeTag', { tag })
+        debug('store::currentBikeTag', { tag })
       }
     },
     SET_TAGS(state, tags) {
@@ -516,7 +517,7 @@ export const store = createStore<State>({
       state.tags = tags
 
       if (oldState?.length !== tags?.length) {
-        console.log('store::tags', { tags })
+        debug('store::tags', { tags })
       }
     },
     SET_LEADERBOARD(state, leaderboard) {
@@ -524,7 +525,7 @@ export const store = createStore<State>({
       state.leaderboard = leaderboard
 
       if (oldState?.length !== leaderboard?.length) {
-        console.log('store::leaderboard', { leaderboard })
+        debug('store::leaderboard', { leaderboard })
       }
     },
     SET_PLAYERS(state, players) {
@@ -532,7 +533,7 @@ export const store = createStore<State>({
       state.players = players
 
       if (oldState?.length !== players?.length) {
-        console.log('store::players', { players })
+        debug('store::players', { players })
       }
     },
     SET_QUEUED_TAGS(state, queuedTags) {
@@ -540,7 +541,7 @@ export const store = createStore<State>({
       state.tagsInRound = queuedTags
 
       if (oldState?.length !== queuedTags?.length || queuedTags.length === 0) {
-        console.log('store::queuedTags', { queuedTags })
+        debug('store::queuedTags', { queuedTags })
       }
     },
     SET_QUEUE_FOUND(state, data) {
@@ -564,7 +565,7 @@ export const store = createStore<State>({
         /// In case of a reset to this step
         oldState?.mysteryPlayer !== data?.foundPlayer
       ) {
-        console.log('store::queuedFoundTag', state.playerTag)
+        debug('store::queuedFoundTag', state.playerTag)
         if (oldState?.mysteryPlayer !== data?.foundPlayer) {
           state.formStep = BiketagFormSteps.roundJoined
         } else {
@@ -594,7 +595,7 @@ export const store = createStore<State>({
         oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
-        console.log('store::queuedMysteryTag', state.playerTag)
+        debug('store::queuedMysteryTag', state.playerTag)
         if (
           oldState?.discussionUrl !== data?.discussionUrl ||
           oldState?.mentionUrl !== data?.mentionUrl
@@ -615,7 +616,7 @@ export const store = createStore<State>({
         oldState?.discussionUrl !== data?.discussionUrl ||
         oldState?.mentionUrl !== data?.mentionUrl
       ) {
-        console.log('store::submittedTag', state.playerTag)
+        debug('store::submittedTag', state.playerTag)
         state.formStep = BiketagFormSteps.roundPosted
       }
     },
@@ -637,7 +638,7 @@ export const store = createStore<State>({
         oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
-        console.log('store::queuedTag', state.playerTag)
+        debug('store::queuedTag', state.playerTag)
       }
     },
     SET_FORM_STEP_TO_JOIN(state, force) {
@@ -650,7 +651,7 @@ export const store = createStore<State>({
       }
 
       if (oldState !== state.formStep) {
-        console.log('state::queue', BiketagFormSteps[state.formStep])
+        debug('state::queue', BiketagFormSteps[state.formStep])
       }
     },
     SET_QUEUED_TAG_STATE(state, tag) {
@@ -659,15 +660,15 @@ export const store = createStore<State>({
     // RESET_FORM_STEP(state) {
     //   state.formStep =
     //     state.queuedTags?.length > 0 ? BiketagFormSteps.viewRound : BiketagFormSteps.addFoundImage
-    //   console.log('state::queue', BiketagFormSteps[state.formStep])
+    //   debug('state::queue', BiketagFormSteps[state.formStep])
     // },
     RESET_FORM_STEP_TO_FOUND(state) {
       state.formStep = BiketagFormSteps.addFoundImage
-      // console.log('state::queue', BiketagFormSteps[state.formStep])
+      // debug('state::queue', BiketagFormSteps[state.formStep])
     },
     RESET_FORM_STEP_TO_MYSTERY(state) {
       state.formStep = BiketagFormSteps.addMysteryImage
-      // console.log('state::queue', BiketagFormSteps[state.formStep])
+      // debug('state::queue', BiketagFormSteps[state.formStep])
     },
   },
   getters: {

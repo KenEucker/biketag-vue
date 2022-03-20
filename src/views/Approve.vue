@@ -37,6 +37,7 @@ import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 import QueueApprove from '@/components/QueueApprove.vue'
+import { debug } from '@/common/utils'
 
 export default defineComponent({
   name: 'ApproveBikeTagView',
@@ -109,7 +110,7 @@ export default defineComponent({
               this.$store.dispatch('setProfile', { ...this.$auth.user, token })
               return true
             } else {
-              console.log('BikeTag Ambassador profile could not be authenticated')
+              debug('BikeTag Ambassador profile could not be authenticated')
               return false
             }
           })

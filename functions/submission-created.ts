@@ -41,15 +41,28 @@ export const handler = async (event) => {
           } as unknown as request.Request,
           true
         )
+        const adminBiketagOpts = getBikeTagClientOpts(
+          {
+            ...event,
+            method: event.httpMethod,
+          } as unknown as request.Request,
+          true,
+          true
+        )
         /// TODO: fix whatever is wrong with the biketag-api interface
         biketagOpts.game = gameName
         const biketag = new BikeTagClient(biketagOpts)
+        adminBiketagOpts.game = gameName
+        const adminBiketag = new BikeTagClient(adminBiketagOpts)
         game = (await biketag.game(gameName, {
           source: 'sanity',
         })) as Game
-        const ambassadors = (await biketag.ambassadors(undefined, {
-          source: 'sanity',
-        })) as Ambassador[]
+        const ambassadors = (await adminBiketag.ambassadors(
+          { game: gameName },
+          {
+            source: 'sanity',
+          }
+        )) as Ambassador[]
         thisGamesAmbassadors = ambassadors.length
           ? ambassadors.filter((a) => game.ambassadors.indexOf(a?.name) !== -1)
           : []
@@ -57,7 +70,7 @@ export const handler = async (event) => {
         const currentMysteryTagResponse = (await biketag.tags()) as Tag[]
         currentMysteryTag = currentMysteryTagResponse?.length ? currentMysteryTagResponse[0] : null
 
-        if (!game || !ambassadors.length || !currentMysteryTag) {
+        if (!game || !currentMysteryTag) {
           console.log('insufficient game data to work with', {
             gameName,
             game,

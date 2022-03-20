@@ -17,6 +17,7 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
 import ServiceWorker from '@/components/ServiceWorker.vue'
+import { debug } from './common/utils'
 
 export default defineComponent({
   name: 'App',
@@ -53,7 +54,7 @@ export default defineComponent({
               const token = claims.__raw
               this.$store.dispatch('setProfile', { ...this.$auth.user, token })
             } else {
-              console.log("what's this? no speaka da mda5hash, brah?")
+              debug("what's this? no speaka da mda5hash, brah?")
             }
           })
         }
@@ -85,7 +86,7 @@ export default defineComponent({
     initResults.push(await this.$store.dispatch('setPlayers'))
     initResults.push(await this.$store.dispatch('setLeaderboard'))
 
-    console.log(`view::data-init`)
+    debug(`view::data-init`)
   },
 })
 </script>

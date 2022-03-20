@@ -95,6 +95,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
 
 import { mapGetters } from 'vuex'
+import { debug } from '@/common/utils'
 
 // install Swiper components
 SwiperCore.use([Autoplay, Navigation, Pagination])
@@ -120,7 +121,7 @@ export default {
   methods: {
     playEasterEgg() {
       if (this.getEasterEgg) {
-        document.getElementById('jingle').play().then(console.log).catch(console.error)
+        document.getElementById('jingle').play().then(debug).catch(console.error)
         this.playingEaster = true
       }
     },

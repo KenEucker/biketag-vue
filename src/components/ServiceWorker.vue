@@ -11,17 +11,18 @@
 <script>
 import { defineComponent } from 'vue'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { debug } from '@/common/utils'
 const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
   immediate: true,
   onRegistered(r) {
     if (process.env.RELOAD_SW === 'true') {
       r &&
         setInterval(async () => {
-          console.log('Checking for sw update')
+          debug('Checking for sw update')
           await r.update()
         }, 20000 /* 20s for testing purposes */)
     } else {
-      console.log('app::service worker registered', r)
+      debug('app::service worker registered', r?.active)
     }
   },
 })
@@ -70,7 +71,7 @@ export default defineComponent({
         }
         const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
         manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
-        console.log('app::application manifest updated', applicationManifest)
+        debug('app::application manifest updated', applicationManifest)
       }
     } catch (e) {
       console.error('app::error loading manifest')

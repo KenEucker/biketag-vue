@@ -59,6 +59,7 @@
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import { debug } from '@/common/utils'
 
 export default defineComponent({
   name: 'QueuePosted',
@@ -77,7 +78,7 @@ export default defineComponent({
         postToTwitter: this.postToTwitter,
         postToInstagram: this.postToInstagram,
       }
-      console.log('autosubmitting tag with default share settings', defaultShareSettings)
+      debug('autosubmitting tag with default share settings', defaultShareSettings)
       this.submitTag(defaultShareSettings)
     }
   },
