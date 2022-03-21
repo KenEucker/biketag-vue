@@ -119,6 +119,12 @@ export default defineComponent({
   data() {
     return {
       showCamera: false,
+      characters: [
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'x', '#',
+          '%', '&', '-', '+', '_', '?', '/', '\\', '='],
+      timeout: 5,
+      iterations: 10
     }
   },
   computed: {
@@ -140,25 +146,37 @@ export default defineComponent({
     goRoundPage() {
       this.$router.push('/round')
     },
-    showHint() {
+    sleep(time) {
+      return new Promise((resolve) => setTimeout(resolve, time))
+    },
+    getRandomInteger(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+    randomCharacter() {
+      return this.characters[this.getRandomInteger(0, this.characters.length - 1)];
+    },
+    async showHint() {
       const mysteryLabel = document.querySelector('#mystery-label p')
       if (mysteryLabel.innerText.toLowerCase() === this.$t('menu.mysterylocation').toLowerCase()) {
-        mysteryLabel.innerText = this.getCurrentHint
+        const hint = this.getCurrentHint
+        mysteryLabel.innerText = ""
+        for (let i of hint) {
+          let j = 0;
+          while (j < this.iterations) {
+            mysteryLabel.innerText = `${mysteryLabel.innerText}${this.randomCharacter()}`
+            await this.sleep(this.timeout)
+            mysteryLabel.innerText = mysteryLabel.innerText.slice(0, mysteryLabel.innerText.length - 1)
+            j++
+          }
+          mysteryLabel.innerText = `${mysteryLabel.innerText}${i}`
+        }
       } else {
         mysteryLabel.innerText = this.$t('menu.mysterylocation')
       }
-      mysteryLabel.classList.toggle('hint-anim')
     },
   },
 })
 </script>
-<style lang="scss">
-@import '../assets/styles/style';
-
-.hint-anim {
-  animation: typewriter 0.5s 1 normal both;
-}
-</style>
 <style scoped lang="scss">
 .foss-container {
   i {
