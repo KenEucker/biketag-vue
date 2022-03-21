@@ -1,6 +1,6 @@
 <template>
   <div :class="`${variant} button-group`">
-    <div v-if="variant === 'current'">
+    <div v-if="variant === 'current'" @click="showHint">
       <!-- Left Button -->
       <bike-tag-button class="button-group__left" :text="$t('menu.map')" @click="goMapPage" />
       <!-- Middle Button -->
@@ -8,8 +8,13 @@
         class="button-group__middle"
         :text="$t('menu.hint')"
         variant="bold"
-        @click="showHint"
+        id="hint"
       />
+      <b-popover hide-header target="hint" triggers="click" placement="top">
+        <img :src="hintIcon" class="popover__hint-icon"/>
+        <p id="hint-text" class="popover__hint-text"/>
+        <img :src="closeRounded" @click="closePopover" class="popover__close"/>
+      </b-popover>
       <!-- Right Button -->
       <bike-tag-button
         v-if="getQueuedTags?.length"
@@ -96,6 +101,9 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagCamera from '@/components/BikeTagCamera.vue'
+import HintIcon from '@/assets/images/hint-icon.svg'
+import HintBackground from '@/assets/images/hint-background.svg'
+import CloseRounded from '@/assets/images/close-rounded.svg'
 
 export default defineComponent({
   name: 'BikeTagFooter',
@@ -119,6 +127,16 @@ export default defineComponent({
   data() {
     return {
       showCamera: false,
+      characters: [
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'x', '#',
+          '%', '&', '-', '+', '_', '?', '/', '\\', '='],
+      timeout: 5,
+      iterations: 10,
+      hintIcon: HintIcon,
+      hintBackground: HintBackground,
+      closeRounded: CloseRounded,
+      showPopover: false,
     }
   },
   computed: {
@@ -140,23 +158,102 @@ export default defineComponent({
     goRoundPage() {
       this.$router.push('/round')
     },
-    showHint() {
-      const mysteryLabel = document.querySelector('#mystery-label p')
-      if (mysteryLabel.innerText.toLowerCase() === this.$t('menu.mysterylocation').toLowerCase()) {
-        mysteryLabel.innerText = this.getCurrentHint
-      } else {
-        mysteryLabel.innerText = this.$t('menu.mysterylocation')
+    sleep(time) {
+      return new Promise((resolve) => setTimeout(resolve, time))
+    },
+    getRandomInteger(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+    randomCharacter() {
+      return this.characters[this.getRandomInteger(0, this.characters.length - 1)];
+    },
+    async showHint(e) {
+      const popover = document.querySelector(".popover");
+      if (popover) {
+        popover.classList.add("popover__wrapper")
+        const mysteryHint = document.querySelector('#hint-text')
+        const hint = this.getCurrentHint
+        mysteryHint.innerText = ""
+        window.scrollBy({top: 1})
+        for (let i of hint) {
+          let j = 0;
+          if (document.querySelector(".popover__wrapper")) {
+            while (j < this.iterations) {
+              mysteryHint.innerText = `${mysteryHint.innerText}${this.randomCharacter()}`
+              await this.sleep(this.timeout)
+              mysteryHint.innerText = mysteryHint.innerText.slice(0, mysteryHint.innerText.length - 1)
+              j++
+            }
+          } else {
+            mysteryHint.innerText = ""
+            break
+          }
+          mysteryHint.innerText = `${mysteryHint.innerText}${i}`
+        }
       }
-      mysteryLabel.classList.toggle('hint-anim')
+    },
+    closePopover(){
+      document.getElementById("hint").click();
     },
   },
+  beforeUnmount() {
+    document.querySelector(".popover")?.remove();
+  }
 })
 </script>
 <style lang="scss">
 @import '../assets/styles/style';
 
-.hint-anim {
-  animation: typewriter 0.5s 1 normal both;
+.popover {
+  &__wrapper {
+    @include background-btn;
+    @include flx-center($jc : center);
+    background-image: url("../assets/images/hint-background.svg");
+    min-width: 300px;
+    min-height: 170px;
+    background-color: unset;
+    border: unset;
+
+    .popover-arrow {
+      display: none;
+    }
+    .popover-body {
+      width: 100%;
+    }
+
+    @media (min-width: $breakpoint-mobile-md) {
+      min-width: 350px;
+      min-height: 190px;
+    }
+    @media (min-width: $breakpoint-tablet) {
+      min-width: 400px;
+      min-height: 210px;
+    }
+  }
+  &__hint-icon {
+    position: absolute;
+    left: 14px;
+    top: 35%;
+  }
+  &__close {
+    position: absolute;
+    top: -7px;
+    right: 0;
+  }
+  &__hint-text {
+    font-weight: 900;
+    font-size: 1rem;
+    font-family: $default-secondary-font-family;
+    cursor: default;
+    white-space: pre-wrap;
+    text-transform: uppercase;
+    word-break: break-all;
+    margin: 0;
+    max-height: 96px;
+    overflow: auto;
+    width: 80%;
+    margin-left: auto;
+  }
 }
 </style>
 <style scoped lang="scss">

@@ -499,7 +499,7 @@ footer {
       color: black;
       font-size: 0.75rem;
       padding: 0.25rem 0;
-      height: 115px;
+      height: 76px;
     }
 
     &__group_column {
@@ -508,6 +508,7 @@ footer {
       justify-content: center;
       align-items: center;
       margin: 0 1rem;
+      min-height: auto !important;
     }
 
     &__image {

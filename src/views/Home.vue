@@ -176,13 +176,14 @@ export default defineComponent({
   &__image {
     width: 80vw;
     max-width: 750px;
-  max-height: 70vh;
+    max-height: 70vh;
     height: auto;
     margin: auto;
     box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
 
     &.expanded {
       max-width: unset;
+      max-height: unset;
     }
 
     // @media (max-width: $breakpoint-mobile-lg) {

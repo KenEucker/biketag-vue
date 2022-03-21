@@ -74,6 +74,8 @@ export const NotificationsPlugin = {
 
 export const createSession = async (app: any) => {
   class BikeTagNotificationsModel extends Croquet.Model {
+    startTime: Date = new Date()
+
     init() {
       for (const value in Notifications) {
         this.subscribe('notification', value, this.pubNotification)
@@ -82,7 +84,8 @@ export const createSession = async (app: any) => {
 
     pubNotification(payload: Payload) {
       if (
-        app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !== payload.name
+        app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !== payload.name &&
+        new Date(payload.created) > this.startTime && payload.region === app.config.globalProperties.$store.getters.getGame?.region
       ) {
         app.config.globalProperties.$toast.success(payload.msg, {
           position: 'top',
@@ -100,7 +103,7 @@ export const createSession = async (app: any) => {
     }
 
     sendNotification(payload: Payload) {
-      this.publish('notification', 'foundTag', payload)
+      this.publish('notification', Notifications.foundTag, payload)
     }
   }
 
@@ -108,9 +111,13 @@ export const createSession = async (app: any) => {
     session: Croquet.CroquetSession<BikeTagNotificationsView>
     constructor(session: Croquet.CroquetSession<BikeTagNotificationsView>) {
       this.session = session
+      // this.sendNotification({
+      //   name: 'example', type: Notifications.foundTag, msg: 'EXAMPLE',
+      //   created: new Date().toUTCString(), region: app.config.globalProperties.$store.getters.getGame?.region
+      // })
     }
 
-    sendNotification(payload: any) {
+    sendNotification(payload: Payload) {
       this.session.view.sendNotification(payload)
     }
   }
