@@ -31,7 +31,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getProfile']),
+    ...mapGetters(['getProfile', 'getMostRecentlyViewedTagnumber', 'getCurrentBikeTag']),
     isNotLanding() {
       return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
     },
@@ -39,7 +39,7 @@ export default defineComponent({
       return this.$router.currentRoute.value.name === 'About' ? 'white-bck' : ''
     },
   },
-  async mounted() {
+  async created() {
     const initResults = []
     /// Set it first thing
     this.$store.dispatch('setDataInitialized')
@@ -86,7 +86,23 @@ export default defineComponent({
     initResults.push(await this.$store.dispatch('setPlayers'))
     initResults.push(await this.$store.dispatch('setLeaderboard'))
 
+    this.checkForNewBikeTagPost()
     debug(`view::data-init`)
+  },
+  methods: {
+    checkForNewBikeTagPost() {
+      if (
+        this.getCurrentBikeTag.tagnumber > this.getMostRecentlyViewedTagnumber &&
+        this.getMostRecentlyViewedTagnumber !== 0
+      ) {
+        debug('ui::new biketag posted!!')
+        this.$toast.open({
+          message: `Round #${this.getCurrentBikeTag.tagnumber} of BikeTag ${this.getGameName} has been posted!`,
+          type: 'default',
+          position: 'top',
+        })
+      }
+    },
   },
 })
 </script>

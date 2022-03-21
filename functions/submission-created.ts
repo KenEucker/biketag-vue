@@ -70,11 +70,12 @@ export const handler = async (event) => {
         const currentMysteryTagResponse = (await biketag.tags()) as Tag[]
         currentMysteryTag = currentMysteryTagResponse?.length ? currentMysteryTagResponse[0] : null
 
-        if (!game || !currentMysteryTag) {
+        if (!game || !currentMysteryTag || !thisGamesAmbassadors.length) {
           console.log('insufficient game data to work with', {
             gameName,
             game,
             ambassadors,
+            thisGamesAmbassadors,
             currentMysteryTag,
           })
         }
@@ -108,6 +109,7 @@ export const handler = async (event) => {
           break
         case 'post-new-biketag':
           // send app notification
+          console.log({ thisGamesAmbassadors })
           emailSent = await sendEmailsToAmbassadors(
             'post-new-biketag',
             `A new BikeTag has been submitted for round #${tag.tagnumber} in [${gameName}]`,

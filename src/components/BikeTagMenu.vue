@@ -202,7 +202,6 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.checkForNewBikeTagPost()
     this.lastScrollPosition = window.pageYOffset
     window.addEventListener('scroll', this.onScroll)
   },
@@ -225,19 +224,6 @@ export default defineComponent({
       await this.$store.dispatch('setGame', true)
       await this.$store.dispatch('setTags', true)
       await this.$store.dispatch('setQueuedTags', true)
-    },
-    checkForNewBikeTagPost() {
-      if (
-        this.getCurrentBikeTag.tagnumber > this.getMostRecentlyViewedTagnumber &&
-        this.getMostRecentlyViewedTagnumber !== 0
-      ) {
-        debug('ui::new biketag posted!!')
-        this.$toast.open({
-          message: `Round #${this.getCurrentBikeTag.tagnumber} of BikeTag ${this.getGameName} has been posted!`,
-          type: 'default',
-          position: 'top',
-        })
-      }
     },
     login() {
       this.closeCollapsible()
