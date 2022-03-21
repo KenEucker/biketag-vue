@@ -203,7 +203,7 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
   const existingMostRecent = cookies.get(mostRecentCookieKey)
   let existingMostRecentNumber = 0
 
-  if (existingMostRecent) {
+  if (existingMostRecent?.length) {
     existingMostRecentNumber = parseInt(existingMostRecent)
   }
 
@@ -211,8 +211,14 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
     const currentTagnumberIsNewer =
       (existingMostRecentNumber > 0 && currentTagnumber > existingMostRecentNumber) ||
       existingMostRecentNumber === 0
-    console.log('setting most recently viewed tag', { currentTagnumberIsNewer, currentTagnumber })
-    cookies.set(mostRecentCookieKey, currentTagnumber.toString())
+    if (currentTagnumberIsNewer) {
+      console.log('setting most recently viewed tag', {
+        existingMostRecent,
+        currentTagnumberIsNewer,
+        currentTagnumber,
+      })
+      cookies.set(mostRecentCookieKey, currentTagnumber.toString())
+    }
 
     /// Return the numnber that was currently set, if it was set previously, regardless of what the most current tagnumber is
     return currentTagnumberIsNewer ? existingMostRecentNumber : currentTagnumber
