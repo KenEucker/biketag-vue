@@ -124,6 +124,8 @@ export enum Notifications {
   foundTag = 'foundTag',
 }
 export interface Payload {
+  created: string
+  region: string
   name: string
   msg: string
   type: Notifications
