@@ -3014,10 +3014,10 @@ body-parser@1.19.2:
     raw-body "2.4.3"
     type-is "~1.6.18"
 
-bootstrap-vue-3@^0.1.6:
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/bootstrap-vue-3/-/bootstrap-vue-3-0.1.7.tgz#1874f179963aac6da4fc28aff9554d1f95200d1f"
-  integrity sha512-nNZ3ELNOd2megz/YAvSmFe3hQH0+r/jSCw7811goUG0fgOQDHtIFPb35nAxZlP0f6gVr3vRGXPkKQdjGwT0V3Q==
+bootstrap-vue-3@^0.1.8:
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/bootstrap-vue-3/-/bootstrap-vue-3-0.1.8.tgz#bf1d8a317eba0013f148ba4d09c6610497340f5c"
+  integrity sha512-MIsWALS6YPiH7hVa6QFN1CrOircCX18UklhD9efnxaN93vUtA759kdgFb9+m2m2NDPSjTXTxGkhOWIpCpIhPKQ==
   dependencies:
     core-js "3.x.x"
 

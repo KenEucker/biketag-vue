@@ -69,7 +69,6 @@ export default defineComponent({
     justify-content: center;
     align-items: center;
     cursor: default;
-    white-space: pre;
   }
 }
 </style>
