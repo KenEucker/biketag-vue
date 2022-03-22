@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import * as Croquet from '@croquet/croquet'
-import { Notifications, Payload } from '@/common/types'
+import { Event, Payload } from '@/common/types'
 
 let instace: any
 
@@ -11,14 +11,14 @@ export const croquetSession = (app: any) => {
 
   class BikeTagNotificationsModel extends Croquet.Model {
     init() {
-      for (const value in Notifications) {
+      for (const value in Event) {
         this.subscribe('notification', value, this.pubNotification)
       }
     }
 
     pubNotification(payload: Payload) {
       if (
-        app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !== payload.name
+        app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !== payload.from
       ) {
         app.config.globalProperties.$toast.success(payload.msg, {
           position: 'top',
@@ -74,24 +74,52 @@ export const NotificationsPlugin = {
 
 export const createSession = async (app: any) => {
   class BikeTagNotificationsModel extends Croquet.Model {
-    startTime: Date = new Date()
+    startTime: string = new Date().toUTCString()
 
     init() {
-      for (const value in Notifications) {
-        this.subscribe('notification', value, this.pubNotification)
+      this.subscribe('notification', Event.addFoundTag, this.pubNotification)
+      this.subscribe('notification', Event.addMysteryTag, this.pubNotification)
+      this.subscribe('notification', Event.approveTag, this.approveTagNotification)
+      this.subscribe('notification', Event.dequeueTag, this.dequeueTagNotification)
+    }
+
+    getData(payload: Payload) {
+      return {
+        playerName:
+          app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name ??
+          app.config.globalProperties.$store.getters.getPlayerTag?.foundPlayer,
+        timeRegion:
+          new Date(payload.created) > new Date(this.startTime) &&
+          payload.region === app.config.globalProperties.$store.getters.getGame?.region?.name,
       }
     }
 
+    showToast(msg: string, type = 'success') {
+      app.config.globalProperties.$toast[type](msg, {
+        position: 'bottom',
+      })
+    }
+
     pubNotification(payload: Payload) {
-      if (
-        app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !==
-          payload.name &&
-        new Date(payload.created) > this.startTime &&
-        payload.region === app.config.globalProperties.$store.getters.getGame?.region
-      ) {
-        app.config.globalProperties.$toast.success(payload.msg, {
-          position: 'top',
-        })
+      const { playerName, timeRegion } = this.getData(payload)
+      if (playerName !== payload.from && timeRegion) {
+        this.showToast(payload.msg)
+      }
+    }
+
+    approveTagNotification(payload: Payload) {
+      const { playerName, timeRegion } = this.getData(payload)
+      if (playerName === payload.to && timeRegion) {
+        this.showToast('Your tag has been approved.')
+      } else if (playerName !== payload.from && timeRegion) {
+        this.showToast(payload.msg)
+      }
+    }
+
+    dequeueTagNotification(payload: Payload) {
+      const { playerName, timeRegion } = this.getData(payload)
+      if (playerName === payload.to && timeRegion) {
+        this.showToast('Your tag has been removed.', 'error')
       }
     }
   }
@@ -105,7 +133,7 @@ export const createSession = async (app: any) => {
     }
 
     sendNotification(payload: Payload) {
-      this.publish('notification', Notifications.foundTag, payload)
+      this.publish('notification', payload.type, payload)
     }
   }
 
@@ -113,14 +141,21 @@ export const createSession = async (app: any) => {
     session: Croquet.CroquetSession<BikeTagNotificationsView>
     constructor(session: Croquet.CroquetSession<BikeTagNotificationsView>) {
       this.session = session
-      // this.sendNotification({
-      //   name: 'example', type: Notifications.foundTag, msg: 'EXAMPLE',
-      //   created: new Date().toUTCString(), region: app.config.globalProperties.$store.getters.getGame?.region
-      // })
     }
 
-    sendNotification(payload: Payload) {
-      this.session.view.sendNotification(payload)
+    sendNotification(msg: string, storeAction: string, to = 'all') {
+      if (Event[storeAction]) {
+        this.session.view.sendNotification({
+          to,
+          msg,
+          type: Event[storeAction],
+          from:
+            app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name ??
+            app.config.globalProperties.$store.getters.getPlayerTag?.foundPlayer,
+          created: new Date().toUTCString(),
+          region: app.config.globalProperties.$store.getters.getGame?.region?.name,
+        })
+      }
     }
   }
 

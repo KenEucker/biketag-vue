@@ -188,7 +188,7 @@ export default defineComponent({
       this.$toast.open({
         message: this.$t('notifications.uploading'),
         type: 'info',
-        position: 'top',
+        position: 'bottom',
       })
       const errorAction = this.$refs.queueError.getAttribute('action')
 
@@ -218,10 +218,11 @@ export default defineComponent({
           formAction,
           new URLSearchParams(formData).toString(),
           () => {
+            this.$croquet.sendNotification(this.$t(`notifications.${storeAction}`), storeAction)
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
               type: 'success',
-              position: 'top',
+              position: 'bottom',
             })
           },
           (m) => {
