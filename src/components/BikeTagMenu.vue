@@ -73,14 +73,14 @@
           </li>
           <li
             class="nav-item"
-            :class="{ 'active-nav': currentRoute === 'How' }"
+            :class="{ 'active-nav': currentRoute === 'Players' }"
             @click="goPlayersPage"
           >
             {{ $t('menu.players') }}
           </li>
           <li
             class="nav-item"
-            :class="{ 'active-nav': currentRoute === 'How' }"
+            :class="{ 'active-nav': currentRoute === 'Leaderboard' }"
             @click="goLeaderboardPage"
           >
             {{ $t('menu.top10') }}
