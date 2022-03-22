@@ -5,15 +5,15 @@
       <bike-tag-button class="button-group__left" :text="$t('menu.map')" @click="goMapPage" />
       <!-- Middle Button -->
       <bike-tag-button
+        id="hint"
         class="button-group__middle"
         :text="$t('menu.hint')"
         variant="bold"
-        id="hint"
       />
       <b-popover hide-header target="hint" triggers="click" placement="top">
-        <img :src="hintIcon" class="popover__hint-icon"/>
-        <p id="hint-text" class="popover__hint-text"/>
-        <img :src="closeRounded" @click="closePopover" class="popover__close"/>
+        <img :src="hintIcon" class="popover__hint-icon" />
+        <p id="hint-text" class="popover__hint-text" />
+        <img :src="closeRounded" class="popover__close" @click="closePopover" />
       </b-popover>
       <!-- Right Button -->
       <bike-tag-button
@@ -56,24 +56,8 @@
       <bike-tag-button class="button-group__right" :text="$t('menu.next')" @click="$emit('next')" />
     </div>
   </div>
-  <!-- <b-modal title="Current BikeTag Hint" hide-footer hide-header>
-      <div class="modal-top">
-        <img class="close-btn" src="@/assets/images/lightbulb.svg" />
-        <bike-tag-button class="modal-top__mystery" variant="medium" :text="'Mystery Hint'" />
-        <img class="close-btn" src="@/assets/images/close.svg" @click="toggleModal(false)" />
-      </div>
-      <div class="modal-line-divide"></div>
-      <div class="modal-bottom">
-        <div class="modal-bottom__hint">{{ getCurrentBikeTag.hint }}</div>
-        <img
-          class="modal-bottom__underline"
-          :src="require('@/assets/images/underline.svg')"
-          alt="Underline"
-        />
-      </div>
-    </b-modal> -->
   <!-- World -->
-  <div class="button-reset-cnt">
+  <div class="button-reset-container">
     <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
       <img class="footer-fixed_image" src="@/assets/images/npworld.png" alt="BikeTag World Wide" />
     </bike-tag-button>
@@ -128,9 +112,42 @@ export default defineComponent({
     return {
       showCamera: false,
       characters: [
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'x', '#',
-          '%', '&', '-', '+', '_', '?', '/', '\\', '='],
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+        'f',
+        'g',
+        'h',
+        'i',
+        'j',
+        'k',
+        'l',
+        'm',
+        'n',
+        'o',
+        'p',
+        'q',
+        'r',
+        's',
+        't',
+        'u',
+        'v',
+        'x',
+        'y',
+        'x',
+        '#',
+        '%',
+        '&',
+        '-',
+        '+',
+        '_',
+        '?',
+        '/',
+        '\\',
+        '=',
+      ],
       timeout: 5,
       iterations: 10,
       hintIcon: HintIcon,
@@ -141,6 +158,9 @@ export default defineComponent({
   },
   computed: {
     ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getQueuedTags']),
+  },
+  beforeUnmount() {
+    document.querySelector('.popover')?.remove()
   },
   methods: {
     goAboutPage() {
@@ -162,43 +182,43 @@ export default defineComponent({
       return new Promise((resolve) => setTimeout(resolve, time))
     },
     getRandomInteger(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+      return Math.floor(Math.random() * (max - min + 1)) + min
     },
     randomCharacter() {
-      return this.characters[this.getRandomInteger(0, this.characters.length - 1)];
+      return this.characters[this.getRandomInteger(0, this.characters.length - 1)]
     },
     async showHint(e) {
-      const popover = document.querySelector(".popover");
+      const popover = document.querySelector('.popover')
       if (popover) {
-        popover.classList.add("popover__wrapper")
+        popover.classList.add('popover__wrapper')
         const mysteryHint = document.querySelector('#hint-text')
         const hint = this.getCurrentHint
-        mysteryHint.innerText = ""
-        window.scrollBy({top: 1})
+        mysteryHint.innerText = ''
+        window.scrollBy({ top: 1 })
         for (let i of hint) {
-          let j = 0;
-          if (document.querySelector(".popover__wrapper")) {
+          let j = 0
+          if (document.querySelector('.popover__wrapper')) {
             while (j < this.iterations) {
               mysteryHint.innerText = `${mysteryHint.innerText}${this.randomCharacter()}`
               await this.sleep(this.timeout)
-              mysteryHint.innerText = mysteryHint.innerText.slice(0, mysteryHint.innerText.length - 1)
+              mysteryHint.innerText = mysteryHint.innerText.slice(
+                0,
+                mysteryHint.innerText.length - 1
+              )
               j++
             }
           } else {
-            mysteryHint.innerText = ""
+            mysteryHint.innerText = ''
             break
           }
           mysteryHint.innerText = `${mysteryHint.innerText}${i}`
         }
       }
     },
-    closePopover(){
-      document.getElementById("hint").click();
+    closePopover() {
+      document.getElementById('hint').click()
     },
   },
-  beforeUnmount() {
-    document.querySelector(".popover")?.remove();
-  }
 })
 </script>
 <style lang="scss">
@@ -207,8 +227,9 @@ export default defineComponent({
 .popover {
   &__wrapper {
     @include background-btn;
-    @include flx-center($jc : center);
-    background-image: url("../assets/images/hint-background.svg");
+    @include flx-center($jc: center);
+
+    background-image: url('../assets/images/hint-background.svg');
     min-width: 300px;
     min-height: 170px;
     background-color: unset;
@@ -217,6 +238,7 @@ export default defineComponent({
     .popover-arrow {
       display: none;
     }
+
     .popover-body {
       width: 100%;
     }
@@ -230,16 +252,20 @@ export default defineComponent({
       min-height: 210px;
     }
   }
+
   &__hint-icon {
     position: absolute;
     left: 14px;
     top: 35%;
   }
+
   &__close {
     position: absolute;
     top: -7px;
     right: 0;
+    cursor: pointer;
   }
+
   &__hint-text {
     font-weight: 900;
     font-size: 1rem;

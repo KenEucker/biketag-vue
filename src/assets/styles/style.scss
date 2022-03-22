@@ -383,7 +383,7 @@ body {
       }
     }
 
-    .preview-cnt {
+    .preview-container {
       position: relative;
       display: flex;
       justify-content: center;
@@ -417,7 +417,7 @@ body {
       }
     }
 
-    .sub-cnt {
+    .sub-container {
       .biketag {
         &__button {
           width: 15rem;

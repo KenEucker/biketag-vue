@@ -79,7 +79,9 @@ class BikeTagApp {
     // this.app.use(NotificationsPlugin)
   }
   async notifications() {
-    this.app.config.globalProperties.$croquet = await createSession(this.app)
+    if (process.env.C_AKEY) {
+      this.app.config.globalProperties.$croquet = await createSession(this.app)
+    }
   }
 
   mount() {

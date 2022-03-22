@@ -19,7 +19,7 @@
         <h3 class="queue-title">{{ $t('components.queue.queue_mystery_title') }}</h3>
       </bike-tag-button>
     </div>
-    <div class="preview-cnt">
+    <div class="preview-container">
       <template v-if="preview">
         <img :src="preview" class="prev-img img-fluid" />
         <img class="img-bck" src="@/assets/images/transparent_img.svg" />
@@ -61,7 +61,7 @@
           @change="setImage"
         />
         <p class="queue-text">{{ $t('pages.round.mystery_text') }}</p>
-        <div class="mt-3 mb-3 input-cnt">
+        <div class="mt-3 mb-3 input-container">
           <bike-tag-input
             id="player"
             v-model="player"

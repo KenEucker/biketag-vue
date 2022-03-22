@@ -84,8 +84,10 @@ export const createSession = async (app: any) => {
 
     pubNotification(payload: Payload) {
       if (
-        app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !== payload.name &&
-        new Date(payload.created) > this.startTime && payload.region === app.config.globalProperties.$store.getters.getGame?.region
+        app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !==
+          payload.name &&
+        new Date(payload.created) > this.startTime &&
+        payload.region === app.config.globalProperties.$store.getters.getGame?.region
       ) {
         app.config.globalProperties.$toast.success(payload.msg, {
           position: 'top',

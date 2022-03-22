@@ -25,7 +25,7 @@
     </form>
   </b-modal>
   <div v-if="profile?.user_metadata" class="container mb-5 mt-5">
-    <div class="center-cnt">
+    <div class="center-container">
       <div v-if="player.tags" class="d-flex justify-content-center mt-5 mb-5">
         <player size="lg" :player="player" :no-link="true" />
       </div>
@@ -90,7 +90,7 @@
               `${social[0].charAt(0).toUpperCase() + social[0].slice(1)} player name`
             "
           >
-            <div class="icon-cnt">
+            <div class="icon-container">
               <img :id="social[0]" class="icon" :src="social[1]" />
             </div>
           </bike-tag-input>
@@ -273,7 +273,7 @@ export default defineComponent({
 }
 </style>
 <style lang="scss" scoped>
-.icon-cnt {
+.icon-container {
   width: 100%;
   justify-content: flex-end;
   display: flex;
@@ -291,7 +291,7 @@ export default defineComponent({
   }
 }
 
-.center-cnt {
+.center-container {
   @include flx-center($flow: column nowrap);
 
   max-width: 800px;
