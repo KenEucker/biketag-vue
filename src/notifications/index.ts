@@ -85,9 +85,8 @@ export const createSession = async (app: any) => {
 
     getData(payload: Payload) {
       return {
-        playerName:
-          app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name ??
-          app.config.globalProperties.$store.getters.getPlayerTag?.foundPlayer,
+        playerId:
+          app.config.globalProperties.$store.getters.getProfile?.sub,
         timeRegion:
           new Date(payload.created) > new Date(this.startTime) &&
           payload.region === app.config.globalProperties.$store.getters.getGame?.region?.name,
@@ -101,24 +100,24 @@ export const createSession = async (app: any) => {
     }
 
     pubNotification(payload: Payload) {
-      const { playerName, timeRegion } = this.getData(payload)
-      if (playerName !== payload.from && timeRegion) {
+      const { playerId, timeRegion } = this.getData(payload)
+      if (playerId !== payload.from && timeRegion) {
         this.showToast(payload.msg)
       }
     }
 
     approveTagNotification(payload: Payload) {
-      const { playerName, timeRegion } = this.getData(payload)
-      if (playerName === payload.to && timeRegion) {
+      const { playerId, timeRegion } = this.getData(payload)
+      if (playerId === payload.to && timeRegion) {
         this.showToast('Your tag has been approved.')
-      } else if (playerName !== payload.from && timeRegion) {
+      } else if (playerId !== payload.from && timeRegion) {
         this.showToast(payload.msg)
       }
     }
 
     dequeueTagNotification(payload: Payload) {
-      const { playerName, timeRegion } = this.getData(payload)
-      if (playerName === payload.to && timeRegion) {
+      const { playerId, timeRegion } = this.getData(payload)
+      if (playerId === payload.to && timeRegion) {
         this.showToast('Your tag has been removed.', 'error')
       }
     }
@@ -150,8 +149,7 @@ export const createSession = async (app: any) => {
           msg,
           type: Event[storeAction],
           from:
-            app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name ??
-            app.config.globalProperties.$store.getters.getPlayerTag?.foundPlayer,
+            app.config.globalProperties.$store.getters.getProfile?.sub,
           created: new Date().toUTCString(),
           region: app.config.globalProperties.$store.getters.getGame?.region?.name,
         })

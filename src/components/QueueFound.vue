@@ -66,7 +66,7 @@
           :placeholder="$t('pages.round.location_placeholder')"
         >
           <img :src="pinIcon" />
-          <GMapAutocomplete
+          <GMapAutocomplete v-if="isGpsDefault"
             id="google-input"
             :disabled="locationDisabled"
             @input="changeLocation"
@@ -74,6 +74,7 @@
             @click="changeLocation"
             @place_changed="setPlace"
           />
+          <input v-else v-model="location" id="google-input" :disabled="locationDisabled" class="pac-target-input" placeholder="Enter a location">
         </bike-tag-input>
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
@@ -152,6 +153,7 @@ export default defineComponent({
       locationDisabled: true,
       center: { lat: 0, lng: 0 },
       gps: { lat: null, lng: null },
+      isGpsDefault: true,
       pinIcon: Pin,
       showPopover: false,
       inputDOM: null,
@@ -197,15 +199,9 @@ export default defineComponent({
       // this.showPopover = false
       this.player = this.getName
     })
-    window.onpopstate = () => {
-      window.onpopstate = null
-      document.querySelector('.popover')?.remove() ///
-    }
-    // this.$croquet.sendNotification({
-    //   name: this.getProfile?.user_metadata?.name,
-    //   msg: "HELLO",
-    //   type: Notifications.foundTag
-    // })
+  },
+  beforeUnmount() {
+    document.querySelector('.popover')?.remove()
   },
   methods: {
     sleep(time) {
@@ -266,7 +262,6 @@ export default defineComponent({
           debug('location must be set')
           return
         }
-        this.location = this.getLocation
       }
       if (this.player.length == 0) {
         if (this.getName.length == 0) {
@@ -309,14 +304,14 @@ export default defineComponent({
       this.gps['lat'] = this.round(e.geometry.location.lat())
       this.gps['lng'] = this.round(e.geometry.location.lng())
       this.center = { ...this.gps }
-      this.location = this.inputDOM.value
+      this.location = this.inputDOM.value.split(',')[0]
+      if (this.isGpsDefault) {
+        this.isGpsDefault = false
+      }
     },
     updateMarker(e) {
       this.gps['lat'] = this.round(e.latLng.lat())
       this.gps['lng'] = this.round(e.latLng.lng())
-      if (this.location.length == 0) {
-        this.location = this.getLocation
-      }
     },
     round(number) {
       return Number(Math.round(number + 'e4') + 'e-4')
@@ -361,12 +356,14 @@ export default defineComponent({
                     lat: this.round(GPSData.latitude),
                     lng: this.round(GPSData.longitude),
                   }
+                  this.isGpsDefault = false
                 }
               } else {
                 this.gps = this.getGame.boundary
+                this.isGpsDefault = true
               }
               this.center = { ...this.gps }
-              this.location = this.getLocation
+              this.location = ""
             })
           }
         } catch (e) {
