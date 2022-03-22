@@ -830,7 +830,7 @@ export const setNewBikeTagPost = async (
 
     if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
       const newPostedBikeTag = newBikeTagUpdateResult.data as unknown as Tag
-      const postToReddit = true
+      const postToReddit = false
       if (postToReddit) {
         const postedToRedditResult = await biketag.updateTag(newPostedBikeTag, { source: 'reddit' })
         if (postedToRedditResult.success) {
