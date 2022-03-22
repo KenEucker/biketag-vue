@@ -1,4 +1,5 @@
 @import 'theme';
+@import 'mixins';
 
 html {
   min-height: 100vh;
@@ -382,7 +383,7 @@ body {
       }
     }
 
-    .preview-cnt {
+    .preview-container {
       position: relative;
       display: flex;
       justify-content: center;
@@ -416,7 +417,7 @@ body {
       }
     }
 
-    .sub-cnt {
+    .sub-container {
       .biketag {
         &__button {
           width: 15rem;

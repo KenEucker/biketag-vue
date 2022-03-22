@@ -68,6 +68,7 @@ export default defineComponent({
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: default;
   }
 }
 </style>

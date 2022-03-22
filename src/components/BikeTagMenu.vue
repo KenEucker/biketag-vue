@@ -128,7 +128,7 @@
       </bike-tag-button>
 
       <!-- World -->
-      <div class="button-reset-cnt">
+      <div class="button-reset-container">
         <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
           <img
             class="footer-fixed_image"
@@ -287,6 +287,7 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 @import '../assets/styles/style';
+
 .is-hidden {
   transform: translateY(-100%);
 }
@@ -405,7 +406,7 @@ header {
   }
 }
 
-.button-reset-cnt {
+.button-reset-container {
   display: flex;
 
   .button-reset {
@@ -499,7 +500,7 @@ footer {
       color: black;
       font-size: 0.75rem;
       padding: 0.25rem 0;
-      height: 115px;
+      height: 76px;
     }
 
     &__group_column {
@@ -508,6 +509,7 @@ footer {
       justify-content: center;
       align-items: center;
       margin: 0 1rem;
+      min-height: auto !important;
     }
 
     &__image {
