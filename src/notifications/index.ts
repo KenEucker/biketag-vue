@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import * as Croquet from '@croquet/croquet'
-import { Event, Payload } from '@/common/types'
+import { BikeTagEvent, BikeTagEventPayload } from '@/common/types'
 import { getBikeTagHash } from '@/common/utils'
 
 let instace: any
@@ -12,12 +12,12 @@ export const croquetSession = (app: any) => {
 
   class BikeTagNotificationsModel extends Croquet.Model {
     init() {
-      for (const value in Event) {
+      for (const value in BikeTagEvent) {
         this.subscribe('notification', value, this.pubNotification)
       }
     }
 
-    pubNotification(payload: Payload) {
+    pubNotification(payload: BikeTagEventPayload) {
       if (
         app.config.globalProperties.$store.getters.getProfile?.user_metadata?.name !== payload.from
       ) {
@@ -36,7 +36,7 @@ export const croquetSession = (app: any) => {
       this.model = model
     }
 
-    sendNotification(payload: Payload) {
+    sendNotification(payload: BikeTagEventPayload) {
       this.publish('notification', 'foundTag', payload)
     }
   }
@@ -80,23 +80,22 @@ export const createSession = async (app: any) => {
     idRecord: string[] = []
 
     init() {
-      this.subscribe('notification', Event.addFoundTag, this.pubNotification)
-      this.subscribe('notification', Event.addMysteryTag, this.pubNotification)
-      this.subscribe('notification', Event.approveTag, this.approveTagNotification)
-      this.subscribe('notification', Event.dequeueTag, this.dequeueTagNotification)
+      this.subscribe('notification', BikeTagEvent.addFoundTag, this.pubNotification)
+      this.subscribe('notification', BikeTagEvent.addMysteryTag, this.pubNotification)
+      this.subscribe('notification', BikeTagEvent.approveTag, this.approveTagNotification)
+      this.subscribe('notification', BikeTagEvent.dequeueTag, this.dequeueTagNotification)
     }
 
-    getData(payload: Payload) {
+    getData(payload: BikeTagEventPayload) {
       return {
-        playerId:
-          app.config.globalProperties.$store.getters.getProfile?.sub,
+        playerId: app.config.globalProperties.$store.getters.getProfile?.sub,
         timeRegion:
           new Date(payload.created) > new Date(this.startTime) &&
           payload.region === app.config.globalProperties.$store.getters.getGame?.region?.name,
       }
     }
 
-    recordId(payload: Payload) {
+    recordId(payload: BikeTagEventPayload) {
       if (this.idRecord.includes(payload.id)) {
         return false
       } else {
@@ -108,18 +107,18 @@ export const createSession = async (app: any) => {
     showToast(msg: string, type = 'success') {
       app.config.globalProperties.$toast[type](msg, {
         position: 'bottom',
-        duration: 5
+        duration: 100,
       })
     }
 
-    pubNotification(payload: Payload) {
+    pubNotification(payload: BikeTagEventPayload) {
       const { playerId, timeRegion } = this.getData(payload)
       if (playerId !== payload.from && timeRegion && this.recordId(payload)) {
         this.showToast(payload.msg)
       }
     }
 
-    approveTagNotification(payload: Payload) {
+    approveTagNotification(payload: BikeTagEventPayload) {
       const { playerId, timeRegion } = this.getData(payload)
       const isIdrecorder = this.recordId(payload)
       if (isIdrecorder && timeRegion) {
@@ -131,7 +130,7 @@ export const createSession = async (app: any) => {
       }
     }
 
-    dequeueTagNotification(payload: Payload) {
+    dequeueTagNotification(payload: BikeTagEventPayload) {
       const { playerId, timeRegion } = this.getData(payload)
       if (playerId === payload.to && timeRegion && this.recordId(payload)) {
         this.showToast('Your tag has been removed.', 'error')
@@ -147,7 +146,7 @@ export const createSession = async (app: any) => {
       this.model = model
     }
 
-    sendNotification(payload: Payload) {
+    sendNotification(payload: BikeTagEventPayload) {
       this.publish('notification', payload.type, payload)
     }
   }
@@ -159,14 +158,13 @@ export const createSession = async (app: any) => {
     }
 
     sendNotification(msg: string, storeAction: string, to = 'all') {
-      if (Event[storeAction]) {
+      if (BikeTagEvent[storeAction]) {
         this.session.view.sendNotification({
           to,
           msg,
           id: getBikeTagHash(new Date().toUTCString()),
-          type: Event[storeAction],
-          from:
-            app.config.globalProperties.$store.getters.getProfile?.sub,
+          type: BikeTagEvent[storeAction],
+          from: app.config.globalProperties.$store.getters.getProfile?.sub,
           created: new Date().toUTCString(),
           region: app.config.globalProperties.$store.getters.getGame?.region?.name,
         })

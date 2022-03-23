@@ -253,6 +253,7 @@ export default defineComponent({
 #app {
   .queue-page {
     margin-top: 2rem;
+
     .card.polaroid .player-wrapper .player-name {
       font-weight: 100;
       font-size: 3rem;

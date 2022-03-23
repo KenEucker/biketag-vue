@@ -76,8 +76,8 @@
           />
           <input
             v-else
-            v-model="location"
             id="google-input"
+            v-model="location"
             :disabled="locationDisabled"
             class="pac-target-input"
             placeholder="Enter a location"
