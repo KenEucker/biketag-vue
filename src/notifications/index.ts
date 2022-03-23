@@ -74,8 +74,9 @@ export const NotificationsPlugin = {
 }
 
 export const createSession = async (app: any) => {
+  const time = new Date().toUTCString()
   class BikeTagNotificationsModel extends Croquet.Model {
-    startTime: string = new Date().toUTCString()
+    startTime: string = time
     idRecord: string[] = []
 
     init() {
@@ -107,6 +108,7 @@ export const createSession = async (app: any) => {
     showToast(msg: string, type = 'success') {
       app.config.globalProperties.$toast[type](msg, {
         position: 'bottom',
+        duration: 5
       })
     }
 
