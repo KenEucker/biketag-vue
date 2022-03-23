@@ -305,6 +305,9 @@ export default defineComponent({
       if (this.inputDOM == null) {
         this.inputDOM = e.target
       }
+      if (this.isGpsDefault) {
+        this.isGpsDefault = false
+      }
     },
     setPlace(e) {
       this.gps['lat'] = this.round(e.geometry.location.lat())

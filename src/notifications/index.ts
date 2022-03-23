@@ -86,15 +86,6 @@ export const createSession = async (app: any) => {
       this.subscribe('notification', BikeTagEvent.dequeueTag, this.dequeueTagNotification)
     }
 
-    getData(payload: BikeTagEventPayload) {
-      return {
-        playerId: app.config.globalProperties.$store.getters.getProfile?.sub,
-        timeRegion:
-          new Date(payload.created) > new Date(this.startTime) &&
-          payload.region === app.config.globalProperties.$store.getters.getGame?.region?.name,
-      }
-    }
-
     recordId(payload: BikeTagEventPayload) {
       if (this.idRecord.includes(payload.id)) {
         return false
@@ -104,24 +95,33 @@ export const createSession = async (app: any) => {
       }
     }
 
+    getData(payload: BikeTagEventPayload) {
+      return {
+        playerId: app.config.globalProperties.$store.getters.getProfile?.sub,
+        timeRegion:
+          new Date(payload.created) > new Date(this.startTime) &&
+          payload.region === app.config.globalProperties.$store.getters.getGame?.region?.name,
+        isRecorded: this.recordId(payload),
+      }
+    }
+
     showToast(msg: string, type = 'success') {
       app.config.globalProperties.$toast[type](msg, {
         position: 'bottom',
-        duration: 100,
+        duration: 5000,
       })
     }
 
     pubNotification(payload: BikeTagEventPayload) {
-      const { playerId, timeRegion } = this.getData(payload)
-      if (playerId !== payload.from && timeRegion && this.recordId(payload)) {
+      const { playerId, timeRegion, isRecorded } = this.getData(payload)
+      if (playerId !== payload.from && timeRegion && isRecorded) {
         this.showToast(payload.msg)
       }
     }
 
     approveTagNotification(payload: BikeTagEventPayload) {
-      const { playerId, timeRegion } = this.getData(payload)
-      const isIdrecorder = this.recordId(payload)
-      if (isIdrecorder && timeRegion) {
+      const { playerId, timeRegion, isRecorded } = this.getData(payload)
+      if (isRecorded && timeRegion) {
         if (playerId === payload.to) {
           this.showToast('Your tag has been approved.')
         } else if (playerId !== payload.from) {
@@ -131,8 +131,8 @@ export const createSession = async (app: any) => {
     }
 
     dequeueTagNotification(payload: BikeTagEventPayload) {
-      const { playerId, timeRegion } = this.getData(payload)
-      if (playerId === payload.to && timeRegion && this.recordId(payload)) {
+      const { playerId, timeRegion, isRecorded } = this.getData(payload)
+      if (playerId === payload.to && timeRegion && isRecorded) {
         this.showToast('Your tag has been removed.', 'error')
       }
     }
