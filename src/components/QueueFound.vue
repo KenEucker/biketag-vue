@@ -86,22 +86,13 @@
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
           <p v-if="locationDisabled">{{ $t('pages.round.image_first') }}</p>
-          <GMapMap
+          <bike-tag-map
             v-if="isGps"
+            @dragend="updateMarker"
+            variant="play/input"
+            :gps="gps"
             :center="center"
-            :zoom="18"
-            map-type-id="roadmap"
-            style="width: 300px; height: 400px"
-            :region="getGameBoundary"
-          >
-            <GMapMarker
-              :icon="pinIcon"
-              :position="gps"
-              :draggable="true"
-              :clickeable="true"
-              @dragend="updateMarker"
-            />
-          </GMapMap>
+          />
         </b-popover>
         <bike-tag-input
           id="player"
@@ -128,8 +119,8 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
+import BikeTagMap from '@/components/BikeTagMap.vue'
 import exifr from 'exifr'
-import Pin from '@/assets/images/pin.svg'
 // import { Notifications } from '@/common/types'
 import { debug } from '@/common/utils'
 
@@ -138,6 +129,7 @@ export default defineComponent({
   components: {
     BikeTagButton,
     BikeTagInput,
+    BikeTagMap,
   },
   props: {
     tag: {
@@ -160,7 +152,6 @@ export default defineComponent({
       center: { lat: 0, lng: 0 },
       gps: { lat: null, lng: null },
       isGpsDefault: true,
-      pinIcon: Pin,
       showPopover: false,
       inputDOM: null,
       passcode: Date.now().toString(), // don't let them just get away with it
@@ -305,9 +296,6 @@ export default defineComponent({
       if (this.inputDOM == null) {
         this.inputDOM = e.target
       }
-      if (this.isGpsDefault) {
-        this.isGpsDefault = false
-      }
     },
     setPlace(e) {
       this.gps['lat'] = this.round(e.geometry.location.lat())
@@ -321,6 +309,9 @@ export default defineComponent({
     updateMarker(e) {
       this.gps['lat'] = this.round(e.latLng.lat())
       this.gps['lng'] = this.round(e.latLng.lng())
+      if (this.isGpsDefault) {
+        this.isGpsDefault = false
+      }
     },
     round(number) {
       return Number(Math.round(number + 'e4') + 'e-4')
