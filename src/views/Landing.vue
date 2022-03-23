@@ -63,6 +63,7 @@
       subtitle="Is there a BikeTag Game in your city?"
     >
       <bike-tag-games :show-heading="false" />
+      <bike-tag-map variant="worldwide" />
     </bike-tag-blurb>
     <bike-tag-blurb
       title="BikeTag Ambassador Program"
@@ -152,12 +153,14 @@ import BikeTagBlurb from '@/components/BikeTagBlurb'
 import BikeTagAmbassadorSvg from '@/assets/images/biketag-ambassador.svg'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
 import BikeTagGames from '@/components/BikeTagGames.vue'
+import BikeTagMap from '@/components/BikeTagMap.vue'
 
 export default defineComponent({
   name: 'HomeView',
   components: {
     BikeTagBlurb,
     BikeTagGames,
+    BikeTagMap,
   },
   data() {
     return {

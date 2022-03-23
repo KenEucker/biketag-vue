@@ -58,12 +58,12 @@ export default defineComponent({
           id: this.getGameSlug,
           icons: [
             {
-              src: await this.getLogoUrl('h=192&w=192'),
+              src: await this.getLogoUrl('s'),
               sizes: '192x192',
               type: 'image/png',
             },
             {
-              src: await this.getLogoUrl('h=512&w=512'),
+              src: await this.getLogoUrl('l'),
               sizes: '512x512',
               type: 'image/png',
             },

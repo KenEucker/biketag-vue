@@ -12,7 +12,7 @@
       <!-- Region Image -->
       <div class="navbar-brand">
         <a href="./" @click="clearTagCache">
-          <img :src="getLogoUrl('h=256&w=256')" class="logo" />
+          <img :src="getLogoUrl('m')" class="logo" />
         </a>
         <div>
           <span class="game-title">{{ getGameTitle }}</span>
