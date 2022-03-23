@@ -120,13 +120,18 @@ export enum Settings {
   SupportsInstagram = 'social::instagram',
 }
 
-export enum Notifications {
-  foundTag = 'foundTag',
+export enum BikeTagEvent {
+  addFoundTag = 'addFoundTag',
+  addMysteryTag = 'addMysteryTag',
+  approveTag = 'approveTag',
+  dequeueTag = 'dequeueTag',
 }
-export interface Payload {
+export interface BikeTagEventPayload {
+  to: string
+  from: string
+  id: string
   created: string
   region: string
-  name: string
   msg: string
-  type: Notifications
+  type: BikeTagEvent
 }

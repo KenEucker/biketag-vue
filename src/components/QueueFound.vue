@@ -59,7 +59,6 @@
       <div class="mt-3 mb-3 input-container">
         <bike-tag-input
           id="found"
-          v-model="locationString"
           :disabled="locationDisabled"
           name="found"
           required
@@ -67,12 +66,21 @@
         >
           <img :src="pinIcon" />
           <GMapAutocomplete
+            v-if="isGpsDefault"
             id="google-input"
             :disabled="locationDisabled"
             @input="changeLocation"
             @blur="changeLocation"
             @click="changeLocation"
             @place_changed="setPlace"
+          />
+          <input
+            v-else
+            id="google-input"
+            v-model="location"
+            :disabled="locationDisabled"
+            class="pac-target-input"
+            placeholder="Enter a location"
           />
         </bike-tag-input>
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
@@ -146,12 +154,12 @@ export default defineComponent({
       image: this.tag?.foundImage ?? '',
       location: '',
       player: '',
-      locationString: this.tag?.foundLocation,
       foundImageUrl: null,
       tagNumber: 0,
       locationDisabled: true,
       center: { lat: 0, lng: 0 },
       gps: { lat: null, lng: null },
+      isGpsDefault: true,
       pinIcon: Pin,
       showPopover: false,
       inputDOM: null,
@@ -197,15 +205,9 @@ export default defineComponent({
       // this.showPopover = false
       this.player = this.getName
     })
-    window.onpopstate = () => {
-      window.onpopstate = null
-      document.querySelector('.popover')?.remove() ///
-    }
-    // this.$croquet.sendNotification({
-    //   name: this.getProfile?.user_metadata?.name,
-    //   msg: "HELLO",
-    //   type: Notifications.foundTag
-    // })
+  },
+  beforeUnmount() {
+    document.querySelector('.popover')?.remove()
   },
   methods: {
     sleep(time) {
@@ -216,7 +218,7 @@ export default defineComponent({
     },
     async onSubmit(e) {
       e.preventDefault()
-      if (!this.locationString?.length) {
+      if (!this.location?.length) {
         this.$toast.open({
           message: 'Please add your Found Location image',
           type: 'error',
@@ -266,7 +268,6 @@ export default defineComponent({
           debug('location must be set')
           return
         }
-        this.location = this.getLocation
       }
       if (this.player.length == 0) {
         if (this.getName.length == 0) {
@@ -300,23 +301,26 @@ export default defineComponent({
       })
     },
     changeLocation(e) {
-      this.location = this.locationString = e.target.value
+      // this.location = this.locationString = e.target.value
       if (this.inputDOM == null) {
         this.inputDOM = e.target
+      }
+      if (this.isGpsDefault) {
+        this.isGpsDefault = false
       }
     },
     setPlace(e) {
       this.gps['lat'] = this.round(e.geometry.location.lat())
       this.gps['lng'] = this.round(e.geometry.location.lng())
       this.center = { ...this.gps }
-      this.location = this.inputDOM.value
+      this.location = this.inputDOM.value.split(',')[0]
+      if (this.isGpsDefault) {
+        this.isGpsDefault = false
+      }
     },
     updateMarker(e) {
       this.gps['lat'] = this.round(e.latLng.lat())
       this.gps['lng'] = this.round(e.latLng.lng())
-      if (this.location.length == 0) {
-        this.location = this.getLocation
-      }
     },
     round(number) {
       return Number(Math.round(number + 'e4') + 'e-4')
@@ -361,12 +365,14 @@ export default defineComponent({
                     lat: this.round(GPSData.latitude),
                     lng: this.round(GPSData.longitude),
                   }
+                  this.isGpsDefault = false
                 }
               } else {
                 this.gps = this.getGame.boundary
+                this.isGpsDefault = true
               }
               this.center = { ...this.gps }
-              this.location = this.getLocation
+              this.location = ''
             })
           }
         } catch (e) {
