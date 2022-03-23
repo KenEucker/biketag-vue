@@ -129,6 +129,7 @@ export enum Event {
 export interface Payload {
   to: string
   from: string
+  id: string
   created: string
   region: string
   msg: string

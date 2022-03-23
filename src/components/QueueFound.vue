@@ -59,14 +59,14 @@
       <div class="mt-3 mb-3 input-container">
         <bike-tag-input
           id="found"
-          v-model="locationString"
           :disabled="locationDisabled"
           name="found"
           required
           :placeholder="$t('pages.round.location_placeholder')"
         >
           <img :src="pinIcon" />
-          <GMapAutocomplete v-if="isGpsDefault"
+          <GMapAutocomplete
+            v-if="isGpsDefault"
             id="google-input"
             :disabled="locationDisabled"
             @input="changeLocation"
@@ -74,7 +74,14 @@
             @click="changeLocation"
             @place_changed="setPlace"
           />
-          <input v-else v-model="location" id="google-input" :disabled="locationDisabled" class="pac-target-input" placeholder="Enter a location">
+          <input
+            v-else
+            v-model="location"
+            id="google-input"
+            :disabled="locationDisabled"
+            class="pac-target-input"
+            placeholder="Enter a location"
+          />
         </bike-tag-input>
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
@@ -147,7 +154,6 @@ export default defineComponent({
       image: this.tag?.foundImage ?? '',
       location: '',
       player: '',
-      locationString: this.tag?.foundLocation,
       foundImageUrl: null,
       tagNumber: 0,
       locationDisabled: true,
@@ -212,7 +218,7 @@ export default defineComponent({
     },
     async onSubmit(e) {
       e.preventDefault()
-      if (!this.locationString?.length) {
+      if (!this.location?.length) {
         this.$toast.open({
           message: 'Please add your Found Location image',
           type: 'error',
@@ -295,7 +301,7 @@ export default defineComponent({
       })
     },
     changeLocation(e) {
-      this.location = this.locationString = e.target.value
+      // this.location = this.locationString = e.target.value
       if (this.inputDOM == null) {
         this.inputDOM = e.target
       }
@@ -363,7 +369,7 @@ export default defineComponent({
                 this.isGpsDefault = true
               }
               this.center = { ...this.gps }
-              this.location = ""
+              this.location = ''
             })
           }
         } catch (e) {
