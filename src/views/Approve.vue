@@ -166,7 +166,7 @@ export default defineComponent({
           formAction,
           new URLSearchParams(formData).toString(),
           () => {
-            this.$croquet.sendNotification(
+            this.$notifications.sendNotification(
               this.$t(`notifications.${storeAction}`),
               storeAction,
               this.tag.foundPlayer

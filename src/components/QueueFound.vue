@@ -88,10 +88,10 @@
           <p v-if="locationDisabled">{{ $t('pages.round.image_first') }}</p>
           <bike-tag-map
             v-if="isGps"
-            @dragend="updateMarker"
             variant="play/input"
             :gps="gps"
             :center="center"
+            @dragend="updateMarker"
           />
         </b-popover>
         <bike-tag-input

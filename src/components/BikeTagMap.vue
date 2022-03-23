@@ -58,6 +58,7 @@ export default defineComponent({
       default: { lat: 0, lng: 0 },
     },
   },
+  emits: ['dragend'],
   data() {
     let data = {}
     switch (this.variant) {
@@ -90,7 +91,6 @@ export default defineComponent({
     }
     return data
   },
-  emits: ['dragend'],
   computed: {
     ...mapGetters(['getAllGames', 'getLogoUrl', 'getGame']),
     getMarkers() {

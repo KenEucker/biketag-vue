@@ -77,8 +77,8 @@ export const getDomainInfo = (req: any): DomainInfo => {
     req.headers?.host?.length
       ? req.headers.host
       : req.location?.host?.length
-        ? req.location.host
-        : ''
+      ? req.location.host
+      : ''
   )
     .toLowerCase()
     .replace(/www./g, '')
@@ -308,17 +308,17 @@ export const getSanityImageUrl = (
   sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/'
 ) => {
   switch (size) {
-    case "l":
+    case 'l':
       size = 'h=512'
       break
-    case "m":
+    case 'm':
       size = 'h=256'
       break
-    case "s":
+    case 's':
       size = 'h=192'
       break
     default:
-      size = "h=45"
+      size = 'h=45'
       break
   }
   return `${sanityBaseCDNUrl}${logo

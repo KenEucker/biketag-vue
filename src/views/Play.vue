@@ -218,7 +218,7 @@ export default defineComponent({
           formAction,
           new URLSearchParams(formData).toString(),
           () => {
-            this.$croquet.sendNotification(this.$t(`notifications.${storeAction}`), storeAction)
+            this.$notifications.sendNotification(this.$t(`notifications.${storeAction}`), storeAction)
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
               type: 'success',

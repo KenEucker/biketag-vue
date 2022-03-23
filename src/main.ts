@@ -80,7 +80,9 @@ class BikeTagApp {
   }
   async notifications() {
     if (process.env.C_AKEY) {
-      this.app.config.globalProperties.$croquet = await createSession(this.app)
+      this.app.config.globalProperties.$notifications = await createSession(this.app)
+    } else {
+      this.app.config.globalProperties.$notifications = { sendNotification: () => null }
     }
   }
 

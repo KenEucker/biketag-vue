@@ -1,5 +1,5 @@
 {
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[vue]": {
     "editor.defaultFormatter": "octref.vetur"
@@ -7,8 +7,5 @@
   "[typescript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
   },
-  "i18n-ally.localesPaths": [
-    "src/i18n",
-    "src/i18n/locales"
-  ]
+  "i18n-ally.localesPaths": ["src/i18n", "src/i18n/locales"]
 }

@@ -69,7 +69,7 @@ export const croquetSession = (app: any) => {
 
 export const NotificationsPlugin = {
   install(app: any) {
-    app.config.globalProperties.$croquet = croquetSession(app)
+    app.config.globalProperties.$notifications = croquetSession(app)
   },
 }
 
