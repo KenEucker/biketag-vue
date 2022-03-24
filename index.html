@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no,  user-scalable=yes" />
     <meta name="referrer" content="no-referrer" />
-    <title>BikeTag</title>
     <link rel="stylesheet" type="text/css" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" />
   </head>
 
   <body>
     <div id="app">
+      <script type="module" src="/src/main.ts"></script>
       <form name="add-found-tag" action="add-found-tag" method="POST" data-netlify="true"
         data-netlify-honeypot="bot-field" hidden>
         <input type="hidden" name="form-name" value="add-found-tag" />
@@ -80,7 +80,6 @@
         <input name="submission" type="text" required />
       </form>
     </div>
-    <script type="module" src="/src/main.ts"></script>
   </body>
 
 </html>

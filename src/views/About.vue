@@ -30,7 +30,8 @@
           </bike-tag-button>
         </p>
       </div>
-      <bike-tag-games />
+      <bike-tag-map variant="worldwide" />
+      <bike-tag-games class="mt-5" />
     </div>
   </div>
 </template>
@@ -42,6 +43,7 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagGames from '@/components/BikeTagGames.vue'
 import StyledHr from '@/assets/images/hr.svg'
 import Pin from '@/assets/images/pin.svg'
+import BikeTagMap from '@/components/BikeTagMap.vue'
 
 export default defineComponent({
   name: 'AboutView',
@@ -49,6 +51,7 @@ export default defineComponent({
     HtmlContent,
     BikeTagButton,
     BikeTagGames,
+    BikeTagMap,
   },
   data() {
     return {

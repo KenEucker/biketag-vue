@@ -62,8 +62,8 @@
       title="A worldwide game of tag"
       subtitle="Is there a BikeTag Game in your city?"
     >
+      <bike-tag-map variant="worldwide" class="worldwide__map mb-5" />
       <bike-tag-games :show-heading="false" />
-      <bike-tag-map variant="worldwide" />
     </bike-tag-blurb>
     <bike-tag-blurb
       title="BikeTag Ambassador Program"
@@ -342,6 +342,13 @@ footer {
   ul {
     padding: 0;
   }
+
+  .worldwide {
+    &__map {
+      width: 100%;
+    }
+  }
+
   @media (min-width: 780px) {
     display: flex;
     flex-flow: row-reverse nowrap;

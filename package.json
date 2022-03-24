@@ -19,6 +19,7 @@
     "@netlify/functions": "^0.11.0",
     "@popperjs/core": "^2.11.2",
     "@serverless-jwt/jwt-verifier": "^0.2.1",
+    "@vueuse/head": "^0.7.5",
     "ajv": "^8.10.0",
     "autoprefixer": "^10.4.4",
     "biketag": "^2.1.1",

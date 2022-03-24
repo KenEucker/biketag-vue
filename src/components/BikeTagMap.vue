@@ -13,7 +13,7 @@
     <GMapPolygon v-else :options="options" :paths="paths" />
   </GMapMap>
   <div v-else-if="variant === 'worldwide'" id="world-map">
-    <GMapMap :center="center" :zoom="6" map-type-id="roadmap">
+    <GMapMap :center="center" :zoom="4" map-type-id="roadmap">
       <GMapMarker
         v-for="(game, i) in getMarkers"
         :key="i"
@@ -53,9 +53,9 @@ export default defineComponent({
       type: Object,
       default: null,
     },
-    center: {
+    start: {
       type: Object,
-      default: { lat: 0, lng: 0 },
+      default: null,
     },
   },
   emits: ['dragend'],
@@ -137,10 +137,10 @@ export default defineComponent({
 
 #world-map {
   margin-top: 2.5rem;
+
   .vue-map-container {
     margin: 0 auto;
-    height: 20rem;
-    max-width: 35rem;
+    height: 500px;
   }
 }
 

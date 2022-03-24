@@ -139,7 +139,7 @@ export const handler = async (event) => {
                     ? 'Your game of BikeTag has AutoPost enabled, and the first tag submitted will be chosen as the winner at the end of the AutoPost timer of 15 minutes.'
                     : 'You must approve the winning tag before the game can move on to the next round.',
                   goToApproveButton: 'Go to the Queue now to approve/dequeue this submission',
-                  goToWebsiteLink: `or go to ${gameHost}`,
+                  goToWebsiteLink: `or go to ${gameHost}/#/login`,
                   comparisonText: 'FOUND TAG COMPARED TO CURRENT MYSTERY LOCATION',
                   foundLocation: 'FOUND HERE',
                   foundTagBlurb: `This is what the player [${tag.foundPlayer}] submitted as the found location image and information. If there is a problem with this submission, please go to the Queue to resolve the issue.`,

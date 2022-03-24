@@ -1,5 +1,6 @@
 import App from './App.vue'
-import { createSSRApp, createApp } from 'vue'
+// import { createSSRApp } from 'vue'
+import { createApp } from 'vue'
 import router from './router'
 import { store } from './store'
 import BootstrapVue3 from 'bootstrap-vue-3'
@@ -25,18 +26,21 @@ import '@/assets/styles/flashy.scss'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import 'highlight.js/styles/monokai.css'
 import { debug } from './common/utils'
+import { createHead } from '@vueuse/head'
 class BikeTagApp {
   protected emitter
   protected app
 
   constructor() {
     this.emitter = mitt()
-    this.app = typeof window === 'undefined' ? createSSRApp(App) : createApp(App)
+    // this.app = typeof window === 'undefined' ? createSSRApp(App) : createApp(App)
+    this.app = createApp(App)
     this.run()
   }
 
   init() {
     this.app.config.globalProperties.emitter = this.emitter
+    this.app.use(createHead())
   }
   internationalization() {
     this.app.use(i18nPlugin)
@@ -82,7 +86,7 @@ class BikeTagApp {
     if (process.env.C_AKEY) {
       this.app.config.globalProperties.$notifications = await createSession(this.app)
     } else {
-      this.app.config.globalProperties.$notifications = { sendNotification: () => null }
+      this.app.config.globalProperties.$notifications = { send: () => null }
     }
   }
 

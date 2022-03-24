@@ -36,7 +36,7 @@ export const croquetSession = (app: any) => {
       this.model = model
     }
 
-    sendNotification(payload: BikeTagEventPayload) {
+    send(payload: BikeTagEventPayload) {
       this.publish('notification', 'foundTag', payload)
     }
   }
@@ -58,8 +58,8 @@ export const croquetSession = (app: any) => {
       })
     },
     methods: {
-      sendNotification(payload: any) {
-        this.session?.view.sendNotification(payload) //error
+      send(payload: any) {
+        this.session?.view.send(payload) //error
       },
     },
   }).mount(document.createElement('div'))
@@ -146,7 +146,7 @@ export const createSession = async (app: any) => {
       this.model = model
     }
 
-    sendNotification(payload: BikeTagEventPayload) {
+    send(payload: BikeTagEventPayload) {
       this.publish('notification', payload.type, payload)
     }
   }
@@ -157,9 +157,9 @@ export const createSession = async (app: any) => {
       this.session = session
     }
 
-    sendNotification(msg: string, storeAction: string, to = 'all') {
+    send(msg: string, storeAction: string, to = 'all') {
       if (BikeTagEvent[storeAction]) {
-        this.session.view.sendNotification({
+        this.session.view.send({
           to,
           msg,
           id: getBikeTagHash(new Date().toUTCString()),

@@ -185,7 +185,7 @@ export default defineComponent({
     randomCharacter() {
       return this.characters[this.getRandomInteger(0, this.characters.length - 1)]
     },
-    async showHint(e) {
+    async showHint() {
       const popover = document.querySelector('.popover')
       if (popover) {
         popover.classList.add('popover__wrapper')

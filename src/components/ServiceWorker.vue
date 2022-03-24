@@ -36,6 +36,7 @@ export default defineComponent({
       default: '',
     },
   },
+  emits: ['manifestLoaded'],
   data() {
     return {
       offlineReady,
