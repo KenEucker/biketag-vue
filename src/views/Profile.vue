@@ -172,9 +172,6 @@ export default defineComponent({
 
       return {}
     },
-    authLoading() {
-      return typeof this.$auth !== 'undefined' && this.$auth?.loading && !this.$auth.loading.value
-    },
   },
   mounted() {
     this.$nextTick(() => {
