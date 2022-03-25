@@ -217,7 +217,7 @@ export default defineComponent({
       this.uploadInProgress = true
       if (!this.location?.length) {
         this.$toast.open({
-          message: 'Please add your Found Location image',
+          message: 'Please add your Found Location',
           type: 'error',
           position: 'top',
         })
@@ -264,7 +264,7 @@ export default defineComponent({
         this.uploadInProgress = false
         return
       }
-      if (this.location.length == 0) {
+      if (this.location?.length == 0) {
         if (this.gps.lat == null) {
           debug('location must be set')
           this.uploadInProgress = false
@@ -307,7 +307,7 @@ export default defineComponent({
       })
     },
     changeLocation(e) {
-      // this.location = this.locationString = e.target.value
+      this.location = e.target.value
       if (this.inputDOM == null) {
         this.inputDOM = e.target
       }
