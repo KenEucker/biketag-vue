@@ -12,7 +12,7 @@
       </div>
     </form>
   </b-modal>
-  <div v-if="!uploadInProgress" class="add-found-tag">
+  <div :class="`add-found-tag ${uploadInProgress ? 'hidden' : ''}`">
     <div class="title-container">
       <bike-tag-button variant="medium" @click="$refs.file.click()">
         <h3 class="queue-title">{{ $t('pages.round.found_title') }}</h3>
@@ -199,6 +199,7 @@ export default defineComponent({
       setTimeout(() => this.$nextTick(() => (this.showPopover = false)), 100)
       // this.showPopover = false
       this.player = this.getName
+      this.uploadInProgress = false
     })
   },
   beforeUnmount() {
@@ -280,6 +281,8 @@ export default defineComponent({
         }
       }
       document.querySelector('.popover')?.remove()
+      console.log(this.$refs)
+      console.log(this.$refs.foundTag)
       const formAction = this.$refs.foundTag.getAttribute('action')
       const formData = new FormData(this.$refs.foundTag)
       const foundTag = {
@@ -389,6 +392,10 @@ export default defineComponent({
 <style lang="scss">
 input#found {
   margin-left: 3.5rem;
+  display: none;
+}
+
+.hidden {
   display: none;
 }
 
