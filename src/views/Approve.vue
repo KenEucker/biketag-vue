@@ -166,6 +166,11 @@ export default defineComponent({
           formAction,
           new URLSearchParams(formData).toString(),
           () => {
+            this.$notifications.send(
+              this.$t(`notifications.${storeAction}`),
+              storeAction,
+              this.tag.foundPlayer
+            )
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
               type: 'success',

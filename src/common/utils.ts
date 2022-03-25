@@ -307,6 +307,20 @@ export const getSanityImageUrl = (
   size = '',
   sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/'
 ) => {
+  switch (size) {
+    case 'l':
+      size = 'h=512'
+      break
+    case 'm':
+      size = 'h=256'
+      break
+    case 's':
+      size = 'h=192'
+      break
+    default:
+      size = 'h=45'
+      break
+  }
   return `${sanityBaseCDNUrl}${logo
     .replace('image-', '')
     .replace('-png', '.png')

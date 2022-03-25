@@ -87,11 +87,12 @@ export default defineConfig({
       RA_PASS: process.env.RA_PASS ?? null,
     }),
     VitePWA({
-      strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'worker.ts',
+      strategies: 'injectManifest',
+      registerType: 'autoUpdate',
       workbox: {
-        sourcemap: true,
+        sourcemap: process.env.CONTEXT === 'dev',
       },
       manifest: {
         name: 'BikeTag',
@@ -127,7 +128,7 @@ export default defineConfig({
   },
   // root: './public',
   server: {
-    host: 'seattle.localhost',
+    host: 'miami.localhost',
     port: 8080,
   },
   preview: {

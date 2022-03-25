@@ -4,6 +4,7 @@ import request from 'request'
 import { stringifyNumber } from '../src/common/utils'
 import { HttpStatusCode } from './common/constants'
 import {
+  archiveAndClearQueue,
   defaultLogo,
   getBikeTagClientOpts,
   getEncodedExpiry,
@@ -31,6 +32,8 @@ export const handler = async (event) => {
     let emailSent
     let game
     let numberInQueue
+    let qeueCleared
+    let queuedTags
 
     if (gameName) {
       if (formName !== 'add-found-tag' || formName !== 'add-mystery-tag') {
@@ -80,7 +83,7 @@ export const handler = async (event) => {
           })
         }
 
-        const queuedTags = (await biketag.queue()) as Tag[]
+        queuedTags = (await biketag.queue()) as Tag[]
         numberInQueue = queuedTags.reduce((o: number, t: Tag, i: number) => {
           o = t.foundPlayer === tag.foundPlayer && t.mysteryPlayer === tag.mysteryPlayer ? i + 1 : o
           return o
@@ -109,13 +112,11 @@ export const handler = async (event) => {
           break
         case 'post-new-biketag':
           // send app notification
-          console.log({ thisGamesAmbassadors })
           emailSent = await sendEmailsToAmbassadors(
-            'post-new-biketag',
+            formName,
             `A new BikeTag has been submitted for round #${tag.tagnumber} in [${gameName}]`,
             thisGamesAmbassadors,
             (a) => {
-              console.log({ tag, a })
               if (a) {
                 return {
                   tag,
@@ -139,7 +140,7 @@ export const handler = async (event) => {
                     ? 'Your game of BikeTag has AutoPost enabled, and the first tag submitted will be chosen as the winner at the end of the AutoPost timer of 15 minutes.'
                     : 'You must approve the winning tag before the game can move on to the next round.',
                   goToApproveButton: 'Go to the Queue now to approve/dequeue this submission',
-                  goToWebsiteLink: `or go to ${gameHost}`,
+                  goToWebsiteLink: `or go to ${gameHost}/#/login`,
                   comparisonText: 'FOUND TAG COMPARED TO CURRENT MYSTERY LOCATION',
                   foundLocation: 'FOUND HERE',
                   foundTagBlurb: `This is what the player [${tag.foundPlayer}] submitted as the found location image and information. If there is a problem with this submission, please go to the Queue to resolve the issue.`,
@@ -174,6 +175,64 @@ export const handler = async (event) => {
           break
         case 'approve-new-biketag':
           // send app notification
+          if (queuedTags.length) {
+            qeueCleared = await archiveAndClearQueue(queuedTags, game)
+            success = !qeueCleared.errors
+            emailSent = await sendEmailsToAmbassadors(
+              formName,
+              `${queuedTags.length} Tags left in the round were added to the archive`,
+              thisGamesAmbassadors,
+              (a) => {
+                if (a) {
+                  return {
+                    tag,
+                    host,
+                    logo,
+                    gameHost,
+                    region: gameName,
+                    playerIP,
+                    currentMysteryImageUrl: currentMysteryTag?.mysteryImageUrl?.length
+                      ? currentMysteryTag.mysteryImageUrl
+                      : '',
+                    mysteryImageUrl: tag?.mysteryImageUrl?.length ? tag.mysteryImageUrl : '',
+                    foundImageUrl: tag?.foundImageUrl?.length ? tag.foundImageUrl : '',
+                    goCurrentMystery: 'SEE CURRENT MYSTERY',
+                    currentMysteryHint: `current hint: "${currentMysteryTag?.hint}"`,
+                    footerText:
+                      'BikeTag is an OpenSource project that you can contribute to anytime',
+                    goToQueueButton: 'GO TO QUEUE',
+                    newBikeTagPlayedText: 'A new round of BikeTag has been queued!',
+                    mainTitleText: `this is the ${tagQueuedNumber} tag to be queue for round #${tag?.tagnumber}`,
+                    mainParagraphText: autoPostEnabled
+                      ? 'Your game of BikeTag has AutoPost enabled, and the first tag submitted will be chosen as the winner at the end of the AutoPost timer of 15 minutes.'
+                      : 'You must approve the winning tag before the game can move on to the next round.',
+                    goToApproveButton: 'Go to the Queue now to approve/dequeue this submission',
+                    goToWebsiteLink: `or go to ${gameHost}/#/login`,
+                    comparisonText: 'FOUND TAG COMPARED TO CURRENT MYSTERY LOCATION',
+                    foundLocation: 'FOUND HERE',
+                    foundTagBlurb: `This is what the player [${tag.foundPlayer}] submitted as the found location image and information. If there is a problem with this submission, please go to the Queue to resolve the issue.`,
+                    currentMysteryBlurb:
+                      'This is the current mystery location. You can see the full screen image in the app, if you need to, by clicking the button below.',
+                    ambassadorsUrl: `${gameHost}/#/queue?btaId=${a.id}`,
+                    redditLink: `https://reddit.com/r/${
+                      game.subreddit?.length ? game.subreddit : 'biketag'
+                    }`,
+                    twitterLink: `https://twitter.com/${
+                      game.twitter?.length ? game.twitter : 'biketag'
+                    }`,
+                    // instagramLink: `https://www.reddit.com/r/${game. ?? 'biketag'}`,
+                  }
+                } else {
+                  return {
+                    payload: JSON.stringify(payload),
+                    game: gameName,
+                    host,
+                    playerIP,
+                  }
+                }
+              }
+            )
+          }
           break
         default:
         case 'approve-tag-error':

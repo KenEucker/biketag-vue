@@ -62,6 +62,7 @@
       title="A worldwide game of tag"
       subtitle="Is there a BikeTag Game in your city?"
     >
+      <bike-tag-map variant="worldwide" class="worldwide__map mb-5" />
       <bike-tag-games :show-heading="false" />
     </bike-tag-blurb>
     <bike-tag-blurb
@@ -152,12 +153,14 @@ import BikeTagBlurb from '@/components/BikeTagBlurb'
 import BikeTagAmbassadorSvg from '@/assets/images/biketag-ambassador.svg'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
 import BikeTagGames from '@/components/BikeTagGames.vue'
+import BikeTagMap from '@/components/BikeTagMap.vue'
 
 export default defineComponent({
   name: 'HomeView',
   components: {
     BikeTagBlurb,
     BikeTagGames,
+    BikeTagMap,
   },
   data() {
     return {
@@ -339,6 +342,13 @@ footer {
   ul {
     padding: 0;
   }
+
+  .worldwide {
+    &__map {
+      width: 100%;
+    }
+  }
+
   @media (min-width: 780px) {
     display: flex;
     flex-flow: row-reverse nowrap;

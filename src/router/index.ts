@@ -45,7 +45,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/leaderboard',
-    name: 'LeaderBoard',
+    name: 'Leaderboard',
     component: () => import('@/views/Leaderboard.vue'),
   },
   {

@@ -56,7 +56,6 @@ export default defineComponent({
     },
     ...mapGetters([
       'getGameTitle',
-      'getLogoUrl',
       'getCurrentBikeTag',
       'getQueuedTags',
       'getEasterEgg',

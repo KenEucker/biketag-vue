@@ -188,7 +188,7 @@ export default defineComponent({
       this.$toast.open({
         message: this.$t('notifications.uploading'),
         type: 'info',
-        position: 'top',
+        position: 'bottom',
       })
       const errorAction = this.$refs.queueError.getAttribute('action')
 
@@ -218,10 +218,14 @@ export default defineComponent({
           formAction,
           new URLSearchParams(formData).toString(),
           () => {
+            this.$notifications.send(
+              `${this.$t(`notifications.${storeAction}`)}${this.$t('by')}${tag.foundPlayer}`,
+              storeAction
+            )
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
               type: 'success',
-              position: 'top',
+              position: 'bottom',
             })
           },
           (m) => {
@@ -251,6 +255,8 @@ export default defineComponent({
 <style lang="scss">
 #app {
   .queue-page {
+    margin-top: 2rem;
+
     .card.polaroid .player-wrapper .player-name {
       font-weight: 100;
       font-size: 3rem;

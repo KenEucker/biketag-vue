@@ -1,4 +1,16 @@
 <template>
+  <Head>
+    <title>{{ title }}</title>
+    <!-- Social -->
+    <meta property="og:title" :content="title" />
+    <meta property="og:description" :content="description" />
+    <meta property="og:image" :content="logo" />
+
+    <!-- Twitter -->
+    <meta name="twitter:title" :content="title" />
+    <meta name="twitter:description" :content="description" />
+    <meta name="twitter:image" :content="logo" />
+  </Head>
   <div :class="isWhiteBackground">
     <template v-if="isNotLanding">
       <div :class="`spacer-top ${isWhiteBackground}`"></div>
@@ -18,12 +30,14 @@ import { mapGetters } from 'vuex'
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
 import ServiceWorker from '@/components/ServiceWorker.vue'
 import { debug } from './common/utils'
+import { Head } from '@vueuse/head'
 
 export default defineComponent({
   name: 'App',
   components: {
     ServiceWorker,
     BikeTagMenu,
+    Head,
   },
   data() {
     return {
@@ -31,12 +45,28 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getProfile', 'getMostRecentlyViewedTagnumber', 'getCurrentBikeTag']),
+    ...mapGetters([
+      'getProfile',
+      'getMostRecentlyViewedTagnumber',
+      'getCurrentBikeTag',
+      'getGameName',
+      'getGame',
+      'getLogoUrl',
+    ]),
     isNotLanding() {
       return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
     },
     isWhiteBackground() {
       return this.$router.currentRoute.value.name === 'About' ? 'white-bck' : ''
+    },
+    logo() {
+      return this.getLogoUrl('m')
+    },
+    title() {
+      return `${this.gameName()} BikeTag!`
+    },
+    description() {
+      return `The BikeTag game in ${this.getGame?.region?.description}`
     },
   },
   async created() {
@@ -90,6 +120,11 @@ export default defineComponent({
     debug(`view::data-init`)
   },
   methods: {
+    gameName() {
+      return this.getGameName.replace(/(\w)(\w*)/g, function (g0, g1, g2) {
+        return g1.toUpperCase() + g2.toLowerCase()
+      })
+    },
     checkForNewBikeTagPost() {
       if (
         this.getCurrentBikeTag.tagnumber > this.getMostRecentlyViewedTagnumber &&

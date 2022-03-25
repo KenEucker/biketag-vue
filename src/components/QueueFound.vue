@@ -1,4 +1,7 @@
 <template>
+  <loading v-show="uploadInProgress" v-model:active="uploadInProgress" class="realign-spinner">
+    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+  </loading>
   <b-modal v-model="showModal" title="Authenticate" hide-footer hide-header>
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
@@ -9,7 +12,7 @@
       </div>
     </form>
   </b-modal>
-  <div class="add-found-tag">
+  <div v-if="!uploadInProgress" class="add-found-tag">
     <div class="title-container">
       <bike-tag-button variant="medium" @click="$refs.file.click()">
         <h3 class="queue-title">{{ $t('pages.round.found_title') }}</h3>
@@ -59,7 +62,6 @@
       <div class="mt-3 mb-3 input-container">
         <bike-tag-input
           id="found"
-          v-model="locationString"
           :disabled="locationDisabled"
           name="found"
           required
@@ -67,6 +69,7 @@
         >
           <img :src="pinIcon" />
           <GMapAutocomplete
+            v-if="isGpsDefault"
             id="google-input"
             :disabled="locationDisabled"
             @input="changeLocation"
@@ -74,26 +77,25 @@
             @click="changeLocation"
             @place_changed="setPlace"
           />
+          <input
+            v-else
+            id="google-input"
+            v-model="location"
+            :disabled="locationDisabled"
+            class="pac-target-input"
+            placeholder="Enter a location"
+          />
         </bike-tag-input>
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
           <p v-if="locationDisabled">{{ $t('pages.round.image_first') }}</p>
-          <GMapMap
+          <bike-tag-map
             v-if="isGps"
+            variant="play/input"
+            :gps="gps"
             :center="center"
-            :zoom="18"
-            map-type-id="roadmap"
-            style="width: 300px; height: 400px"
-            :region="getGameBoundary"
-          >
-            <GMapMarker
-              :icon="pinIcon"
-              :position="gps"
-              :draggable="true"
-              :clickeable="true"
-              @dragend="updateMarker"
-            />
-          </GMapMap>
+            @dragend="updateMarker"
+          />
         </b-popover>
         <bike-tag-input
           id="player"
@@ -120,8 +122,8 @@ import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
+import BikeTagMap from '@/components/BikeTagMap.vue'
 import exifr from 'exifr'
-import Pin from '@/assets/images/pin.svg'
 // import { Notifications } from '@/common/types'
 import { debug } from '@/common/utils'
 
@@ -130,6 +132,7 @@ export default defineComponent({
   components: {
     BikeTagButton,
     BikeTagInput,
+    BikeTagMap,
   },
   props: {
     tag: {
@@ -146,17 +149,17 @@ export default defineComponent({
       image: this.tag?.foundImage ?? '',
       location: '',
       player: '',
-      locationString: this.tag?.foundLocation,
       foundImageUrl: null,
       tagNumber: 0,
       locationDisabled: true,
       center: { lat: 0, lng: 0 },
       gps: { lat: null, lng: null },
-      pinIcon: Pin,
+      isGpsDefault: true,
       showPopover: false,
       inputDOM: null,
       passcode: Date.now().toString(), // don't let them just get away with it
       showModal: false,
+      uploadInProgress: false,
     }
   },
   computed: {
@@ -197,15 +200,9 @@ export default defineComponent({
       // this.showPopover = false
       this.player = this.getName
     })
-    window.onpopstate = () => {
-      window.onpopstate = null
-      document.querySelector('.popover')?.remove() ///
-    }
-    // this.$croquet.sendNotification({
-    //   name: this.getProfile?.user_metadata?.name,
-    //   msg: "HELLO",
-    //   type: Notifications.foundTag
-    // })
+  },
+  beforeUnmount() {
+    document.querySelector('.popover')?.remove()
   },
   methods: {
     sleep(time) {
@@ -216,12 +213,14 @@ export default defineComponent({
     },
     async onSubmit(e) {
       e.preventDefault()
-      if (!this.locationString?.length) {
+      this.uploadInProgress = true
+      if (!this.location?.length) {
         this.$toast.open({
           message: 'Please add your Found Location image',
           type: 'error',
           position: 'top',
         })
+        this.uploadInProgress = false
         return
       }
       if (!this.player) {
@@ -230,6 +229,7 @@ export default defineComponent({
           type: 'error',
           position: 'top',
         })
+        this.uploadInProgress = false
         return
       }
       if (!this.$auth.isAuthenticated) {
@@ -250,6 +250,7 @@ export default defineComponent({
           }
           this.$nextTick(() => (this.showModal = !this.showModal))
           this.passcode = ''
+          this.uploadInProgress = false
           return
         }
       }
@@ -259,18 +260,20 @@ export default defineComponent({
           type: 'error',
           position: 'top',
         })
+        this.uploadInProgress = false
         return
       }
       if (this.location.length == 0) {
         if (this.gps.lat == null) {
           debug('location must be set')
+          this.uploadInProgress = false
           return
         }
-        this.location = this.getLocation
       }
       if (this.player.length == 0) {
         if (this.getName.length == 0) {
           debug('player name must set')
+          this.uploadInProgress = false
           return
         } else {
           this.player = this.getName
@@ -291,6 +294,7 @@ export default defineComponent({
           alt: this.gps.alt,
         },
       }
+      this.uploadInProgress = false
 
       this.$emit('submit', {
         formAction,
@@ -300,7 +304,7 @@ export default defineComponent({
       })
     },
     changeLocation(e) {
-      this.location = this.locationString = e.target.value
+      // this.location = this.locationString = e.target.value
       if (this.inputDOM == null) {
         this.inputDOM = e.target
       }
@@ -309,13 +313,16 @@ export default defineComponent({
       this.gps['lat'] = this.round(e.geometry.location.lat())
       this.gps['lng'] = this.round(e.geometry.location.lng())
       this.center = { ...this.gps }
-      this.location = this.inputDOM.value
+      this.location = this.inputDOM.value.split(',')[0]
+      if (this.isGpsDefault) {
+        this.isGpsDefault = false
+      }
     },
     updateMarker(e) {
       this.gps['lat'] = this.round(e.latLng.lat())
       this.gps['lng'] = this.round(e.latLng.lng())
-      if (this.location.length == 0) {
-        this.location = this.getLocation
+      if (this.isGpsDefault) {
+        this.isGpsDefault = false
       }
     },
     round(number) {
@@ -361,12 +368,14 @@ export default defineComponent({
                     lat: this.round(GPSData.latitude),
                     lng: this.round(GPSData.longitude),
                   }
+                  this.isGpsDefault = false
                 }
               } else {
                 this.gps = this.getGame.boundary
+                this.isGpsDefault = true
               }
               this.center = { ...this.gps }
-              this.location = this.getLocation
+              this.location = ''
             })
           }
         } catch (e) {
