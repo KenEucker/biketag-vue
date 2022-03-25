@@ -3,8 +3,15 @@
     "approving": "Approving new BikeTag",
     "uploading": "Uploading tag information...",
     "error": "ERROR",
+    "by": " by ",
     "removing": "Removing player tag",
-    "success": "successfully completed"
+    "success": "successfully completed",
+    "add-found-tag": "A new found image has been added for round ",
+    "add-mystery-tag": "A new mystery image has been added for round ",
+    "post-new-biketag": "New BikeTag Post for round ",
+    "approve-new-biketag": "New BikeTag Post Approved by ",
+    "post-tag-error": "Error posting BikeTag",
+    "approve-tag-error": "Error approving BikeTag"
   },
   "menu": {
     "home": "Home",

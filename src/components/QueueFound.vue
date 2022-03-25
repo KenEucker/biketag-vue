@@ -1,4 +1,7 @@
 <template>
+  <loading v-show="uploadInProgress" v-model:active="uploadInProgress" class="realign-spinner">
+    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+  </loading>
   <b-modal v-model="showModal" title="Authenticate" hide-footer hide-header>
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
@@ -9,7 +12,7 @@
       </div>
     </form>
   </b-modal>
-  <div class="add-found-tag">
+  <div v-if="!uploadInProgress" class="add-found-tag">
     <div class="title-container">
       <bike-tag-button variant="medium" @click="$refs.file.click()">
         <h3 class="queue-title">{{ $t('pages.round.found_title') }}</h3>
@@ -156,6 +159,7 @@ export default defineComponent({
       inputDOM: null,
       passcode: Date.now().toString(), // don't let them just get away with it
       showModal: false,
+      uploadInProgress: false,
     }
   },
   computed: {
@@ -209,12 +213,14 @@ export default defineComponent({
     },
     async onSubmit(e) {
       e.preventDefault()
+      this.uploadInProgress = true
       if (!this.location?.length) {
         this.$toast.open({
           message: 'Please add your Found Location image',
           type: 'error',
           position: 'top',
         })
+        this.uploadInProgress = false
         return
       }
       if (!this.player) {
@@ -223,6 +229,7 @@ export default defineComponent({
           type: 'error',
           position: 'top',
         })
+        this.uploadInProgress = false
         return
       }
       if (!this.$auth.isAuthenticated) {
@@ -243,6 +250,7 @@ export default defineComponent({
           }
           this.$nextTick(() => (this.showModal = !this.showModal))
           this.passcode = ''
+          this.uploadInProgress = false
           return
         }
       }
@@ -252,17 +260,20 @@ export default defineComponent({
           type: 'error',
           position: 'top',
         })
+        this.uploadInProgress = false
         return
       }
       if (this.location.length == 0) {
         if (this.gps.lat == null) {
           debug('location must be set')
+          this.uploadInProgress = false
           return
         }
       }
       if (this.player.length == 0) {
         if (this.getName.length == 0) {
           debug('player name must set')
+          this.uploadInProgress = false
           return
         } else {
           this.player = this.getName
@@ -283,6 +294,7 @@ export default defineComponent({
           alt: this.gps.alt,
         },
       }
+      this.uploadInProgress = false
 
       this.$emit('submit', {
         formAction,
