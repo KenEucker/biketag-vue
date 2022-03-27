@@ -1,49 +1,66 @@
 <template>
-  <GMapMap
-    v-if="variant === 'boundary'"
-    class="map"
-    :click="true"
-    :center="center"
-    :zoom="11"
-    map-type-id="terrain"
-  >
-    <template v-if="multipolygon">
-      <GMapPolygon v-for="(n_path, i) in paths" :key="i" :options="options" :paths="n_path" />
-    </template>
-    <GMapPolygon v-else :options="options" :paths="paths" />
-  </GMapMap>
-  <div v-else-if="variant === 'worldwide'" id="world-map">
-    <GMapMap :center="center" :zoom="4" map-type-id="roadmap">
+  <div :class="variant">
+    <GMapMap
+      v-if="variant === 'play/input'"
+      :center="$props.center"
+      :zoom="18"
+      map-type-id="roadmap"
+    >
       <GMapMarker
-        v-for="(game, i) in getMarkers"
-        :key="i"
-        :icon="getLogoUrl('', game.logo)"
-        :position="game.point"
+        :icon="pinIcon"
+        :position="gps"
+        :draggable="true"
+        :clickeable="true"
+        @dragend="emitDragend"
       />
     </GMapMap>
+    <div v-else-if="variant === 'biketags'" class="game-map">
+      <GMapMap :center="center" :zoom="10" map-type-id="roadmap">
+        <template v-for="(tag, i) in getTags" :key="i">
+          <template v-if="tag.gps.lat && tag.gps.long">
+            <GMapMarker
+              :id="`marker_${i}`"
+              :icon="pinIcon"
+              :position="{ lat: tag.gps.lat ?? 0, lng: tag.gps.long ?? 0 }"
+              :clickable="true"
+            />
+            <b-popover :target="`marker_${i}`" triggers="hover" placement="top">
+              <template #title> {{ `#${i}` }} by {{ tag.mysteryPlayer }}</template>
+              <bike-tag-queue class="world-map__popover" :tag="tag" :show-number="false" />
+            </b-popover>
+          </template>
+        </template>
+      </GMapMap>
+    </div>
+    <div v-else-if="variant === 'worldwide'" class="world-map">
+      <GMapMap :center="center" :zoom="4" map-type-id="roadmap">
+        <GMapMarker
+          v-for="(game, i) in getMarkers"
+          :key="i"
+          :icon="getLogoUrl('', game.logo)"
+          :position="game.point"
+        />
+      </GMapMap>
+    </div>
+    <GMapMap v-else class="map" :click="true" :center="center" :zoom="11" map-type-id="terrain">
+      <template v-if="multipolygon">
+        <GMapPolygon v-for="(n_path, i) in paths" :key="i" :options="options" :paths="n_path" />
+      </template>
+      <GMapPolygon v-else :options="options" :paths="paths" />
+    </GMapMap>
   </div>
-  <GMapMap
-    v-else-if="variant === 'play/input'"
-    :center="$props.center"
-    :zoom="18"
-    map-type-id="roadmap"
-  >
-    <GMapMarker
-      :icon="pinIcon"
-      :position="gps"
-      :draggable="true"
-      :clickeable="true"
-      @dragend="emitDragend"
-    />
-  </GMapMap>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import Pin from '@/assets/images/pin.svg'
 
 export default defineComponent({
   name: 'BikeTagMap',
+  components: {
+    BikeTagQueue,
+  },
   props: {
     variant: {
       type: String,
@@ -82,6 +99,12 @@ export default defineComponent({
           pinIcon: Pin,
         }
         break
+      case 'biketags':
+        data = {
+          pinIcon: Pin,
+          center: { lat: 0, lng: 0 },
+        }
+        break
       case 'worldwide':
       default:
         data = {
@@ -92,7 +115,7 @@ export default defineComponent({
     return data
   },
   computed: {
-    ...mapGetters(['getAllGames', 'getLogoUrl', 'getGame']),
+    ...mapGetters(['getAllGames', 'getLogoUrl', 'getGame', 'getTags']),
     getMarkers() {
       return this.getAllGames
         .filter((game) => game.boundary.lat != undefined) // add gps location to all games
@@ -102,6 +125,29 @@ export default defineComponent({
   mounted() {
     if (this.$props.variant !== 'play/input') {
       this.center = { lat: this.getGame.boundary.lat, lng: this.getGame.boundary.lng }
+      if (this.$props.variant === 'biketags') {
+        setTimeout(() => {
+          const pins = document.querySelectorAll(".vue-map .gm-style div[role='button']")
+          const triggers = document.querySelectorAll('.vue-map-hidden div')
+
+          for (let i = 0; i < pins.length; i++) {
+            triggers[i].style.height = '32px'
+            triggers[i].o = {
+              Iw: undefined,
+              ni: undefined,
+              opacity: 1,
+              size: {
+                h: undefined,
+                height: 32,
+                j: undefined,
+                width: 32,
+              },
+              xn: true,
+            }
+            pins[i].insertBefore(triggers[i], pins[i].firstChild)
+          }
+        }, 2000)
+      }
     }
   },
   async created() {
@@ -132,11 +178,25 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="scss">
+.map {
+  .game-map {
+    &__popover {
+      display: inline-flex;
+    }
+  }
+}
+</style>
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 
-#world-map {
+.world-map,
+.game-map {
   margin-top: 2.5rem;
+
+  &__popover {
+    display: inline-flex;
+  }
 
   .vue-map-container {
     margin: 0 auto;

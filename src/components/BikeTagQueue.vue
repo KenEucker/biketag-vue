@@ -1,5 +1,12 @@
 <template>
-  <div v-if="getCurrentBikeTag" class="container">
+  <div v-if="tag" class="container">
+    <div class="bike-pagination-bullet">
+      <span v-if="showNumber">{{ tag.tagnumber }} by {{ tag.mysteryPlayer }}</span>
+      <img :src="tag.mysteryImageUrl" />
+      <img :src="tag.foundImageUrl" />
+    </div>
+  </div>
+  <div v-else-if="getCurrentBikeTag" class="container">
     <div v-if="onlyMine">
       <b-button id="current-mystery-popover" class="navigation">
         <img class="img-fluid" :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')" />
@@ -57,8 +64,8 @@
       </b-popover>
     </div>
     <div v-if="!onlyMine" class="bike-pagination mt-3 mb-3">
-      <div v-for="(tag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
-        <img :src="tag.foundImageUrl" @click="paginationClick(index)" />
+      <div v-for="(mine, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
+        <img :src="mine.foundImageUrl" @click="paginationClick(index)" />
         <span v-if="showNumber">{{ index + 1 }}</span>
       </div>
     </div>
@@ -72,6 +79,10 @@ import { BiketagFormSteps } from '@/common/types'
 export default defineComponent({
   name: 'BikeTagQueue',
   props: {
+    tag: {
+      type: Object,
+      default: null,
+    },
     onlyMine: {
       type: Boolean,
       default: false,
