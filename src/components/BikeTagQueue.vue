@@ -1,7 +1,7 @@
 <template>
   <div v-if="tag" class="container">
     <div class="bike-pagination-bullet">
-      <span v-if="showNumber">{{ tag.tagnumber }}</span>
+      <span v-if="showNumber">{{ tag.tagnumber }} by {{ tag.mysteryPlayer }}</span>
       <img :src="tag.mysteryImageUrl" />
       <img :src="tag.foundImageUrl" />
     </div>
