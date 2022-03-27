@@ -13,14 +13,14 @@
       <template v-for="(tag, i) in getTags" :key="i">
         <template v-if="tag.gps.lat && tag.gps.long">
           <GMapMarker
+            :id="`marker_${i}`"
             :icon="pinIcon"
             :position="{ lat: tag.gps.lat ?? 0, lng: tag.gps.long ?? 0 }"
             :clickable="true"
-            :id="`marker_${i}`"
           />
           <b-popover :target="`marker_${i}`" triggers="hover" placement="top">
-            <template #title> {{ `marker_${i}` }} </template>
-            <p>hiuuigiggbb bhuiui</p>
+            <template #title> {{ `#${i}` }} </template>
+            <bike-tag-queue :tag="tag" :show-number="false" />
           </b-popover>
         </template>
       </template>
@@ -46,10 +46,14 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import Pin from '@/assets/images/pin.svg'
 
 export default defineComponent({
   name: 'BikeTagMap',
+  components: {
+    BikeTagQueue,
+  },
   props: {
     variant: {
       type: String,
@@ -87,6 +91,7 @@ export default defineComponent({
         data = {
           pinIcon: Pin,
         }
+        break
       case 'biketags':
         data = {
           pinIcon: Pin,

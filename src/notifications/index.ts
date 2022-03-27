@@ -172,7 +172,7 @@ export const createSession = async (app: any) => {
     }
   }
 
-  Croquet.App.root = false;
+  Croquet.App.root = false
   return new NotificationsPlugin(
     await Croquet.Session.join({
       apiKey: process.env.C_AKEY ?? '',

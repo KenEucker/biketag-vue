@@ -1,8 +1,9 @@
 <template>
-  <div class="container">
-    <div class="about d-flex justify-content-center">
+  <div class="container mt-5">
+    <div class="map d-flex justify-content-center">
       <h2>This is the boundary for the game of BikeTag in {{ getGameName }}</h2>
-      <bike-tag-map class="mt-5 mb-5" />
+      <bike-tag-map class="biketags-map mt-5 mb-5" />
+      <!-- <bike-tag-map class="biketags-map mt-5 mb-5" variant="biketags" /> -->
       <html-content class="about" filename="about-map.html" />
       <bike-tag-button class="m-5" text="See all BikeTag Posts" @click="goBikeTagsPage" />
     </div>
@@ -44,10 +45,15 @@ export default defineComponent({
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 
-.about {
+.map {
   align-items: center;
   font-family: $default-font-family;
   flex-flow: column nowrap;
   text-transform: uppercase;
+}
+
+.biketags-map {
+  width: 100%;
+  height: 500px;
 }
 </style>
