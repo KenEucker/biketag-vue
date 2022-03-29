@@ -93,7 +93,7 @@
             v-if="isGps"
             variant="play/input"
             :gps="gps"
-            :center="center"
+            :start="center"
             @dragend="updateMarker"
           />
         </b-popover>
