@@ -2,7 +2,7 @@
   <div :class="variant">
     <GMapMap
       v-if="variant === 'play/input'"
-      :center="$props.center"
+      :center="$props.start"
       :zoom="18"
       map-type-id="roadmap"
     >
