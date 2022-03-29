@@ -24,6 +24,7 @@ const approveHandler: Handler = async (event) => {
 
   if (event.httpMethod !== 'POST') {
     return {
+      headers,
       body: 'method not allowed',
       statusCode: HttpStatusCode.MethodNotAllowed,
     }
@@ -70,6 +71,7 @@ const approveHandler: Handler = async (event) => {
     }
   } else {
     return {
+      headers,
       statusCode: HttpStatusCode.Unauthorized,
       body: "you don't have permission to do that",
     }
@@ -77,12 +79,14 @@ const approveHandler: Handler = async (event) => {
 
   if (results.length) {
     return {
-      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted,
+      headers,
+      statusCode: errors[0] ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted,
       body: JSON.stringify(results),
     }
   } else {
     console.log({ results, errors })
     return {
+      headers,
       statusCode: errors.length ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: '',
       errors,
