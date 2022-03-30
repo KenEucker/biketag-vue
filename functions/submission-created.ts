@@ -175,6 +175,7 @@ export const handler = async (event) => {
           break
         case 'approve-new-biketag':
           // send app notification
+          console.log('are there quedTags?', queuedTags)
           if (queuedTags.length) {
             qeueCleared = await archiveAndClearQueue(queuedTags, game)
             success = !qeueCleared.errors
