@@ -128,7 +128,7 @@ export default defineConfig({
   },
   // root: './public',
   server: {
-    host: 'miami.localhost',
+    host: 'prime.localhost',
     port: 8080,
   },
   preview: {
