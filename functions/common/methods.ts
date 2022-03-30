@@ -553,8 +553,8 @@ export const sendEmailsToAmbassadors = async (
   sendToSuperAdmin = true
 ): Promise<{ accepted: any[]; rejected: any[] }> => {
   let emailSent
-  const accepted = []
-  const rejected = []
+  let accepted = []
+  let rejected = []
   const defaultEmailData = {
     host: 'eh?',
     subdomainIcon: '/images/BikeTag.svg',
@@ -572,8 +572,8 @@ export const sendEmailsToAmbassadors = async (
         },
         emailName
       )
-      accepted.concat(emailSent.accepted)
-      rejected.concat(emailSent.rejected)
+      accepted = accepted.concat(emailSent.accepted)
+      rejected = rejected.concat(emailSent.rejected)
     }
   }
   if (sendToSuperAdmin) {
@@ -589,8 +589,8 @@ export const sendEmailsToAmbassadors = async (
         },
         emailName
       )
-      accepted.concat(emailSent.accepted)
-      rejected.concat(emailSent.rejected)
+      accepted = accepted.concat(emailSent.accepted)
+      rejected = rejected.concat(emailSent.rejected)
     }
   }
 
@@ -622,7 +622,7 @@ export const archiveAndClearQueue = async (
     const gameResponse = await biketag.getGame({ game: queuedTags[0].game }, { source: 'sanity' })
     game = gameResponse.success ? gameResponse.data : null
   }
-  if (queuedTags.length > 1 && game) {
+  if (queuedTags.length && game) {
     const nonAdminBikeTagOpts = getBikeTagClientOpts(
       { method: 'get' } as unknown as request.Request,
       true
@@ -633,8 +633,7 @@ export const archiveAndClearQueue = async (
     nonAdminBikeTagOpts.imgur.hash = game.queuehash
     const nonAdminBikeTag = new BikeTagClient(nonAdminBikeTagOpts)
 
-    const remainingQueuedTags = queuedTags.slice(1)
-    for (const nonWinningTag of remainingQueuedTags) {
+    for (const nonWinningTag of queuedTags) {
       /* Archive using ambassador credentials (mainhash and archivehash are both ambassador albums) */
       const archiveTagResult = await biketag.archiveTag(nonWinningTag)
       if (archiveTagResult.success) {
