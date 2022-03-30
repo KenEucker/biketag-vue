@@ -25,8 +25,8 @@ export const handler = async (event) => {
     const playerIP = payload.data?.playerId
     const tag = JSON.parse(payload.data?.tag ?? '{}')
     const gameName = payload.data?.game ?? tag.game ?? null
-    const successfulEmailsSent: any = []
-    const rejectedEmails: any = []
+    let successfulEmailsSent: any = []
+    let rejectedEmails: any = []
     let thisGamesAmbassadors = []
     let currentMysteryTag
     let emailSent
@@ -170,8 +170,8 @@ export const handler = async (event) => {
               }
             }
           )
-          successfulEmailsSent.concat(emailSent.accepted)
-          rejectedEmails.concat(emailSent.rejected)
+          successfulEmailsSent = successfulEmailsSent.concat(emailSent.accepted)
+          rejectedEmails = rejectedEmails.concat(emailSent.rejected)
           break
         case 'approve-new-biketag':
           // send app notification
@@ -233,6 +233,8 @@ export const handler = async (event) => {
                 }
               }
             )
+            successfulEmailsSent = successfulEmailsSent.concat(emailSent.accepted)
+            rejectedEmails = rejectedEmails.concat(emailSent.rejected)
           }
           break
         default:
@@ -251,8 +253,8 @@ export const handler = async (event) => {
               }
             }
           )
-          successfulEmailsSent.concat(emailSent.accepted)
-          rejectedEmails.concat(emailSent.rejected)
+          successfulEmailsSent = successfulEmailsSent.concat(emailSent.accepted)
+          rejectedEmails = rejectedEmails.concat(emailSent.rejected)
           break
       }
 
@@ -270,7 +272,7 @@ export const handler = async (event) => {
 
     return {
       data: success,
-      statusCode: success ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+      statusCode: success ? HttpStatusCode.Ok : HttpStatusCode.BadRequest,
     }
   }
 }
