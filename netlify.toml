@@ -23,5 +23,11 @@
 [functions."submission-created"]
   included_files=["functions/emails/*.liquid"]
 
+[functions."approve"]
+  included_files=["functions/emails/*.liquid"]
+
+[functions."profile"]
+  included_files=["functions/emails/*.liquid"]
+
 [[plugins]]
   package = 'netlify-plugin-contextual-env'
