@@ -176,6 +176,7 @@ export default defineComponent({
               type: 'success',
               position: 'top',
             })
+            this.$store.dispatch('setQueuedTags')
           },
           (m) => {
             this.$toast.open({
