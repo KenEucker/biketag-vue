@@ -850,7 +850,9 @@ export const setNewBikeTagPost = async (
       } else {
         /// TODO: REMOVE LEGACY HACK
         axios
-          .get(`https://${game.name}.biketag.org?flushCache=true&resendNotification=true`)
+          .get(
+            `https://${game.name.toLowerCase()}.biketag.org?flushCache=true&resendNotification=true`
+          )
           .catch((e) => {
             /// Unimportant
           })
@@ -911,6 +913,7 @@ export const setNewBikeTagPost = async (
       nonAdminBikeTagOpts.game = game.name.toLocaleLowerCase()
       nonAdminBikeTagOpts.imgur.hash = game.queuehash
       const nonAdminBikeTag = new BikeTagClient(nonAdminBikeTagOpts)
+      console.log({ config: nonAdminBikeTag.config() })
 
       const deleteWinningTagFromQueueResult = await nonAdminBikeTag.deleteTag(winningBikeTagPost)
       if (deleteWinningTagFromQueueResult.success) {

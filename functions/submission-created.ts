@@ -259,7 +259,10 @@ export const handler = async (event) => {
       }
 
       if (successfulEmailsSent.length) {
-        console.log('success sending notifications and emails', successfulEmailsSent)
+        console.log('success sending notifications and emails', {
+          successfulEmailsSent,
+          rejectedEmails,
+        })
         success = true
       } else if (rejectedEmails.length) {
         console.log('error sending emails', rejectedEmails)

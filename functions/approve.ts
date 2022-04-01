@@ -78,6 +78,7 @@ const approveHandler: Handler = async (event) => {
   }
 
   if (results.length) {
+    console.log({ results })
     return {
       headers,
       statusCode: errors[0] ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted,
