@@ -310,7 +310,7 @@ header {
         height: inherit;
         overflow: auto;
       }
-      @media (min-width: 1200px) {
+      @media (min-width: $breakpoint-desktop) {
         height: auto;
       }
     }
@@ -335,10 +335,16 @@ header {
 
     .navbar-collapse {
       flex-grow: unset;
+      display: none !important;
 
       @media (max-width: 990px) {
         // height: 85vh;
         // overflow: scroll;
+      }
+
+      @media (min-width: 1440px) {
+        display: flex !important;
+        flex-basis: auto;
       }
 
       ul > li {
@@ -351,6 +357,11 @@ header {
     .navbar-toggler {
       //   margin-right: 1rem;
       margin: 0.5rem;
+      display: block;
+
+      @media (min-width: 1440px) {
+        display: none;
+      }
     }
 
     .logo {
@@ -395,6 +406,12 @@ header {
 .navbar {
   padding-bottom: 0 !important;
   padding-top: 0 !important;
+  justify-content: space-between !important;
+
+  @media (min-width: 1440px) {
+    flex-wrap: nowrap;
+    justify-content: flex-start !important;
+  }
 }
 
 .navbar-nav {

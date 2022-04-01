@@ -4,7 +4,11 @@
       <div v-if="tag.foundImageUrl" :id="`card-${i}`" class="deck__card" 
         @click="() => cardClick(i,`card-${i}`)" :style="`z-index : -${1+i}`">
         <img class="deck__card--front" :src="tag.foundImageUrl" />
-        <img class="deck__card--back" :src="tag.foundImageUrl" />
+        <div class="deck__card--back">
+          <p> # {{ tag.tagnumber }}</p>
+          <p> {{ new Date(tag.foundTime).toDateString() }}</p>
+          <p> {{ tag.foundLocation }}</p>
+        </div>
       </div>
     </template>
   </div>
@@ -24,7 +28,6 @@ export default defineComponent({
   methods: {
     cardClick(i, e){
       const card = document.getElementById(e)
-      console.log(card, i)
       let zIndex;
       if (Array.from(card.classList).includes('deck__card--active')) {
         zIndex = -(1+i)
@@ -32,7 +35,6 @@ export default defineComponent({
         zIndex = 1+i
       }
       card.classList.toggle('deck__card--active')
-      console.log(card)
       const timeoutID = setTimeout(() => {
         card.style.zIndex = zIndex;
         clearTimeout(timeoutID);
@@ -42,6 +44,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
 .deck {
   margin: 3rem 0;
   width: 200px;
@@ -112,13 +115,18 @@ export default defineComponent({
       );
     }
     &--back {
+      @include flx-center($jc: space-around, $flow: column-reverse);
       transform: rotateY(180deg);
-      /* include the icon of codepen as a background */
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><g transform="translate(5 5)" fill="none" stroke="%231E1F26" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"><path d="M 45 0 l 45 30 l -45 30 l -45 -30 l 45 -30 v 30 l 45 30 l -45 30 l -45 -30 l 45 -30 m 45 30 v -30 m -45 30 v 30 m -45 -30 v -30"></path></g></svg>'),
-        hsl(0, 0%, 100%);
       background-size: 40%;
       background-position: 50% 50%;
       background-repeat: no-repeat;
+      p {
+        transform: rotate(180deg);
+        font-family: prequelrough;
+        font-weight: 300;
+        line-height: 2rem;
+        text-transform: uppercase;
+      }
     }
     &--front {
       display: grid;
@@ -130,30 +138,6 @@ export default defineComponent({
     &--active {
       transform: translateY(4px) rotateX(-180deg);
     }
-    button {
-      color: hsl(0, 0%, 100%);
-      background: #0ebeff;
-      border: none;
-      font-family: inherit;
-      position: absolute;
-      bottom: 0.5rem;
-      right: 0.5rem;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      padding: 0.75rem;
-      box-shadow: 0 0 2px hsla(0, 0%, 0%, 0.2);
-      /* hide the buttons by default */
-      opacity: 0;
-
-      svg {
-        display: block;
-        width: 100%;
-        height: 100%;
-        background: none;
-      }
-    }
-
   }
 }
 @keyframes rotate {

@@ -61,6 +61,7 @@ import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
 import Player from '@/components/PlayerBicon.vue'
 import Loading from 'vue-loading-overlay'
+import BikeDex from '@/components/BikeDex.vue'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import Reddit from '@/assets/images/Reddit.svg'
 import Instagram from '@/assets/images/Instagram.svg'
@@ -74,6 +75,7 @@ export default defineComponent({
     BikeTag,
     Loading,
     Player,
+    BikeDex
   },
   data() {
     return {

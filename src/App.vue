@@ -142,6 +142,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+@import './assets/styles/style';
+
 .white-bck {
   background: white !important;
 }
@@ -161,6 +163,9 @@ export default defineComponent({
   height: 85px;
   @media (min-width: 990px) {
     height: 105px;
+  }
+  @media (min-width: $breakpoint-desktop) {
+    height: 130px;
   }
 }
 </style>
