@@ -52,7 +52,6 @@
       ></b-pagination>
     </div>
   </div>
-  <div class="container mt-5">SOME MESSAGE HERE!</div>
 </template>
 
 <script>
