@@ -179,6 +179,23 @@ export default defineComponent({
       this.profile.user_metadata = this.profile.user_metadata ?? { social: {} }
       this.showModal =
         this.profile?.user_metadata?.name != null && !this.profile?.user_metadata?.name.length
+      switch (this.profile.sub.toLowerCase().replace("oauth2|", "").split("|")[0]) {
+        case "reddit":
+          if (!this.profile.user_metadata.social?.reddit) {
+            this.profile.user_metadata.social.reddit = this.profile.name
+          }
+          break
+        case "imgur":
+          if (!this.profile.user_metadata.social?.imgur) {
+            this.profile.user_metadata.social.imgur = this.profile.name
+          }
+          break
+        case "twitter":
+          if (!this.profile.user_metadata.social?.twitter) {
+            this.profile.user_metadata.social.twitter = this.profile.name
+          }
+          break
+      }
     })
   },
   methods: {

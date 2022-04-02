@@ -310,7 +310,7 @@ header {
         height: inherit;
         overflow: auto;
       }
-      @media (min-width: 1200px) {
+      @media (min-width: $breakpoint-desktop) {
         height: auto;
       }
     }
@@ -336,9 +336,8 @@ header {
     .navbar-collapse {
       flex-grow: unset;
 
-      @media (max-width: 990px) {
-        // height: 85vh;
-        // overflow: scroll;
+      @media (min-width: $breakpoint-desktop) {
+        overflow: auto;
       }
 
       ul > li {
@@ -395,6 +394,7 @@ header {
 .navbar {
   padding-bottom: 0 !important;
   padding-top: 0 !important;
+  justify-content: space-between !important;
 }
 
 .navbar-nav {
