@@ -2,10 +2,24 @@
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
   </loading>
+  <b-modal
+    v-model="modal"
+    title="BikeDex"
+    hide-footer
+    hide-header
+    modal-class="trans-bck"
+  >
+    <div v-if="player" class="container mt-5">
+      <bike-dex :tags="player.tags"/>
+    </div>
+  </b-modal>
   <div v-if="player" class="container mt-5">
-    <div class="d-flex justify-content-center social">
-      <player size="lg" :player="player" :no-link="true" />
-      <div v-if="Object.keys(playerSocial ?? {}).length" class="social__cnt">
+    <div class="social">
+      <player class="social__cnt--center" size="lg" :player="player" :no-link="true" />
+      <div class="social__cnt--left" @click="showModal">
+        <img class="social__icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktYm9vdHN0cmFwLXJlYm9vdCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS4xNjEgOGE2Ljg0IDYuODQgMCAxIDAgNi44NDItNi44NC41OC41OCAwIDEgMSAwLTEuMTYgOCA4IDAgMSAxLTYuNTU2IDMuNDEybC0uNjYzLS41NzdhLjU4LjU4IDAgMCAxIC4yMjctLjk5N2wyLjUyLS42OWEuNTguNTggMCAwIDEgLjcyOC42MzNsLS4zMzIgMi41OTJhLjU4LjU4IDAgMCAxLS45NTYuMzY0bC0uNjQzLS41NkE2LjgxMiA2LjgxMiAwIDAgMCAxLjE2IDh6Ii8+CiAgPHBhdGggZD0iTTYuNjQxIDExLjY3MVY4Ljg0M2gxLjU3bDEuNDk4IDIuODI4aDEuMzE0TDkuMzc3IDguNjY1Yy44OTctLjMgMS40MjctMS4xMDYgMS40MjctMi4xIDAtMS4zNy0uOTQzLTIuMjQ2LTIuNDU2LTIuMjQ2SDUuNXY3LjM1MmgxLjE0MXptMC0zLjc1VjUuMjc3aDEuNTdjLjg4MSAwIDEuNDE2LjQ5OSAxLjQxNiAxLjMyIDAgLjg0LS41MDQgMS4zMjQtMS4zODYgMS4zMjRoLTEuNnoiLz4KPC9zdmc+"/>
+      </div>
+      <div v-if="Object.keys(playerSocial ?? {}).length" class="social__cnt--rigth">
         <a
           v-for="(social, i) in Object.keys(playerSocial).filter((s) => s.length)"
           :key="i"
@@ -100,6 +114,7 @@ export default defineComponent({
         reddit: 'http://reddit.com/u/',
         discord: '',
       },
+      modal: true,
     }
   },
   computed: {
@@ -171,38 +186,98 @@ export default defineComponent({
         : {}
       this.playerSocial?.discord && (this.playerSocial.discord = '')
     },
+    showModal() {
+      this.modal = true
+      console.log(this.modal)
+    },
+    hideModal() {
+      this.modal = false
+      console.log(this.modal)
+    }
   },
 })
 </script>
 <style lang="scss">
-@media (min-width: 576px) and (max-width: 740px) {
-  .avatar-lg .player-bicon {
-    max-width: 80vw !important;
+@import '../assets/styles/style';
+
+.trans-bck {
+  .modal-content {
+    background-color: transparent;
+    border: unset;
+  }
+
+  @media (min-width: 576px) {
+    .modal-dialog {
+      max-width: 650px;
+    }
+  }
+}
+
+.player-wrapper {
+  .player-bicon {
+    width: 100%;
+
+    @media (min-width: $breakpoint-laptop) {
+      max-width: 80vw;
+    }
   }
 }
 </style>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
 .social {
   flex-flow: column nowrap;
+  width: fit-content;
+  margin: 0 auto;
 
   &__cnt {
-    justify-content: space-evenly;
-    display: flex;
-    margin: 1rem;
+    &--left, &--rigth {
+      margin: 1rem;
+    }
+    &--left {
+      display: inline;
+      // width: 30%;
+    }
+    &--rigth {
+      display: inline-flex;
+      justify-content: space-between;
+      width: 65%;
+    }
+    &--center {
+      width: 100%;
+    }
   }
 
   &__icon {
     cursor: pointer;
-    max-width: 2rem;
+    width: 2rem;
   }
-  @media (min-width: 576px) {
-    flex-flow: row nowrap;
+
+  @media (min-width: $breakpoint-laptop) {
+    display: grid;
+    grid-template-columns: 50px 1fr 50px;
+    grid-template-rows: 1fr;
 
     &__cnt {
-      flex-flow: column nowrap;
-      margin: unset;
-      margin-left: 1rem;
-      margin-top: 80px;
+      &--left, &--center, &--rigth {
+        grid-row: 1;
+      }
+      &--left {
+        grid-column: 1;
+        margin-top: 80px;
+        margin-left: 0;
+        margin-right: 1rem;
+      }
+      &--center {
+        grid-column: 2;
+      }
+      &--rigth {
+        grid-column: 3;
+        flex-flow: column nowrap;
+        margin: unset;
+        margin-left: 1rem;
+        margin-top: 80px;
+      }
     }
   }
 }

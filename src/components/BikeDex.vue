@@ -6,7 +6,7 @@
         <img class="deck__card--front" :src="tag.foundImageUrl" />
         <div class="deck__card--back">
           <p> # {{ tag.tagnumber }}</p>
-          <p> {{ new Date(tag.foundTime).toDateString() }}</p>
+          <p> {{ new Date(tag.foundTime * 1000).toDateString() }}</p>
           <p> {{ tag.foundLocation }}</p>
         </div>
       </div>
@@ -47,8 +47,8 @@ export default defineComponent({
 @import '../assets/styles/style';
 .deck {
   margin: 3rem 0;
-  width: 200px;
-  height: 200px;
+  width: 100%;
+  height: 260px;
   /* position relative for the pseudo element */
   position: relative;
   /* perspective for the nested cards */
@@ -93,6 +93,7 @@ export default defineComponent({
     transform: translateY(-4px) rotateX(0deg);
     &--front, &--back {
       position: absolute;
+      border-radius: 5px;
       top: 0;
       left: 0;
       width: 100%;
@@ -126,6 +127,7 @@ export default defineComponent({
         font-weight: 300;
         line-height: 2rem;
         text-transform: uppercase;
+        text-align: center;
       }
     }
     &--front {
@@ -138,6 +140,14 @@ export default defineComponent({
     &--active {
       transform: translateY(4px) rotateX(-180deg);
     }
+  }
+
+  @media (min-width: 576px) {
+    height: 330px;
+  }
+
+  @media (min-width: 770px) {
+    height: 400px;
   }
 }
 @keyframes rotate {
