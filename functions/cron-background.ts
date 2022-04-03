@@ -97,6 +97,6 @@ const autoPost: Handler = async (event) => {
   }
 }
 
-const handler = builder(autoPost)
+const handler = autoPost
 
 export { handler }
