@@ -113,6 +113,14 @@ export const isValidJson = (data, type = 'none') => {
             type: 'object',
             properties: {
               passcode: { type: 'string' },
+              options: {
+                type: 'object',
+                properties: {
+                  skipSteps: { type: 'boolean' },
+                },
+                minProperties: 1,
+                additionalProperties: false,
+              },
               social: {
                 type: 'object',
                 properties: {
@@ -142,6 +150,14 @@ export const isValidJson = (data, type = 'none') => {
             type: 'object',
             properties: {
               passcode: { type: 'string' },
+              options: {
+                type: 'object',
+                properties: {
+                  skipSteps: { type: 'boolean' },
+                },
+                minProperties: 1,
+                additionalProperties: false,
+              },
               social: {
                 type: 'object',
                 properties: {

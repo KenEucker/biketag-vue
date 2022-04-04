@@ -68,7 +68,7 @@
             readonly
           />
         </div>
-        <div v-if="profile.user_metadata" class="mt-3">
+        <div v-if="profile" class="mt-3">
           <bike-tag-input v-model="profile.email" :label="$t('pages.profile.email')" readonly />
         </div>
         <div v-if="profile.user_metadata" class="mt-3">
@@ -119,6 +119,21 @@
             </div>
           </template>
         </template>
+        <div class="m-2">
+          <h2 style="text-align: left"> Options </h2>
+          <hr :style="`background-image: url(${styledHr})`"/>
+          <form @submit="updateOptions">
+            <template v-if="profile.user_metadata">
+              <bike-tag-input
+                type="checkbox"
+                id="skip-steps"
+                v-model="profile.user_metadata.options.skipSteps"
+                label="Skip steps"
+                variant="checkbox"
+              />
+            </template>
+          </form>
+        </div>
         <bike-tag-button variant="medium" :text="$t('pages.profile.save')" />
       </form>
     </div>
@@ -138,6 +153,7 @@ import Twitter from '@/assets/images/Twitter.svg'
 import Imgur from '@/assets/images/Imgur.svg'
 import Discord from '@/assets/images/Discord.svg'
 import Player from '@/components/PlayerBicon.vue'
+import StyledHr from '@/assets/images/hr.svg'
 
 export default defineComponent({
   name: 'ProfileView',
@@ -158,6 +174,7 @@ export default defineComponent({
         ['discord', Discord],
       ],
       showModal: false,
+      styledHr: StyledHr,
     }
   },
   computed: {
@@ -177,6 +194,7 @@ export default defineComponent({
     this.$nextTick(() => {
       this.profile = this.getProfile
       this.profile.user_metadata = this.profile.user_metadata ?? { social: {} }
+      this.profile.user_metadata.options = this.profile.user_metadata.options ?? { skipSteps: false }
       this.showModal =
         this.profile?.user_metadata?.name != null && !this.profile?.user_metadata?.name.length
       switch (this.profile.sub.toLowerCase().replace("oauth2|", "").split("|")[0]) {
@@ -303,6 +321,14 @@ export default defineComponent({
     max-width: 40px;
     z-index: 1;
   }
+}
+
+hr {
+  height: 13px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
 }
 
 .center-container {
