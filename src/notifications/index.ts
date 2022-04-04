@@ -95,7 +95,7 @@ export const createSession = async (app: any) => {
       }
     }
 
-    getData(payload: BikeTagEventPayload) {
+    getPayloadData(payload: BikeTagEventPayload) {
       return {
         playerId: app.config.globalProperties.$store.getters.getProfile?.sub,
         timeRegion:
@@ -113,14 +113,14 @@ export const createSession = async (app: any) => {
     }
 
     pubNotification(payload: BikeTagEventPayload) {
-      const { playerId, timeRegion, isRecorded } = this.getData(payload)
+      const { playerId, timeRegion, isRecorded } = this.getPayloadData(payload)
       if (playerId !== payload.from && timeRegion && isRecorded) {
         this.showToast(payload.msg)
       }
     }
 
     approveTagNotification(payload: BikeTagEventPayload) {
-      const { playerId, timeRegion, isRecorded } = this.getData(payload)
+      const { playerId, timeRegion, isRecorded } = this.getPayloadData(payload)
       if (isRecorded && timeRegion) {
         if (playerId === payload.to) {
           this.showToast('Your tag has been approved.')
@@ -131,7 +131,7 @@ export const createSession = async (app: any) => {
     }
 
     dequeueTagNotification(payload: BikeTagEventPayload) {
-      const { playerId, timeRegion, isRecorded } = this.getData(payload)
+      const { playerId, timeRegion, isRecorded } = this.getPayloadData(payload)
       if (playerId === payload.to && timeRegion && isRecorded) {
         this.showToast('Your tag has been removed.', 'error')
       }

@@ -38,7 +38,7 @@
         />
         <bike-tag
           v-else
-          :key="tag.tagnumber"
+          :key="tag.playerId"
           :reverse="true"
           :tag="tag"
           size="l"
