@@ -40,6 +40,9 @@ export interface ProfileMeta {
     imgur: string
     discord: string
   }
+  options: {
+    skipSteps: boolean
+  }
 }
 
 export interface AmbassadorMeta extends ProfileMeta {
