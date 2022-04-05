@@ -8,7 +8,10 @@ let instace: any
 export const getInstance = () => instace
 
 export const croquetSession = (app: any) => {
-  if (instace) return instace
+  if (instace) {
+    console.log('notifications::existing instance provided')
+    return instace
+  }
 
   class BikeTagNotificationsModel extends Croquet.Model {
     init() {
@@ -29,6 +32,7 @@ export const croquetSession = (app: any) => {
   }
 
   BikeTagNotificationsModel.register('BikeTagNotificationsModel')
+  console.log('notifications::BikeTagNotificationsModel registered')
   class BikeTagNotificationsView extends Croquet.View {
     model: BikeTagNotificationsModel
     constructor(model: BikeTagNotificationsModel) {
@@ -176,7 +180,7 @@ export const createSession = async (app: any) => {
   return new NotificationsPlugin(
     await Croquet.Session.join({
       apiKey: process.env.C_AKEY ?? '',
-      appId: process.env.HOST ?? '',
+      appId: process.env.HOST_KEY ?? '',
       name: process.env.C_SNAME ?? 'biketag',
       password: process.env.C_SPASS ?? 'secret',
       model: BikeTagNotificationsModel,
