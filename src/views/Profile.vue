@@ -120,14 +120,14 @@
           </template>
         </template>
         <div class="m-2">
-          <h2 style="text-align: left"> Options </h2>
-          <hr :style="`background-image: url(${styledHr})`"/>
+          <h2 style="text-align: left">Options</h2>
+          <hr :style="`background-image: url(${styledHr})`" />
           <form @submit="updateOptions">
             <template v-if="profile.user_metadata">
               <bike-tag-input
-                type="checkbox"
                 id="skip-steps"
                 v-model="profile.user_metadata.options.skipSteps"
+                type="checkbox"
                 label="Skip steps"
                 variant="checkbox"
               />
@@ -194,7 +194,9 @@ export default defineComponent({
     this.$nextTick(() => {
       this.profile = this.getProfile
       this.profile.user_metadata = this.profile.user_metadata ?? { social: {} }
-      this.profile.user_metadata.options = this.profile.user_metadata.options ?? { skipSteps: false }
+      this.profile.user_metadata.options = this.profile.user_metadata.options ?? {
+        skipSteps: false,
+      }
       this.showModal =
         this.profile?.user_metadata?.name != null && !this.profile?.user_metadata?.name.length
       switch (this.profile.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
