@@ -113,6 +113,14 @@ export const isValidJson = (data, type = 'none') => {
             type: 'object',
             properties: {
               passcode: { type: 'string' },
+              options: {
+                type: 'object',
+                properties: {
+                  skipSteps: { type: 'boolean' },
+                },
+                minProperties: 1,
+                additionalProperties: false,
+              },
               social: {
                 type: 'object',
                 properties: {
@@ -142,6 +150,14 @@ export const isValidJson = (data, type = 'none') => {
             type: 'object',
             properties: {
               passcode: { type: 'string' },
+              options: {
+                type: 'object',
+                properties: {
+                  skipSteps: { type: 'boolean' },
+                },
+                minProperties: 1,
+                additionalProperties: false,
+              },
               social: {
                 type: 'object',
                 properties: {
@@ -1044,6 +1060,9 @@ export const constructAmbassadorProfile = (
           '',
       },
     },
+    options: {
+      skipSteps: profile?.user_metadata?.options?.skipSteps ?? defaults?.user_metadata?.options?.skipSteps ?? false
+    }
   }
   return {
     name: profile.name ?? defaults.name ?? '',
@@ -1074,6 +1093,9 @@ export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): B
       imgur: profile?.user_metadata?.imgur ?? defaults?.user_metadata?.imgur ?? '',
       discord: profile?.user_metadata?.discord ?? defaults?.user_metadata?.discord ?? '',
     },
+    options: {
+      skipSteps: profile?.user_metadata?.options?.skipSteps ?? defaults?.user_metadata?.options?.skipSteps ?? false
+    }
   }
   return {
     name: profile.name ?? defaults.name ?? '',

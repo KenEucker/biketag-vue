@@ -210,7 +210,7 @@ const profileHandler: Handler = async (event) => {
             page: 0,
             per_page: 1,
             include_totals: false,
-            fields: 'user_metadata.social',
+            fields: 'user_metadata.social,user_metadata.options',
             q: `user_metadata.name:"${event.queryStringParameters.name}"`,
             search_engine: 'v3',
           },
