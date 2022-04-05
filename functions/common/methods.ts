@@ -55,8 +55,8 @@ export const getBikeTagClientOpts = (
     opts.sanity.token = process.env.S_TOKEN
 
     if (admin) {
-      opts.imgur.clientId = process.env.IA_CID ?? opts.imgur.clientId
-      opts.imgur.clientSecret = process.env.IA_CSECRET ?? opts.imgur.clientSecret
+      opts.imgur.clientId = process.env.IA_CID?.length ? process.env.IA_CID : opts.imgur.clientId
+      opts.imgur.clientSecret = process.env.IA_CSECRET?.length ? process.env.IA_CSECRET : opts.imgur.clientSecret
       opts.imgur.accessToken = process.env.IA_TOKEN ?? ''
       opts.imgur.refreshToken = process.env.IA_RTOKEN ?? opts.imgur.refreshToken
 
@@ -651,7 +651,7 @@ export const archiveAndClearQueue = async (
 
     for (const nonWinningTag of queuedTags) {
       /* Archive using ambassador credentials (mainhash and archivehash are both ambassador albums) */
-      const archiveTagResult = await biketag.archiveTag(nonWinningTag)
+      const archiveTagResult = await biketag.archiveTag({...nonWinningTag, archivehash: game.archivehash})
       if (archiveTagResult.success) {
         results.push({
           message: 'non-winning found image archived',
