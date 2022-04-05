@@ -30,6 +30,7 @@ export default defineConfig({
       /* Application Configuration */
       ACCESS_TOKEN: process.env.ACCESS_TOKEN ?? '8b4e2b86a724bf3f39d6766de6e67212',
       CONTEXT: process.env.CONTEXT ?? null,
+      APP_ID: process.env.APP_ID ?? 'com.app.biketag',
       ADMIN: process.env.ADMIN ?? 'biketag@biketag.org',
       AMBASSADOR_ROLE: process.env.AMBASSADOR_ROLE ?? 'rol_iET51vzIn8z6Utz0',
       PLAYER_ROLE: process.env.ADMIN ?? 'rol_pcbQ68Q9L0yn1o3O',
