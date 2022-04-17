@@ -63,7 +63,7 @@ export default defineComponent({
       return this.getLogoUrl('m')
     },
     title() {
-      return `${this.gameName()} BikeTag!`
+      return `${this.getGameName ?? this.$t('The Game Of')} BikeTag!`
     },
     description() {
       return `The BikeTag game in ${this.getGame?.region?.description}`

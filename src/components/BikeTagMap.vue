@@ -124,7 +124,10 @@ export default defineComponent({
   },
   mounted() {
     if (this.$props.variant !== 'play/input') {
-      this.center = { lat: this.getGame.boundary.lat, lng: this.getGame.boundary.lng }
+      this.center = {
+        lat: this.getGame.boundary?.lat ?? 39.8283,
+        lng: this.getGame.boundary?.lng ?? -98.5795,
+      }
       if (this.$props.variant === 'biketags') {
         setTimeout(() => {
           const pins = document.querySelectorAll(".vue-map .gm-style div[role='button']")

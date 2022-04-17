@@ -83,7 +83,7 @@ export const getDomainInfo = (req: any): DomainInfo => {
     .toLowerCase()
     .replace(/www./g, '')
   let port = null
-  let subdomain
+  let subdomain = null
 
   if (host.indexOf(':') > 0) {
     ;[host, port] = host.split(':')

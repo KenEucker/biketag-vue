@@ -374,7 +374,7 @@ export default defineComponent({
                   this.isGpsDefault = false
                 }
               } else {
-                this.gps = this.getGame.boundary
+                this.gps = this.getGame?.boundary
                 this.isGpsDefault = true
               }
               this.center = { ...this.gps }
