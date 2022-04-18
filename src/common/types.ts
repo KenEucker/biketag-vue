@@ -133,7 +133,7 @@ export interface BikeTagEventPayload {
   to: string
   from: string
   id: string
-  created: string
+  created: number
   region: string
   msg: string
   type: BikeTagEvent
