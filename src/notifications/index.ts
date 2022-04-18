@@ -78,9 +78,10 @@ export const NotificationsPlugin = {
 }
 
 export const createSession = async (app: any) => {
-  const time = new Date().toUTCString()
+  const getUtcTime = (time : Date) => (new Date(time.toUTCString())).getTime()
+  const time = getUtcTime(new Date())
   class BikeTagNotificationsModel extends Croquet.Model {
-    startTime: string = time
+    startTime: number = time
     idRecord: string[] = []
 
     init() {
@@ -103,7 +104,7 @@ export const createSession = async (app: any) => {
       return {
         playerId: app.config.globalProperties.$store.getters.getProfile?.sub,
         timeRegion:
-          new Date(payload.created) > new Date(this.startTime) &&
+          payload.created > this.startTime &&
           payload.region === app.config.globalProperties.$store.getters.getGame?.region?.name,
         isRecorded: this.recordId(payload),
       }
@@ -169,7 +170,7 @@ export const createSession = async (app: any) => {
           id: getBikeTagHash(new Date().toUTCString()),
           type: BikeTagEvent[storeAction],
           from: app.config.globalProperties.$store.getters.getProfile?.sub,
-          created: new Date().toUTCString(),
+          created: getUtcTime(new Date()),
           region: app.config.globalProperties.$store.getters.getGame?.region?.name,
         })
       }
