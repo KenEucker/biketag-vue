@@ -56,7 +56,9 @@ export const getBikeTagClientOpts = (
 
     if (admin) {
       opts.imgur.clientId = process.env.IA_CID?.length ? process.env.IA_CID : opts.imgur.clientId
-      opts.imgur.clientSecret = process.env.IA_CSECRET?.length ? process.env.IA_CSECRET : opts.imgur.clientSecret
+      opts.imgur.clientSecret = process.env.IA_CSECRET?.length
+        ? process.env.IA_CSECRET
+        : opts.imgur.clientSecret
       opts.imgur.accessToken = process.env.IA_TOKEN ?? ''
       opts.imgur.refreshToken = process.env.IA_RTOKEN ?? opts.imgur.refreshToken
 
@@ -651,7 +653,10 @@ export const archiveAndClearQueue = async (
 
     for (const nonWinningTag of queuedTags) {
       /* Archive using ambassador credentials (mainhash and archivehash are both ambassador albums) */
-      const archiveTagResult = await biketag.archiveTag({...nonWinningTag, archivehash: game.archivehash})
+      const archiveTagResult = await biketag.archiveTag({
+        ...nonWinningTag,
+        archivehash: game.archivehash,
+      })
       if (archiveTagResult.success) {
         results.push({
           message: 'non-winning found image archived',
@@ -709,7 +714,7 @@ export const getActiveQueueForGame = async (
   /// TODO: check for the right ambassador here
   const approvingAmbassadorIsApproved = approvingAmbassador?.length
 
-  // console.log({ autoPostSetting, queuehash: game.queuehash })
+  // console.log({ autoPostSetting, game })
   if ((autoPostSetting && game.queuehash?.length) || approvingAmbassadorIsApproved) {
     /************** GET WINNING QUEUE *****************/
     adminBikeTagOpts =
@@ -756,7 +761,7 @@ export const getActiveQueueForGame = async (
 
 export const setNewBikeTagPost = async (
   winningBikeTagPost: Tag,
-  game?: Game,
+  game: Game,
   currentBikeTag?: Tag
 ): Promise<BackgroundProcessResults> => {
   const biketagOpts = getBikeTagClientOpts(
@@ -764,12 +769,9 @@ export const setNewBikeTagPost = async (
     true,
     true
   )
-  biketagOpts.game = game?.name.toLowerCase()
+  biketagOpts.game = game?.slug
   biketagOpts.imgur.hash = game?.mainhash
-  console.log({ biketagOpts })
   const biketag = new BikeTagClient(biketagOpts)
-  console.log('config', biketag.config())
-  game = game ?? ((await biketag.game(winningBikeTagPost.game)) as Game)
   currentBikeTag = currentBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
   const results = []
@@ -808,7 +810,7 @@ export const setNewBikeTagPost = async (
     currentBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
     const currentBikeTagUpdateResult = await biketag.updateTag(currentBikeTag)
-    console.log({ currentBikeTagUpdateResult })
+    // console.log({ currentBikeTagUpdateResult })
     if (currentBikeTagUpdateResult.success) {
       results.push({
         message: 'current BikeTag updated',
@@ -1061,8 +1063,11 @@ export const constructAmbassadorProfile = (
       },
     },
     options: {
-      skipSteps: profile?.user_metadata?.options?.skipSteps ?? defaults?.user_metadata?.options?.skipSteps ?? false
-    }
+      skipSteps:
+        profile?.user_metadata?.options?.skipSteps ??
+        defaults?.user_metadata?.options?.skipSteps ??
+        false,
+    },
   }
   return {
     name: profile.name ?? defaults.name ?? '',
@@ -1094,8 +1099,11 @@ export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): B
       discord: profile?.user_metadata?.discord ?? defaults?.user_metadata?.discord ?? '',
     },
     options: {
-      skipSteps: profile?.user_metadata?.options?.skipSteps ?? defaults?.user_metadata?.options?.skipSteps ?? false
-    }
+      skipSteps:
+        profile?.user_metadata?.options?.skipSteps ??
+        defaults?.user_metadata?.options?.skipSteps ??
+        false,
+    },
   }
   return {
     name: profile.name ?? defaults.name ?? '',

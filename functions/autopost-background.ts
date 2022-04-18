@@ -5,7 +5,6 @@ import {
   getWinningTagForCurrentRound,
   setNewBikeTagPost,
   archiveAndClearQueue,
-  sendEmail,
 } from './common/methods'
 import request from 'request'
 import { BackgroundProcessResults } from './common/types'
@@ -13,12 +12,20 @@ import BikeTagClient from 'biketag'
 import { Game } from 'biketag/lib/common/schema'
 import { HttpStatusCode } from './common/constants'
 
-export const autoPostNewBikeTags = async (biketagOpts: any): Promise<BackgroundProcessResults> => {
-  biketagOpts =
-    biketagOpts ?? getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, true, true)
+export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> => {
+  const biketagOpts = getBikeTagClientOpts(
+    { method: 'get' } as unknown as request.Request,
+    true,
+    true
+  )
   delete biketagOpts.game
-  const biketag = new BikeTagClient(biketagOpts)
-  const gamesResponse = await biketag.getGame(undefined, {
+  const nonAdminBiketagOpts = getBikeTagClientOpts(
+    { method: 'get' } as unknown as request.Request,
+    true
+  )
+  const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
+  const adminBiketag = new BikeTagClient(biketagOpts)
+  const gamesResponse = await nonAdminBiketag.getGame(undefined, {
     source: 'sanity',
   })
   let results = []
@@ -26,24 +33,23 @@ export const autoPostNewBikeTags = async (biketagOpts: any): Promise<BackgroundP
 
   if (gamesResponse.success) {
     const games = gamesResponse.data as unknown as Game[]
-    const mainBikeTagOpts = getBikeTagClientOpts(
-      { method: 'get' } as unknown as request.Request,
-      true
-    )
-    const mainBikeTag = new BikeTagClient(mainBikeTagOpts)
 
     for (const game of games) {
-      mainBikeTag.config({ game: game.name.toLowerCase(), imgur: { hash: game.mainhash } })
+      const thisGameConfig = {
+        game: game.slug,
+        imgur: { hash: game.mainhash, queuehash: game.queuehash, archivehash: game.archivehash },
+      }
+      nonAdminBiketag.config(thisGameConfig)
+      adminBiketag.config(thisGameConfig)
       const activeQueue = await getActiveQueueForGame(game)
 
       if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
-        const currentBikeTagResponse = await mainBikeTag.getTag(undefined) // the "current" mystery tag to be updated from the main album
+        const currentBikeTagResponse = await adminBiketag.getTag(undefined) // the "current" mystery tag to be updated from the main album
         const currentBikeTag = currentBikeTagResponse.data
         const autoSelectedWinningTag = getWinningTagForCurrentRound(
           activeQueue.timedOutTags,
           currentBikeTag
         )
-        console.log({ currentBikeTag, autoSelectedWinningTag })
 
         if (autoSelectedWinningTag) {
           const setNewBikeTagPostResults = await setNewBikeTagPost(
@@ -51,12 +57,17 @@ export const autoPostNewBikeTags = async (biketagOpts: any): Promise<BackgroundP
             game,
             currentBikeTag
           )
-          const archiveAndClearQueueResults = await archiveAndClearQueue(activeQueue.queuedTags)
-          results = setNewBikeTagPostResults.results.concat(
-            setNewBikeTagPostResults.results,
-            archiveAndClearQueueResults.results
+
+          const remainingNonWinningTags = activeQueue.queuedTags.filter(
+            (t) => t.foundPlayer !== autoSelectedWinningTag.foundPlayer
           )
-          errors = setNewBikeTagPostResults.errors && archiveAndClearQueueResults.errors
+          if (remainingNonWinningTags.length) {
+            const archiveAndClearQueueResults = await archiveAndClearQueue(remainingNonWinningTags)
+            results = setNewBikeTagPostResults.results.concat(archiveAndClearQueueResults.results)
+            errors = archiveAndClearQueueResults.errors
+          }
+          results = setNewBikeTagPostResults.results.concat(setNewBikeTagPostResults.results)
+          errors = errors || setNewBikeTagPostResults.errors
         }
       }
     }
@@ -70,19 +81,10 @@ export const autoPostNewBikeTags = async (biketagOpts: any): Promise<BackgroundP
   }
 }
 
-const autoPost: Handler = async (event) => {
-  const adminBiketagOpts = getBikeTagClientOpts(
-    {
-      ...event,
-      method: event.httpMethod,
-    } as unknown as request.Request,
-    true,
-    true
-  )
-  const { results, errors } = await autoPostNewBikeTags(adminBiketagOpts)
-
+const autoPostHandler: Handler = async () => {
+  const { results, errors } = await autoPostNewBikeTags()
+  console.log('autopost attempted', { results })
   if (results.length) {
-    await sendEmail('keneucker@gmail.com', 'autopost', { results }, 'test')
     return {
       statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: JSON.stringify(results),
@@ -96,6 +98,6 @@ const autoPost: Handler = async (event) => {
   }
 }
 
-const handler = autoPost
+const handler = autoPostHandler
 
 export { handler }

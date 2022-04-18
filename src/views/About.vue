@@ -31,7 +31,21 @@
         </p>
       </div>
       <bike-tag-map variant="worldwide" />
-      <bike-tag-games class="mt-5" />
+      <bike-tag-games class="mt-5 mb-5" />
+      <div class="about__block">
+        <h3>{{ $t('pages.about.article3.title') }}</h3>
+        <hr class="about__hr" :style="`background-image: url(${styledHr})`" />
+        <html-content filename="about-profile.html" />
+        <p>
+          <bike-tag-button
+            variant="medium-orange"
+            class="m-1 big-btn"
+            @click="$router.push('/login')"
+          >
+            {{ $t('pages.about.article3.create_profile') }}
+          </bike-tag-button>
+        </p>
+      </div>
     </div>
   </div>
 </template>
