@@ -26,10 +26,10 @@
       >
         <ul class="navbar-nav me-auto mb-lg-0">
           <li class="nav-item" @click="toSection('What is BikeTag?')">What is BikeTag?</li>
-          <li class="nav-item" @click="toSection('BikeTag Ambassador program?')">
+          <li class="nav-item" @click="toSection('BikeTag Ambassador program')">
             {{ $t('BikeTag Ambassadors') }}
           </li>
-          <li class="nav-item" @click="toSection('BIKETAG IS AN Open Source Project')">
+          <li class="nav-item" @click="toSection('Open Source')">
             {{ $t('Open Source Project') }}
           </li>
         </ul>
@@ -170,9 +170,9 @@ export default defineComponent({
   },
   methods: {
     toSection(id) {
-      document
-        .getElementById(id.toLowerCase().replaceAll(' ', '-'))
-        .scrollIntoView({ behavior: 'smooth' })
+      const section = document.getElementById(id.toLowerCase().replaceAll(' ', '-'))
+
+      window.scrollTo({ top: section.offsetTop - 125, behavior: 'smooth' })
     },
     closeMenu() {
       if (this.$refs['navList'].classList.contains('show')) {
