@@ -76,6 +76,8 @@ export const store = createStore<State>({
     // eslint-disable-next-line no-empty-pattern
     async getRegionPolygon({}, region) {
       try {
+        console.log({ zip: region.zipcode })
+        const firstOfRegion = region.description.split(',')[0].toLowerCase()
         const results = (
           await client.plainRequest({
             method: 'GET',
@@ -88,14 +90,23 @@ export const store = createStore<State>({
             },
           })
         ).data
-        return results
-          .filter((v: any) => v?.type == 'administrative' || v?.type == 'city')
-          .sort((v1: any) => {
-            if (v1?.geojson?.type === 'Polygon' || v1?.geojson?.type === 'MultiPolygon') {
-              return -1
-            }
+        const filteredResults = results.filter(
+          (v: any) =>
+            v?.type == 'administrative' ||
+            (v?.type == 'city' &&
+              v?.geojson?.coordinates?.length &&
+              v?.geojson.coordinates[0].length > 1)
+        )
+        const sortedResults = filteredResults.sort((v1: any, v2: any) => {
+          if (v2?.display_name.toLowerCase().indexOf(firstOfRegion) === 0) {
             return 1
-          })[0]
+          } else if (v1?.geojson?.type === 'Polygon' || v1?.geojson?.type === 'MultiPolygon') {
+            return -1
+          }
+          return 0
+        })
+        console.log({ results, filteredResults, sortedResults })
+        return sortedResults[0]
       } catch (e) {
         console.error(e)
       }
@@ -108,7 +119,7 @@ export const store = createStore<State>({
         // if (state.profile?.isBikeTagAmbassador) {
         //   /// fetch auth token for admin purposes
         //   const checkAuth = () => {
-        //     if (this.$auth.isAuthenticated) {
+        //     if (this.$auth?.isAuthenticated) {
         //       if (!this.getProfile?.nonce?.length) {
         //         this.$auth.getIdTokenClaims().then((claims) => {
         //           if (claims) {

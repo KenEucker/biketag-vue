@@ -982,7 +982,7 @@
   resolved "https://registry.yarnpkg.com/@bugsnag/cuid/-/cuid-3.0.0.tgz#2ee7642a30aee6dc86f5e7f824653741e42e5c35"
   integrity sha512-LOt8aaBI+KvOQGneBtpuCz3YqzyEAehd1f3nC5yr9TIYW1+IzYKa2xWS4EiMz5pPOnRPHkyyS5t/wmSmN51Gjg==
 
-"@bugsnag/js@^7.0.0":
+"@bugsnag/js@^7.0.0", "@bugsnag/js@^7.16.2":
   version "7.16.2"
   resolved "https://registry.yarnpkg.com/@bugsnag/js/-/js-7.16.2.tgz#fb15ec9cc5980f0b210aecc7b740274e50400a91"
   integrity sha512-AzV0PtG3SZt+HnA2JmRJeI60aDNZsIJbEEAZIWZeATvWBt5RdVdsWKllM1SkTvURfxfdAVd4Xry3BgVrh8nEbg==
@@ -1001,6 +1001,11 @@
     iserror "^0.0.2"
     pump "^3.0.0"
     stack-generator "^2.0.3"
+
+"@bugsnag/plugin-vue@^7.16.2":
+  version "7.16.2"
+  resolved "https://registry.yarnpkg.com/@bugsnag/plugin-vue/-/plugin-vue-7.16.2.tgz#a69dd67121604f0f61616fc01133f5b6f8d93f6c"
+  integrity sha512-uc3Y7bDvzKISX+8bSFhieNkSXsEI5X6SatsEMzaNcpifO5wyITCBdVYMJbdgOYvBwwQaKp7qEGkNnNXl0XNXFg==
 
 "@bugsnag/safe-json-stringify@^6.0.0":
   version "6.0.0"

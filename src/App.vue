@@ -41,7 +41,7 @@ export default defineComponent({
   },
   data() {
     return {
-      gameIsSet: true,
+      gameIsSet: false,
     }
   },
   computed: {
@@ -63,7 +63,7 @@ export default defineComponent({
       return this.getLogoUrl('m')
     },
     title() {
-      return `${this.getGameName ?? this.$t('The Game Of')} BikeTag!`
+      return `${this.isNotLanding ? this.getGameName : this.$t('The Game Of')} BikeTag!`
     },
     description() {
       return `The BikeTag game in ${this.getGame?.region?.description}`
@@ -74,49 +74,53 @@ export default defineComponent({
     /// Set it first thing
     this.$store.dispatch('setDataInitialized')
     const game = await this.$store.dispatch('setGame')
-    initResults.push(await this.$store.dispatch('setAllGames'))
 
-    const checkAuth = () => {
-      if (this.$auth.isAuthenticated) {
-        if (!this.getProfile?.nonce?.length) {
-          this.$auth.getIdTokenClaims().then((claims) => {
-            if (claims) {
-              const token = claims.__raw
-              this.$store.dispatch('setProfile', { ...this.$auth.user, token })
-            } else {
-              debug("what's this? no speaka da mda5hash, brah?")
-            }
-          })
+    if (game && this.$router.currentRoute.value.name !== 'landing') {
+      this.gameIsSet = true
+      initResults.push(await this.$store.dispatch('setAllGames'))
+
+      const checkAuth = () => {
+        if (this.$auth?.isAuthenticated) {
+          if (!this.getProfile?.nonce?.length) {
+            this.$auth.getIdTokenClaims().then((claims) => {
+              if (claims) {
+                const token = claims.__raw
+                this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+              } else {
+                debug("what's this? no speaka da mda5hash, brah?")
+              }
+            })
+          }
+          return true
         }
-        return true
+        return false
       }
-      return false
+
+      setTimeout(() => {
+        if (!checkAuth()) {
+          setTimeout(() => checkAuth, 1000)
+        }
+      }, 1000)
+
+      await setTimeout(
+        this.$nextTick(() => {
+          if (!game) {
+            this.$router.push('/landing')
+            this.gameIsSet = false
+            return
+          }
+        }),
+        100
+      )
+
+      initResults.push(await this.$store.dispatch('setTags'))
+      initResults.push(await this.$store.dispatch('setCurrentBikeTag'))
+      initResults.push(await this.$store.dispatch('setQueuedTags'))
+      initResults.push(await this.$store.dispatch('setPlayers'))
+      initResults.push(await this.$store.dispatch('setLeaderboard'))
+
+      this.checkForNewBikeTagPost()
     }
-
-    setTimeout(() => {
-      if (!checkAuth()) {
-        setTimeout(() => checkAuth, 1000)
-      }
-    }, 1000)
-
-    await setTimeout(
-      this.$nextTick(() => {
-        if (!game) {
-          this.$router.push('/landing')
-          this.gameIsSet = false
-          return
-        }
-      }),
-      100
-    )
-
-    initResults.push(await this.$store.dispatch('setTags'))
-    initResults.push(await this.$store.dispatch('setCurrentBikeTag'))
-    initResults.push(await this.$store.dispatch('setQueuedTags'))
-    initResults.push(await this.$store.dispatch('setPlayers'))
-    initResults.push(await this.$store.dispatch('setLeaderboard'))
-
-    this.checkForNewBikeTagPost()
     debug(`view::data-init`)
   },
   methods: {

@@ -1,5 +1,5 @@
 import App from './App.vue'
-// import { createSSRApp } from 'vue'
+// import Vue from 'vue'
 import { createApp } from 'vue'
 import router from './router'
 import { store } from './store'
@@ -27,6 +27,9 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 import 'highlight.js/styles/monokai.css'
 import { debug } from './common/utils'
 import { createHead } from '@vueuse/head'
+import Bugsnag from '@bugsnag/js'
+import BugsnagPluginVue from '@bugsnag/plugin-vue'
+
 class BikeTagApp {
   protected emitter
   protected app
@@ -69,6 +72,18 @@ class BikeTagApp {
       this.app.config.globalProperties.$auth = () => () => null
     }
   }
+  bugs() {
+    Bugsnag.start({
+      apiKey: process.env.B_AKEY ?? '',
+      plugins: [new BugsnagPluginVue()],
+    })
+    const bugsPlugin = Bugsnag.getPlugin('vue')
+
+    // eslint-disable-next-line
+    // @ts-ignore
+    this.app.use(bugsPlugin)
+    debug('init::bugs', bugsPlugin)
+  }
   components() {
     this.app.use(VueToast)
     this.app.use(BootstrapVue3)
@@ -96,6 +111,7 @@ class BikeTagApp {
 
   run() {
     this.init()
+    // this.bugs()
     this.authentication()
     this.cookies()
     this.notifications()

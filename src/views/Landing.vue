@@ -144,7 +144,7 @@
         <img :src="bikeTag" />
       </a>
     </div>
-    <p><i>© 2022 BIKE TAG. All Rights Reserved. </i></p>
+    <p><i>© 2022 The BikeTag Project. All Rights Reserved. </i></p>
   </footer>
 </template>
 <script>

@@ -233,7 +233,7 @@ export default defineComponent({
         this.uploadInProgress = false
         return
       }
-      if (!this.$auth.isAuthenticated) {
+      if (!this.$auth?.isAuthenticated) {
         try {
           await this.$store.dispatch('checkPasscode', {
             name: this.player,

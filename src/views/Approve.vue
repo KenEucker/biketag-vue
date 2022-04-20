@@ -102,7 +102,7 @@ export default defineComponent({
       }
     },
     async checkAuth() {
-      if (this.$auth.isAuthenticated) {
+      if (this.$auth?.isAuthenticated) {
         if (!this.getProfile?.nonce?.length) {
           return this.$auth.getIdTokenClaims().then((claims) => {
             if (claims) {
