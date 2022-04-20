@@ -74,10 +74,10 @@ export default defineComponent({
     /// Set it first thing
     this.$store.dispatch('setDataInitialized')
     const game = await this.$store.dispatch('setGame')
+    initResults.push(await this.$store.dispatch('setAllGames'))
 
     if (game && this.$router.currentRoute.value.name !== 'landing') {
       this.gameIsSet = true
-      initResults.push(await this.$store.dispatch('setAllGames'))
 
       const checkAuth = () => {
         if (this.$auth?.isAuthenticated) {
