@@ -120,6 +120,8 @@ export default defineComponent({
       initResults.push(await this.$store.dispatch('setLeaderboard'))
 
       this.checkForNewBikeTagPost()
+    } else if (!game) {
+      this.$router.push('/landing')
     }
     debug(`view::data-init`)
   },
