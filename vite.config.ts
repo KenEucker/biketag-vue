@@ -39,6 +39,8 @@ export default defineConfig({
       A_CID: process.env.A_CID ?? null,
       A_DOMAIN: process.env.A_DOMAIN ?? null,
       A_TOKEN: process.env.A_TOKEN ?? null,
+      /* Bugs Configuration */
+      B_AKEY: process.env.B_AKEY ?? null,
       /* Croquet Configuration */
       C_AKEY: process.env.C_AKEY ?? null,
       C_SNAME: process.env.C_SNAME ?? 'biketag',

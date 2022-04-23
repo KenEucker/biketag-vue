@@ -4,7 +4,7 @@ export const authGuard = (to: { fullPath: any }, from: any, next: (arg0?: boolea
   const authService = getInstance()
 
   const fn = () => {
-    if (authService.isAuthenticated) {
+    if (authService?.isAuthenticated) {
       return next()
     }
 

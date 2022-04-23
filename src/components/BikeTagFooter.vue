@@ -176,6 +176,10 @@ export default defineComponent({
     goRoundPage() {
       this.$router.push('/round')
     },
+    goWorldwide() {
+      window.location = 'http://biketag.org/'
+      // this.$router.push('/worldwide')
+    },
     sleep(time) {
       return new Promise((resolve) => setTimeout(resolve, time))
     },

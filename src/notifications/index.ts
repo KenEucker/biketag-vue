@@ -78,7 +78,7 @@ export const NotificationsPlugin = {
 }
 
 export const createSession = async (app: any) => {
-  const getUtcTime = (time : Date) => (new Date(time.toUTCString())).getTime()
+  const getUtcTime = (time: Date) => new Date(time.toUTCString()).getTime()
   const time = getUtcTime(new Date())
   class BikeTagNotificationsModel extends Croquet.Model {
     startTime: number = time

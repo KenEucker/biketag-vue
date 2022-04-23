@@ -50,6 +50,8 @@
     "vuex": "^4.0.2"
   },
   "devDependencies": {
+    "@bugsnag/js": "^7.16.2",
+    "@bugsnag/plugin-vue": "^7.16.2",
     "@originjs/vite-plugin-commonjs": "^1.0.2",
     "@types/crypto-js": "^4.1.1",
     "@types/device-uuid": "^1.0.0",

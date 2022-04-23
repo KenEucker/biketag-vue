@@ -111,7 +111,7 @@ export default defineComponent({
         reddit: 'http://reddit.com/u/',
         discord: '',
       },
-      modal: true,
+      modal: false,
     }
   },
   computed: {

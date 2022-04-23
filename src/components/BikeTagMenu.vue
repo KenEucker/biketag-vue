@@ -34,7 +34,7 @@
 
       <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-lg-0">
-          <li v-if="!authLoading && $auth.isAuthenticated" class="nav-item">
+          <li v-if="$auth.isAuthenticated" class="nav-item">
             <img
               class="profile-icon"
               :src="getProfileImageSrc"
@@ -95,22 +95,20 @@
           >
             {{ $t('menu.about') }}
           </li>
-          <template v-if="!authLoading">
-            <template v-if="$auth.isAuthenticated">
-              <li class="nav-item" @click="logout">
-                {{ $t('menu.logout') }}
-              </li>
-            </template>
-            <template v-else>
-              <li
-                v-if="showLogin"
-                class="nav-item"
-                :class="{ 'active-nav': currentRoute === 'Login' }"
-                @click="login"
-              >
-                {{ $t('menu.login') }}
-              </li>
-            </template>
+          <template v-if="$auth.isAuthenticated">
+            <li class="nav-item" @click="logout">
+              {{ $t('menu.logout') }}
+            </li>
+          </template>
+          <template v-else>
+            <li
+              v-if="showLogin"
+              class="nav-item"
+              :class="{ 'active-nav': currentRoute === 'Login' }"
+              @click="login"
+            >
+              {{ $t('menu.login') }}
+            </li>
           </template>
         </ul>
       </div>
