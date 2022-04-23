@@ -107,6 +107,7 @@ const profileHandler: Handler = async (event) => {
       case 'PATCH':
         try {
           const data = JSON.parse(event.body)
+          delete data.user_metadata.name
           const validator = profile.isBikeTagAmbassador
             ? 'profile.patch.ambassador'
             : 'profile.patch'

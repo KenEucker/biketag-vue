@@ -151,6 +151,7 @@ export const isValidJson = (data, type = 'none') => {
           user_metadata: {
             type: 'object',
             properties: {
+              name: {type: 'string'},
               passcode: { type: 'string' },
               options: {
                 type: 'object',
