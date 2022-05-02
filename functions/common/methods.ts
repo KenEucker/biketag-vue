@@ -981,23 +981,38 @@ export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag
   return undefined
 }
 
-export const acceptCorsHeaders = (withAuthorization = true) => {
-  const corsHeaders = {
+const getAuthManagementToken = async () => {
+  try {
+    return await axios({
+      method: "POST",
+      url: `https://${process.env.A_DOMAIN}/oauth/token`,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      data: {
+        grant_type: 'client_credentials',
+        client_id: process.env.A_CID,
+        client_secret: process.env.A_CS,
+        audience: process.env.A_AUDIENCE
+      }
+    })
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+export const auth0Headers = async () => ({
+    'Authorization': `Bearer ${(await getAuthManagementToken()).data?.access_token}`
+})
+
+export const acceptCorsHeaders = () => ({
     Accept: '*',
     'Access-Control-Allow-Headers': '*',
     'Content-Type': 'application/json',
     'Access-Control-Allow-Methods': '*',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Max-Age': '8640',
-  }
-
-  if (withAuthorization) {
-    const token = getEnvironmentVariable('A_TOKEN')
-    corsHeaders['authorization'] = `Bearer ${token}`
-  }
-
-  return corsHeaders
-}
+})
 
 export const constructAmbassadorProfile = (
   profile: any = {},
