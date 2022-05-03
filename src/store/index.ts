@@ -322,7 +322,6 @@ export const store = createStore<State>({
       // Update Auth0 Profile
       profile.name = state.profile.name
       const user_metadata = profile.user_metadata
-      delete user_metadata.name
       const updatedProfileResponse = await client.plainRequest({
         method: 'PATCH',
         url: getApiUrl('profile'),

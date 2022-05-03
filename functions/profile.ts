@@ -7,11 +7,12 @@ import {
   acceptCorsHeaders,
   constructAmbassadorProfile,
   constructPlayerProfile,
+  auth0Headers
 } from './common/methods'
 
 const profileHandler: Handler = async (event) => {
   /// Bailout on OPTIONS requests
-  const headers = acceptCorsHeaders(false)
+  const headers = acceptCorsHeaders()
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: HttpStatusCode.NoContent,
@@ -27,7 +28,7 @@ const profileHandler: Handler = async (event) => {
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile && profile.sub) {
     let options = {}
-    const authorizationHeaders = acceptCorsHeaders(true)
+    const authorizationHeaders = await auth0Headers()
 
     switch (event.httpMethod) {
       /// Create new profile fields (role, name)
@@ -107,6 +108,7 @@ const profileHandler: Handler = async (event) => {
       case 'PATCH':
         try {
           const data = JSON.parse(event.body)
+          delete data.user_metadata.name
           const validator = profile.isBikeTagAmbassador
             ? 'profile.patch.ambassador'
             : 'profile.patch'
@@ -163,7 +165,7 @@ const profileHandler: Handler = async (event) => {
     }
   } else if (event.httpMethod === 'GET' && profile?.name) {
     /// Check in Auth0 that the credentials are valid
-    const authorizationHeaders = acceptCorsHeaders(true)
+    const authorizationHeaders = await auth0Headers()
     try {
       const exists = (
         await axios.request({
@@ -201,7 +203,7 @@ const profileHandler: Handler = async (event) => {
     }
   } else if (event.httpMethod === 'GET' && !profile) {
     if (event.queryStringParameters?.name) {
-      const authorizationHeaders = acceptCorsHeaders(true)
+      const authorizationHeaders = await auth0Headers()
       await axios
         .request({
           method: 'GET',
