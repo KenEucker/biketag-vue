@@ -1,6 +1,7 @@
 import request from 'request'
 import { getDomainInfo } from '../../src/common/utils'
 import md5 from 'md5'
+import qs from 'qs'
 import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
 import nodemailer from 'nodemailer'
@@ -989,12 +990,12 @@ const getAuthManagementToken = async () => {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      data: {
-        grant_type: 'client_credentials',
-        client_id: process.env.A_CID,
-        client_secret: process.env.A_CS,
-        audience: process.env.A_AUDIENCE
-      }
+      data: qs.stringify({
+        'grant_type': 'client_credentials',
+        'client_id': process.env.A_M_CID,
+        'client_secret': process.env.A_M_CS,
+        'audience': process.env.A_AUDIENCE
+      })
     })
   } catch (e) {
     console.log(e)

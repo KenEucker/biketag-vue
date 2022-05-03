@@ -90,7 +90,9 @@ export const useAuth0 = ({
         return this.auth0Client.getTokenWithPopup()
       },
       logout() {
-        return this.auth0Client.logout()
+        return this.auth0Client.logout({
+          returnTo: `${window.location.origin}/#/logout`
+        })
       },
     },
   }).mount(document.createElement('div'))
