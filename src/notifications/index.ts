@@ -78,11 +78,8 @@ export const NotificationsPlugin = {
 }
 
 export const createSession = async (app: any) => {
-  const getUtcTime = (time: Date) => new Date(time.toUTCString()).getTime()
-  const time = getUtcTime(new Date())
   class BikeTagNotificationsModel extends Croquet.Model {
-    startTime: number = time
-    idRecord: string[] = []
+    idRecord: string[] = JSON.parse(localStorage.getItem("idRecord") ?? '[]') 
 
     init() {
       this.subscribe('notification', BikeTagEvent.addFoundTag, this.pubNotification)
@@ -96,6 +93,7 @@ export const createSession = async (app: any) => {
         return false
       } else {
         this.idRecord.push(payload.id)
+        localStorage.setItem("idRecord", JSON.stringify(this.idRecord))
         return true
       }
     }
@@ -103,8 +101,8 @@ export const createSession = async (app: any) => {
     getPayloadData(payload: BikeTagEventPayload) {
       return {
         playerId: app.config.globalProperties.$store.getters.getProfile?.sub,
-        timeRegion:
-          payload.created > this.startTime &&
+        player: app.config.globalProperties.$store.getters.getPlayerTag.foundPlayer,
+        region:
           payload.region === app.config.globalProperties.$store.getters.getGame?.region?.name,
         isRecorded: this.recordId(payload),
       }
@@ -118,16 +116,16 @@ export const createSession = async (app: any) => {
     }
 
     pubNotification(payload: BikeTagEventPayload) {
-      const { playerId, timeRegion, isRecorded } = this.getPayloadData(payload)
-      if (playerId !== payload.from && timeRegion && isRecorded) {
+      const { playerId, region, isRecorded } = this.getPayloadData(payload)
+      if (playerId !== payload.from && region && isRecorded) {
         this.showToast(payload.msg)
       }
     }
 
     approveTagNotification(payload: BikeTagEventPayload) {
-      const { playerId, timeRegion, isRecorded } = this.getPayloadData(payload)
-      if (isRecorded && timeRegion) {
-        if (playerId === payload.to) {
+      const { playerId, player, region, isRecorded } = this.getPayloadData(payload)
+      if (isRecorded && region) {
+        if (player === payload.to) {
           this.showToast('Your tag has been approved.')
         } else if (playerId !== payload.from) {
           this.showToast(payload.msg)
@@ -136,8 +134,8 @@ export const createSession = async (app: any) => {
     }
 
     dequeueTagNotification(payload: BikeTagEventPayload) {
-      const { playerId, timeRegion, isRecorded } = this.getPayloadData(payload)
-      if (playerId === payload.to && timeRegion && isRecorded) {
+      const { playerId, player, region, isRecorded } = this.getPayloadData(payload)
+      if (player === payload.to && playerId !== payload.from && region && isRecorded) {
         this.showToast('Your tag has been removed.', 'error')
       }
     }
@@ -162,15 +160,15 @@ export const createSession = async (app: any) => {
       this.session = session
     }
 
-    send(msg: string, storeAction: string, to = 'all') {
+    send(msg: string, storeAction: string, to: string) {
       if (BikeTagEvent[storeAction]) {
         this.session.view.send({
-          to,
+          to : to ?? 'all',
           msg,
-          id: getBikeTagHash(new Date().toUTCString()),
+          id: getBikeTagHash(this.session.view.now().toString()),
           type: BikeTagEvent[storeAction],
           from: app.config.globalProperties.$store.getters.getProfile?.sub,
-          created: getUtcTime(new Date()),
+          created: this.session.view.now(),
           region: app.config.globalProperties.$store.getters.getGame?.region?.name,
         })
       }

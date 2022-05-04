@@ -169,7 +169,7 @@ export default defineComponent({
             this.$notifications.send(
               this.$t(`notifications.${storeAction}`),
               storeAction,
-              this.getPlayerTag.foundPlayer
+              tag.foundPlayer
             )
             this.$toast.open({
               message: `${storeAction} ${this.$t('notifications.success')}`,
