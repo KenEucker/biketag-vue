@@ -886,7 +886,7 @@ export const setNewBikeTagPost = async (
         (a) => game.ambassadors.indexOf(a.name) !== -1
       )
       const winningTagnumber = newPostedBikeTag.tagnumber
-      const host = `https://${game.name}.biketag.io`
+      const host = `https://${game.name}.biketag.org`
       const logo = game.logo?.length
         ? game.logo.indexOf('imgur.co') !== -1
           ? game.logo

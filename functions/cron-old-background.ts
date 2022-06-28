@@ -184,7 +184,7 @@ const cronHandler: Handler = async (event) => {
                     )
                     const winningTagnumber = (newBikeTagUpdateResult.data as unknown as Tag)
                       .tagnumber
-                    const host = `https://${game.name}.biketag.io`
+                    const host = `https://${game.name}.biketag.org`
                     const logo = game.logo?.length
                       ? game.logo.indexOf('imgur.co') !== -1
                         ? game.logo

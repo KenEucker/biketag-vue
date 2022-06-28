@@ -12,7 +12,7 @@ export default defineComponent({
   mounted() {
     netlifyIdentity.init({
       container: '#netlify-modal', // defaults to document.body
-      APIUrl: 'https://biketag.io/.netlify/identity',
+      APIUrl: 'https://biketag.org/.netlify/identity',
       logo: true,
       // locale: 'en', // defaults to 'en'
     })

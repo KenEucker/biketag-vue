@@ -162,15 +162,15 @@ export default defineComponent({
     },
     redditPostText() {
       return `
-[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://${this.getGameName}.biketag.io/#/${this.getPlayerTag.tagnumber})
+[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://${this.getGameName}.biketag.org/#/${this.getPlayerTag.tagnumber})
 
 Credit goes to ${this.getPlayerTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
 
-"[${this.getPlayerTag.foundLocation}](https://${this.getGameName}.biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
+"[${this.getPlayerTag.foundLocation}](https://${this.getGameName}.biketag.org/#/${this.getCurrentBikeTag.tagnumber})"
 
 See all BikeTags and more, for ${this.getGameName}:
 
-[${this.getGameName}.biketag.io](https://${this.getGameName}.biketag.io) | [Leaderboard](https://${this.getGameName}.biketag.io/leaderboard) | [Rules](https://${this.getGameName}.biketag.io/#howto)
+[${this.getGameName}.biketag.org](https://${this.getGameName}.biketag.org) | [Leaderboard](https://${this.getGameName}.biketag.org/leaderboard) | [Rules](https://${this.getGameName}.biketag.org/#howto)
         `
     },
     twitterPostText() {
@@ -184,15 +184,15 @@ See all BikeTags and more, for ${this.getGameName}:
     },
     instgramPostText() {
       return `
-[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://${this.getGameName}biketag.io/#/${this.getPlayerTag.tagnumber})
+[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://${this.getGameName}biketag.org/#/${this.getPlayerTag.tagnumber})
 
 Credit goes to ${this.getPlayerTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
 
-"[${this.getPlayerTag.foundLocation}](https://${this.getGameName}biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
+"[${this.getPlayerTag.foundLocation}](https://${this.getGameName}biketag.org/#/${this.getCurrentBikeTag.tagnumber})"
 
 See all BikeTags and more, for ${this.getGameName}:
 
-[${this.getGameName}.biketag.io](https://${this.getGameName}.biketag.io) | [Leaderboard](https://${this.getGameName}.biketag.io/leaderboard) | [Rules](https://${this.getGameName}.biketag.io/#howto)
+[${this.getGameName}.biketag.org](https://${this.getGameName}.biketag.org) | [Leaderboard](https://${this.getGameName}.biketag.org/leaderboard) | [Rules](https://${this.getGameName}.biketag.org/#howto)
         `
     },
   },

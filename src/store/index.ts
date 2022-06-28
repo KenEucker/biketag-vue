@@ -30,7 +30,7 @@ const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 /// TODO: move these options to a method for FE use only
 const options: any = {
   // biketag: {
-  host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.io/api`,
+  host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.org/api`,
   // game: gameName,
   clientKey: getBikeTagHash(window.location.hostname),
   clientToken: process.env.ACCESS_TOKEN,
@@ -194,6 +194,7 @@ export const store = createStore<State>({
               (g: Game) =>
                 g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length
             )
+            console.log({ setAllGames: supportedGames })
             return commit('SET_ALL_GAMES', supportedGames)
           }
 
