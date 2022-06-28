@@ -57,7 +57,7 @@ export default defineConfig({
       /* BikeTag Configuration */
       GAME_NAME: process.env.GAME_NAME ?? 'null',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,
-      HOST: process.env.HOST ?? 'biketag.io',
+      HOST: process.env.HOST ?? 'biketag.org',
       HOST_KEY: process.env.HOST_KEY ?? 'ItsABikeTagGame',
       /* Imgur Admin Configuration */
       IA_CID: process.env.IA_CID ?? null,

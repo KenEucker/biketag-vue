@@ -152,15 +152,15 @@ export default defineComponent({
     },
     redditPostText() {
       return `
-[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://biketag.io/#/${this.getPlayerTag.tagnumber})
+[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://biketag.org/#/${this.getPlayerTag.tagnumber})
 
 Credit goes to ${this.getPlayerTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
 
-"[${this.getPlayerTag.foundLocation}](https://biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
+"[${this.getPlayerTag.foundLocation}](https://biketag.org/#/${this.getCurrentBikeTag.tagnumber})"
 
 See all BikeTags and more, for ${this.getGameName}:
 
-[biketag.io](https://https://biketag.io) | [Leaderboard](https://https://biketag.io/leaderboard) | [Rules](https://https://biketag.io/#howto)
+[biketag.org](https://https://biketag.org) | [Leaderboard](https://https://biketag.org/leaderboard) | [Rules](https://https://biketag.org/#howto)
         `
     },
     twitterPostText() {
@@ -174,15 +174,15 @@ See all BikeTags and more, for ${this.getGameName}:
     },
     instgramPostText() {
       return `
-[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://biketag.io/#/${this.getPlayerTag.tagnumber})
+[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://biketag.org/#/${this.getPlayerTag.tagnumber})
 
 Credit goes to ${this.getPlayerTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
 
-"[${this.getPlayerTag.foundLocation}](https://biketag.io/#/${this.getCurrentBikeTag.tagnumber})"
+"[${this.getPlayerTag.foundLocation}](https://biketag.org/#/${this.getCurrentBikeTag.tagnumber})"
 
 See all BikeTags and more, for ${this.getGameName}:
 
-[biketag.io](https://https://biketag.io) | [Leaderboard](https://https://biketag.io/leaderboard) | [Rules](https://https://biketag.io/#howto)
+[biketag.org](https://https://biketag.org) | [Leaderboard](https://https://biketag.org/leaderboard) | [Rules](https://https://biketag.org/#howto)
         `
     },
   },
