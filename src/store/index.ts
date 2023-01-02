@@ -108,6 +108,7 @@ export const store = createStore<State>({
         console.log({ results, filteredResults, sortedResults })
         return sortedResults[0]
       } catch (e) {
+        console.log('map cannot continue')
         console.error(e)
       }
     },
@@ -194,7 +195,7 @@ export const store = createStore<State>({
               (g: Game) =>
                 g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length
             )
-            console.log({ setAllGames: supportedGames })
+            console.log({ setAllGames: supportedGames, games })
             return commit('SET_ALL_GAMES', supportedGames)
           }
 
@@ -284,7 +285,7 @@ export const store = createStore<State>({
           } else if (approveTagResponse.status === 200) {
             return `BikeTag round #${d.tagnumber} couldn't be posted`
           }
-        } catch (e) {
+        } catch (e: any) {
           console.error('error approving tag', e?.message ?? e)
           return 'error approving tag'
         }
@@ -715,11 +716,11 @@ export const store = createStore<State>({
       if (state.game?.settings) {
         const jingle = state.game?.settings['easter::jingle']
         if (jingle) {
-          return `https://biketag.org/public/${jingle}`
+          return `https://biketag.org/${jingle}`
         }
       }
 
-      return `https://biketag.org/public/${defaultJingle}`
+      return `https://biketag.org/${defaultJingle}`
     },
     getGameTitle(state) {
       return `${state.gameName.toUpperCase()}.BIKETAG`
@@ -765,7 +766,7 @@ export const store = createStore<State>({
       return state.playerTag
     },
     getMostRecentlyViewedTagnumber(state) {
-      return getMostRecentlyViewedBikeTagTagnumber(state.currentBikeTag.tagnumber)
+      return getMostRecentlyViewedBikeTagTagnumber(state.currentBikeTag?.tagnumber)
     },
     getProfile(state) {
       return state.profile

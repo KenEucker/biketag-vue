@@ -139,7 +139,7 @@ export default defineComponent({
 
       p {
         transform: rotate(180deg);
-        font-family: prequelrough;
+        font-family: $default-font-family;
         font-weight: 300;
         line-height: 2rem;
         text-transform: uppercase;

@@ -76,7 +76,7 @@ export default defineComponent({
     const game = await this.$store.dispatch('setGame')
     initResults.push(await this.$store.dispatch('setAllGames'))
 
-    if (game && this.$router.currentRoute.value.name !== 'landing') {
+    if (game?.name?.length && this.$router.currentRoute.value.name !== 'landing') {
       this.gameIsSet = true
 
       const checkAuth = () => {
@@ -133,7 +133,7 @@ export default defineComponent({
     },
     checkForNewBikeTagPost() {
       if (
-        this.getCurrentBikeTag.tagnumber > this.getMostRecentlyViewedTagnumber &&
+        this.getCurrentBikeTag?.tagnumber > this.getMostRecentlyViewedTagnumber &&
         this.getMostRecentlyViewedTagnumber !== 0
       ) {
         debug('ui::new biketag posted!!')

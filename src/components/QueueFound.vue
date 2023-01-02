@@ -124,7 +124,6 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 import exifr from 'exifr'
-// import { Notifications } from '@/common/types'
 import { debug } from '@/common/utils'
 
 export default defineComponent({

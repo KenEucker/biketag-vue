@@ -57,12 +57,8 @@ export default defineComponent({
 
 .biketag {
   &__text {
-    // display: flex;
-
     &--inner {
       background: transparent;
-
-      // font-size: 2.5rem;
       padding: 1rem;
 
       @media (min-width: $breakpoint-mobile-sm) {
@@ -73,15 +69,6 @@ export default defineComponent({
       }
       @media (min-width: $breakpoint-mobile-lg) {
         font-size: 1.5rem;
-      }
-      @media (min-width: $breakpoint-tablet) {
-        // font-size: 1.5rem;
-      }
-      @media (min-width: $breakpoint-laptop) {
-        // font-size: 1.75rem;
-      }
-      @media (min-width: $breakpoint-desktop) {
-        // font-size: 2rem;
       }
     }
   }
@@ -108,35 +95,14 @@ export default defineComponent({
       }
     }
 
-    // &--circle {
-    //   &-circle-clean {
-    //   }
-    // }
-
     &--light {
       min-height: 5.9rem;
 
       @media (min-width: $breakpoint-desktop) {
-        //   font-size: 2rem;
-        // line-height: 7rem;
         min-width: 10rem;
-      }
-      @media (min-width: $breakpoint-laptop) {
-        // line-height: 6rem;
-      }
-      @media (min-width: $breakpoint-tablet) {
-        // line-height: 5rem;
-      }
-      @media (min-width: $breakpoint-mobile-lg) {
-        // line-height: 4rem;
       }
       @media (min-width: $breakpoint-mobile-md) {
         min-height: 8.9rem;
-
-        // line-height: 3rem;
-      }
-      @media (min-width: $breakpoint-mobile-sm) {
-        // line-height: 2rem;
       }
 
       .biketag__text--inner {
@@ -147,16 +113,11 @@ export default defineComponent({
     &--medium,
     &--medium-orange {
       .biketag__text--inner {
-        // padding: 0.75rem 0;
         min-height: 6rem;
         margin: 0 auto;
         display: flex;
         justify-content: center;
         align-items: center;
-
-        // @media (min-width: $breakpoint-desktop) {
-        //   font-size: 2rem !important;
-        // }
       }
     }
 
@@ -164,23 +125,13 @@ export default defineComponent({
       line-height: 8rem;
 
       @media (max-width: $breakpoint-desktop) {
-        //   font-size: 2rem;
         line-height: 7rem;
-      }
-      @media (max-width: $breakpoint-laptop) {
-        // line-height: 6rem;
       }
       @media (max-width: $breakpoint-tablet) {
         line-height: 6rem;
       }
       @media (max-width: $breakpoint-mobile-lg) {
         line-height: 5rem;
-      }
-      @media (max-width: $breakpoint-mobile-md) {
-        // line-height: 4rem;
-      }
-      @media (max-width: $breakpoint-mobile-sm) {
-        // line-height: 3rem;
       }
 
       .biketag__text--inner {
@@ -194,93 +145,5 @@ export default defineComponent({
       padding: 0 3%;
     }
   }
-}
-
-// $breakpoint-mobile-sm: 20rem; //320px
-// $breakpoint-mobile-md: 26.25rem; //420px
-// $breakpoint-mobile-lg: 30rem; //480px
-// $breakpoint-tablet: 48rem; //768px
-// $breakpoint-laptop: 64rem; //1024px
-// $breakpoint-desktop: 75rem; //1200px
-
-.biketag-button {
-  //   background: transparent;
-  //   border: none;
-  //   font-family: PrequelRough;
-  //   font-weight: bold;
-  //   font-size: 13px;
-  //   @include background-btn;
-
-  //   .biketag-text {
-  //     display: flex;
-  //   }
-
-  //   .biketag-text--inner {
-  //     z-index: 2;
-  //     background: transparent;
-  //     // font-size: 2rem;
-  //     // min-width: 6rem;
-
-  //     font-size: 1.5rem;
-  //     padding: 1rem;
-
-  //     @media (max-width: 400px) {
-  //       font-size: 1.25rem;
-  //       padding: 0.5rem;
-  //     }
-  //   }
-
-  //   .button--children {
-  //     z-index: 1;
-  //     padding: 3%;
-  //   }
-
-  //   &.light {
-  //     // .button--children,
-  //     // .biketag-text--inner {
-  //     // font-family: UniSans;
-  //     // margin-left: 10px;
-  //     color: black;
-  //   }
-
-  //   &.medium {
-  //     .biketag-text--inner {
-  //       padding: 1rem;
-  //     }
-  //     @media (min-width: 550px) {
-  //       .biketag-text--inner {
-  //         font-size: 2rem;
-  //       }
-  //     }
-  //   }
-
-  //   &.bold {
-  //     font-size: 2rem;
-  //     color: white;
-
-  //     .biketag-text--inner {
-  //       min-width: 6.8rem;
-  //     }
-  //   }
-
-  //   &.circle {
-  //     .button--children {
-  //       padding: 0;
-  //     }
-  //   }
-
-  //   &.underline-reverse,
-  //   &.underline {
-  //     img {
-  //       margin-top: 80px;
-  //     }
-  //   }
-
-  //   &.underline-reverse {
-  //     img {
-  //       margin-top: 40px;
-  //       transform: rotate(180deg);
-  //     }
-  //   }
 }
 </style>

@@ -35,7 +35,6 @@ export default defineComponent({
     },
   },
   data() {
-    console.log({ allGames: this.getAllGames })
     return {
       styledHr: StyledHr,
     }

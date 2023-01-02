@@ -37,6 +37,7 @@ export default defineComponent({
       default: false,
     },
   },
+  emits: ['update:modelValue'],
   computed: {
     backgroundSrc() {
       switch (this.variant) {
