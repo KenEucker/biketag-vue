@@ -44,9 +44,9 @@ export default defineConfig({
       /* Bugs Configuration */
       B_AKEY: process.env.B_AKEY ?? null,
       /* Croquet Configuration */
-      C_AKEY: process.env.C_AKEY ?? null,
-      C_SNAME: process.env.C_SNAME ?? 'biketag',
-      C_SPASS: process.env.C_SPASS ?? 'secret',
+      // C_AKEY: process.env.C_AKEY ?? null,
+      // C_SNAME: process.env.C_SNAME ?? 'biketag',
+      // C_SPASS: process.env.C_SPASS ?? 'secret',
       /* Google Configuration */
       G_AKEY: process.env.G_AKEY ?? null,
       G_CID: process.env.G_CID ?? null,

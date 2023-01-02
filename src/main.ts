@@ -1,12 +1,10 @@
 import App from './App.vue'
-// import Vue from 'vue'
 import { createApp } from 'vue'
 import router from './router'
 import { store } from './store'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import mitt from 'mitt'
 import { Auth0Plugin } from './auth'
-import { createSession } from './notifications'
 import i18nPlugin from './i18n'
 import VueToast from 'vue-toast-notification'
 import VueCookies from 'vue3-cookies'
@@ -95,14 +93,6 @@ class BikeTagApp {
         libraries: 'places',
       },
     })
-    // this.app.use(NotificationsPlugin)
-  }
-  async notifications() {
-    if (process.env.C_AKEY) {
-      this.app.config.globalProperties.$notifications = await createSession(this.app)
-    } else {
-      this.app.config.globalProperties.$notifications = { send: () => null }
-    }
   }
 
   mount() {
@@ -114,7 +104,6 @@ class BikeTagApp {
     // this.bugs()
     this.authentication()
     this.cookies()
-    this.notifications()
     this.internationalization()
     this.components()
     this.router()

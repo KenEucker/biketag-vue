@@ -168,14 +168,6 @@ const cronHandler: Handler = async (event) => {
                   }
 
                   if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
-                    /// TODO: REMOVE LEGACY HACK
-                    axios
-                      .get(
-                        `https://${game.name}.biketag.org?flushCache=true&resendNotification=true`
-                      )
-                      .catch((e) => {
-                        /// Unimportant
-                      })
                     const ambassadors = (await biketag.ambassadors(undefined, {
                       source: 'sanity',
                     })) as Ambassador[]

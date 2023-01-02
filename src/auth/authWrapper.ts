@@ -91,7 +91,7 @@ export const useAuth0 = ({
       },
       logout() {
         return this.auth0Client.logout({
-          returnTo: `${window.location.origin}/#/logout`
+          returnTo: `${window.location.origin}/#/logout`,
         })
       },
     },

@@ -12,6 +12,7 @@ const gameHandler: Handler = async (event) => {
     } as unknown as request.Request,
     true
   )
+  console.log({ gameHandler: biketagOpts })
   const biketagPayload = getPayloadOpts(event, { game: biketagOpts.game })
   const biketag = new BikeTagClient(biketagOpts)
   const gameResponse = await biketag.getGame(biketagPayload as getGamePayload, { source: 'sanity' })
