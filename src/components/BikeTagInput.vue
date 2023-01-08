@@ -6,9 +6,9 @@
       :type="type"
       :class="`checkbox__input--${$attrs.modelValue ? 'checked' : 'unchecked'}`"
       :checked="$attrs"
-      @click="toggleLabel"
+      @click="update"
     />
-    <b-form-input v-else :disabled="disabled" v-bind="$attrs" :type="type" />
+    <b-form-input v-else :disabled="disabled" v-bind="$attrs" :type="type" @input="update" />
     <span>
       <slot></slot>
     </span>
@@ -49,8 +49,8 @@ export default defineComponent({
     },
   },
   methods: {
-    toggleLabel(e) {
-      this.$emit('update:modelValue', e.target.checked)
+    update(e) {
+      this.$emit('update:modelValue', this.type === 'checkbox' ? e.target.checked : e)
     },
   },
 })
