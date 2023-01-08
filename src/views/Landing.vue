@@ -156,7 +156,7 @@ import BikeTagGames from '@/components/BikeTagGames.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 
 export default defineComponent({
-  name: 'HomeView',
+  name: 'LandingView',
   components: {
     BikeTagBlurb,
     BikeTagGames,

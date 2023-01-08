@@ -75,8 +75,9 @@ export default defineComponent({
     this.$store.dispatch('setDataInitialized')
     const game = await this.$store.dispatch('setGame')
     initResults.push(await this.$store.dispatch('setAllGames'))
+    const gameIsSet = game?.name?.length !== 0
 
-    if (game?.name?.length && this.$router.currentRoute.value.name !== 'landing') {
+    if (gameIsSet && this.$router.currentRoute.value.name !== 'landing') {
       this.gameIsSet = true
 
       const checkAuth = () => {
@@ -120,7 +121,7 @@ export default defineComponent({
       initResults.push(await this.$store.dispatch('setLeaderboard'))
 
       this.checkForNewBikeTagPost()
-    } else if (!game) {
+    } else if (!gameIsSet) {
       this.$router.push('/landing')
     }
     debug(`view::data-init`)
