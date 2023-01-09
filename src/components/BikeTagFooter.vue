@@ -1,19 +1,21 @@
 <template>
   <div :class="`${variant} button-group`">
-    <div v-if="variant === 'current'" @click="showHint">
+    <div v-if="variant === 'current'">
       <!-- Left Button -->
       <bike-tag-button class="button-group__left" :text="$t('menu.map')" @click="goMapPage" />
       <!-- Middle Button -->
       <bike-tag-button
         id="hint"
+        ref="hint"
         class="button-group__middle"
         :text="$t('menu.hint')"
         variant="bold"
+        @click="showHint"
       />
       <b-popover hide-header target="hint" triggers="click" placement="top">
         <img :src="hintIcon" class="popover__hint-icon" />
-        <p id="hint-text" class="popover__hint-text" />
-        <img :src="closeRounded" class="popover__close" @click="closePopover" />
+        <p ref="mysteryHint" class="popover__hint-text"></p>
+        <img :src="closeRounded" class="popover__close"  @click="closePopover"/>
       </b-popover>
       <!-- Right Button -->
       <bike-tag-button
@@ -106,6 +108,7 @@ export default defineComponent({
       },
     },
   },
+  refs: ['mysteryHint', 'hint'],
   emits: ['next', 'previous'],
   data() {
     return {
@@ -189,36 +192,41 @@ export default defineComponent({
     randomCharacter() {
       return this.characters[this.getRandomInteger(0, this.characters.length - 1)]
     },
-    async showHint() {
-      const popover = document.querySelector('.popover')
-      if (popover) {
-        popover.classList.add('popover__wrapper')
-        const mysteryHint = document.querySelector('#hint-text')
-        const hint = this.getCurrentHint
-        mysteryHint.innerText = ''
-        window.scrollBy({ top: 1 })
-        for (let i of hint) {
-          let j = 0
-          if (document.querySelector('.popover__wrapper')) {
-            while (j < this.iterations) {
-              mysteryHint.innerText = `${mysteryHint.innerText}${this.randomCharacter()}`
-              await this.sleep(this.timeout)
-              mysteryHint.innerText = mysteryHint.innerText.slice(
-                0,
-                mysteryHint.innerText.length - 1
-              )
-              j++
+    showHint() {
+      setTimeout(async () => {
+        const popover = document.querySelector('.popover')
+        if (popover) {
+          popover.classList.add('popover__wrapper')
+          const hint = this.getCurrentHint
+          this.$refs.mysteryHint.innerText = ''
+          window.scrollBy({ top: 1 })
+          for (let i of hint) {
+            let j = 0
+            if (document.querySelector('.popover__wrapper')) {
+              while (j < this.iterations) {
+                this.$refs.mysteryHint.innerText = `${
+                  this.$refs.mysteryHint.innerText
+                }${this.randomCharacter()}`
+                await this.sleep(this.timeout)
+                this.$refs.mysteryHint.innerText = this.$refs.mysteryHint.innerText.slice(
+                  0,
+                  this.$refs.mysteryHint.innerText.length - 1
+                )
+                j++
+              }
+            } else {
+              this.$refs.mysteryHint.innerText = ''
+              break
             }
-          } else {
-            mysteryHint.innerText = ''
-            break
+            this.$refs.mysteryHint.innerText = `${this.$refs.mysteryHint.innerText}${i}`
           }
-          mysteryHint.innerText = `${mysteryHint.innerText}${i}`
         }
-      }
+      }, 100)
     },
     closePopover() {
       document.getElementById('hint').click()
+      // console.log(this.$refs.hint)
+      // this.$refs.hint.click()
     },
   },
 })
