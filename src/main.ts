@@ -2,6 +2,7 @@ import App from './App.vue'
 import { createApp } from 'vue'
 import router from './router'
 import { store } from './store'
+// import { pinia } from './store/pinia'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import mitt from 'mitt'
 import { Auth0Plugin } from './auth'
@@ -51,6 +52,7 @@ class BikeTagApp {
   }
   router() {
     this.app.use(router).use(store)
+    // this.app.use(router).use(pinia)
   }
   authentication() {
     if (process.env.A_DOMAIN?.length) {

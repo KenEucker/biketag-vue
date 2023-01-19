@@ -35,6 +35,7 @@
     "mitt": "^3.0.0",
     "netlify-identity-widget": "^1.9.2",
     "nodemailer": "^6.7.2",
+    "pinia": "^2.0.28",
     "qs": "^6.10.3",
     "register-service-worker": "^1.7.2",
     "swiper": "^8.0.3",
