@@ -26,9 +26,9 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-// import { useStore } from '@/store/pinia.ts'
-// import { storeToRefs } from 'pinia'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
 import ServiceWorker from '@/components/ServiceWorker.vue'
 import { debug } from './common/utils'
@@ -47,47 +47,47 @@ export default defineComponent({
     }
   },
   computed: {
-    // store() {
-    //   return useStore()
-    // },
-    // getProfile() {
-    //   const { getProfile } = storeToRefs(this.store)
+    store() {
+      return useStore()
+    },
+    getProfile() {
+      const { getProfile } = storeToRefs(this.store)
 
-    //   return getProfile
-    // },
-    // getMostRecentlyViewedTagnumber() {
-    //   const { getMostRecentlyViewedTagnumber } = storeToRefs(this.store)
+      return getProfile
+    },
+    getMostRecentlyViewedTagnumber() {
+      const { getMostRecentlyViewedTagnumber } = storeToRefs(this.store)
 
-    //   return getMostRecentlyViewedTagnumber
-    // },
-    // getCurrentBikeTag() {
-    //   const { getCurrentBikeTag } = storeToRefs(this.store)
+      return getMostRecentlyViewedTagnumber
+    },
+    getCurrentBikeTag() {
+      const { getCurrentBikeTag } = storeToRefs(this.store)
 
-    //   return getCurrentBikeTag
-    // },
-    // getGameName() {
-    //   const { getGameName } = storeToRefs(this.store)
+      return getCurrentBikeTag
+    },
+    getGameName() {
+      const { getGameName } = storeToRefs(this.store)
 
-    //   return getGameName
-    // },
-    // getGame() {
-    //   const { getGame } = storeToRefs(this.store)
+      return getGameName
+    },
+    getGame() {
+      const { getGame } = storeToRefs(this.store)
 
-    //   return getGame
-    // },
-    // getLogoUrl() {
-    //   const { getLogoUrl } = storeToRefs(this.store)
+      return getGame
+    },
+    getLogoUrl() {
+      const { getLogoUrl } = storeToRefs(this.store)
 
-    //   return getLogoUrl
-    // },
-    ...mapGetters([
-      'getProfile',
-      'getMostRecentlyViewedTagnumber',
-      'getCurrentBikeTag',
-      'getGameName',
-      'getGame',
-      'getLogoUrl',
-    ]),
+      return getLogoUrl
+    },
+    // ...mapGetters([
+    //   'getProfile',
+    //   'getMostRecentlyViewedTagnumber',
+    //   'getCurrentBikeTag',
+    //   'getGameName',
+    //   'getGame',
+    //   'getLogoUrl',
+    // ]),
     isNotLanding() {
       return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
     },
@@ -95,7 +95,7 @@ export default defineComponent({
       return this.$router.currentRoute.value.name === 'About' ? 'white-bck' : ''
     },
     logo() {
-      return this.getLogoUrl('m')
+      return this.getLogoUrl()('m')
     },
     title() {
       return `${this.isNotLanding ? this.getGameName : this.$t('The Game Of')} BikeTag!`
