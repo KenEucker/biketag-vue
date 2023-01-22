@@ -28,7 +28,9 @@
 <script>
 import { defineComponent } from 'vue'
 // watchEffect, onMounted } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
@@ -65,14 +67,47 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters([
-      'getFormStep',
-      'getPlayerTag',
-      'getCurrentBikeTag',
-      'getGameName',
-      'getQueuedTags',
-      'getPlayerId',
-    ]),
+    store() {
+      return useStore()
+    },
+    getFormStep() {
+      const { getFormStep } = storeToRefs(this.store)
+
+      return getFormStep
+    },
+    getPlayerTag() {
+      const { getPlayerTag } = storeToRefs(this.store)
+
+      return getPlayerTag
+    },
+    getCurrentBikeTag() {
+      const { getCurrentBikeTag } = storeToRefs(this.store)
+
+      return getCurrentBikeTag
+    },
+    getGameName() {
+      const { getGameName } = storeToRefs(this.store)
+
+      return getGameName
+    },
+    getQueuedTags() {
+      const { getQueuedTags } = storeToRefs(this.store)
+
+      return getQueuedTags
+    },
+    getPlayerId() {
+      const { getPlayerId } = storeToRefs(this.store)
+
+      return getPlayerId
+    },
+    // ...mapGetters([
+    //   'getFormStep',
+    //   'getPlayerTag',
+    //   'getCurrentBikeTag',
+    //   'getGameName',
+    //   'getQueuedTags',
+    //   'getPlayerId',
+    // ]),
   },
   async mounted() {
     this.uploadInProgress = false

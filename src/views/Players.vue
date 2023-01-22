@@ -32,7 +32,9 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import Player from '@/components/PlayerBicon.vue'
 
 export default defineComponent({
@@ -49,7 +51,15 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getPlayers']),
+    store() {
+      return useStore()
+    },
+    getPlayers() {
+      const { getPlayers } = storeToRefs(this.store)
+
+      return getPlayers
+    },
+    // ...mapGetters(['getPlayers']),
     playersForList() {
       return this.getPlayers.slice(
         (this.currentPage - 1) * this.perPage,

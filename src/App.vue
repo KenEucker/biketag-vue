@@ -18,170 +18,111 @@
     </template>
     <service-worker />
     <router-view />
-    <!-- <template v-if="isNotLanding">
-      <bike-tag-menu variant="bottom" />
-      <div class="spacer-bottom"></div>
-    </template> -->
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
-import BikeTagMenu from '@/components/BikeTagMenu.vue'
-import ServiceWorker from '@/components/ServiceWorker.vue'
+import { ref, computed } from 'vue'
+import { useStore } from '@/store/index.ts'
 import { debug } from './common/utils'
 import { Head } from '@vueuse/head'
 
-export default defineComponent({
+export default {
   name: 'App',
   components: {
-    ServiceWorker,
-    BikeTagMenu,
     Head,
   },
-  data() {
-    return {
-      gameIsSet: false,
-    }
-  },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getProfile() {
-      const { getProfile } = storeToRefs(this.store)
+  setup() {
+    // data
+    let gameIsSet = ref(false)
+    const store = useStore()
 
-      return getProfile
-    },
-    getMostRecentlyViewedTagnumber() {
-      const { getMostRecentlyViewedTagnumber } = storeToRefs(this.store)
+    // computed
+    // eslint-disable-next-line prettier/prettier
+    const isNotLanding = computed(() => gameIsSet.value && this.$router.currentRoute.value.name != 'Landing')
+    // eslint-disable-next-line prettier/prettier
+    const isWhiteBackground = computed(() => this.$router.currentRoute.value.name === 'About' ? 'white-bck' : '')
+    const logo = computed(() => store.getLogoUrl('m'))
+    // eslint-disable-next-line prettier/prettier
+    const title = computed(() => `${isNotLanding.value ? store.getGameName : this.$t('The Game Of')} BikeTag!`)
+    const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
-      return getMostRecentlyViewedTagnumber
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    getGameName() {
-      const { getGameName } = storeToRefs(this.store)
-
-      return getGameName
-    },
-    getGame() {
-      const { getGame } = storeToRefs(this.store)
-
-      return getGame
-    },
-    getLogoUrl() {
-      const { getLogoUrl } = storeToRefs(this.store)
-
-      return getLogoUrl
-    },
-    // ...mapGetters([
-    //   'getProfile',
-    //   'getMostRecentlyViewedTagnumber',
-    //   'getCurrentBikeTag',
-    //   'getGameName',
-    //   'getGame',
-    //   'getLogoUrl',
-    // ]),
-    isNotLanding() {
-      return this.gameIsSet && this.$router.currentRoute.value.name != 'Landing'
-    },
-    isWhiteBackground() {
-      return this.$router.currentRoute.value.name === 'About' ? 'white-bck' : ''
-    },
-    logo() {
-      return this.getLogoUrl()('m')
-    },
-    title() {
-      return `${this.isNotLanding ? this.getGameName : this.$t('The Game Of')} BikeTag!`
-    },
-    description() {
-      return `The BikeTag game in ${this.getGame?.region?.description}`
-    },
-  },
-  async created() {
-    const initResults = []
-    /// Set it first thing
-    this.$store.dispatch('setDataInitialized')
-    const game = await this.$store.dispatch('setGame')
-    initResults.push(await this.$store.dispatch('setAllGames'))
-    const gameIsSet = game?.name?.length !== 0
-
-    if (gameIsSet && this.$router.currentRoute.value.name !== 'landing') {
-      this.gameIsSet = true
-
-      const checkAuth = () => {
-        if (this.$auth?.isAuthenticated) {
-          if (!this.getProfile?.nonce?.length) {
-            this.$auth.getIdTokenClaims().then((claims) => {
-              if (claims) {
-                const token = claims.__raw
-                this.$store.dispatch('setProfile', { ...this.$auth.user, token })
-              } else {
-                debug("what's this? no speaka da mda5hash, brah?")
-              }
-            })
-          }
-          return true
-        }
-        return false
-      }
-
-      setTimeout(() => {
-        if (!checkAuth()) {
-          setTimeout(() => checkAuth, 1000)
-        }
-      }, 1000)
-
-      setTimeout(
-        this.$nextTick(() => {
-          if (!game) {
-            this.$router.push('/landing')
-            this.gameIsSet = false
-            return
-          }
-        }),
-        100
-      )
-
-      initResults.push(await this.$store.dispatch('setTags'))
-      initResults.push(await this.$store.dispatch('setCurrentBikeTag'))
-      initResults.push(await this.$store.dispatch('setQueuedTags'))
-      initResults.push(await this.$store.dispatch('setPlayers'))
-      initResults.push(await this.$store.dispatch('setLeaderboard'))
-
-      this.checkForNewBikeTagPost()
-    } else if (!gameIsSet) {
-      this.$router.push('/landing')
-    }
-    debug(`view::data-init`)
-  },
-  methods: {
-    gameName() {
-      return this.getGameName.replace(/(\w)(\w*)/g, function (g0, g1, g2) {
-        return g1.toUpperCase() + g2.toLowerCase()
-      })
-    },
-    checkForNewBikeTagPost() {
+    // methods
+    function checkForNewBikeTagPost() {
       if (
-        this.getCurrentBikeTag?.tagnumber > this.getMostRecentlyViewedTagnumber &&
-        this.getMostRecentlyViewedTagnumber !== 0
+        store.getCurrentBikeTag?.tagnumber > store.getMostRecentlyViewedTagnumber &&
+        store.getMostRecentlyViewedTagnumber !== 0
       ) {
         debug('ui::new biketag posted!!')
         this.$toast.open({
-          message: `Round #${this.getCurrentBikeTag.tagnumber} of BikeTag ${this.getGameName} has been posted!`,
+          message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName} has been posted!`,
           type: 'default',
           position: 'top',
         })
       }
-    },
+    }
+    async function created() {
+      const initResults = []
+      /// Set it first thing
+      store.SET_DATA_INITIALIZED()
+      const game = await store.setGame()
+      initResults.push(await store.setAllGames())
+      const _gameIsSet = game?.name?.length !== 0
+
+      if (_gameIsSet && this.$router.currentRoute.value.name !== 'landing') {
+        gameIsSet = true
+
+        const checkAuth = () => {
+          if (this.$auth?.isAuthenticated) {
+            if (!this.getProfile?.nonce?.length) {
+              this.$auth.getIdTokenClaims().then((claims) => {
+                if (claims) {
+                  const token = claims.__raw
+                  store.setProfile({ ...this.$auth.user, token })
+                } else {
+                  debug("what's this? no speaka da mda5hash, brah?")
+                }
+              })
+            }
+            return true
+          }
+          return false
+        }
+
+        setTimeout(() => {
+          if (!checkAuth()) {
+            setTimeout(() => checkAuth, 1000)
+          }
+        }, 1000)
+
+        setTimeout(
+          this.$nextTick(() => {
+            if (!game) {
+              this.$router.push('/landing')
+              gameIsSet = false
+              return
+            }
+          }),
+          100
+        )
+
+        initResults.push(await store.setTags())
+        initResults.push(await store.setCurrentBikeTag())
+        initResults.push(await store.setQueuedTags())
+        initResults.push(await store.setPlayers())
+        initResults.push(await store.setLeaderboard())
+
+        checkForNewBikeTagPost()
+      } else if (!_gameIsSet) {
+        this.$router.push('/landing')
+      }
+      debug(`view::data-init`)
+    }
+
+    created()
+
+    return { gameIsSet, isWhiteBackground, logo, title, description }
   },
-})
+}
 </script>
 <style lang="scss">
 @import './assets/styles/style';

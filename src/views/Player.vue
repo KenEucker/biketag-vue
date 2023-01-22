@@ -67,7 +67,9 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
 import Player from '@/components/PlayerBicon.vue'
@@ -115,8 +117,16 @@ export default defineComponent({
     }
   },
   computed: {
+    store() {
+      return useStore()
+    },
+    getPlayers() {
+      const { getPlayers } = storeToRefs(this.store)
+
+      return getPlayers
+    },
     // mix the getters into computed with object spread operator
-    ...mapGetters(['getPlayers']),
+    // ...mapGetters(['getPlayers']),
     player() {
       const playerList = this.getPlayers?.filter((player) => {
         const playerName = this.playerName()

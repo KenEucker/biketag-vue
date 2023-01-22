@@ -142,7 +142,9 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import Loading from 'vue-loading-overlay'
@@ -165,7 +167,8 @@ export default defineComponent({
   },
   data() {
     return {
-      profile: this.getProfile,
+      // profile: this.getProfile,
+      profile: null,
       socialNetworkIcons: [
         ['reddit', Reddit],
         ['instagram', Instagram],
@@ -178,7 +181,25 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getPlayers', 'getProfile', 'isBikeTagAmbassador']),
+    store() {
+      return useStore()
+    },
+    getPlayers() {
+      const { getPlayers } = storeToRefs(this.store)
+
+      return getPlayers
+    },
+    getProfile() {
+      const { getProfile } = storeToRefs(this.store)
+
+      return getProfile
+    },
+    isBikeTagAmbassador() {
+      const { isBikeTagAmbassador } = storeToRefs(this.store)
+
+      return isBikeTagAmbassador
+    },
+    // ...mapGetters(['getPlayers', 'getProfile', 'isBikeTagAmbassador']),
     player() {
       const playerList = this.getPlayers?.filter((player) => {
         return this.$auth.user.name === decodeURIComponent(encodeURIComponent(player.name))
@@ -191,6 +212,9 @@ export default defineComponent({
     },
   },
   mounted() {
+    const { getProfile } = this.store
+    this.profile = getProfile
+
     this.$nextTick(() => {
       this.profile = this.getProfile
       this.profile.user_metadata = this.profile.user_metadata ?? { social: {} }

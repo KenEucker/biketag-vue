@@ -57,7 +57,9 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import { debug } from '@/common/utils'
 
@@ -68,7 +70,20 @@ export default defineComponent({
   },
   emits: ['submit'],
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getPlayerTag']),
+    store() {
+      return useStore()
+    },
+    getCurrentBikeTag() {
+      const { getCurrentBikeTag } = storeToRefs(this.store)
+
+      return getCurrentBikeTag
+    },
+    getPlayerTag() {
+      const { getPlayerTag } = storeToRefs(this.store)
+
+      return getPlayerTag
+    },
+    // ...mapGetters(['getCurrentBikeTag', 'getPlayerTag']),
   },
   mounted() {
     if (!this.getPlayerTag?.discussionUrl?.length) {

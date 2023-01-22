@@ -60,7 +60,9 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import BikeTag from '@/components/BikeTag.vue'
@@ -92,14 +94,47 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters([
-      'getCurrentBikeTag',
-      'getTags',
-      'getGame',
-      'getGameName',
-      'getPlayers',
-      'getImgurImageSized',
-    ]),
+    store() {
+      return useStore()
+    },
+    getCurrentBikeTag() {
+      const { getCurrentBikeTag } = storeToRefs(this.store)
+
+      return getCurrentBikeTag
+    },
+    getTags() {
+      const { getTags } = storeToRefs(this.store)
+
+      return getTags
+    },
+    getGame() {
+      const { getGame } = storeToRefs(this.store)
+
+      return getGame
+    },
+    getGameName() {
+      const { getGameName } = storeToRefs(this.store)
+
+      return getGameName
+    },
+    getPlayers() {
+      const { getPlayers } = storeToRefs(this.store)
+
+      return getPlayers
+    },
+    getImgurImageSized() {
+      const { getImgurImageSized } = storeToRefs(this.store)
+
+      return getImgurImageSized
+    },
+    // ...mapGetters([
+    //   'getCurrentBikeTag',
+    //   'getTags',
+    //   'getGame',
+    //   'getGameName',
+    //   'getPlayers',
+    //   'getImgurImageSized',
+    // ]),
     tag() {
       if (this.tagnumber !== 0) {
         const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)

@@ -9,7 +9,9 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import Player from '@/components/PlayerBicon.vue'
 
 export default defineComponent({
@@ -18,7 +20,15 @@ export default defineComponent({
     Player,
   },
   computed: {
-    ...mapGetters(['getLeaderboard']),
+    store() {
+      return useStore()
+    },
+    getLeaderboard() {
+      const { getLeaderboard } = storeToRefs(this.store)
+
+      return getLeaderboard
+    },
+    // ...mapGetters(['getLeaderboard']),
     playersList() {
       return this.getLeaderboard
     },

@@ -45,7 +45,9 @@
 
 <script>
 import { defineComponent, ref } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
@@ -79,7 +81,30 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getQueuedTags', 'getPlayerTag', 'getCurrentBikeTag', 'getQueuedTagState']),
+    store() {
+      return useStore()
+    },
+    getQueuedTags() {
+      const { getQueuedTags } = storeToRefs(this.store)
+
+      return getQueuedTags
+    },
+    getPlayerTag() {
+      const { getPlayerTag } = storeToRefs(this.store)
+
+      return getPlayerTag
+    },
+    getCurrentBikeTag() {
+      const { getCurrentBikeTag } = storeToRefs(this.store)
+
+      return getCurrentBikeTag
+    },
+    getQueuedTagState() {
+      const { getQueuedTagState } = storeToRefs(this.store)
+
+      return getQueuedTagState
+    },
+    // ...mapGetters(['getQueuedTags', 'getPlayerTag', 'getCurrentBikeTag', 'getQueuedTagState']),
     goNextQueueStepButtonText() {
       return `${
         this.getPlayerTag?.mysteryImageUrl?.length > 0

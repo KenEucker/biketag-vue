@@ -94,7 +94,9 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 // Import Swiper styles
 import 'swiper/css/bundle'
 
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import { debug } from '@/common/utils'
 
 // install Swiper components
@@ -116,7 +118,25 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getGameSlug', 'getEasterEgg', 'getGame']),
+    store() {
+      return useStore()
+    },
+    getGameSlug() {
+      const { getGameSlug } = storeToRefs(this.store)
+
+      return getGameSlug
+    },
+    getEasterEgg() {
+      const { getEasterEgg } = storeToRefs(this.store)
+
+      return getEasterEgg
+    },
+    getGame() {
+      const { getGame } = storeToRefs(this.store)
+
+      return getGame
+    },
+    // ...mapGetters(['getGameSlug', 'getEasterEgg', 'getGame']),
   },
   methods: {
     playEasterEgg() {

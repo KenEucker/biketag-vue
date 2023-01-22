@@ -27,7 +27,9 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 
 export default defineComponent({
   name: 'PlayerBicon',
@@ -52,7 +54,15 @@ export default defineComponent({
     },
   },
   computed: {
-    ...mapGetters(['getImgurImageSized']),
+    store() {
+      return useStore()
+    },
+    getImgurImageSized() {
+      const { getImgurImageSized } = storeToRefs(this.store)
+
+      return getImgurImageSized
+    },
+    // ...mapGetters(['getImgurImageSized']),
     _playerName() {
       if (this.playerName) {
         return this.playerName

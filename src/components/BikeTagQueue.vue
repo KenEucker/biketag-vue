@@ -73,7 +73,9 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import { BiketagFormSteps } from '@/common/types'
 
 export default defineComponent({
@@ -97,13 +99,41 @@ export default defineComponent({
     },
   },
   computed: {
-    ...mapGetters([
-      'getQueuedTags',
-      'getCurrentBikeTag',
-      'getPlayerTag',
-      'getImgurImageSized',
-      'getQueuedTagState',
-    ]),
+    store() {
+      return useStore()
+    },
+    getQueuedTags() {
+      const { getQueuedTags } = storeToRefs(this.store)
+
+      return getQueuedTags
+    },
+    getCurrentBikeTag() {
+      const { getCurrentBikeTag } = storeToRefs(this.store)
+
+      return getCurrentBikeTag
+    },
+    getPlayerTag() {
+      const { getPlayerTag } = storeToRefs(this.store)
+
+      return getPlayerTag
+    },
+    getImgurImageSized() {
+      const { getImgurImageSized } = storeToRefs(this.store)
+
+      return getImgurImageSized
+    },
+    getQueuedTagState() {
+      const { getQueuedTagState } = storeToRefs(this.store)
+
+      return getQueuedTagState
+    },
+    // ...mapGetters([
+    //   'getQueuedTags',
+    //   'getCurrentBikeTag',
+    //   'getPlayerTag',
+    //   'getImgurImageSized',
+    //   'getQueuedTagState',
+    // ]),
   },
   methods: {
     canReset() {

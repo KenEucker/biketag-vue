@@ -41,7 +41,9 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
@@ -63,7 +65,15 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getTags']),
+    store() {
+      return useStore()
+    },
+    getTags() {
+      const { getTags } = storeToRefs(this.store)
+
+      return getTags
+    },
+    // ...mapGetters(['getTags']),
     tagsList() {
       return this.getTags.slice(
         (this.currentPage - 1) * this.perPage + (this.currentPage === 1 ? 1 : 0), // exclude current mystery tag

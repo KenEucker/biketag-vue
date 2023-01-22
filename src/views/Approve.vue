@@ -32,7 +32,9 @@
 <script>
 import { defineComponent } from 'vue'
 // watchEffect, onMounted } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
@@ -69,13 +71,41 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters([
-      'getFormStep',
-      'getPlayerTag',
-      'getCurrentBikeTag',
-      'getGameName',
-      'getAmbassadorId',
-    ]),
+    store() {
+      return useStore()
+    },
+    getFormStep() {
+      const { getFormStep } = storeToRefs(this.store)
+
+      return getFormStep
+    },
+    getPlayerTag() {
+      const { getPlayerTag } = storeToRefs(this.store)
+
+      return getPlayerTag
+    },
+    getCurrentBikeTag() {
+      const { getCurrentBikeTag } = storeToRefs(this.store)
+
+      return getCurrentBikeTag
+    },
+    getGameName() {
+      const { getGameName } = storeToRefs(this.store)
+
+      return getGameName
+    },
+    getAmbassadorId() {
+      const { getAmbassadorId } = storeToRefs(this.store)
+
+      return getAmbassadorId
+    },
+    // ...mapGetters([
+    //   'getFormStep',
+    //   'getPlayerTag',
+    //   'getCurrentBikeTag',
+    //   'getGameName',
+    //   'getAmbassadorId',
+    // ]),
   },
   async mounted() {
     await this.$store.dispatch('setQueuedTags', true)

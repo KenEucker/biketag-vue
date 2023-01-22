@@ -9,7 +9,9 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTag from '@/assets/images/BikeTag.svg'
 import { debug } from '@/common/utils'
@@ -25,7 +27,15 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['isBikeTagAmbassador']),
+    store() {
+      return useStore()
+    },
+    isBikeTagAmbassador() {
+      const { isBikeTagAmbassador } = storeToRefs(this.store)
+
+      return isBikeTagAmbassador
+    },
+    // ...mapGetters(['isBikeTagAmbassador']),
   },
   methods: {
     login() {

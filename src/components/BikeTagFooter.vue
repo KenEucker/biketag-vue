@@ -15,7 +15,7 @@
       <b-popover hide-header target="hint" triggers="click" placement="top">
         <img :src="hintIcon" class="popover__hint-icon" />
         <p ref="mysteryHint" class="popover__hint-text"></p>
-        <img :src="closeRounded" class="popover__close"  @click="closePopover"/>
+        <img :src="closeRounded" class="popover__close" @click="closePopover" />
       </b-popover>
       <!-- Right Button -->
       <bike-tag-button
@@ -84,7 +84,9 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagCamera from '@/components/BikeTagCamera.vue'
 import HintIcon from '@/assets/images/hint-icon.svg'
@@ -158,7 +160,25 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getQueuedTags']),
+    store() {
+      return useStore()
+    },
+    getCurrentBikeTag() {
+      const { getCurrentBikeTag } = storeToRefs(this.store)
+
+      return getCurrentBikeTag
+    },
+    getCurrentHint() {
+      const { getCurrentHint } = storeToRefs(this.store)
+
+      return getCurrentHint
+    },
+    getQueuedTags() {
+      const { getQueuedTags } = storeToRefs(this.store)
+
+      return getQueuedTags
+    },
+    // ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getQueuedTags']),
   },
   beforeUnmount() {
     document.querySelector('.popover')?.remove()

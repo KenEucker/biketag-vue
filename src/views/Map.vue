@@ -16,7 +16,9 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
+import { useStore } from '@/store/pinia.ts'
+import { storeToRefs } from 'pinia'
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import StyledHr from '@/assets/images/hr.svg'
@@ -37,7 +39,25 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters(['getAllGames', 'getLogoUrl', 'getGameName']),
+    store() {
+      return useStore()
+    },
+    getAllGames() {
+      const { getAllGames } = storeToRefs(this.store)
+
+      return getAllGames
+    },
+    getLogoUrl() {
+      const { getLogoUrl } = storeToRefs(this.store)
+
+      return getLogoUrl
+    },
+    getGameName() {
+      const { getGameName } = storeToRefs(this.store)
+
+      return getGameName
+    },
+    // ...mapGetters(['getAllGames', 'getLogoUrl', 'getGameName']),
   },
   methods: {
     goBikeTagsPage() {
