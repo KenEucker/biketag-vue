@@ -1,6 +1,4 @@
-import { InjectionKey } from 'vue'
 import { createPinia, defineStore } from 'pinia'
-import { Store } from 'vuex'
 import BikeTagClient from 'biketag'
 import { Game, Tag, Player } from 'biketag/lib/common/schema'
 import {
@@ -14,16 +12,11 @@ import {
   getApiUrl,
   setProfileCookie,
   getBikeTagHash,
-  // setQueuedTagInCookie,
-  // getQueuedTagFromCookie,
 } from '@/common/utils'
 import { BiketagFormSteps, State } from '@/common/types'
 import { setNPAuthorization } from '@/common/utils'
 import { debug } from '../common/utils'
 
-// define injection key
-/// TODO: move these initializers to a method for FE use only
-export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(window)
 const profile = getProfileFromCookie()
 const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
@@ -56,7 +49,7 @@ let client = new BikeTagClient(options)
 
 export const store = createPinia()
 export const useStore = defineStore('store', {
-  state: () => ({
+  state: (): State => ({
     dataInitialized: false,
     gameName,
     game: {} as Game,

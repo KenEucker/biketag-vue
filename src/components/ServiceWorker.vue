@@ -26,9 +26,8 @@ const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
     }
   },
 })
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 
 export default defineComponent({
   name: 'ServiceWorker',
@@ -46,25 +45,7 @@ export default defineComponent({
     }
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getGameSlug() {
-      const { getGameSlug } = storeToRefs(this.store)
-
-      return getGameSlug
-    },
-    getGameTitle() {
-      const { getGameTitle } = storeToRefs(this.store)
-
-      return getGameTitle
-    },
-    getLogoUrl() {
-      const { getLogoUrl } = storeToRefs(this.store)
-
-      return getLogoUrl
-    },
-    // ...mapGetters(['getGameSlug', 'getGameTitle', 'getLogoUrl']),
+    ...mapState(useStore, ['getGameSlug', 'getGameTitle', 'getLogoUrl']),
   },
   async created() {
     await this.$store.dispatch('setGame')

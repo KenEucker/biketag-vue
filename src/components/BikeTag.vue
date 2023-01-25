@@ -76,9 +76,8 @@
 import { defineComponent } from 'vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 
 export default defineComponent({
   name: 'BikeTag',
@@ -167,15 +166,7 @@ export default defineComponent({
     }
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getImgurImageSized() {
-      const { getImgurImageSized } = storeToRefs(this.store)
-
-      return getImgurImageSized
-    },
-    // ...mapGetters(['getImgurImageSized']),
+    ...mapState(useStore, ['getImgurImageSized']),
     _tagnumber() {
       return this.tagnumber ? this.tagnumber : this.tag?.tagnumber
     },

@@ -18,17 +18,25 @@
     </template>
     <service-worker />
     <router-view />
+    <!-- <template v-if="isNotLanding">
+      <bike-tag-menu variant="bottom" />
+      <div class="spacer-bottom"></div>
+    </template> -->
   </div>
 </template>
 <script>
 import { ref, computed } from 'vue'
 import { useStore } from '@/store/index.ts'
+import BikeTagMenu from '@/components/BikeTagMenu.vue'
+import ServiceWorker from '@/components/ServiceWorker.vue'
 import { debug } from './common/utils'
 import { Head } from '@vueuse/head'
 
 export default {
   name: 'App',
   components: {
+    ServiceWorker,
+    BikeTagMenu,
     Head,
   },
   setup() {
@@ -38,12 +46,12 @@ export default {
 
     // computed
     // eslint-disable-next-line prettier/prettier
-    const isNotLanding = computed(() => gameIsSet.value && this.$router.currentRoute.value.name != 'Landing')
+    const isNotLanding = computed(function() { return gameIsSet.value && this.$router.currentRoute.value.name != 'Landing'})
     // eslint-disable-next-line prettier/prettier
-    const isWhiteBackground = computed(() => this.$router.currentRoute.value.name === 'About' ? 'white-bck' : '')
+    const isWhiteBackground = computed(function() { return this.$router.currentRoute.value.name === 'About' ? 'white-bck' : ''})
     const logo = computed(() => store.getLogoUrl('m'))
     // eslint-disable-next-line prettier/prettier
-    const title = computed(() => `${isNotLanding.value ? store.getGameName : this.$t('The Game Of')} BikeTag!`)
+    const title = computed(function() { return `${isNotLanding.value ? store.getGameName : this.$t('The Game Of')} BikeTag!`})
     const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
     // methods
@@ -60,6 +68,8 @@ export default {
         })
       }
     }
+
+    // created
     async function created() {
       const initResults = []
       /// Set it first thing
@@ -117,7 +127,6 @@ export default {
       }
       debug(`view::data-init`)
     }
-
     created()
 
     return { gameIsSet, isWhiteBackground, logo, title, description }

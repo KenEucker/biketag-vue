@@ -30,18 +30,15 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { ref, computed } from 'vue'
 // watchEffect, onMounted } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
-import { BiketagFormSteps } from '@/common/types'
+import { useStore } from '@/store/index.ts'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 import QueueApprove from '@/components/QueueApprove.vue'
 import { debug } from '@/common/utils'
 
-export default defineComponent({
+export default {
   name: 'ApproveBikeTagView',
   components: {
     QueueApprove,
@@ -52,92 +49,27 @@ export default defineComponent({
       default: false,
     },
   },
-  data() {
+  setup() {
     const time = new Date()
     time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
-    const timer = useTimer(time)
-    // onMounted(() => {
-    //   watchEffect(async () => {
-    //     if (timer.isExpired.value) {
-    //       console.warn('IsExpired')
-    //     }
-    //   })
-    // })
-    return {
-      timer,
-      BiketagFormSteps,
-      uploadInProgress: false,
-      countDown: 10,
-    }
-  },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getFormStep() {
-      const { getFormStep } = storeToRefs(this.store)
+    const store = useStore()
+    const timer = ref(useTimer(time))
+    const uploadInProgress = ref(false)
+    let countDown = ref(10)
 
-      return getFormStep
-    },
-    getPlayerTag() {
-      const { getPlayerTag } = storeToRefs(this.store)
+    // computed
+    const getPlayerTag = computed(() => store.getPlayerTag)
+    const getGameName = computed(() => store.getGameName)
+    const getAmbassadorId = computed(() => store.getAmbassadorId)
 
-      return getPlayerTag
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    getGameName() {
-      const { getGameName } = storeToRefs(this.store)
-
-      return getGameName
-    },
-    getAmbassadorId() {
-      const { getAmbassadorId } = storeToRefs(this.store)
-
-      return getAmbassadorId
-    },
-    // ...mapGetters([
-    //   'getFormStep',
-    //   'getPlayerTag',
-    //   'getCurrentBikeTag',
-    //   'getGameName',
-    //   'getAmbassadorId',
-    // ]),
-  },
-  async mounted() {
-    await this.$store.dispatch('setQueuedTags', true)
-    await this.$store.dispatch('fetchCredentials')
-
-    /// Get the user credentials for BikeTag Ambassador functions
-    await setTimeout(() => {
-      if (!this.checkAuth()) {
-        setTimeout(() => this.checkAuth, 1000)
-      }
-    }, 1000)
-    this.uploadInProgress = false
-  },
-  async created() {
-    // this.countDownTimer()
-  },
-  methods: {
-    countDownTimer() {
-      if (this.countDown > 0) {
-        setTimeout(() => {
-          this.countDown -= 1
-          this.countDownTimer()
-        }, 500)
-      }
-    },
-    async checkAuth() {
+    // methods
+    async function checkAuth() {
       if (this.$auth?.isAuthenticated) {
-        if (!this.getProfile?.nonce?.length) {
+        if (!store.getProfile?.nonce?.length) {
           return this.$auth.getIdTokenClaims().then((claims) => {
             if (claims) {
               const token = claims.__raw
-              this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+              store.setProfile({ ...this.$auth.user, token })
               return true
             } else {
               debug('BikeTag Ambassador profile could not be authenticated')
@@ -148,8 +80,8 @@ export default defineComponent({
         return true
       }
       return false
-    },
-    async onApproveSubmit(newTagSubmission) {
+    }
+    async function onApproveSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual'
@@ -173,24 +105,24 @@ export default defineComponent({
       }
 
       this.uploadInProgress = true
-      const success = await this.$store.dispatch(storeAction, tag)
+      const success = await store.dispatch(storeAction, tag)
       this.uploadInProgress = false
 
       if (success === true) {
         /// Update the queue
-        this.$store.dispatch('setQueuedTags', true)
+        store.setQueuedTags(true)
 
-        formData.set('game', this.getGameName)
-        formData.set('tag', JSON.stringify(this.getPlayerTag))
+        formData.set('game', getGameName.value)
+        formData.set('tag', JSON.stringify(getPlayerTag.value))
         formData.set(
           'approve',
-          `${this.getGameName}-${this.getPlayerTag.tagnumber}--${this.getPlayerTag.foundPlayer}`
+          `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`
         )
 
         if (tag.foundImage) {
-          formData.set('foundImageUrl', this.getPlayerTag.foundImageUrl)
+          formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
         } else if (tag.mysteryImage) {
-          formData.set('mysteryImageUrl', this.getPlayerTag.mysteryImageUrl)
+          formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
         }
         return sendNetlifyForm(
           formAction,
@@ -201,7 +133,7 @@ export default defineComponent({
               type: 'success',
               position: 'top',
             })
-            this.$store.dispatch('setQueuedTags')
+            store.setQueuedTags()
           },
           (m) => {
             this.$toast.open({
@@ -223,9 +155,31 @@ export default defineComponent({
         })
         return sendNetlifyError(message, undefined, errorAction)
       }
-    },
+    }
+
+    return {
+      timer,
+      uploadInProgress,
+      countDown,
+      checkAuth,
+      onApproveSubmit,
+      getAmbassadorId,
+      store,
+    }
   },
-})
+  async mounted() {
+    await this.store.setQueuedTags(true)
+    await this.store.fetchCredentials()
+
+    /// Get the user credentials for BikeTag Ambassador functions
+    setTimeout(() => {
+      if (!this.checkAuth()) {
+        setTimeout(() => this.checkAuth, 1000)
+      }
+    }, 1000)
+    this.uploadInProgress = false
+  },
+}
 </script>
 <style lang="scss" scoped>
 @import '../assets/styles/style';

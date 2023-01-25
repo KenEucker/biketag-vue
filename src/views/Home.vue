@@ -59,10 +59,8 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { ref, computed, onMounted } from 'vue'
+import { useStore } from '@/store/index.ts'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import BikeTag from '@/components/BikeTag.vue'
@@ -73,7 +71,7 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
 // import useSWRV from 'swrv'
 
-export default defineComponent({
+export default {
   name: 'HomeView',
   components: {
     Loading,
@@ -84,94 +82,58 @@ export default defineComponent({
     BikeTagLabel,
     ExpandableImage,
   },
-  data() {
-    // const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
-    // console.log({ data, error })
+  setup() {
+    const tagnumber = ref(
+      this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0
+    )
+    const tagIsLoading = ref(true)
+    const store = useStore()
 
-    return {
-      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      tagIsLoading: true,
-    }
-  },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    getTags() {
-      const { getTags } = storeToRefs(this.store)
-
-      return getTags
-    },
-    getGame() {
-      const { getGame } = storeToRefs(this.store)
-
-      return getGame
-    },
-    getGameName() {
-      const { getGameName } = storeToRefs(this.store)
-
-      return getGameName
-    },
-    getPlayers() {
-      const { getPlayers } = storeToRefs(this.store)
-
-      return getPlayers
-    },
-    getImgurImageSized() {
-      const { getImgurImageSized } = storeToRefs(this.store)
-
-      return getImgurImageSized
-    },
-    // ...mapGetters([
-    //   'getCurrentBikeTag',
-    //   'getTags',
-    //   'getGame',
-    //   'getGameName',
-    //   'getPlayers',
-    //   'getImgurImageSized',
-    // ]),
-    tag() {
-      if (this.tagnumber !== 0) {
-        const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
+    // computed
+    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+    const getImgurImageSized = computed(() => store.getImgurImageSized)
+    const getTags = computed(() => store.getTags)
+    const tag = computed(() => {
+      if (tagnumber.value !== 0) {
+        const tag = getTags.value?.filter((t) => t.tagnumber === tagnumber.value)
         return tag && tag.length ? tag[0] : {}
       }
       return undefined
-    },
-  },
-  mounted() {
-    this.tagIsLoading = this.tagnumber === 0
-  },
-  methods: {
-    tagImageLoaded() {
-      this.tagIsLoading = false
-    },
-    getPlayer(playerName) {
-      const playerList =
-        this.getPlayers?.filter((player) => {
-          return decodeURIComponent(encodeURIComponent(player.name)) == playerName
-        }) ?? []
-      return playerList[0]
-    },
-    goNextSingle() {
-      this.tagnumber++
-      if (this.tagnumber === this.getCurrentBikeTag.tagnumber) {
-        this.tagnumber = 0
+    })
+
+    // methods
+    function tagImageLoaded() {
+      tagIsLoading.value = false
+    }
+    function goNextSingle() {
+      tagnumber.value++
+      if (tagnumber.value === getCurrentBikeTag.value.tagnumber) {
+        tagnumber.value = 0
       } else {
-        this.$router.push(`/${this.tagnumber}`)
+        this.$router.push(`/${tagnumber.value}`)
       }
-    },
-    goPreviousSingle() {
-      this.tagnumber = this.tagnumber > 0 ? this.tagnumber : this.getCurrentBikeTag.tagnumber
-      this.tagnumber--
-      this.$router.push(`/${this.tagnumber}`)
-    },
+    }
+    function goPreviousSingle() {
+      tagnumber.value = tagnumber.value > 0 ? tagnumber.value : getCurrentBikeTag.value.tagnumber
+      tagnumber.value--
+      this.$router.push(`/${tagnumber.value}`)
+    }
+
+    // mounted
+    onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
+
+    return {
+      tagnumber,
+      tagIsLoading,
+      getCurrentBikeTag,
+      getImgurImageSized,
+      tagImageLoaded,
+      goNextSingle,
+      goPreviousSingle,
+      tag,
+    }
   },
-})
+}
 </script>
 <style lang="scss">
 @import '../assets/styles/style';

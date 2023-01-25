@@ -10,17 +10,19 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { ref } from 'vue'
 
-export default defineComponent({
+export default {
   name: 'WorldwideView',
-  data: () => ({
-    myIframe: null,
-  }),
-  methods: {
-    onLoad(frame) {
-      this.myIframe = frame.contentWindow
-    },
+  setup() {
+    const myIframe = ref(null)
+
+    // methods
+    function onLoad(frame) {
+      myIframe.value = frame.contentWindow
+    }
+
+    return { onLoad }
   },
-})
+}
 </script>

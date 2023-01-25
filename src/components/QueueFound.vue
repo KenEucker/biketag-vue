@@ -119,9 +119,8 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
@@ -164,53 +163,15 @@ export default defineComponent({
     }
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getGameName() {
-      const { getGameName } = storeToRefs(this.store)
-
-      return getGameName
-    },
-    getQueue() {
-      const { getQueue } = storeToRefs(this.store)
-
-      return getQueue
-    },
-    getPlayerTag() {
-      const { getPlayerTag } = storeToRefs(this.store)
-
-      return getPlayerTag
-    },
-    getPlayerId() {
-      const { getPlayerId } = storeToRefs(this.store)
-
-      return getPlayerId
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    getProfile() {
-      const { getProfile } = storeToRefs(this.store)
-
-      return getProfile
-    },
-    getGame() {
-      const { getGame } = storeToRefs(this.store)
-
-      return getGame
-    },
-    // ...mapGetters([
-    //   'getGameName',
-    //   'getQueue',
-    //   'getPlayerTag',
-    //   'getPlayerId',
-    //   'getCurrentBikeTag',
-    //   'getProfile',
-    //   'getGame',
-    // ]),
+    ...mapState(useStore, [
+      'getGameName',
+      'getQueue',
+      'getPlayerTag',
+      'getPlayerId',
+      'getCurrentBikeTag',
+      'getProfile',
+      'getGame',
+    ]),
     getName() {
       return this.getProfile?.user_metadata?.name ?? this.tag?.foundPlayer ?? ''
     },

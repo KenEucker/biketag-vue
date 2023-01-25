@@ -52,9 +52,8 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import Pin from '@/assets/images/pin.svg'
 
@@ -117,30 +116,7 @@ export default defineComponent({
     return data
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getAllGames() {
-      const { getAllGames } = storeToRefs(this.store)
-
-      return getAllGames
-    },
-    getLogoUrl() {
-      const { getLogoUrl } = storeToRefs(this.store)
-
-      return getLogoUrl
-    },
-    getGame() {
-      const { getGame } = storeToRefs(this.store)
-
-      return getGame
-    },
-    getTags() {
-      const { getTags } = storeToRefs(this.store)
-
-      return getTags
-    },
-    // ...mapGetters(['getAllGames', 'getLogoUrl', 'getGame', 'getTags']),
+    ...mapState(useStore, ['getAllGames', 'getLogoUrl', 'getGame', 'getTags']),
     getMarkers() {
       return this.getAllGames
         .filter((game) => game.boundary.lat != undefined) // add gps location to all games

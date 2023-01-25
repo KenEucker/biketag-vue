@@ -141,10 +141,8 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { ref, computed, onMounted } from 'vue'
+import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import Loading from 'vue-loading-overlay'
@@ -157,7 +155,7 @@ import Discord from '@/assets/images/Discord.svg'
 import Player from '@/components/PlayerBicon.vue'
 import StyledHr from '@/assets/images/hr.svg'
 
-export default defineComponent({
+export default {
   name: 'ProfileView',
   components: {
     Loading,
@@ -165,43 +163,25 @@ export default defineComponent({
     BikeTagInput,
     Player,
   },
-  data() {
-    return {
-      // profile: this.getProfile,
-      profile: null,
-      socialNetworkIcons: [
-        ['reddit', Reddit],
-        ['instagram', Instagram],
-        ['twitter', Twitter],
-        ['imgur', Imgur],
-        ['discord', Discord],
-      ],
-      showModal: false,
-      styledHr: StyledHr,
-    }
-  },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getPlayers() {
-      const { getPlayers } = storeToRefs(this.store)
+  detup() {
+    let profile = ref(null)
+    const socialNetworkIcons = ref([
+      ['reddit', Reddit],
+      ['instagram', Instagram],
+      ['twitter', Twitter],
+      ['imgur', Imgur],
+      ['discord', Discord],
+    ])
+    const showModal = ref(false)
+    const styledHr = StyledHr
+    const store = useStore()
 
-      return getPlayers
-    },
-    getProfile() {
-      const { getProfile } = storeToRefs(this.store)
-
-      return getProfile
-    },
-    isBikeTagAmbassador() {
-      const { isBikeTagAmbassador } = storeToRefs(this.store)
-
-      return isBikeTagAmbassador
-    },
-    // ...mapGetters(['getPlayers', 'getProfile', 'isBikeTagAmbassador']),
-    player() {
-      const playerList = this.getPlayers?.filter((player) => {
+    // computed
+    const getPlayers = computed(() => store.getPlayers)
+    const getProfile = computed(() => store.getProfile)
+    const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+    const player = computed(() => {
+      const playerList = getPlayers.value?.filter((player) => {
         return this.$auth.user.name === decodeURIComponent(encodeURIComponent(player.name))
       })
       if (playerList && playerList.length > 0) {
@@ -209,58 +189,27 @@ export default defineComponent({
       }
 
       return {}
-    },
-  },
-  mounted() {
-    const { getProfile } = this.store
-    this.profile = getProfile
-
-    this.$nextTick(() => {
-      this.profile = this.getProfile
-      this.profile.user_metadata = this.profile.user_metadata ?? { social: {} }
-      this.profile.user_metadata.options = this.profile.user_metadata.options ?? {
-        skipSteps: false,
-      }
-      this.showModal =
-        this.profile?.user_metadata?.name != null && !this.profile?.user_metadata?.name.length
-      switch (this.profile.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
-        case 'reddit':
-          if (!this.profile.user_metadata.social?.reddit) {
-            this.profile.user_metadata.social.reddit = this.profile.name
-          }
-          break
-        case 'imgur':
-          if (!this.profile.user_metadata.social?.imgur) {
-            this.profile.user_metadata.social.imgur = this.profile.name
-          }
-          break
-        case 'twitter':
-          if (!this.profile.user_metadata.social?.twitter) {
-            this.profile.user_metadata.social.twitter = this.profile.name
-          }
-          break
-      }
     })
-  },
-  methods: {
-    hideModal() {
-      this.showModal = false
-    },
-    firstToUperCase(str) {
+
+    // methods
+    function hideModal() {
+      showModal.value = false
+    }
+    function firstToUperCase(str) {
       return str[0].charAt(0).toUpperCase() + str.slice(1)
-    },
-    splitCamelCase(str) {
-      return this.firstToUperCase(str).replace(/([a-z])([A-Z])/g, '$1 $2')
-    },
-    toggleShowFields(name) {
+    }
+    function splitCamelCase(str) {
+      return firstToUperCase(str).replace(/([a-z])([A-Z])/g, '$1 $2')
+    }
+    function toggleShowFields(name) {
       this.$refs[name][0].classList.toggle('hide')
-    },
-    async onSubmitName() {
-      if (this.profile.user_metadata.name.length > 0) {
-        this.profile['token'] = (await this.$auth.getIdTokenClaims()).__raw
+    }
+    async function onSubmitName() {
+      if (profile.value.user_metadata.name.length > 0) {
+        profile.value['token'] = (await this.$auth.getIdTokenClaims()).__raw
         try {
-          await this.$store.dispatch('assignName', this.profile)
-          this.profile = this.getProfile
+          await store.assignName(profile.value)
+          profile.value = getProfile.value
           this.$toast.open({
             message: 'Success',
             type: 'success',
@@ -273,15 +222,15 @@ export default defineComponent({
             position: 'top',
           })
         }
-        this.showModal = false
+        showModal.value = false
       }
-    },
-    async onSubmit() {
+    }
+    async function onSubmit() {
       const claims = await this.$auth.getIdTokenClaims()
       if (claims) {
-        this.profile['token'] = claims.__raw
+        profile.value['token'] = claims.__raw
         try {
-          await this.$store.dispatch('updateProfile', this.profile)
+          await store.updateProfile(profile.value)
           this.$toast.open({
             message: 'Success',
             type: 'success',
@@ -295,9 +244,54 @@ export default defineComponent({
           })
         }
       }
-    },
+    }
+
+    // mounted
+    onMounted(() => {
+      profile.value = getProfile.value
+
+      this.$nextTick(() => {
+        profile.value = getProfile.value
+        profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
+        profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
+          skipSteps: false,
+        }
+        showModal.value =
+          profile.value?.user_metadata?.name != null && !profile.value?.user_metadata?.name.length
+        switch (profile.value.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
+          case 'reddit':
+            if (!profile.value.user_metadata.social?.reddit) {
+              profile.value.user_metadata.social.reddit = profile.value.name
+            }
+            break
+          case 'imgur':
+            if (!profile.value.user_metadata.social?.imgur) {
+              profile.value.user_metadata.social.imgur = profile.value.name
+            }
+            break
+          case 'twitter':
+            if (!profile.value.user_metadata.social?.twitter) {
+              profile.value.user_metadata.social.twitter = profile.value.name
+            }
+            break
+        }
+      })
+    })
+
+    return {
+      profile,
+      socialNetworkIcons,
+      showModal,
+      styledHr,
+      isBikeTagAmbassador,
+      firstToUperCase,
+      splitCamelCase,
+      toggleShowFields,
+      onSubmitName,
+      onSubmit,
+    }
   },
-})
+}
 </script>
 <style lang="scss">
 .flx-columns {

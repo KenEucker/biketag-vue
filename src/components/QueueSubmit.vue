@@ -109,9 +109,8 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 import Markdown from 'vue3-markdown-it'
 import { Settings } from '@/common/types'
 import BikeTagButton from '@/components/BikeTagButton.vue'
@@ -135,47 +134,14 @@ export default defineComponent({
     }
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getQueue() {
-      const { getQueue } = storeToRefs(this.store)
-
-      return getQueue
-    },
-    getPlayerTag() {
-      const { getPlayerTag } = storeToRefs(this.store)
-
-      return getPlayerTag
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    getPlayerId() {
-      const { getPlayerId } = storeToRefs(this.store)
-
-      return getPlayerId
-    },
-    getGameName() {
-      const { getGameName } = storeToRefs(this.store)
-
-      return getGameName
-    },
-    getGame() {
-      const { getGame } = storeToRefs(this.store)
-
-      return getGame
-    },
-    // ...mapGetters([
-    //   'getQueue',
-    //   'getPlayerTag',
-    //   'getCurrentBikeTag',
-    //   'getPlayerId',
-    //   'getGameName',
-    //   'getGame',
-    // ]),
+    ...mapState(useStore, [
+      'getQueue',
+      'getPlayerTag',
+      'getCurrentBikeTag',
+      'getPlayerId',
+      'getGameName',
+      'getGame',
+    ]),
     supportsReddit() {
       return !!this.getGame?.settings[Settings.SupportsReddit]
     },

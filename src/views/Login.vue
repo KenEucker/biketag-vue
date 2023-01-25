@@ -8,44 +8,33 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
+import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTag from '@/assets/images/BikeTag.svg'
 import { debug } from '@/common/utils'
 
-export default defineComponent({
+export default {
   name: 'LoginView',
   components: {
     BikeTagButton,
   },
-  data() {
-    return {
-      bikeTag: BikeTag,
-    }
-  },
-  computed: {
-    store() {
-      return useStore()
-    },
-    isBikeTagAmbassador() {
-      const { isBikeTagAmbassador } = storeToRefs(this.store)
+  setup() {
+    const bikeTag = BikeTag
+    const store = useStore()
 
-      return isBikeTagAmbassador
-    },
-    // ...mapGetters(['isBikeTagAmbassador']),
-  },
-  methods: {
-    login() {
+    // computed
+    const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+
+    // methods
+    function login() {
       if (this.$auth.loginWithRedirect) {
         this.$auth.loginWithRedirect().then(async () => {
           debugger
           const claims = await this.$auth.getIdTokenClaims()
           if (claims) {
             const token = claims.__raw
-            this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+            store.setProfile({ ...this.$auth.user, token })
           } else {
             debug('what is this? No sprechen sie Deutsch?')
           }
@@ -57,9 +46,15 @@ export default defineComponent({
           position: 'top',
         })
       }
-    },
+    }
+
+    return {
+      bikeTag,
+      isBikeTagAmbassador,
+      login,
+    }
   },
-})
+}
 </script>
 <style lang="scss" scoped>
 .container {

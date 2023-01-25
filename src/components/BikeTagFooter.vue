@@ -84,9 +84,8 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagCamera from '@/components/BikeTagCamera.vue'
 import HintIcon from '@/assets/images/hint-icon.svg'
@@ -160,25 +159,7 @@ export default defineComponent({
     }
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    getCurrentHint() {
-      const { getCurrentHint } = storeToRefs(this.store)
-
-      return getCurrentHint
-    },
-    getQueuedTags() {
-      const { getQueuedTags } = storeToRefs(this.store)
-
-      return getQueuedTags
-    },
-    // ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getQueuedTags']),
+    ...mapState(useStore, ['getCurrentBikeTag', 'getCurrentHint', 'getQueuedTags']),
   },
   beforeUnmount() {
     document.querySelector('.popover')?.remove()

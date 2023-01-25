@@ -8,32 +8,27 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
+import { useStore } from '@/store/index.ts'
 import Player from '@/components/PlayerBicon.vue'
 
-export default defineComponent({
+export default {
   name: 'LeaderboardView',
   components: {
     Player,
   },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getLeaderboard() {
-      const { getLeaderboard } = storeToRefs(this.store)
+  setup() {
+    const store = useStore
 
-      return getLeaderboard
-    },
-    // ...mapGetters(['getLeaderboard']),
-    playersList() {
-      return this.getLeaderboard
-    },
+    // computed
+    const getLeaderboard = computed(() => store.getLeaderboard)
+    const playersList = computed(() => getLeaderboard.value)
+
+    return {
+      playersList,
+    }
   },
-})
+}
 </script>
 <style lang="scss" scoped>
 .player-list {

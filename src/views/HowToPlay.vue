@@ -94,9 +94,8 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 // Import Swiper styles
 import 'swiper/css/bundle'
 
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { ref, computed } from 'vue'
 import { debug } from '@/common/utils'
 
 // install Swiper components
@@ -112,39 +111,26 @@ export default {
     SwiperSlide,
     BikeTagMap,
   },
-  data() {
-    return {
-      playingEaster: false,
-    }
-  },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getGameSlug() {
-      const { getGameSlug } = storeToRefs(this.store)
+  setup() {
+    const playingEaster = ref(false)
+    const store = useStore()
 
-      return getGameSlug
-    },
-    getEasterEgg() {
-      const { getEasterEgg } = storeToRefs(this.store)
+    // computed
+    const getEasterEgg = computed(() => store.getEasterEgg)
 
-      return getEasterEgg
-    },
-    getGame() {
-      const { getGame } = storeToRefs(this.store)
-
-      return getGame
-    },
-    // ...mapGetters(['getGameSlug', 'getEasterEgg', 'getGame']),
-  },
-  methods: {
-    playEasterEgg() {
+    // methods
+    function playEasterEgg() {
       if (this.getEasterEgg) {
         document.getElementById('jingle').play().then(debug).catch(console.error)
         this.playingEaster = true
       }
-    },
+    }
+
+    return {
+      playingEaster,
+      getEasterEgg,
+      playEasterEgg,
+    }
   },
 }
 </script>

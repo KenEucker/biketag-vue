@@ -16,9 +16,8 @@
 <script>
 import { defineComponent } from 'vue'
 import StyledHr from '@/assets/images/hr.svg'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 
 export default defineComponent({
   name: 'BikeTagGames',
@@ -42,20 +41,7 @@ export default defineComponent({
     }
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getAllGames() {
-      const { getAllGames } = storeToRefs(this.store)
-
-      return getAllGames
-    },
-    getLogoUrl() {
-      const { getLogoUrl } = storeToRefs(this.store)
-
-      return getLogoUrl
-    },
-    // ...mapGetters(['getAllGames', 'getLogoUrl']),
+    ...mapState(useStore, ['getAllGames', 'getLogoUrl']),
   },
 })
 </script>

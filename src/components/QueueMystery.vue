@@ -94,9 +94,8 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import { stringifyNumber, ordinalSuffixOf } from '@/common/utils'
@@ -130,41 +129,13 @@ export default defineComponent({
     }
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getGameName() {
-      const { getGameName } = storeToRefs(this.store)
-
-      return getGameName
-    },
-    getPlayerTag() {
-      const { getPlayerTag } = storeToRefs(this.store)
-
-      return getPlayerTag
-    },
-    getPlayerId() {
-      const { getPlayerId } = storeToRefs(this.store)
-
-      return getPlayerId
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    getQueuedTags() {
-      const { getQueuedTags } = storeToRefs(this.store)
-
-      return getQueuedTags
-    },
-    // ...mapGetters([
-    //   'getGameName',
-    //   'getPlayerTag',
-    //   'getPlayerId',
-    //   'getCurrentBikeTag',
-    //   'getQueuedTags',
-    // ]),
+    ...mapState(useStore, [
+      'getGameName',
+      'getPlayerTag',
+      'getPlayerId',
+      'getCurrentBikeTag',
+      'getQueuedTags',
+    ]),
     numberInQueue() {
       return this.getQueuedTags?.reduce((o, t, n) => {
         if (t.playerId === this.getPlayerTag?.playerId) {

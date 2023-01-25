@@ -148,8 +148,8 @@
 <script>
 import { defineComponent } from 'vue'
 // import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton'
 import { debug } from '@/common/utils'
 
@@ -177,53 +177,15 @@ export default defineComponent({
     }
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getGameTitle() {
-      const { getGameTitle } = storeToRefs(this.store)
-
-      return getGameTitle
-    },
-    getLogoUrl() {
-      const { getLogoUrl } = storeToRefs(this.store)
-
-      return getLogoUrl
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    isDataInitialized() {
-      const { isDataInitialized } = storeToRefs(this.store)
-
-      return isDataInitialized
-    },
-    isBikeTagAmbassador() {
-      const { isBikeTagAmbassador } = storeToRefs(this.store)
-
-      return isBikeTagAmbassador
-    },
-    getQueuedTags() {
-      const { getQueuedTags } = storeToRefs(this.store)
-
-      return getQueuedTags
-    },
-    getProfile() {
-      const { getProfile } = storeToRefs(this.store)
-
-      return getProfile
-    },
-    // ...mapGetters([
-    //   'getGameTitle',
-    //   'getLogoUrl',
-    //   'getCurrentBikeTag',
-    //   'isDataInitialized',
-    //   'isBikeTagAmbassador',
-    //   'getQueuedTags',
-    //   'getProfile',
-    // ]),
+    ...mapState(useStore, [
+      'getGameTitle',
+      'getLogoUrl',
+      'getCurrentBikeTag',
+      'isDataInitialized',
+      'isBikeTagAmbassador',
+      'getQueuedTags',
+      'getProfile',
+    ]),
     isShow() {
       if (this.$route.name) {
         debug('view::loaded', this.$route.name)

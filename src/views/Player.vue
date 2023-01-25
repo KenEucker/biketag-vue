@@ -66,10 +66,8 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
 import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
 import Player from '@/components/PlayerBicon.vue'
@@ -82,7 +80,7 @@ import Twitter from '@/assets/images/Twitter.svg'
 import Imgur from '@/assets/images/Imgur.svg'
 import Discord from '@/assets/images/Discord.svg'
 
-export default defineComponent({
+export default {
   name: 'PlayerView',
   components: {
     BikeTag,
@@ -90,119 +88,122 @@ export default defineComponent({
     Player,
     BikeDex,
   },
-  data() {
-    return {
-      currentPage: this.$route.params?.currentPage.length
-        ? parseInt(this.$route.params?.currentPage)
-        : 1,
-      perPage: 10,
-      tagsAreLoading: true,
-      tagsLoaded: [],
-      playerSocial: null,
-      socialNetworkIcons: {
-        reddit: Reddit,
-        instagram: Instagram,
-        twitter: Twitter,
-        imgur: Imgur,
-        discord: Discord,
-      },
-      socialLinks: {
-        imgur: 'http://imgur.com/user/',
-        instagram: 'http://instagram.com/',
-        twitter: 'http://twitter.com/',
-        reddit: 'http://reddit.com/u/',
-        discord: '',
-      },
-      modal: false,
-    }
-  },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getPlayers() {
-      const { getPlayers } = storeToRefs(this.store)
+  setup() {
+    const currentPage = ref(
+      this.$route.params?.currentPage.length ? parseInt(this.$route.params?.currentPage) : 1
+    )
+    let perPage = ref(10)
+    const tagsAreLoading = ref(true)
+    const tagsLoaded = ref([])
+    const playerSocial = ref(null)
+    const socialNetworkIcons = ref({
+      reddit: Reddit,
+      instagram: Instagram,
+      twitter: Twitter,
+      imgur: Imgur,
+      discord: Discord,
+    })
+    const socialLinks = ref({
+      imgur: 'http://imgur.com/user/',
+      instagram: 'http://instagram.com/',
+      twitter: 'http://twitter.com/',
+      reddit: 'http://reddit.com/u/',
+      discord: '',
+    })
+    const modal = ref(false)
+    const store = useStore()
 
-      return getPlayers
-    },
-    // mix the getters into computed with object spread operator
-    // ...mapGetters(['getPlayers']),
-    player() {
-      const playerList = this.getPlayers?.filter((player) => {
-        const playerName = this.playerName()
+    // computed
+    const getPlayers = computed(() => store.getPlayers)
+    const player = computed(() => {
+      const playerList = getPlayers.value?.filter((player) => {
+        const playerName = playerName()
         return decodeURIComponent(encodeURIComponent(player.name)) == playerName
       })
       const player = playerList[0]
       return player
-    },
-    tagsForList() {
-      const tags = this.player?.tags
+    })
+    const tagsForList = computed(() => {
+      const tags = player.value?.tags
       return tags
         ? tags
             .reverse()
-            .slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
+            .slice((currentPage.value - 1) * perPage.value, currentPage.value * perPage.value)
         : []
-    },
-    totalCount() {
-      return this.player?.tags?.length
-    },
-  },
-  watch: {
-    '$route.params.currentPage': function (val) {
-      this.currentPage = Number(val)
-    },
-  },
-  created() {
-    this.startLoading()
-  },
-  async mounted() {
-    this.tagsAreLoading = true
-    await this.$store.dispatch('setTags')
-    await this.$store.dispatch('setPlayers')
-    this.tagsAreLoading = false
-  },
-  methods: {
-    resetCurrentPage() {
-      this.startLoading()
-      this.currentPage = 1
-    },
-    playerName() {
+    })
+    const totalCount = computed(() => player.value?.tags?.length)
+
+    // methods
+    function resetCurrentPage() {
+      startLoading()
+      currentPage.value = 1
+    }
+    function playerName() {
       return decodeURIComponent(encodeURIComponent(this.$route.params.name))
-    },
-    getSelfTagFoundDescription(tag) {
-      return biketag.getters.getImgurFoundDescriptionFromBikeTagData({
-        ...tag,
-        ...{ tagnumber: tag.tagnumber - 1 },
-      })
-    },
-    changePage(event, pageNumber) {
-      this.startLoading()
-      this.$router.push('/player/' + encodeURIComponent(this.playerName()) + '/' + pageNumber)
-    },
-    async startLoading() {
-      this.tagsLoaded = []
-      this.tagsAreLoading = true
-      if (this.perPage <= 10) {
+    }
+    function changePage(event, pageNumber) {
+      startLoading()
+      this.$router.push('/player/' + encodeURIComponent(playerName()) + '/' + pageNumber)
+    }
+    async function startLoading() {
+      tagsLoaded.value = []
+      tagsAreLoading.value = true
+      if (perPage.value <= 10) {
         setTimeout(() => {
-          this.tagsAreLoading = false
+          tagsAreLoading.value = false
         }, 500)
       }
-      this.playerSocial = (await this.$store.dispatch('getUserSocial', this.playerName())).data
-      this.playerSocial = this.playerSocial.length
-        ? this.playerSocial[0]?.user_metadata?.social
+      playerSocial.value = (await store.getUserSocial(playerName())).data
+      playerSocial.value = playerSocial.value.length
+        ? playerSocial.value[0]?.user_metadata?.social
         : {}
-      this.playerSocial?.discord && (this.playerSocial.discord = '')
-    },
-    showModal() {
-      this.modal = true
-      console.log(this.modal)
-    },
-    hideModal() {
-      this.modal = false
-      console.log(this.modal)
-    },
+      playerSocial.value?.discord && (playerSocial.value.discord = '')
+    }
+    function showModal() {
+      modal.value = true
+      console.log(modal)
+    }
+    function hideModal() {
+      modal.value = false
+      console.log(modal)
+    }
+
+    // watch
+    watch(
+      () => '$route.params.currentPage',
+      (val) => {
+        currentPage.value = Number(val)
+      }
+    )
+
+    // created
+    startLoading()
+
+    // mounted
+    onMounted(async () => {
+      tagsAreLoading.value = true
+      await store.setTags()
+      await store.setPlayers()
+      tagsAreLoading.value = false
+    })
+
+    return {
+      currentPage,
+      perPage,
+      tagsAreLoading,
+      playerSocial,
+      socialNetworkIcons,
+      socialLinks,
+      modal,
+      player,
+      tagsForList,
+      totalCount,
+      resetCurrentPage,
+      changePage,
+      showModal,
+    }
   },
-})
+}
 </script>
 <style lang="scss">
 @import '../assets/styles/style';

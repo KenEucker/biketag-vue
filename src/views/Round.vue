@@ -26,18 +26,16 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 // watchEffect, onMounted } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 
 import QueueView from '@/components/QueueView.vue'
 
-export default defineComponent({
+export default {
   name: 'QueueBikeTagView',
   components: {
     QueueView,
@@ -48,98 +46,44 @@ export default defineComponent({
       default: false,
     },
   },
-  data() {
+  setup() {
     const time = new Date()
     time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
-    const timer = useTimer(time.getSeconds())
-    // onMounted(() => {
-    //   watchEffect(async () => {
-    //     if (timer.isExpired.value) {
-    //       console.warn('IsExpired')
-    //     }
-    //   })
-    // })
-    return {
-      timer,
-      BiketagFormSteps,
-      uploadInProgress: false,
-      countDown: 10,
-    }
-  },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getFormStep() {
-      const { getFormStep } = storeToRefs(this.store)
+    const timer = ref(useTimer(time.getSeconds()))
+    const uploadInProgress = ref(false)
+    let countDown = ref(10)
+    const store = useStore()
 
-      return getFormStep
-    },
-    getPlayerTag() {
-      const { getPlayerTag } = storeToRefs(this.store)
+    // computed
+    const getFormStep = computed(() => store.getFormStep)
+    const getPlayerTag = computed(() => store.getPlayerTag)
+    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+    const getGameName = computed(() => store.getGameName)
+    const getQueuedTags = computed(() => store.getQueuedTags)
 
-      return getPlayerTag
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    getGameName() {
-      const { getGameName } = storeToRefs(this.store)
-
-      return getGameName
-    },
-    getQueuedTags() {
-      const { getQueuedTags } = storeToRefs(this.store)
-
-      return getQueuedTags
-    },
-    getPlayerId() {
-      const { getPlayerId } = storeToRefs(this.store)
-
-      return getPlayerId
-    },
-    // ...mapGetters([
-    //   'getFormStep',
-    //   'getPlayerTag',
-    //   'getCurrentBikeTag',
-    //   'getGameName',
-    //   'getQueuedTags',
-    //   'getPlayerId',
-    // ]),
-  },
-  async mounted() {
-    this.uploadInProgress = false
-  },
-  async created() {
-    await this.$store.dispatch('setCurrentBikeTag', true)
-    await this.$store.dispatch('setQueuedTags', true)
-    // this.countDownTimer()
-  },
-  methods: {
-    countDownTimer() {
-      if (this.countDown > 0) {
+    // methods
+    function countDownTimer() {
+      if (countDown.value > 0) {
         setTimeout(() => {
-          this.countDown -= 1
-          this.countDownTimer()
+          countDown.value -= 1
+          countDownTimer()
         }, 500)
       }
-    },
-    isSubmittingData() {
+    }
+    function isSubmittingData() {
       return (
-        !this.isViewingQueue() &&
+        !isViewingQueue() &&
         !(
-          this.getFormStep === BiketagFormSteps[BiketagFormSteps.roundJoined] ||
-          this.getFormStep === BiketagFormSteps[BiketagFormSteps.roundPosted] ||
-          this.getFormStep === BiketagFormSteps[BiketagFormSteps.shareBikeTagPost]
+          getFormStep.value === BiketagFormSteps[BiketagFormSteps.roundJoined] ||
+          getFormStep.value === BiketagFormSteps[BiketagFormSteps.roundPosted] ||
+          getFormStep.value === BiketagFormSteps[BiketagFormSteps.shareBikeTagPost]
         )
       )
-    },
-    isViewingQueue() {
-      return this.getFormStep === BiketagFormSteps[BiketagFormSteps.viewRound]
-    },
-    async onQueueSubmit(newTagSubmission) {
+    }
+    function isViewingQueue() {
+      return getFormStep.value === BiketagFormSteps[BiketagFormSteps.viewRound]
+    }
+    async function onQueueSubmit(newTagSubmission) {
       const { tag, formAction, formData, storeAction } = newTagSubmission
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual'
@@ -153,27 +97,27 @@ export default defineComponent({
       })
       const errorAction = this.$refs.queueError.getAttribute('action')
 
-      this.uploadInProgress = true
+      uploadInProgress.value = true
       const success = await this.$store.dispatch(storeAction, tag)
-      this.uploadInProgress = false
+      uploadInProgress.value = false
 
       if (success === true) {
         /// Get a clean cache
-        await this.$store.dispatch('setTags', true)
+        await store.setTags(true)
         /// Update the queue
-        this.$store.dispatch('setQueuedTags', true)
+        store.setQueuedTags(true)
 
-        formData.set('game', this.getGameName)
-        formData.set('tag', JSON.stringify(this.getPlayerTag))
+        formData.set('game', getGameName.value)
+        formData.set('tag', JSON.stringify(getPlayerTag.value))
         formData.set(
           'submission',
-          `${this.getGameName}-${this.getPlayerTag.tagnumber}--${this.getPlayerTag.foundPlayer}`
+          `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`
         )
 
         if (tag.foundImage) {
-          formData.set('foundImageUrl', this.getPlayerTag.foundImageUrl)
+          formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
         } else if (tag.mysteryImage) {
-          formData.set('mysteryImageUrl', this.getPlayerTag.mysteryImageUrl)
+          formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
         }
         return sendNetlifyForm(
           formAction,
@@ -205,9 +149,32 @@ export default defineComponent({
         })
         return sendNetlifyError(message, undefined, errorAction)
       }
-    },
+    }
+
+    // created
+    const created = async () => {
+      await store.setCurrentBikeTag(true)
+      await store.setQueuedTags(true)
+      // this.countDownTimer()
+    }
+    created()
+
+    // mounted
+    onMounted(() => {
+      uploadInProgress.value = false
+    })
+
+    return {
+      timer,
+      BiketagFormSteps,
+      uploadInProgress,
+      getFormStep,
+      getCurrentBikeTag,
+      getQueuedTags,
+      isViewingQueue,
+    }
   },
-})
+}
 </script>
 <style lang="scss">
 #app {

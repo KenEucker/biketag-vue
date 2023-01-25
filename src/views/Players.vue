@@ -31,57 +31,56 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { ref, computed, watch } from 'vue'
+import { useStore } from '@/store/index.ts'
 import Player from '@/components/PlayerBicon.vue'
 
-export default defineComponent({
+export default {
   name: 'PlayersView',
   components: {
     Player,
   },
-  data() {
+  setup() {
+    const currentPage = ref(
+      this.$route.params?.currentPage.length ? parseInt(this.$route.params?.currentPage) : 1
+    )
+    let perPage = ref(10)
+    const store = useStore()
+
+    // computed
+    const getPlayers = computed(() => store.getPlayers)
+    const playersForList = computed(() =>
+      getPlayers.value.slice(
+        (currentPage.value - 1) * perPage.value,
+        currentPage.value * perPage.value
+      )
+    )
+    const totalCount = () => getPlayers.value.length
+
+    // methods
+    function resetCurrentPage() {
+      currentPage.value = 1
+    }
+    function changePage(event, pageNumber) {
+      this.$router.push('/players/' + pageNumber)
+    }
+
+    //watch
+    watch(
+      () => '$route.params.currentPage',
+      (val) => {
+        currentPage.value = Number(val)
+      }
+    )
+
     return {
-      currentPage: this.$route.params?.currentPage.length
-        ? parseInt(this.$route.params?.currentPage)
-        : 1,
-      perPage: 10,
+      currentPage,
+      perPage,
+      playersForList,
+      totalCount,
+      resetCurrentPage,
+      changePage,
     }
   },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getPlayers() {
-      const { getPlayers } = storeToRefs(this.store)
-
-      return getPlayers
-    },
-    // ...mapGetters(['getPlayers']),
-    playersForList() {
-      return this.getPlayers.slice(
-        (this.currentPage - 1) * this.perPage,
-        this.currentPage * this.perPage
-      )
-    },
-    totalCount() {
-      return this.getPlayers.length
-    },
-  },
-  watch: {
-    '$route.params.currentPage': function (val) {
-      this.currentPage = Number(val)
-    },
-  },
-  methods: {
-    resetCurrentPage() {
-      this.currentPage = 1
-    },
-    changePage(event, pageNumber) {
-      this.$router.push('/players/' + pageNumber)
-    },
-  },
-})
+}
 </script>

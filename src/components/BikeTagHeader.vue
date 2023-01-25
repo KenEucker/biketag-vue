@@ -32,9 +32,8 @@
 
 <script>
 import { defineComponent, ref } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
 export default defineComponent({
@@ -56,47 +55,14 @@ export default defineComponent({
     showAuth() {
       return false
     },
-    store() {
-      return useStore()
-    },
-    getGameTitle() {
-      const { getGameTitle } = storeToRefs(this.store)
-
-      return getGameTitle
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    getQueuedTags() {
-      const { getQueuedTags } = storeToRefs(this.store)
-
-      return getQueuedTags
-    },
-    getEasterEgg() {
-      const { getEasterEgg } = storeToRefs(this.store)
-
-      return getEasterEgg
-    },
-    getMostRecentlyViewedTagnumber() {
-      const { getMostRecentlyViewedTagnumber } = storeToRefs(this.store)
-
-      return getMostRecentlyViewedTagnumber
-    },
-    getGameName() {
-      const { getGameName } = storeToRefs(this.store)
-
-      return getGameName
-    },
-    // ...mapGetters([
-    //   'getGameTitle',
-    //   'getCurrentBikeTag',
-    //   'getQueuedTags',
-    //   'getEasterEgg',
-    //   'getMostRecentlyViewedTagnumber',
-    //   'getGameName',
-    // ]),
+    ...mapState(useStore, [
+      'getGameTitle',
+      'getCurrentBikeTag',
+      'getQueuedTags',
+      'getEasterEgg',
+      'getMostRecentlyViewedTagnumber',
+      'getGameName',
+    ]),
   },
   methods: {
     playEasterEgg(e) {

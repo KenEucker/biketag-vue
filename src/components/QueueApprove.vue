@@ -105,9 +105,8 @@
 
 <script>
 import { defineComponent, ref } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { useStore } from '@/store/index.ts'
+import { mapState } from 'pinia'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
@@ -146,41 +145,13 @@ export default defineComponent({
     }
   },
   computed: {
-    store() {
-      return useStore()
-    },
-    getQueuedTags() {
-      const { getQueuedTags } = storeToRefs(this.store)
-
-      return getQueuedTags
-    },
-    getPlayerTag() {
-      const { getPlayerTag } = storeToRefs(this.store)
-
-      return getPlayerTag
-    },
-    getCurrentBikeTag() {
-      const { getCurrentBikeTag } = storeToRefs(this.store)
-
-      return getCurrentBikeTag
-    },
-    isBikeTagAmbassador() {
-      const { isBikeTagAmbassador } = storeToRefs(this.store)
-
-      return isBikeTagAmbassador
-    },
-    getAmbassadorId() {
-      const { getAmbassadorId } = storeToRefs(this.store)
-
-      return getAmbassadorId
-    },
-    // ...mapGetters([
-    //   'getQueuedTags',
-    //   'getPlayerTag',
-    //   'getCurrentBikeTag',
-    //   'isBikeTagAmbassador',
-    //   'getAmbassadorId',
-    // ]),
+    ...mapState(useStore, [
+      'getQueuedTags',
+      'getPlayerTag',
+      'getCurrentBikeTag',
+      'isBikeTagAmbassador',
+      'getAmbassadorId',
+    ]),
     currentIsReadyForApproval() {
       return this.currentlySelectedTag?.mysteryImageUrl && this.currentlySelectedTag?.foundImageUrl
     },

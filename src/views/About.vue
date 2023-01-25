@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { ref } from 'vue'
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagGames from '@/components/BikeTagGames.vue'
@@ -59,7 +59,7 @@ import StyledHr from '@/assets/images/hr.svg'
 import Pin from '@/assets/images/pin.svg'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 
-export default defineComponent({
+export default {
   name: 'AboutView',
   components: {
     HtmlContent,
@@ -67,13 +67,13 @@ export default defineComponent({
     BikeTagGames,
     BikeTagMap,
   },
-  data() {
-    return {
-      styledHr: StyledHr,
-      pin: Pin,
-    }
+  setup() {
+    const styledHr = ref(StyledHr)
+    const pin = ref(Pin)
+
+    return { styledHr, pin }
   },
-})
+}
 </script>
 <style lang="scss">
 .white-bck {

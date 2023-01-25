@@ -1,7 +1,7 @@
 import App from './App.vue'
 import { createApp } from 'vue'
 import router from './router'
-import { store } from './store/index'
+import { store } from './store/'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import mitt from 'mitt'
 import { Auth0Plugin } from './auth'

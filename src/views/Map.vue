@@ -15,56 +15,42 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
-import { useStore } from '@/store/pinia.ts'
-import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
+import { useStore } from '@/store/index.ts'
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import StyledHr from '@/assets/images/hr.svg'
 import Pin from '@/assets/images/pin.svg'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 
-export default defineComponent({
+export default {
   name: 'MapView',
   components: {
     HtmlContent,
     BikeTagButton,
     BikeTagMap,
   },
-  data() {
+  setup() {
+    const styledHr = StyledHr
+    const pin = Pin
+    const store = useStore()
+
+    // computed
+    const getGameName = computed(() => store.getGameName)
+
+    // methods
+    function goBikeTagsPage() {
+      this.$router.push('/biketags')
+    }
+
     return {
-      styledHr: StyledHr,
-      pin: Pin,
+      styledHr,
+      pin,
+      getGameName,
+      goBikeTagsPage,
     }
   },
-  computed: {
-    store() {
-      return useStore()
-    },
-    getAllGames() {
-      const { getAllGames } = storeToRefs(this.store)
-
-      return getAllGames
-    },
-    getLogoUrl() {
-      const { getLogoUrl } = storeToRefs(this.store)
-
-      return getLogoUrl
-    },
-    getGameName() {
-      const { getGameName } = storeToRefs(this.store)
-
-      return getGameName
-    },
-    // ...mapGetters(['getAllGames', 'getLogoUrl', 'getGameName']),
-  },
-  methods: {
-    goBikeTagsPage() {
-      this.$router.push('/biketags')
-    },
-  },
-})
+}
 </script>
 <style lang="scss" scoped>
 @import '../assets/styles/style';

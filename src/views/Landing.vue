@@ -148,39 +148,40 @@
   </footer>
 </template>
 <script>
-import { defineComponent } from 'vue'
 import BikeTagBlurb from '@/components/BikeTagBlurb'
 import BikeTagAmbassadorSvg from '@/assets/images/biketag-ambassador.svg'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
 import BikeTagGames from '@/components/BikeTagGames.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 
-export default defineComponent({
+export default {
   name: 'LandingView',
   components: {
     BikeTagBlurb,
     BikeTagGames,
     BikeTagMap,
   },
-  data() {
-    return {
-      BikeTagAmbassadorSvg,
-      BikeTagSvg,
-    }
-  },
-  methods: {
-    toSection(id) {
+  setup() {
+    // methods
+    function toSection(id) {
       const section = document.getElementById(id.toLowerCase().replaceAll(' ', '-'))
 
       window.scrollTo({ top: section.offsetTop - 125, behavior: 'smooth' })
-    },
-    closeMenu() {
+    }
+    function closeMenu() {
       if (this.$refs['navList'].classList.contains('show')) {
         this.$refs['navList'].classList.remove('show')
       }
-    },
+    }
+
+    return {
+      BikeTagAmbassadorSvg,
+      BikeTagSvg,
+      toSection,
+      closeMenu,
+    }
   },
-})
+}
 </script>
 <style lang="scss">
 main {
