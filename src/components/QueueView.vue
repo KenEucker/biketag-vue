@@ -44,9 +44,8 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
@@ -58,7 +57,7 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 
 SwiperCore.use([Pagination])
 
-export default defineComponent({
+export default {
   name: 'QueueView',
   components: {
     Swiper,
@@ -69,6 +68,31 @@ export default defineComponent({
   },
   setup() {
     const controlledSwiper = ref(null)
+    const store = useStore()
+
+    // computed
+    const getQueuedTags = computed(() => store.getQueuedTags)
+    const getPlayerTag = computed(() => store.getPlayerTag)
+    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+    const getQueuedTagState = computed(() => store.getQueuedTagState)
+    const goNextQueueStepButtonText = computed(
+      () =>
+        `${
+          getPlayerTag.value?.mysteryImageUrl?.length > 0
+            ? this.$t('pages.round.submit_queue')
+            : getPlayerTag.value?.foundImageUrl?.length > 0
+            ? this.$t('pages.round.complete_queue')
+            : this.$t('pages.round.join_queue')
+        } #${getCurrentBikeTag.value?.tagnumber ?? 1}!`
+    )
+    const showGoNextButton = computed(
+      () => getQueuedTagState.value !== BiketagFormSteps.roundPosted
+    )
+
+    // methods
+    function goNextQueueStep() {
+      this.$router.push('/play')
+    }
     const setControlledSwiper = (swiper) => {
       controlledSwiper.value = swiper
     }
@@ -77,35 +101,14 @@ export default defineComponent({
       Controller,
       controlledSwiper,
       setControlledSwiper,
+      getQueuedTags,
+      goNextQueueStepButtonText,
+      showGoNextButton,
+      stringifyNumber,
+      goNextQueueStep,
     }
   },
-  computed: {
-    ...mapState(useStore, [
-      'getQueuedTags',
-      'getPlayerTag',
-      'getCurrentBikeTag',
-      'getQueuedTagState',
-    ]),
-    goNextQueueStepButtonText() {
-      return `${
-        this.getPlayerTag?.mysteryImageUrl?.length > 0
-          ? this.$t('pages.round.submit_queue')
-          : this.getPlayerTag?.foundImageUrl?.length > 0
-          ? this.$t('pages.round.complete_queue')
-          : this.$t('pages.round.join_queue')
-      } #${this.getCurrentBikeTag?.tagnumber ?? 1}!`
-    },
-    showGoNextButton() {
-      return this.getQueuedTagState !== BiketagFormSteps.roundPosted
-    },
-  },
-  methods: {
-    stringifyNumber,
-    goNextQueueStep: function () {
-      this.$router.push('/play')
-    },
-  },
-})
+}
 </script>
 <style lang="scss">
 #app {

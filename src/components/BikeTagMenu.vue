@@ -146,14 +146,12 @@
   </footer>
 </template>
 <script>
-import { defineComponent } from 'vue'
-// import { mapGetters } from 'vuex'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton'
 import { debug } from '@/common/utils'
 
-export default defineComponent({
+export default {
   name: 'BikeTagMenu',
   components: {
     BikeTagButton,
@@ -169,121 +167,149 @@ export default defineComponent({
     },
   },
   data() {
-    return {
-      showLogin: process.env.CONTEXT === 'dev',
-      showHeader: true,
-      lastScrollPosition: 0,
-      scrollOffset: 40,
-    }
-  },
-  computed: {
-    ...mapState(useStore, [
-      'getGameTitle',
-      'getLogoUrl',
-      'getCurrentBikeTag',
-      'isDataInitialized',
-      'isBikeTagAmbassador',
-      'getQueuedTags',
-      'getProfile',
-    ]),
-    isShow() {
+    const showLogin = ref(process.env.CONTEXT === 'dev')
+    const showHeader = ref(true)
+    let lastScrollPosition = ref(0)
+    let scrollOffset = ref(40)
+    const store = useStore()
+
+    // computed
+    const getGameTitle = computed(() => store.getGameTitle)
+    const getLogoUrl = computed(() => store.getLogoUrl)
+    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+    const isDataInitialized = computed(() => store.isDataInitialized)
+    const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+    const getQueuedTags = computed(() => store.getQueuedTags)
+    const getProfile = computed(() => store.getProfile)
+    const isShow = computed(() => {
       if (this.$route.name) {
         debug('view::loaded', this.$route.name)
       }
       return this.$route.name !== 'Home'
-    },
-    currentRoute() {
+    })
+    const currentRoute = computed(() => {
       return this.$route.name
-    },
-    getProfileImageSrc() {
-      return this.isBikeTagAmbassador
+    })
+    const getProfileImageSrc = computed(() => {
+      return isBikeTagAmbassador.value
         ? '/images/biketag-ambassador.svg'
         : '/images/biketag-player.svg'
-    },
-  },
-  mounted() {
-    this.lastScrollPosition = window.pageYOffset
-    window.addEventListener('scroll', this.onScroll)
-  },
-  beforeUnmount() {
-    window.removeEventListener('scroll', this.onScroll)
-  },
-  methods: {
+    })
+
+    // methods
     // Toggle if navigation is shown or hidden
-    onScroll() {
+    function onScroll() {
       if (window.pageYOffset < 0) {
         return
       }
-      if (Math.abs(window.pageYOffset - this.lastScrollPosition) < this.scrollOffset) {
+      if (Math.abs(window.pageYOffset - lastScrollPosition.value) < scrollOffset.value) {
         return
       }
-      this.showHeader = window.pageYOffset < this.lastScrollPosition
-      this.lastScrollPosition = window.pageYOffset
-    },
-    async clearTagCache() {
-      await this.$store.dispatch('setGame', true)
-      await this.$store.dispatch('setTags', true)
-      await this.$store.dispatch('setQueuedTags', true)
-    },
-    login() {
-      this.closeCollapsible()
+      showHeader.value = window.pageYOffset < lastScrollPosition.value
+      lastScrollPosition.value = window.pageYOffset
+    }
+    async function clearTagCache() {
+      await store.setGame(true)
+      await store.setTags(true)
+      await store.setQueuedTags(true)
+    }
+    function login() {
+      closeCollapsible()
       this.$router.push('/login')
-    },
-    logout() {
-      this.$store.dispatch('setProfile')
+    }
+    function logout() {
+      store.setProfile()
       this.$auth.logout({
         returnTo: window.location.origin,
       })
-    },
-    closeCollapsible() {
+    }
+    function closeCollapsible() {
       this.$refs.buttonCollapse.setAttribute('aria-expanded', false)
       this.$refs.navList.classList.remove('show')
-    },
-    goWorldwide() {
+    }
+    function goWorldwide() {
       window.location = 'http://biketag.org/'
       // this.$router.push('/worldwide')
-    },
-    goApprovePage: function () {
-      this.closeCollapsible()
+    }
+    function goApprovePage() {
+      closeCollapsible()
       this.$router.push('/approve')
-    },
-    goBikeTagsPage: function () {
-      this.closeCollapsible()
+    }
+    function goBikeTagsPage() {
+      closeCollapsible()
       this.$router.push('/biketags')
-    },
-    goPlayPage: function () {
-      this.closeCollapsible()
+    }
+    function goPlayPage() {
+      closeCollapsible()
       this.$router.push('/play')
-    },
-    goProfile: function () {
-      this.closeCollapsible()
+    }
+    function goProfile() {
+      closeCollapsible()
       this.$router.push('/profile')
-    },
-    goAboutPage: function () {
-      this.closeCollapsible()
+    }
+    function goAboutPage() {
+      closeCollapsible()
       this.$router.push('/about')
-    },
-    goLeaderboardPage: function () {
-      this.closeCollapsible()
+    }
+    function goLeaderboardPage() {
+      closeCollapsible()
       this.$router.push('/leaderboard')
-    },
-    goPlayersPage: function () {
-      this.closeCollapsible()
+    }
+    function goPlayersPage() {
+      closeCollapsible()
       this.$router.push('/players')
-    },
-    goHowPage: function () {
-      this.closeCollapsible()
+    }
+    function goHowPage() {
+      closeCollapsible()
       this.$router.push('/howtoplay')
-    },
-    goHomePage: function () {
-      this.closeCollapsible()
+    }
+    function goHomePage() {
+      closeCollapsible()
       this.$router.push('/')
-    },
-    goBack: function () {
+    }
+    function goBack() {
       this.$router.back()
-    },
+    }
+
+    // mounted
+    onMounted(() => {
+      lastScrollPosition.value = window.pageYOffset
+      window.addEventListener('scroll', this.onScroll)
+    })
+
+    // beforeUnmount
+    onBeforeUnmount(() => {
+      window.removeEventListener('scroll', this.onScroll)
+    })
+
+    return {
+      showLogin,
+      showHeader,
+      getGameTitle,
+      getLogoUrl,
+      isBikeTagAmbassador,
+      getQueuedTags,
+      getProfile,
+      isShow,
+      currentRoute,
+      getProfileImageSrc,
+      clearTagCache,
+      login,
+      logout,
+      goWorldwide,
+      goApprovePage,
+      goBikeTagsPage,
+      goPlayPage,
+      goProfile,
+      goAboutPage,
+      goLeaderboardPage,
+      goPlayersPage,
+      goHowPage,
+      goHomePage,
+      goBack,
+    }
   },
-})
+}
 </script>
 <style lang="scss" scoped>
 @import '../assets/styles/style';

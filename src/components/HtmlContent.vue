@@ -4,10 +4,10 @@
   <!--eslint-enable-->
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-export default defineComponent({
+export default {
   name: 'HtmlContent',
   props: {
     filename: {
@@ -15,13 +15,17 @@ export default defineComponent({
       default: '',
     },
   },
-  data() {
+  setup(props) {
+    const html = ref(String)
+
+    // mounted
+    onMounted(() => {
+      axios.get('./' + props.filename).then((response) => (html.value = response.data))
+    })
+
     return {
-      html: String,
+      html,
     }
   },
-  mounted() {
-    axios.get('./' + this.filename).then((response) => (this.html = response.data))
-  },
-})
+}
 </script>

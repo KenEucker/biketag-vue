@@ -83,15 +83,14 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagCamera from '@/components/BikeTagCamera.vue'
 import HintIcon from '@/assets/images/hint-icon.svg'
 import CloseRounded from '@/assets/images/close-rounded.svg'
 
-export default defineComponent({
+export default {
   name: 'BikeTagFooter',
   components: {
     BikeTagButton,
@@ -111,104 +110,100 @@ export default defineComponent({
   },
   refs: ['mysteryHint', 'hint'],
   emits: ['next', 'previous'],
-  data() {
-    return {
-      showCamera: false,
-      characters: [
-        'a',
-        'b',
-        'c',
-        'd',
-        'e',
-        'f',
-        'g',
-        'h',
-        'i',
-        'j',
-        'k',
-        'l',
-        'm',
-        'n',
-        'o',
-        'p',
-        'q',
-        'r',
-        's',
-        't',
-        'u',
-        'v',
-        'x',
-        'y',
-        'x',
-        '#',
-        '%',
-        '&',
-        '-',
-        '+',
-        '_',
-        '?',
-        '/',
-        '\\',
-        '=',
-      ],
-      timeout: 5,
-      iterations: 10,
-      hintIcon: HintIcon,
-      closeRounded: CloseRounded,
-      showPopover: false,
-    }
-  },
-  computed: {
-    ...mapState(useStore, ['getCurrentBikeTag', 'getCurrentHint', 'getQueuedTags']),
-  },
-  beforeUnmount() {
-    document.querySelector('.popover')?.remove()
-  },
-  methods: {
-    goAboutPage() {
+  setup() {
+    const showCamera = ref(false)
+    const characters = [
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'f',
+      'g',
+      'h',
+      'i',
+      'j',
+      'k',
+      'l',
+      'm',
+      'n',
+      'o',
+      'p',
+      'q',
+      'r',
+      's',
+      't',
+      'u',
+      'v',
+      'x',
+      'y',
+      'x',
+      '#',
+      '%',
+      '&',
+      '-',
+      '+',
+      '_',
+      '?',
+      '/',
+      '\\',
+      '=',
+    ]
+    let timeout = ref(5)
+    let iterations = ref(10)
+    const hintIcon = HintIcon
+    const closeRounded = CloseRounded
+    const store = useStore()
+
+    // computed
+    const getCurrentHint = computed(() => store.getCurrentHint)
+    const getQueuedTags = computed(() => store.getQueuedTags)
+
+    // methods
+    function goAboutPage() {
       this.$router.push('/about')
-    },
-    goLeaderboardPage() {
+    }
+    function goLeaderboardPage() {
       this.$router.push('/leaderboard')
-    },
-    goPlayersPage() {
+    }
+    function goPlayersPage() {
       this.$router.push('/players')
-    },
-    goMapPage() {
+    }
+    function goMapPage() {
       this.$router.push('/map')
-    },
-    goRoundPage() {
+    }
+    function goRoundPage() {
       this.$router.push('/round')
-    },
-    goWorldwide() {
+    }
+    function goWorldwide() {
       window.location = 'http://biketag.org/'
       // this.$router.push('/worldwide')
-    },
-    sleep(time) {
+    }
+    function sleep(time) {
       return new Promise((resolve) => setTimeout(resolve, time))
-    },
-    getRandomInteger(min, max) {
+    }
+    function getRandomInteger(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min
-    },
-    randomCharacter() {
-      return this.characters[this.getRandomInteger(0, this.characters.length - 1)]
-    },
-    showHint() {
+    }
+    function randomCharacter() {
+      return characters.value[getRandomInteger(0, characters.value.length - 1)]
+    }
+    function showHint() {
       setTimeout(async () => {
         const popover = document.querySelector('.popover')
         if (popover) {
           popover.classList.add('popover__wrapper')
-          const hint = this.getCurrentHint
+          const hint = getCurrentHint.value
           this.$refs.mysteryHint.innerText = ''
           window.scrollBy({ top: 1 })
           for (let i of hint) {
             let j = 0
             if (document.querySelector('.popover__wrapper')) {
-              while (j < this.iterations) {
+              while (j < iterations.value) {
                 this.$refs.mysteryHint.innerText = `${
                   this.$refs.mysteryHint.innerText
-                }${this.randomCharacter()}`
-                await this.sleep(this.timeout)
+                }${randomCharacter()}`
+                await sleep(timeout.value)
                 this.$refs.mysteryHint.innerText = this.$refs.mysteryHint.innerText.slice(
                   0,
                   this.$refs.mysteryHint.innerText.length - 1
@@ -223,14 +218,31 @@ export default defineComponent({
           }
         }
       }, 100)
-    },
-    closePopover() {
+    }
+    function closePopover() {
       document.getElementById('hint').click()
       // console.log(this.$refs.hint)
       // this.$refs.hint.click()
-    },
+    }
+
+    // before UnMount
+    onBeforeUnmount(() => {
+      document.querySelector('.popover')?.remove()
+    })
+
+    return {
+      showCamera,
+      hintIcon,
+      closeRounded,
+      getQueuedTags,
+      goMapPage,
+      goRoundPage,
+      goWorldwide,
+      showHint,
+      closePopover,
+    }
   },
-})
+}
 </script>
 <style lang="scss">
 @import '../assets/styles/style';

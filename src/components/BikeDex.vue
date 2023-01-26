@@ -19,9 +19,7 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
-
-export default defineComponent({
+export default {
   name: 'BikeDex',
   props: {
     tags: {
@@ -29,8 +27,9 @@ export default defineComponent({
       default: () => [],
     },
   },
-  methods: {
-    cardClick(i, e) {
+  setup() {
+    // methods
+    function cardClick(i, e) {
       const card = document.getElementById(e)
       let zIndex
       if (Array.from(card.classList).includes('deck__card--active')) {
@@ -43,9 +42,11 @@ export default defineComponent({
         card.style.zIndex = zIndex
         clearTimeout(timeoutID)
       }, 500)
-    },
+    }
+
+    return { cardClick }
   },
-})
+}
 </script>
 <style lang="scss" scoped>
 @import '../assets/styles/style';

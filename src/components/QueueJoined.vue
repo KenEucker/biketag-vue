@@ -15,12 +15,11 @@
   </b-container>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { computed } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
-export default defineComponent({
+export default {
   name: 'QueueJoined',
   components: {
     BikeTagButton,
@@ -33,23 +32,27 @@ export default defineComponent({
       },
     },
   },
-  data: function () {
+  setup() {
+    const store = useStore()
+
+    // computed
+    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+
+    // methods
+    function goViewRound() {
+      this.$router.push('/round')
+    }
+    function goMysteryQueue() {
+      store.setFormStepToJoin(true)
+    }
+
     return {
-      preview: null,
+      getCurrentBikeTag,
+      goViewRound,
+      goMysteryQueue,
     }
   },
-  computed: {
-    ...mapState(useStore, ['getQueue', 'getPlayerTag', 'getCurrentBikeTag']),
-  },
-  methods: {
-    goViewRound() {
-      this.$router.push('/round')
-    },
-    goMysteryQueue() {
-      this.$store.dispatch('setFormStepToJoin', true)
-    },
-  },
-})
+}
 </script>
 <style lang="scss">
 .btn-mystery {

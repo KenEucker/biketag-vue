@@ -9,27 +9,12 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { computed } from 'vue'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { debug } from '@/common/utils'
-const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
-  immediate: true,
-  onRegistered(r) {
-    if (process.env.RELOAD_SW === 'true') {
-      r &&
-        setInterval(async () => {
-          debug('Checking for sw update')
-          await r.update()
-        }, 20000 /* 20s for testing purposes */)
-    } else {
-      debug('app::service worker registered', r?.active)
-    }
-  },
-})
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 
-export default defineComponent({
+export default {
   name: 'ServiceWorker',
   props: {
     filename: {
@@ -38,55 +23,77 @@ export default defineComponent({
     },
   },
   emits: ['manifestLoaded'],
-  data() {
+  setup() {
+    const store = useStore()
+    const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
+      immediate: true,
+      onRegistered(r) {
+        if (process.env.RELOAD_SW === 'true') {
+          r &&
+            setInterval(async () => {
+              debug('Checking for sw update')
+              await r.update()
+            }, 20000 /* 20s for testing purposes */)
+        } else {
+          debug('app::service worker registered', r?.active)
+        }
+      },
+    })
+
+    // computed
+    const getGameSlug = computed(() => store.getGameSlug)
+    const getGameTitle = computed(() => store.getGameTitle)
+    const getLogoUrl = computed(() => store.getLogoUrl)
+
+    // methods
+    async function close() {
+      offlineReady.value = false
+      needRefresh.value = false
+    }
+
+    // created
+    async function created() {
+      await store.setGame()
+      try {
+        const manifestLinkEl = document.querySelector('link[rel="manifest"]')
+
+        if (manifestLinkEl) {
+          const existingManifest = await fetch(manifestLinkEl.href)
+          const applicationManifest = {
+            ...(await existingManifest.json()),
+            name: getGameTitle.value,
+            id: getGameSlug.value,
+            icons: [
+              {
+                src: await getLogoUrl.value('s'),
+                sizes: '192x192',
+                type: 'image/png',
+              },
+              {
+                src: await getLogoUrl.value('l'),
+                sizes: '512x512',
+                type: 'image/png',
+              },
+            ],
+          }
+          const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
+          manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
+          debug('app::application manifest updated', applicationManifest)
+        }
+      } catch (e) {
+        console.error('app::error loading manifest')
+      }
+    }
+    created()
+
     return {
       offlineReady,
       needRefresh,
+      updateServiceWorker,
+      close,
     }
   },
-  computed: {
-    ...mapState(useStore, ['getGameSlug', 'getGameTitle', 'getLogoUrl']),
-  },
-  async created() {
-    await this.$store.dispatch('setGame')
-    try {
-      const manifestLinkEl = document.querySelector('link[rel="manifest"]')
-
-      if (manifestLinkEl) {
-        const existingManifest = await fetch(manifestLinkEl.href)
-        const applicationManifest = {
-          ...(await existingManifest.json()),
-          name: this.getGameTitle,
-          id: this.getGameSlug,
-          icons: [
-            {
-              src: await this.getLogoUrl('s'),
-              sizes: '192x192',
-              type: 'image/png',
-            },
-            {
-              src: await this.getLogoUrl('l'),
-              sizes: '512x512',
-              type: 'image/png',
-            },
-          ],
-        }
-        const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
-        manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
-        debug('app::application manifest updated', applicationManifest)
-      }
-    } catch (e) {
-      console.error('app::error loading manifest')
-    }
-  },
-  methods: {
-    close: async () => {
-      offlineReady.value = false
-      needRefresh.value = false
-    },
-    updateServiceWorker,
-  },
-})
+}
 </script>
 <style lang="scss">
 .pwa-toast {

@@ -9,9 +9,9 @@
   </loading>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { computed } from 'vue'
 
-export default defineComponent({
+export default {
   name: 'BikeTagLoader',
   props: {
     loaderImage: {
@@ -31,21 +31,11 @@ export default defineComponent({
       default: null,
     },
   },
-  computed: {
-    isLoading() {
-      return this.isShowing
-    },
+  setup(props) {
+    // computed
+    const isLoading = computed(() => props.isShowing)
+
+    return { isLoading }
   },
-  methods: {
-    _linkText() {
-      return this.linkText ?? this.link
-    },
-    buttonClick() {
-      if (this.link.indexOf('://') !== -1) {
-        window.location = this.link
-      }
-      this.$router.push({ path: this.link })
-    },
-  },
-})
+}
 </script>

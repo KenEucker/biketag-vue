@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useStore } from '@/store/index.ts'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
@@ -90,7 +90,16 @@ export default {
       }
     }
 
+    // created
     startLoading()
+
+    // watch
+    watch(
+      () => '$route.params.currentPage',
+      (val) => {
+        currentPage.value = Number(val)
+      }
+    )
 
     return {
       currentPage,
@@ -102,11 +111,6 @@ export default {
       resetCurrentPage,
       changePage,
     }
-  },
-  watch: {
-    '$route.params.currentPage': function (val) {
-      this.currentPage = Number(val)
-    },
   },
 }
 </script>

@@ -93,15 +93,14 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import { stringifyNumber, ordinalSuffixOf } from '@/common/utils'
 import exifr from 'exifr'
 
-export default defineComponent({
+export default {
   name: 'QueueMysteryTag',
   components: {
     BikeTagButton,
@@ -116,43 +115,36 @@ export default defineComponent({
     },
   },
   emits: ['submit'],
-  data: function () {
-    return {
-      preview: null,
-      mysteryImageUrl: null,
-      player: '',
-      confirmNoHint: false,
-      hint: this.tag?.hint ?? '',
-      image: this.tag?.mysteryImage,
-      showModal: false,
-      noLongerNew: false,
-    }
-  },
-  computed: {
-    ...mapState(useStore, [
-      'getGameName',
-      'getPlayerTag',
-      'getPlayerId',
-      'getCurrentBikeTag',
-      'getQueuedTags',
-    ]),
-    numberInQueue() {
-      return this.getQueuedTags?.reduce((o, t, n) => {
-        if (t.playerId === this.getPlayerTag?.playerId) {
+  setup(props) {
+    const preview = ref(null)
+    const mysteryImageUrl = ref(null)
+    const confirmNoHint = ref(false)
+    const image = ref(props.tag?.mysteryImage)
+    const showModal = ref(false)
+    const noLongerNew = ref(false)
+    let hint = ref(props.tag?.hint ?? '')
+    let player = ref('')
+    const store = useStore()
+
+    // computed
+    const getGameName = computed(() => store.getGameName)
+    const getPlayerTag = computed(() => store.getPlayerTag)
+    const getPlayerId = computed(() => store.getPlayerId)
+    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+    const getQueuedTags = computed(() => store.getQueuedTags)
+    const numberInQueue = computed(() => {
+      return getQueuedTags.value?.reduce((o, t, n) => {
+        if (t.playerId === getPlayerTag.value?.playerId) {
           o = n + 1
         }
         return o
       }, 0)
-    },
-  },
-  mounted() {
-    this.player = this.getPlayerTag?.foundPlayer
-    this.showModalIfNew()
-  },
-  methods: {
-    onSubmit(e) {
+    })
+
+    // methods
+    function onSubmit(e) {
       e.preventDefault()
-      if (!this.image) {
+      if (!image.value) {
         this.$toast.open({
           message: 'Invalid image, add a new one.',
           type: 'error',
@@ -160,8 +152,8 @@ export default defineComponent({
         })
         return
       }
-      if (!this.hint.length && !this.confirmNoHint) {
-        this.confirmNoHint = true
+      if (!hint.value.length && !confirmNoHint.value) {
+        confirmNoHint.value = true
         this.$toast.open({
           message: "You didn't add a hint, but it would sure be nice if you did.",
           type: 'error',
@@ -172,13 +164,13 @@ export default defineComponent({
       const formAction = this.$refs.mysteryTag.getAttribute('action')
       const formData = new FormData(this.$refs.mysteryTag)
       const mysteryTag = {
-        mysteryImage: this.image,
-        mysteryPlayer: this.player,
-        hint: this.hint ?? '',
-        tagnumber: this.getCurrentBikeTag?.tagnumber + 1 ?? 1,
-        game: this.getGameName,
+        mysteryImage: image.value,
+        mysteryPlayer: player.value,
+        hint: hint.value ?? '',
+        tagnumber: getCurrentBikeTag.value?.tagnumber + 1 ?? 1,
+        game: getGameName.value,
       }
-      this.noLongerNew = true
+      noLongerNew.value = true
 
       this.$emit('submit', {
         formAction,
@@ -186,15 +178,15 @@ export default defineComponent({
         tag: mysteryTag,
         storeAction: 'addMysteryTag',
       })
-    },
-    setImage(event) {
-      this.$store.dispatch('fetchCredentials')
+    }
+    function setImage(event) {
+      store.fetchCredentials()
       const input = event.target
       if (input.files) {
         try {
           const previewReader = new FileReader()
           previewReader.onload = (e) => {
-            this.preview = e.target.result
+            preview.value = e.target.result
           }
           previewReader.readAsDataURL(input.files[0])
           if (input.files[0].size / Math.pow(1024, 2) > 15) {
@@ -207,14 +199,14 @@ export default defineComponent({
             input.files[0].arrayBuffer().then(async (value) => {
               const results = await exifr.parse(value)
               const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
-              if (createDate < this.getCurrentBikeTag.mysteryTime) {
+              if (createDate < getCurrentBikeTag.value.mysteryTime) {
                 this.$toast.open({
                   message: 'Timestamp Error',
                   type: 'error',
                   position: 'top',
                 })
               } else {
-                this.image = input.files[0]
+                image.value = input.files[0]
               }
             })
           }
@@ -222,23 +214,43 @@ export default defineComponent({
           console.error(e)
         }
       }
-    },
-    goViewRound() {
-      this.hideModal()
+    }
+    function goViewRound() {
+      hideModal()
       this.$router.push('/round')
-    },
-    showModalIfNew() {
-      if (!this.getPlayerTag?.mysteryImageUrl?.length) {
-        this.showModal = true
+    }
+    function showModalIfNew() {
+      if (!getPlayerTag.value?.mysteryImageUrl?.length) {
+        showModal.value = true
       }
-    },
-    hideModal() {
-      this.showModal = false
-    },
-    stringifyNumber,
-    ordinalSuffixOf,
+    }
+    function hideModal() {
+      showModal.value = false
+    }
+
+    // mounted
+    onMounted(() => {
+      player.value = getPlayerTag.value?.foundPlayer
+      showModalIfNew()
+    })
+
+    return {
+      preview,
+      mysteryImageUrl,
+      player,
+      hint,
+      showModal,
+      getPlayerId,
+      numberInQueue,
+      onSubmit,
+      setImage,
+      goViewRound,
+      hideModal,
+      stringifyNumber,
+      ordinalSuffixOf,
+    }
   },
-})
+}
 </script>
 <style lang="scss">
 @import '../assets/styles/style';

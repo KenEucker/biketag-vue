@@ -56,41 +56,32 @@
   </b-container>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import { debug } from '@/common/utils'
 
-export default defineComponent({
+export default {
   name: 'QueuePosted',
   components: {
     BikeTagButton,
   },
   emits: ['submit'],
-  computed: {
-    ...mapState(useStore, ['getCurrentBikeTag', 'getPlayerTag']),
-  },
-  mounted() {
-    if (!this.getPlayerTag?.discussionUrl?.length) {
-      /// TODO: check game settings for queue and remove this hardcoded hack
-      const defaultShareSettings = {
-        postToReddit: this.postToReddit,
-        postToTwitter: this.postToTwitter,
-        postToInstagram: this.postToInstagram,
-      }
-      debug('autosubmitting tag with default share settings', defaultShareSettings)
-      this.submitTag(defaultShareSettings)
-    }
-  },
-  methods: {
-    goViewRound() {
+  setup() {
+    const store = useStore()
+
+    // computed
+    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+    const getPlayerTag = computed(() => store.getPlayerTag)
+
+    // methods
+    function goViewRound() {
       this.$router.push('/round')
-    },
-    submitTag(defaultShareSettings) {
+    }
+    function submitTag(defaultShareSettings) {
       const formAction = this.$refs.submitTag.getAttribute('action')
       const formData = new FormData(this.$refs.submitTag)
-      const submittedTag = this.getPlayerTag
+      const submittedTag = getPlayerTag.value
       defaultShareSettings = defaultShareSettings ?? {
         postToReddit: this.postToReddit,
         postToTwitter: this.postToTwitter,
@@ -117,7 +108,27 @@ export default defineComponent({
         tag: submittedTag,
         storeAction: 'postNewBikeTag',
       })
-    },
+    }
+
+    // mounted
+    onMounted(() => {
+      if (!getPlayerTag.value?.discussionUrl?.length) {
+        /// TODO: check game settings for queue and remove this hardcoded hack
+        const defaultShareSettings = {
+          postToReddit: this.postToReddit,
+          postToTwitter: this.postToTwitter,
+          postToInstagram: this.postToInstagram,
+        }
+        debug('autosubmitting tag with default share settings', defaultShareSettings)
+        submitTag(defaultShareSettings)
+      }
+    })
+
+    return {
+      getCurrentBikeTag,
+      goViewRound,
+      submitTag,
+    }
   },
-})
+}
 </script>

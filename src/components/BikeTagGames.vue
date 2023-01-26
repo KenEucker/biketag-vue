@@ -14,12 +14,11 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { computed } from 'vue'
 import StyledHr from '@/assets/images/hr.svg'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 
-export default defineComponent({
+export default {
   name: 'BikeTagGames',
   props: {
     variant: {
@@ -35,15 +34,21 @@ export default defineComponent({
       default: true,
     },
   },
-  data() {
+  setup() {
+    const styledHr = StyledHr
+    const store = useStore()
+
+    // computed
+    const getAllGames = computed(() => store.getAllGames)
+    const getLogoUrl = computed(() => store.getLogoUrl)
+
     return {
-      styledHr: StyledHr,
+      styledHr,
+      getAllGames,
+      getLogoUrl,
     }
   },
-  computed: {
-    ...mapState(useStore, ['getAllGames', 'getLogoUrl']),
-  },
-})
+}
 </script>
 <style lang="scss" scoped>
 @import '../assets/styles/style';

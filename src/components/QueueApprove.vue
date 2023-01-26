@@ -104,9 +104,8 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
@@ -117,7 +116,7 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 
 SwiperCore.use([Pagination])
 
-export default defineComponent({
+export default {
   name: 'QueueApprove',
   components: {
     Swiper,
@@ -132,68 +131,38 @@ export default defineComponent({
     const setControlledSwiper = (swiper) => {
       controlledSwiper.value = swiper
     }
+    const confirmRemove = ref(false)
+    const store = useStore()
 
-    return {
-      Controller,
-      controlledSwiper,
-      setControlledSwiper,
+    // computed
+    const getQueuedTags = computed(() => store.getQueuedTags)
+    const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+    const currentlySelectedTag = computed(() => {
+      return getQueuedTags.value[controlledSwiper.value?.activeIndex]
+    })
+    const currentIsReadyForApproval = computed(
+      () => currentlySelectedTag.value?.mysteryImageUrl && currentlySelectedTag.value?.foundImageUrl
+    )
+
+    // methods
+    function dequeueTagConfirm() {
+      confirmRemove.value = true
     }
-  },
-  data() {
-    return {
-      confirmRemove: false,
-    }
-  },
-  computed: {
-    ...mapState(useStore, [
-      'getQueuedTags',
-      'getPlayerTag',
-      'getCurrentBikeTag',
-      'isBikeTagAmbassador',
-      'getAmbassadorId',
-    ]),
-    currentIsReadyForApproval() {
-      return this.currentlySelectedTag?.mysteryImageUrl && this.currentlySelectedTag?.foundImageUrl
-    },
-    currentlySelectedTag() {
-      return this.getQueuedTags[this.controlledSwiper?.activeIndex]
-    },
-  },
-  async mounted() {
-    if (!this.isBikeTagAmbassador) {
-      /// kick it sideways
-      for (let x = 0; x < 1000; ++x) {
-        const uhuhuh = () => console.log("YOU DIDN'T SAY THE MAGIC WORD!")
-        await setTimeout(uhuhuh, 1)
-      }
-      this.$router.push('/')
-    }
-  },
-  methods: {
-    dequeueTagConfirm() {
-      this.confirmRemove = true
-    },
-    dequeueTagConfirmYes() {
-      this.confirmRemove = false
-    },
-    dequeueTagConfirmNo() {
-      this.confirmRemove = false
-    },
-    dequeueTag() {
+    function dequeueTag() {
       const formAction = this.$refs.dequeueTag.getAttribute('action')
       const formData = new FormData(this.$refs.dequeueTag)
 
       this.$emit('submit', {
         formAction,
         formData,
-        tag: this.currentlySelectedTag,
+        tag: currentlySelectedTag.value,
         storeAction: 'dequeueTag',
       })
-    },
-    approveTag() {
+    }
+    function approveTag() {
       const formAction = this.$refs.approveTag.getAttribute('action')
       const formData = new FormData(this.$refs.approveTag)
-      const approvedTag = this.currentlySelectedTag
+      const approvedTag = currentlySelectedTag.value
 
       this.$emit('submit', {
         formAction,
@@ -201,19 +170,44 @@ export default defineComponent({
         tag: approvedTag,
         storeAction: 'approveTag',
       })
-    },
-    mysteryDescription(tag) {
+    }
+    function mysteryDescription(tag) {
       return `"${tag?.hint}"`
-    },
-    mysteryPlayer() {
-      return 'ken'
-    },
-    selectedTagPlayer() {
-      return 1
-    },
-    stringifyNumber,
+    }
+
+    // mounted
+    onMounted(async () => {
+      if (!isBikeTagAmbassador.value) {
+        const uhuhuh = () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              console.log("YOU DIDN'T SAY THE MAGIC WORD!")
+              resolve()
+            }, 1)
+          })
+        /// kick it sideways
+        for (let x = 0; x < 1000; ++x) {
+          await uhuhuh()
+        }
+        this.$router.push('/')
+      }
+    })
+
+    return {
+      Controller,
+      controlledSwiper,
+      setControlledSwiper,
+      confirmRemove,
+      getQueuedTags,
+      currentIsReadyForApproval,
+      dequeueTagConfirm,
+      dequeueTag,
+      approveTag,
+      mysteryDescription,
+      stringifyNumber,
+    }
   },
-})
+}
 </script>
 <style lang="scss">
 @import '../assets/styles/style';

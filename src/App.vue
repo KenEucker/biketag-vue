@@ -43,12 +43,14 @@ export default {
     // data
     let gameIsSet = ref(false)
     const store = useStore()
+    console.log('un error')
+    console.log(this.$router)
 
     // computed
     // eslint-disable-next-line prettier/prettier
-    const isNotLanding = computed(function() { return gameIsSet.value && this.$router.currentRoute.value.name != 'Landing'})
+    const isNotLanding = computed(() => gameIsSet.value && this.$router.currentRoute.value.name != 'Landing')
     // eslint-disable-next-line prettier/prettier
-    const isWhiteBackground = computed(function() { return this.$router.currentRoute.value.name === 'About' ? 'white-bck' : ''})
+    const isWhiteBackground = computed(() => this.$router.currentRoute.value.name === 'About' ? 'white-bck' : '')
     const logo = computed(() => store.getLogoUrl('m'))
     // eslint-disable-next-line prettier/prettier
     const title = computed(function() { return `${isNotLanding.value ? store.getGameName : this.$t('The Game Of')} BikeTag!`})

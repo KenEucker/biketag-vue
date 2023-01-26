@@ -51,13 +51,12 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import Pin from '@/assets/images/pin.svg'
 
-export default defineComponent({
+export default {
   name: 'BikeTagMap',
   components: {
     BikeTagQueue,
@@ -77,11 +76,13 @@ export default defineComponent({
     },
   },
   emits: ['dragend'],
-  data() {
-    let data = {}
-    switch (this.variant) {
+  setup(props) {
+    const data = ref({})
+    const store = useStore()
+
+    switch (props.variant) {
       case 'boundary':
-        data = {
+        data.value = {
           multipolygon: false,
           paths: [],
           options: {
@@ -96,91 +97,106 @@ export default defineComponent({
         }
         break
       case 'play/input':
-        data = {
+        data.value = {
           pinIcon: Pin,
         }
         break
       case 'biketags':
-        data = {
+        data.value = {
           pinIcon: Pin,
           center: { lat: 0, lng: 0 },
         }
         break
       case 'worldwide':
       default:
-        data = {
+        data.value = {
           center: { lat: 0, lng: 0 },
         }
         break
     }
-    return data
-  },
-  computed: {
-    ...mapState(useStore, ['getAllGames', 'getLogoUrl', 'getGame', 'getTags']),
-    getMarkers() {
-      return this.getAllGames
+
+    // computed
+    const getAllGames = computed(() => store.getAllGames)
+    const getLogoUrl = computed(() => store.getLogoUrl)
+    const getGame = computed(() => store.getGame)
+    const getTags = computed(() => store.getTags)
+    const getMarkers = computed(() =>
+      getAllGames.value
         .filter((game) => game.boundary.lat != undefined) // add gps location to all games
         .map((game) => ({ point: game.boundary, logo: game.logo }))
-    },
-  },
-  mounted() {
-    if (this.$props.variant !== 'play/input') {
-      this.center = {
-        lat: this.getGame.boundary?.lat ?? 39.8283,
-        lng: this.getGame.boundary?.lng ?? -98.5795,
-      }
-      if (this.$props.variant === 'biketags') {
-        setTimeout(() => {
-          const pins = document.querySelectorAll(".vue-map .gm-style div[role='button']")
-          const triggers = document.querySelectorAll('.vue-map-hidden div')
+    )
 
-          for (let i = 0; i < pins.length; i++) {
-            triggers[i].style.height = '32px'
-            triggers[i].o = {
-              Iw: undefined,
-              ni: undefined,
-              opacity: 1,
-              size: {
-                h: undefined,
-                height: 32,
-                j: undefined,
-                width: 32,
-              },
-              xn: true,
-            }
-            pins[i].insertBefore(triggers[i], pins[i].firstChild)
-          }
-        }, 2000)
-      }
+    // methods
+    function emitDragend(e) {
+      this.$emit('dragend', e)
     }
-  },
-  async created() {
-    if (this.$props.variant == 'boundary') {
-      const regionData = await this.$store.dispatch('getRegionPolygon', this.getGame.region)
-      if (regionData) {
-        this.center['lat'] = regionData.lat ? parseFloat(regionData.lat) : 0
-        this.center['lng'] = regionData.lon ? parseFloat(regionData.lon) : 0
-        this.multipolygon = regionData?.geojson?.type === 'MultiPolygon'
-        if (this.multipolygon) {
-          this.paths = regionData?.geojson?.coordinates[0].map((v) => {
-            return v.map((u) => {
-              return { lng: u[0], lat: u[1] }
+
+    // created
+    async function created() {
+      if (props.variant == 'boundary') {
+        const regionData = await store.getRegionPolygon(getGame.value.region)
+        if (regionData) {
+          data.value.center['lat'] = regionData.lat ? parseFloat(regionData.lat) : 0
+          data.value.center['lng'] = regionData.lon ? parseFloat(regionData.lon) : 0
+          data.value.multipolygon = regionData?.geojson?.type === 'MultiPolygon'
+          if (data.value.multipolygon) {
+            data.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
+              return v.map((u) => {
+                return { lng: u[0], lat: u[1] }
+              })
             })
-          })
-        } else {
-          this.paths = regionData?.geojson?.coordinates[0].map((v) => {
-            return { lng: v[0], lat: v[1] }
-          })
+          } else {
+            data.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
+              return { lng: v[0], lat: v[1] }
+            })
+          }
         }
       }
     }
+    created()
+
+    // mounted
+    onMounted(() => {
+      if (props.variant !== 'play/input') {
+        data.value.center = {
+          lat: getGame.value.boundary?.lat ?? 39.8283,
+          lng: getGame.value.boundary?.lng ?? -98.5795,
+        }
+        if (props.variant === 'biketags') {
+          setTimeout(() => {
+            const pins = document.querySelectorAll(".vue-map .gm-style div[role='button']")
+            const triggers = document.querySelectorAll('.vue-map-hidden div')
+
+            for (let i = 0; i < pins.length; i++) {
+              triggers[i].style.height = '32px'
+              triggers[i].o = {
+                Iw: undefined,
+                ni: undefined,
+                opacity: 1,
+                size: {
+                  h: undefined,
+                  height: 32,
+                  j: undefined,
+                  width: 32,
+                },
+                xn: true,
+              }
+              pins[i].insertBefore(triggers[i], pins[i].firstChild)
+            }
+          }, 2000)
+        }
+      }
+    })
+
+    return {
+      ...data.value,
+      getLogoUrl,
+      getTags,
+      getMarkers,
+      emitDragend,
+    }
   },
-  methods: {
-    emitDragend(e) {
-      this.$emit('dragend', e)
-    },
-  },
-})
+}
 </script>
 <style lang="scss">
 .map {

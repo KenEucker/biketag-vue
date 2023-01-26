@@ -26,11 +26,10 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { computed } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 
-export default defineComponent({
+export default {
   name: 'PlayerBicon',
   props: {
     size: {
@@ -52,45 +51,48 @@ export default defineComponent({
       default: false,
     },
   },
-  computed: {
-    ...mapState(useStore, ['getImgurImageSized']),
-    _playerName() {
-      if (this.playerName) {
-        return this.playerName
+  seturp(props) {
+    const store = useStore()
+
+    // computed
+    const getImgurImageSized = computed(() => store.getImgurImageSized)
+    const _playerName = computed(() => {
+      if (props.playerName) {
+        return props.playerName
       }
-      if (this.size === 'sm') {
-        return this.player?.name.substr(0, 1)
+      if (props.size === 'sm') {
+        return props.player?.name.substr(0, 1)
       } else {
-        return this.player?.name
+        return props.player?.name
       }
-    },
-    playerBiconUrl() {
+    })
+    const playerBiconUrl = computed(() => {
       let url
-      if (this.player && typeof this.player === 'object') {
-        if (this.player.bicon) {
-          url = this.player.bicon
-        } else if (this.player.tags[this.player.tags.length - 1].mysteryImageUrl) {
-          url = this.player.tags[this.player.tags.length - 1].mysteryImageUrl
+      if (props.player && typeof props.player === 'object') {
+        if (props.player.bicon) {
+          url = props.player.bicon
+        } else if (props.player.tags[props.player.tags.length - 1].mysteryImageUrl) {
+          url = props.player.tags[props.player.tags.length - 1].mysteryImageUrl
         } else {
-          url = this.player.tags[this.player.tags.length - 1].foundImageUrl
+          url = props.player.tags[props.player.tags.length - 1].foundImageUrl
         }
       }
-      return this.getImgurImageSized(url, this.size[0])
-    },
-    getTagCount() {
-      if (this.size === 'lg') {
-        return this.player.tags.length
+      return getImgurImageSized.value(url, props.size[0])
+    })
+    const getTagCount = computed(() => {
+      if (props.size === 'lg') {
+        return props.player.tags.length
       }
-      return this.player.tags.length > 99 ? '+99' : this.player.tags.length
-    },
-  },
-  methods: {
-    goPlayerPage: function () {
-      if (!this.noLink) {
-        this.$router.push('/player/' + encodeURIComponent(this.player?.name))
+      return props.player.tags.length > 99 ? '+99' : props.player.tags.length
+    })
+
+    // methods
+    function goPlayerPage() {
+      if (!props.noLink) {
+        this.$router.push('/player/' + encodeURIComponent(props.player?.name))
       }
-    },
-    tagColorNumber(count) {
+    }
+    function tagColorNumber(count) {
       if (count === 1) {
         return 'one'
       } else if (count < 10) {
@@ -102,9 +104,17 @@ export default defineComponent({
       } else {
         return 'fivehundredormore'
       }
-    },
+    }
+
+    return {
+      _playerName,
+      playerBiconUrl,
+      getTagCount,
+      goPlayerPage,
+      tagColorNumber,
+    }
   },
-})
+}
 </script>
 <style scoped lang="scss">
 .player-wrapper {

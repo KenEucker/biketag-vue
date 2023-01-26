@@ -30,7 +30,7 @@
   </div>
 </template>
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 // watchEffect, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { useTimer } from 'vue-timer-hook'
@@ -157,27 +157,26 @@ export default {
       }
     }
 
+    // mounted
+    onMounted(async () => {
+      await store.setQueuedTags(true)
+      await store.fetchCredentials()
+
+      /// Get the user credentials for BikeTag Ambassador functions
+      setTimeout(() => {
+        if (!checkAuth()) {
+          setTimeout(() => checkAuth, 1000)
+        }
+      }, 1000)
+      uploadInProgress.value = false
+    })
+
     return {
       timer,
       uploadInProgress,
-      countDown,
-      checkAuth,
       onApproveSubmit,
       getAmbassadorId,
-      store,
     }
-  },
-  async mounted() {
-    await this.store.setQueuedTags(true)
-    await this.store.fetchCredentials()
-
-    /// Get the user credentials for BikeTag Ambassador functions
-    setTimeout(() => {
-      if (!this.checkAuth()) {
-        setTimeout(() => this.checkAuth, 1000)
-      }
-    }, 1000)
-    this.uploadInProgress = false
   },
 }
 </script>

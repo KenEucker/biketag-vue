@@ -51,7 +51,6 @@
 </template>
 
 <script>
-import { ref } from 'vue'
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagGames from '@/components/BikeTagGames.vue'
@@ -68,8 +67,8 @@ export default {
     BikeTagMap,
   },
   setup() {
-    const styledHr = ref(StyledHr)
-    const pin = ref(Pin)
+    const styledHr = StyledHr
+    const pin = Pin
 
     return { styledHr, pin }
   },

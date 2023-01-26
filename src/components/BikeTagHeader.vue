@@ -31,70 +31,53 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
-export default defineComponent({
+export default {
   name: 'BikeTagHeader',
   components: {
     BikeTagButton,
   },
   setup() {
-    return {
-      jingle: ref(null),
-    }
-  },
-  data() {
-    return {
-      playingEaster: false,
-    }
-  },
-  computed: {
-    showAuth() {
-      return false
-    },
-    ...mapState(useStore, [
-      'getGameTitle',
-      'getCurrentBikeTag',
-      'getQueuedTags',
-      'getEasterEgg',
-      'getMostRecentlyViewedTagnumber',
-      'getGameName',
-    ]),
-  },
-  methods: {
-    playEasterEgg(e) {
+    const jingle = ref(null)
+    const playingEaster = ref(false)
+    const store = useStore()
+
+    // computed
+    const getEasterEgg = computed(() => store.getEasterEgg)
+
+    // methods
+    function muteEasterEgg(e) {
       e.preventDefault()
       e.stopPropagation()
-      if (this.getEasterEgg) {
-        document.getElementById('biketag-jingle').play()
-        this.playingEaster = true
-      }
-    },
-    playingNow() {
-      this.playingEaster = true
-    },
-    muteEasterEgg(e) {
-      e.preventDefault()
-      e.stopPropagation()
-      if (this.playingEaster) {
+      if (playingEaster.value) {
         document.getElementById('jingle').pause()
-        this.playingEaster = false
+        playingEaster.value = false
       }
-    },
-    goBikeTagsPage: function () {
+    }
+    function goBikeTagsPage() {
       this.$router.push('/biketags')
-    },
-    goPlayPage: function () {
+    }
+    function goPlayPage() {
       this.$router.push('/play')
-    },
-    goHowPage: function () {
+    }
+    function goHowPage() {
       this.$router.push('/howtoplay')
-    },
+    }
+
+    return {
+      jingle,
+      playingEaster,
+      getEasterEgg,
+      muteEasterEgg,
+      goBikeTagsPage,
+      goPlayPage,
+      goHowPage,
+    }
   },
-})
+}
 </script>
 <style lang="scss" scoped>
 .button-group {

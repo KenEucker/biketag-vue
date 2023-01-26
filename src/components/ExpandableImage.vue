@@ -14,8 +14,8 @@
   </div>
 </template>
 <script type="ts">
-import { defineComponent } from 'vue'
-export default defineComponent({
+import { ref, computed, watch } from 'vue'
+export default {
   name: 'ExpandableImage',
   props: {
     source: {
@@ -28,83 +28,88 @@ export default defineComponent({
     },
   },
   emits: ['loading', 'loaded'],
-  data() {
-    return {
-      expanded: false,
-      closeButtonRef: null,
-      loading: this.$emit('loading') && true,
-    }
-  },
-  computed: {
-    imgSrc() {
-      return this.expanded ? this.fullSource : this.source
-    }
-  },
-  watch: {
-    expanded(status) {
-      this.$nextTick(() => {
-        if (status) {
-          const closeImageMethod = this.closeImage
-          this.cloned = this.$el.cloneNode(true)
-          this.closeButtonRef = this.cloned.querySelector('.close-button')
-          this.closeButtonRef.addEventListener('click', this.closeImage)
-          // const clonedImg = this.cloned.querySelector('img')
-          // console.log({clonedImg})
-          // clonedImg.addEventListener('click', (e) => e.stopPropagation())
-          this.cloned.addEventListener('click', function doCloseImageBackground(event) {
-            if(event.target==this) {
-              closeImageMethod(event)
-            }
-          })
-          document.addEventListener('keydown', this.doCloseImage)
-          document.addEventListener('backbutton', this.doCloseImage)
-          document.body.appendChild(this.cloned)
-          document.body.style.overflow = 'hidden'
-          // this.cloned.addEventListener('touchmove', this.freezeVp, false)
-          setTimeout(() => {
-            this.cloned.style.opacity = 1
-          }, 0)
-        } else {
-          this.cloned.style.opacity = 0
-          // this.cloned.removeEventListener('touchmove', this.freezeVp, false)
-          setTimeout(() => {
-            this.closeButtonRef.removeEventListener('click', this.closeImage)
-            this.cloned.remove()
-            this.cloned = null
-            this.closeButtonRef = null
-            document.body.style.overflow = 'auto'
-          }, 250)
-        }
-      })
-    },
-  },
+  setup(props) {
+    const expanded = ref(false)
+    const closeButtonRef =  ref(null)
+    const loading = ref(this.$emit('loading') && true)
 
-  methods: {
-    expandClick() {
-      this.expanded = true
-    },
-    doCloseImage(event) {
+    // computed
+    const imgSrc = computed(() => expanded.value ? props.fullSource : props.source)
+
+    // methods
+    function expandClick() {
+      expanded.value = true
+    }
+    function doCloseImage(event) {
       if (event.key.toLowerCase() == 'escape') {
-        this.closeImage(event)
+        closeImage(event)
       }
-    },
-    closeImage(event) {
-      this.expanded = false
-      document.removeEventListener('keydown', this.doCloseImage)
-      document.removeEventListener('backbutton', this.doCloseImage)
+    }
+    function closeImage(event) {
+      expanded.value = false
+      document.removeEventListener('keydown', doCloseImage)
+      document.removeEventListener('backbutton', doCloseImage)
       document.addEventListener('gesturestart', function() { /* */ });
       event.stopPropagation()
-    },
-    freezeVp(e) {
+    }
+    function freezeVp(e) {
       e.preventDefault()
-    },
-    loaded() {
+    }
+    function loaded() {
       this.$emit('loaded')
-      this.loading = false
-    },
+      loading.value = false
+    }
+
+    // watch
+    watch(() => {
+      expanded.value, status => {
+        this.$nextTick(() => {
+          if (status) {
+            const closeImageMethod = closeImage
+            this.cloned = this.$el.cloneNode(true)
+            closeButtonRef.value = this.cloned.querySelector('.close-button')
+            closeButtonRef.value.addEventListener('click', closeImage)
+            // const clonedImg = this.cloned.querySelector('img')
+            // console.log({clonedImg})
+            // clonedImg.addEventListener('click', (e) => e.stopPropagation())
+            this.cloned.addEventListener('click', function doCloseImageBackground(event) {
+              if(event.target==this) {
+                closeImageMethod(event)
+              }
+            })
+            document.addEventListener('keydown', doCloseImage)
+            document.addEventListener('backbutton', doCloseImage)
+            document.body.appendChild(this.cloned)
+            document.body.style.overflow = 'hidden'
+            // this.cloned.addEventListener('touchmove', this.freezeVp, false)
+            setTimeout(() => {
+              this.cloned.style.opacity = 1
+            }, 0)
+          } else {
+            this.cloned.style.opacity = 0
+            // this.cloned.removeEventListener('touchmove', this.freezeVp, false)
+            setTimeout(() => {
+              closeButtonRef.value.removeEventListener('click', closeImage)
+              this.cloned.remove()
+              this.cloned = null
+              this.closeButtonRef = null
+              document.body.style.overflow = 'auto'
+            }, 250)
+          }
+        })
+      }
+    })
+
+    return {
+      expanded,
+      loading,
+      imgSrc,
+      expandClick,
+      loaded,
+    }
   },
   // template: '#expandable-image',
-})
+}
 </script>
 <style scoped lang="scss">
 .close-button {

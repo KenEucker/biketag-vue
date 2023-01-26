@@ -73,13 +73,12 @@
   </b-row>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 
-export default defineComponent({
+export default {
   name: 'BikeTag',
   components: {
     ExpandableImage,
@@ -158,66 +157,57 @@ export default defineComponent({
     },
   },
   emits: ['load'],
-  data() {
-    return {
-      mysteryImageLoaded: false,
-      foundImageLoaded: false,
-      noTagnumberLink: false,
-    }
-  },
-  computed: {
-    ...mapState(useStore, ['getImgurImageSized']),
-    _tagnumber() {
-      return this.tagnumber ? this.tagnumber : this.tag?.tagnumber
-    },
-    _getHint() {
-      return this.tag?.hint ? this.tag.hint : this.$t('pages.play.nohint')
-    },
-    _foundTagnumber() {
-      return this.foundTagnumber ? this.foundTagnumber : this.tag?.tagnumber
-    },
-    _foundImageUrl() {
-      return this.foundImageUrl
-        ? this.foundImageUrl.length === 0
+  setup(props) {
+    const mysteryImageLoaded = ref(false)
+    const foundImageLoaded = ref(false)
+    const noTagnumberLink = ref(false)
+    const store = useStore()
+
+    // computed
+    const getImgurImageSized = computed(() => store.getImgurImageSized)
+    const _tagnumber = computed(() => (props.tagnumber ? props.tagnumber : props.tag?.tagnumber))
+    const _getHint = computed(function () {
+      return props.tag?.hint ? props.tag.hint : this.$t('pages.play.nohint')
+    })
+    const _foundTagnumber = computed(() =>
+      props.foundTagnumber ? props.foundTagnumber : props.tag?.tagnumber
+    )
+    const _foundImageUrl = computed(() => {
+      return props.foundImageUrl
+        ? props.foundImageUrl.length === 0
           ? null
-          : this.foundImageUrl
-        : this.tag?.foundImageUrl
-    },
-    _mysteryImageUrl() {
-      return this.mysteryImageUrl
-        ? this.mysteryImageUrl.length === 0
+          : props.foundImageUrl
+        : props.tag?.foundImageUrl
+    })
+    const _mysteryImageUrl = computed(() => {
+      return props.mysteryImageUrl
+        ? props.mysteryImageUrl.length === 0
           ? null
-          : this.mysteryImageUrl
-        : this.tag?.mysteryImageUrl
-    },
-    getFoundImageSrc() {
-      return this.imageSize
-        ? this.getImgurImageSized(this._foundImageUrl, this.imageSize)
-        : this.sizedFoundImage
-        ? this.getImgurImageSized(this._foundImageUrl)
-        : this._foundImageUrl
-    },
-    getMysteryImageSrc() {
-      return this.imageSize
-        ? this.getImgurImageSized(this._mysteryImageUrl, this.imageSize)
-        : this.sizedMysteryImage
-        ? this.getImgurImageSized(this._mysteryImageUrl, this._foundImageUrl ? 'm' : 'l')
-        : this._mysteryImageUrl
-    },
-    _mysteryDescription() {
-      return this.mysteryDescription
-        ? this.mysteryDescription
-        : `#${this._tagnumber} ${this.tag?.hint?.length > 0 ? `"${this.tag.hint}"` : ''}`
-    },
-  },
-  mounted() {
-    const viewportMeta = document.createElement('meta')
-    viewportMeta.name = 'viewport'
-    viewportMeta.content = 'width=device-width, initial-scale=1'
-    document.head.appendChild(viewportMeta)
-  },
-  methods: {
-    getPostedDate(timestamp, timeOnly = false) {
+          : props.mysteryImageUrl
+        : props.tag?.mysteryImageUrl
+    })
+    const getFoundImageSrc = computed(() => {
+      return props.imageSize
+        ? getImgurImageSized.value(_foundImageUrl.value, props.imageSize)
+        : props.sizedFoundImage
+        ? getImgurImageSized.value(_foundImageUrl.value)
+        : _foundImageUrl.value
+    })
+    const getMysteryImageSrc = computed(() => {
+      return props.imageSize
+        ? getImgurImageSized.value(_mysteryImageUrl.value, props.imageSize)
+        : props.sizedMysteryImage
+        ? getImgurImageSized.value(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
+        : _mysteryImageUrl.value
+    })
+    const _mysteryDescription = computed(() => {
+      return props.mysteryDescription
+        ? props.mysteryDescription
+        : `#${_tagnumber.value} ${props.tag?.hint?.length > 0 ? `"${props.tag.hint}"` : ''}`
+    })
+
+    // methods
+    function getPostedDate(timestamp, timeOnly = false) {
       if (!timestamp) {
         return ''
       }
@@ -226,31 +216,54 @@ export default defineComponent({
         : new Date(timestamp * 1000).toLocaleDateString()
 
       return `${timeOnly ? ' @ ' : this.$t('components.biketag.posted_on')} ${datetime}`
-    },
-    tagImageLoaded(type) {
+    }
+    function tagImageLoaded(type) {
       if (type === 'mystery') {
-        this.mysteryImageLoaded = true
+        mysteryImageLoaded.value = true
       } else if (type === 'found') {
-        this._foundImageLoaded = true
+        foundImageLoaded.value = true
       }
 
       if (
-        this.mysteryImageLoaded &&
-        (!!this._foundImageUrl || this.foundImageLoaded || !this._foundImageUrl)
+        mysteryImageLoaded.value &&
+        (!!_foundImageUrl.value || foundImageLoaded.value || !_foundImageUrl.value)
       ) {
         this.$emit('load')
       }
-    },
-    goTagPage: function () {
-      if (!this.noTagnumberLink) {
-        this.$router.push('/' + encodeURIComponent(this._tagnumber))
+    }
+    function goTagPage() {
+      if (!noTagnumberLink.value) {
+        this.$router.push('/' + encodeURIComponent(_tagnumber.value))
       }
-    },
-    goPlayerPage(player) {
+    }
+    function goPlayerPage(player) {
       this.$router.push('/player/' + encodeURIComponent(player))
-    },
+    }
+
+    // mounted
+    onMounted(() => {
+      const viewportMeta = document.createElement('meta')
+      viewportMeta.name = 'viewport'
+      viewportMeta.content = 'width=device-width, initial-scale=1'
+      document.head.appendChild(viewportMeta)
+    })
+
+    return {
+      _tagnumber,
+      _getHint,
+      _foundTagnumber,
+      _foundImageUrl,
+      _mysteryImageUrl,
+      getFoundImageSrc,
+      getMysteryImageSrc,
+      _mysteryDescription,
+      getPostedDate,
+      tagImageLoaded,
+      goTagPage,
+      goPlayerPage,
+    }
   },
-})
+}
 </script>
 <style lang="scss">
 .btn-hint {

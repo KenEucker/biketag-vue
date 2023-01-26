@@ -17,11 +17,10 @@
   </section>
 </template>
 <script>
-import { defineComponent } from 'vue'
 import BikeTagButton from '@/components/BikeTagButton'
 import StyledHr from '@/assets/images/hr.svg'
 
-export default defineComponent({
+export default {
   name: 'BikeTagBlurb',
   components: {
     BikeTagButton,
@@ -52,23 +51,27 @@ export default defineComponent({
       default: 'center',
     },
   },
-  data() {
+  setup(props) {
+    const styledHr = StyledHr
+
+    // methods
+    function _linkText() {
+      return props.linkText ?? props.link
+    }
+    function buttonClick() {
+      if (props.link.indexOf('://') !== -1) {
+        window.location = props.link
+      }
+      this.$router.push({ path: props.link })
+    }
+
     return {
-      styledHr: StyledHr,
+      styledHr,
+      _linkText,
+      buttonClick,
     }
   },
-  methods: {
-    _linkText() {
-      return this.linkText ?? this.link
-    },
-    buttonClick() {
-      if (this.link.indexOf('://') !== -1) {
-        window.location = this.link
-      }
-      this.$router.push({ path: this.link })
-    },
-  },
-})
+}
 </script>
 <style lang="scss" scoped>
 hr,

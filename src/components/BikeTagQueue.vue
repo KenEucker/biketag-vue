@@ -72,12 +72,11 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { computed } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { mapState } from 'pinia'
 import { BiketagFormSteps } from '@/common/types'
 
-export default defineComponent({
+export default {
   name: 'BikeTagQueue',
   props: {
     tag: {
@@ -97,22 +96,23 @@ export default defineComponent({
       default: null,
     },
   },
-  computed: {
-    ...mapState(useStore, [
-      'getQueuedTags',
-      'getCurrentBikeTag',
-      'getPlayerTag',
-      'getImgurImageSized',
-      'getQueuedTagState',
-    ]),
-  },
-  methods: {
-    canReset() {
-      return this.getQueuedTagState !== BiketagFormSteps.roundPosted
-    },
-    async resetToFound() {
-      await this.$store.dispatch('fetchCredentials')
-      return this.$store.dispatch('dequeueFoundTag').then((dequeueSuccessful) => {
+  setup(props) {
+    const store = useStore()
+
+    // computed
+    const getQueuedTags = computed(() => store.getImgurImageSized)
+    const getCurrentBikeTag = computed(() => store.getImgurImageSized)
+    const getPlayerTag = computed(() => store.getImgurImageSized)
+    const getImgurImageSized = computed(() => store.getImgurImageSized)
+    const getQueuedTagState = computed(() => store.getImgurImageSized)
+
+    // methods
+    function canReset() {
+      return getQueuedTagState.value !== BiketagFormSteps.roundPosted
+    }
+    async function resetToFound() {
+      await store.fetchCredentials()
+      return store.dequeueFoundTag().then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
           return this.$toast.open({
             message: `dequeue tag error: ${dequeueSuccessful}`,
@@ -126,10 +126,10 @@ export default defineComponent({
           })
         }
       })
-    },
-    async resetToMystery() {
-      await this.$store.dispatch('fetchCredentials')
-      return this.$store.dispatch('dequeueMysteryTag').then((dequeueSuccessful) => {
+    }
+    async function resetToMystery() {
+      await store.fetchCredentials()
+      return store.dequeueMysteryTag().then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
           return this.$toast.open({
             message: `dequeue tag error: ${dequeueSuccessful}`,
@@ -143,14 +143,25 @@ export default defineComponent({
           })
         }
       })
-    },
-    paginationClick(key) {
-      if (this.paginationRef) {
-        this.paginationRef.slideTo(key)
+    }
+    function paginationClick(key) {
+      if (props.paginationRef) {
+        props.paginationRef.slideTo(key)
       }
-    },
+    }
+
+    return {
+      getQueuedTags,
+      getCurrentBikeTag,
+      getPlayerTag,
+      getImgurImageSized,
+      canReset,
+      resetToFound,
+      resetToMystery,
+      paginationClick,
+    }
   },
-})
+}
 </script>
 <style lang="scss" scoped>
 .navigation {

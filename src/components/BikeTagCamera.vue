@@ -56,10 +56,10 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { ref, onMounted } from 'vue'
 import { exportHtmlToDownload } from '@/common/utils'
 
-export default defineComponent({
+export default {
   name: 'BikeTagCamera',
   props: {
     title: {
@@ -77,58 +77,46 @@ export default defineComponent({
       },
     },
   },
-  data() {
-    return {
-      animationDuration: 400,
-      enableCSSFilters: true,
-      hasDownloadedMystery: false,
-      hasDownloadedFound: false,
-
-      state: {
-        currentAngle: 0,
-        backgroundOpacity: 1,
-        backgroundColor: '#fff',
-        isFlashing: false,
-        backgroundFilters: {
-          brightness: 100,
-          contrast: 100,
-          blur: 0,
-        },
+  setup(props) {
+    let animationDuration = ref(400)
+    const enableCSSFilters = ref(true)
+    const hasDownloadedMystery = ref(false)
+    const hasDownloadedFound = ref(false)
+    const state = ref({
+      currentAngle: 0,
+      backgroundOpacity: 1,
+      backgroundColor: '#fff',
+      isFlashing: false,
+      backgroundFilters: {
+        brightness: 100,
+        contrast: 100,
+        blur: 0,
       },
-    }
-  },
-  mounted() {
-    // Lock background on mobile
-    if (/Mobi/.test(navigator.userAgent)) {
-      this.$refs.backgroundRef.style.backgroundSize = 'cover'
-    }
-    document.addEventListener('mouseup', this.onTouchTimerStop)
-    document.addEventListener('mouseup', this.onTouchShutterStop)
-  },
-  methods: {
-    async downloadTag() {
+    })
+
+    // methods
+    async function downloadTag() {
       this.downloadingTag = true
-      const downloadPrefix = `BikeTag-${this.tag.game}-${this.tag.tagnumber}--`
-      if (!this.hasDownloadedMystery) {
+      const downloadPrefix = `BikeTag-${props.tag.game}-${props.tag.tagnumber}--`
+      if (!hasDownloadedMystery.value) {
         const mysteryImageDataUrl = await exportHtmlToDownload(
           `${downloadPrefix}mystery`,
           undefined,
           '#the-tag .mystery-tag'
         )
-        this.hasDownloadedMystery = !!mysteryImageDataUrl
-      } else if (!this.hasDownloadedFound) {
+        hasDownloadedMystery.value = !!mysteryImageDataUrl
+      } else if (!hasDownloadedFound.value) {
         const foundImageDataUrl = await exportHtmlToDownload(
           `${downloadPrefix}found`,
           undefined,
           '#the-tag .found-tag'
         )
-        this.hasDownloadedFound = !!foundImageDataUrl
+        hasDownloadedFound.value = !!foundImageDataUrl
       }
       this.downloadingTag = false
-    },
-
+    }
     /* Film Door */
-    onClickFilmDoor() {
+    function onClickFilmDoor() {
       const resetTransform = this.$refs.tagToggleRef.style.transform
 
       if (resetTransform) {
@@ -136,65 +124,62 @@ export default defineComponent({
       } else {
         this.$refs.tagToggleRef.style.transform = 'translate(-80px)'
       }
-    },
-
+    }
     /* Lighten/Darken */
-    formatBackgroundFilters() {
+    function formatBackgroundFilters() {
       const units = {
         brightness: '%',
         contrast: '%',
         blur: 'px',
       }
 
-      return Object.keys(this.state.backgroundFilters)
-        .map((filter) => `${filter}(${this.state.backgroundFilters[filter]}${units[filter]})`)
+      return Object.keys(state.value.backgroundFilters)
+        .map((filter) => `${filter}(${state.value.backgroundFilters[filter]}${units[filter]})`)
         .join(' ')
-    },
-
-    sizeToggleClick() {
+    }
+    function sizeToggleClick() {
       const resetTransform = this.$refs.sizeToggleRef.style.transform
 
       if (resetTransform) {
         this.$refs.sizeToggleRef.style.transform = ''
-        this.state.backgroundOpacity = 1
-        if (this.enableCSSFilters) {
-          this.state.backgroundFilters.brightness = 100
-          this.state.backgroundFilters.contrast = 100
+        state.value.backgroundOpacity = 1
+        if (enableCSSFilters.value) {
+          state.value.backgroundFilters.brightness = 100
+          state.value.backgroundFilters.contrast = 100
         }
       } else if (this.$refs.sizeToggleRef.classList.contains('lighten')) {
         this.$refs.sizeToggleRef.style.transform = 'translateX(15px)'
         this.$refs.sizeToggleRef.classList.remove('lighten')
-        if (this.enableCSSFilters) {
-          this.state.backgroundFilters.brightness = 110
-          this.state.backgroundFilters.contrast = 90
+        if (enableCSSFilters.value) {
+          state.value.backgroundFilters.brightness = 110
+          state.value.backgroundFilters.contrast = 90
         } else {
-          this.state.backgroundOpacity = 0.9
-          this.state.backgroundColor = '#fff'
+          state.value.backgroundOpacity = 0.9
+          state.value.backgroundColor = '#fff'
         }
       } else {
         this.$refs.sizeToggleRef.style.transform = 'translate(-15px)'
         this.$refs.sizeToggleRef.classList.add('lighten')
-        if (this.enableCSSFilters) {
-          this.state.backgroundFilters.brightness = 90
-          this.state.backgroundFilters.contrast = 110
+        if (enableCSSFilters.value) {
+          state.value.backgroundFilters.brightness = 90
+          state.value.backgroundFilters.contrast = 110
         } else {
-          this.state.backgroundOpacity = 0.9
-          this.state.backgroundColor = '#000'
+          state.value.backgroundOpacity = 0.9
+          state.value.backgroundColor = '#000'
         }
       }
 
-      if (this.enableCSSFilters) {
-        this.$refs.backgroundRef.style.filter = this.formatBackgroundFilters()
+      if (enableCSSFilters.value) {
+        this.$refs.backgroundRef.style.filter = formatBackgroundFilters()
       } else {
-        this.$refs.backgroundRef.style.opacity = this.state.backgroundOpacity
-        this.$refs.backroundContainerRef.style.backgroundColor = this.state.backgroundColor
+        this.$refs.backgroundRef.style.opacity = state.value.backgroundOpacity
+        this.$refs.backroundContainerRef.style.backgroundColor = state.value.backgroundColor
       }
-    },
-
+    }
     /* Shutter */
-    onTouchShutterStart() {
-      if (!this.state.isFlashing) {
-        this.state.isFlashing = true
+    function onTouchShutterStart() {
+      if (!state.value.isFlashing) {
+        state.value.isFlashing = true
         this.$refs.backroundContainerRef.style.backgroundColor = '#fff'
         this.$refs.flashOverlayRef.style.opacity = 1
         this.$refs.backgroundRef.style.opacity = 0.75
@@ -211,30 +196,47 @@ export default defineComponent({
         }, 0)
 
         setTimeout(() => {
-          this.state.isFlashing = false
+          state.value.isFlashing = false
           this.$refs.flashOverlayRef.style.transition = ''
           this.$refs.backgroundRef.style.transition = ''
           this.$refs.backroundContainerRef.style.backgroundColor = this.state.backgroundColor
-        }, this.animationDuration * 2)
+        }, animationDuration.value * 2)
 
-        this.downloadTag()
+        downloadTag()
       }
-    },
-
-    onTouchShutterStop() {
+    }
+    function onTouchShutterStop() {
       this.$refs.shutterRef.classList.remove('shutter-clicked')
-    },
-
+    }
     /* Timer */
-    onTouchTimerStart() {
+    function onTouchTimerStart() {
       this.$refs.timerRef.classList.add('timer-clicked')
-    },
-
-    onTouchTimerStop() {
+    }
+    function onTouchTimerStop() {
       this.$refs.timerRef.classList.remove('timer-clicked')
-    },
+    }
+
+    // mounted
+    onMounted(function () {
+      // Lock background on mobile
+      if (/Mobi/.test(navigator.userAgent)) {
+        this.$refs.backgroundRef.style.backgroundSize = 'cover'
+      }
+      document.addEventListener('mouseup', onTouchTimerStop)
+      document.addEventListener('mouseup', onTouchShutterStop)
+    })
+
+    return {
+      state,
+      onClickFilmDoor,
+      sizeToggleClick,
+      onTouchShutterStart,
+      onTouchShutterStop,
+      onTouchTimerStart,
+      onTouchTimerStop,
+    }
   },
-})
+}
 
 /* Drag lens */
 </script>
