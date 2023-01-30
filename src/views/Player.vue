@@ -68,9 +68,8 @@
 <script>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/pinia.ts'
+import { useStore } from '@/store'
 import BikeTag from '@/components/BikeTag.vue'
-import biketag from 'biketag'
 import Player from '@/components/PlayerBicon.vue'
 import Loading from 'vue-loading-overlay'
 import BikeDex from '@/components/BikeDex.vue'

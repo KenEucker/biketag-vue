@@ -1,26 +1,14 @@
-import { getInstance } from './authWrapper'
+import { useAuth0 } from '@auth0/auth0-vue'
 
 export const authGuard = (to: { fullPath: any }, from: any, next: (arg0?: boolean) => any) => {
-  const authService = getInstance()
+  const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0()
 
-  const fn = () => {
-    if (authService?.isAuthenticated) {
-      return next()
-    }
-
-    authService.loginWithRedirect({ appState: { targetUrl: to.fullPath } })
-    return next(false)
+  if (isLoading.value) return next(false)
+  if (isAuthenticated.value) {
+    return next()
+  } else {
+    loginWithRedirect({ appState: { targetUrl: to.fullPath } })
   }
 
-  if (!authService.loading) {
-    return fn()
-  }
-
-  authService.$watch('loading', (loading: boolean) => {
-    if (loading === false) {
-      return fn()
-    }
-
-    return next(false)
-  })
+  return next(false)
 }

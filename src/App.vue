@@ -25,9 +25,10 @@
   </div>
 </template>
 <script>
-import { ref, inject, computed, nextTick } from 'vue'
+import { ref, inject, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
+import { useAuth0 } from '@auth0/auth0-vue'
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
 import ServiceWorker from '@/components/ServiceWorker.vue'
 import { debug } from './common/utils'
@@ -43,11 +44,11 @@ export default {
   },
   setup() {
     // data
-    let gameIsSet = ref(false)
+    const gameIsSet = ref(false)
     const store = useStore()
     const router = useRouter()
-    const auth = inject('auth0')
     const toast = inject('toast')
+    const { isAuthenticated, idTokenClaims, user } = useAuth0()
 
     // computed
     // eslint-disable-next-line prettier/prettier
@@ -74,24 +75,6 @@ export default {
       }
     }
 
-    // created
-    function checkAuth() {
-      if (auth?.isAuthenticated) {
-        if (!this.getProfile?.nonce?.length) {
-          auth.getIdTokenClaims().then((claims) => {
-            if (claims) {
-              const token = claims.__raw
-              store.setProfile({ ...auth.user, token })
-            } else {
-              debug("what's this? no speaka da mda5hash, brah?")
-            }
-          })
-        }
-        return true
-      }
-      return false
-    }
-
     async function created() {
       const initResults = []
       /// Set it first thing
@@ -101,24 +84,20 @@ export default {
       const _gameIsSet = game?.name?.length !== 0
 
       if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
-        gameIsSet = true
+        gameIsSet.value = true
 
-        setTimeout(() => {
-          if (!checkAuth()) {
-            setTimeout(() => checkAuth, 1000)
+        if (isAuthenticated.value) {
+          if (!this.getProfile?.nonce?.length) {
+            if (idTokenClaims.value)
+              store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
+            else debug("what's this? no speaka da mda5hash, brah?")
           }
-        }, 1000)
+        }
 
-        setTimeout(
-          await nextTick(() => {
-            if (!game) {
-              router.push('/landing')
-              gameIsSet = false
-              return
-            }
-          }),
-          100
-        )
+        if (!game) {
+          router.push('/landing')
+          gameIsSet.value = false
+        }
 
         initResults.push(await store.setTags())
         initResults.push(await store.setCurrentBikeTag())

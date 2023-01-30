@@ -29,6 +29,7 @@ import { createHead } from '@vueuse/head'
 import Bugsnag from '@bugsnag/js'
 import BugsnagPluginVue from '@bugsnag/plugin-vue'
 
+import { createAuth0 } from '@auth0/auth0-vue'
 class BikeTagApp {
   protected emitter
   protected app
@@ -55,23 +56,15 @@ class BikeTagApp {
   }
   authentication() {
     if (process.env.A_DOMAIN?.length) {
-      const auth0Opts = {
-        domain: process.env.A_DOMAIN,
-        client_id: process.env.A_CID,
-        audience: process.env.A_AUDIENCE,
-        onRedirectCallback: (appState: any) => {
-          router.push(
-            appState && appState.targetUrl ? appState.targetUrl : window.location.pathname
-          )
-        },
-      }
-      const auth = useAuth0(auth0Opts)
-      this.app.provide('auth0', auth)
-
       debug('init::authentication')
-      this.app.use(Auth0Plugin, auth0Opts)
-    } else {
-      this.app.config.globalProperties.$auth = () => () => null
+      const auth = createAuth0({
+        domain: process.env.A_DOMAIN as string,
+        clientId: process.env.A_CID as string,
+        authorizationParams: {
+          redirect_uri: window.location.origin,
+        },
+      })
+      this.app.use(auth)
     }
   }
   bugs() {
