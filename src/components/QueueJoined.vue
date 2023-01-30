@@ -16,6 +16,7 @@
 </template>
 <script>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
@@ -34,13 +35,14 @@ export default {
   },
   setup() {
     const store = useStore()
+    const router = useRouter()
 
     // computed
     const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 
     // methods
     function goViewRound() {
-      this.$router.push('/round')
+      router.push('/round')
     }
     function goMysteryQueue() {
       store.setFormStepToJoin(true)

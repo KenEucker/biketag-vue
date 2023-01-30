@@ -61,7 +61,7 @@
           method="POST"
           data-netlify="true"
           data-netlify-honeypot="bot-field"
-          @submit.prevent="approveTag"
+          @submit.prevent="approveTagFunction"
         >
           <input type="hidden" name="form-name" value="approve-new-biketag" />
           <input type="hidden" name="ambassadorId" value="" />
@@ -90,7 +90,7 @@
           v-model="confirmRemove"
           class="confirm-modal"
           title="Confirm Removal of Queued Tag"
-          @ok="dequeueTag"
+          @ok="dequeueTagFunction"
         >
           <p>{{ $t('pages.approve.confirm_remove') }}</p>
         </b-modal>
@@ -105,6 +105,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
@@ -126,13 +127,16 @@ export default {
     BikeTagButton,
   },
   emits: ['submit'],
-  setup() {
+  setup(props, { emit }) {
     const controlledSwiper = ref(null)
     const setControlledSwiper = (swiper) => {
       controlledSwiper.value = swiper
     }
     const confirmRemove = ref(false)
+    const dequeueTag = ref(null)
+    const approveTag = ref(null)
     const store = useStore()
+    const router = useRouter()
 
     // computed
     const getQueuedTags = computed(() => store.getQueuedTags)
@@ -148,23 +152,23 @@ export default {
     function dequeueTagConfirm() {
       confirmRemove.value = true
     }
-    function dequeueTag() {
-      const formAction = this.$refs.dequeueTag.getAttribute('action')
-      const formData = new FormData(this.$refs.dequeueTag)
+    function dequeueTagFunction() {
+      const formAction = dequeueTag.value.getAttribute('action')
+      const formData = new FormData(dequeueTag.value)
 
-      this.$emit('submit', {
+      emit('submit', {
         formAction,
         formData,
         tag: currentlySelectedTag.value,
         storeAction: 'dequeueTag',
       })
     }
-    function approveTag() {
-      const formAction = this.$refs.approveTag.getAttribute('action')
-      const formData = new FormData(this.$refs.approveTag)
+    function approveTagFunction() {
+      const formAction = approveTag.value.getAttribute('action')
+      const formData = new FormData(approveTag.value)
       const approvedTag = currentlySelectedTag.value
 
-      this.$emit('submit', {
+      emit('submit', {
         formAction,
         formData,
         tag: approvedTag,
@@ -189,11 +193,13 @@ export default {
         for (let x = 0; x < 1000; ++x) {
           await uhuhuh()
         }
-        this.$router.push('/')
+        router.push('/')
       }
     })
 
     return {
+      dequeueTag,
+      approveTag,
       Controller,
       controlledSwiper,
       setControlledSwiper,
@@ -201,8 +207,8 @@ export default {
       getQueuedTags,
       currentIsReadyForApproval,
       dequeueTagConfirm,
-      dequeueTag,
-      approveTag,
+      dequeueTagFunction,
+      approveTagFunction,
       mysteryDescription,
       stringifyNumber,
     }

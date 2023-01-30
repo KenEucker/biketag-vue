@@ -16,6 +16,7 @@ import {
 import { BiketagFormSteps, State } from '@/common/types'
 import { setNPAuthorization } from '@/common/utils'
 import { debug } from '../common/utils'
+// import { inject } from 'vue'
 
 const domain = getDomainInfo(window)
 const profile = getProfileFromCookie()
@@ -113,14 +114,15 @@ export const useStore = defineStore('store', {
         await client.config(credentials, false, true)
         this.credentialsFetched = true
         // if (this.profile?.isBikeTagAmbassador) {
+        //   const auth = inject('auth0')
         //   /// fetch auth token for admin purposes
         //   const checkAuth = () => {
-        //     if (this.$auth?.isAuthenticated) {
+        //     if (auth?.isAuthenticated) {
         //       if (!this.getProfile?.nonce?.length) {
-        //         this.$auth.getIdTokenClaims().then((claims) => {
+        //         auth.getIdTokenClaims().then((claims) => {
         //           if (claims) {
         //             const token = claims.__raw
-        //             this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+        //             this.$store.dispatch('setProfile', { ...auth.user, token })
         //           } else {
         //             debug("what's this? no speaka da mda5hash, brah?")
         //           }

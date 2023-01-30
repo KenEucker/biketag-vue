@@ -38,7 +38,7 @@
       </bike-tag-button>
     </div>
     <form
-      ref="foundTag"
+      ref="foundTagRef"
       name="add-found-tag"
       action="add-found-tag"
       method="POST"
@@ -118,7 +118,7 @@
   </div>
 </template>
 <script>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
@@ -142,7 +142,7 @@ export default {
     },
   },
   emits: ['submit'],
-  setup(props) {
+  setup(props, { emit }) {
     const preview = ref(null)
     const image = ref(props.tag?.foundImage ?? '')
     const foundImageUrl = ref(null)
@@ -154,10 +154,13 @@ export default {
     const inputDOM = ref(null)
     const showModal = ref(false)
     const uploadInProgress = ref(false)
-    let location = ref('')
-    let player = ref('')
-    let passcode = ref(Date.now().toString()) // don't let them just get away with it
+    const location = ref('')
+    const player = ref('')
+    const passcode = ref(Date.now().toString()) // don't let them just get away with it
+    const foundTagRef = ref(null)
     const store = useStore()
+    const auth = inject('auth0')
+    const toast = inject('toast')
 
     // computed
     const getGameName = computed(() => store.getGameName)
@@ -179,7 +182,7 @@ export default {
       return location.value
     })
     const isAuthenticated = computed(function () {
-      return this.$auth.isAuthenticated
+      return auth.isAuthenticated
     })
 
     // methods
@@ -193,7 +196,7 @@ export default {
       e.preventDefault()
       uploadInProgress.value = true
       if (!location.value?.length) {
-        this.$toast.open({
+        toast.open({
           message: 'Please add your Found Location',
           type: 'error',
           position: 'top',
@@ -202,7 +205,7 @@ export default {
         return
       }
       if (!player.value) {
-        this.$toast.open({
+        toast.open({
           message: 'Please enter a name',
           type: 'error',
           position: 'top',
@@ -210,7 +213,7 @@ export default {
         uploadInProgress.value = false
         return
       }
-      if (!this.$auth?.isAuthenticated) {
+      if (!auth?.isAuthenticated) {
         try {
           await store.checkPasscode({
             name: player.value,
@@ -220,20 +223,20 @@ export default {
           await sleep(100)
         } catch {
           if (showModal.value) {
-            this.$toast.open({
+            toast.open({
               message: 'Incorrect passcode',
               type: 'error',
               position: 'top',
             })
           }
-          this.$nextTick(() => (showModal.value = !showModal.value))
+          nextTick(() => (showModal.value = !showModal.value))
           passcode.value = ''
           uploadInProgress.value = false
           return
         }
       }
       if (!image.value) {
-        this.$toast.open({
+        toast.open({
           message: 'Invalid image, add a new one.',
           type: 'error',
           position: 'top',
@@ -258,10 +261,9 @@ export default {
         }
       }
       document.querySelector('.popover')?.remove()
-      console.log(this.$refs)
-      console.log(this.$refs.foundTag)
-      const formAction = this.$refs.foundTag.getAttribute('action')
-      const formData = new FormData(this.$refs.foundTag)
+      console.log(foundTagRef.value)
+      const formAction = foundTagRef.value.getAttribute('action')
+      const formData = new FormData(foundTagRef.value)
       const foundTag = {
         foundImage: image.value,
         foundPlayer: player.value,
@@ -276,7 +278,7 @@ export default {
       }
       uploadInProgress.value = false
 
-      this.$emit('submit', {
+      emit('submit', {
         formAction,
         formData,
         tag: foundTag,
@@ -320,7 +322,7 @@ export default {
           }
           previewReader.readAsDataURL(input.files[0])
           if (input.files[0].size / Math.pow(1024, 2) > 15) {
-            this.$toast.open({
+            toast.open({
               message: 'Image exceds 15mb',
               type: 'error',
               position: 'top',
@@ -331,7 +333,7 @@ export default {
               const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
 
               if (createDate < getCurrentBikeTag.value.mysteryTime) {
-                this.$toast.open({
+                toast.open({
                   message: 'Timestamp Error',
                   type: 'error',
                   position: 'top',
@@ -365,12 +367,12 @@ export default {
     }
 
     // created
-    this.$nextTick(() => (showPopover.value = true))
+    nextTick(() => (showPopover.value = true))
 
     // mounted
     onMounted(function () {
-      this.$nextTick(() => {
-        setTimeout(() => this.$nextTick(() => (showPopover.value = false)), 100)
+      nextTick(() => {
+        setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
         // this.showPopover = false
         player.value = getName.value
         uploadInProgress.value = false
@@ -383,6 +385,7 @@ export default {
     })
 
     return {
+      foundTagRef,
       preview,
       location,
       player,

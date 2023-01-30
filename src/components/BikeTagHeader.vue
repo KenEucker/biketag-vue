@@ -32,6 +32,7 @@
 
 <script>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
@@ -44,6 +45,7 @@ export default {
     const jingle = ref(null)
     const playingEaster = ref(false)
     const store = useStore()
+    const router = useRouter()
 
     // computed
     const getEasterEgg = computed(() => store.getEasterEgg)
@@ -58,13 +60,13 @@ export default {
       }
     }
     function goBikeTagsPage() {
-      this.$router.push('/biketags')
+      router.push('/biketags')
     }
     function goPlayPage() {
-      this.$router.push('/play')
+      router.push('/play')
     }
     function goHowPage() {
-      this.$router.push('/howtoplay')
+      router.push('/howtoplay')
     }
 
     return {

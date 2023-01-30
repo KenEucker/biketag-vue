@@ -30,9 +30,10 @@
   </div>
 </template>
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, inject, computed, onMounted } from 'vue'
 // watchEffect, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
+import i18n from '@/i18n'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 import QueueApprove from '@/components/QueueApprove.vue'
@@ -52,10 +53,12 @@ export default {
   setup() {
     const time = new Date()
     time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
-    const store = useStore()
     const timer = ref(useTimer(time))
     const uploadInProgress = ref(false)
-    let countDown = ref(10)
+    const queueError = ref(null)
+    const store = useStore()
+    const auth = inject('auth')
+    const toast = inject('toast')
 
     // computed
     const getPlayerTag = computed(() => store.getPlayerTag)
@@ -64,12 +67,12 @@ export default {
 
     // methods
     async function checkAuth() {
-      if (this.$auth?.isAuthenticated) {
+      if (auth?.isAuthenticated) {
         if (!store.getProfile?.nonce?.length) {
-          return this.$auth.getIdTokenClaims().then((claims) => {
+          return auth.getIdTokenClaims().then((claims) => {
             if (claims) {
               const token = claims.__raw
-              store.setProfile({ ...this.$auth.user, token })
+              store.setProfile({ ...auth.user, token })
               return true
             } else {
               debug('BikeTag Ambassador profile could not be authenticated')
@@ -88,17 +91,17 @@ export default {
       }
       window.scrollTo(0, 0)
 
-      this.$toast.open({
+      toast.open({
         message:
           storeAction.indexOf('approve') !== -1
-            ? this.$t('notifications.approving')
-            : this.$t('notifications.removing'),
+            ? i18n.global.t('notifications.approving')
+            : i18n.global.t('notifications.removing'),
         type: 'info',
         position: 'top',
       })
-      const errorAction = this.$refs.queueError.getAttribute('action')
+      const errorAction = queueError.value.getAttribute('action')
 
-      const claims = await this.$auth.getIdTokenClaims()
+      const claims = await auth.getIdTokenClaims()
       if (claims) {
         /// If no token, the request will be rejected
         tag.token = claims.__raw
@@ -128,16 +131,16 @@ export default {
           formAction,
           new URLSearchParams(formData).toString(),
           () => {
-            this.$toast.open({
-              message: `${storeAction} ${this.$t('notifications.success')}`,
+            toast.open({
+              message: `${storeAction} ${i18n.global.t('notifications.success')}`,
               type: 'success',
               position: 'top',
             })
             store.setQueuedTags()
           },
           (m) => {
-            this.$toast.open({
-              message: `${this.$t('notifications.error')} ${m}`,
+            toast.open({
+              message: `${i18n.global.t('notifications.error')} ${m}`,
               type: 'error',
               timeout: false,
               position: 'bottom',
@@ -146,8 +149,8 @@ export default {
           }
         )
       } else {
-        const message = `${this.$t('notifications.error')}: ${success}`
-        this.$toast.open({
+        const message = `${i18n.global.t('notifications.error')}: ${success}`
+        toast.open({
           message,
           type: 'error',
           timeout: false,
@@ -174,6 +177,7 @@ export default {
     return {
       timer,
       uploadInProgress,
+      queueError,
       onApproveSubmit,
       getAmbassadorId,
     }

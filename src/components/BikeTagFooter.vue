@@ -84,6 +84,7 @@
 </template>
 <script>
 import { ref, computed, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagCamera from '@/components/BikeTagCamera.vue'
@@ -108,7 +109,6 @@ export default {
       },
     },
   },
-  refs: ['mysteryHint', 'hint'],
   emits: ['next', 'previous'],
   setup() {
     const showCamera = ref(false)
@@ -153,7 +153,10 @@ export default {
     let iterations = ref(10)
     const hintIcon = HintIcon
     const closeRounded = CloseRounded
+    const mysteryHint = ref(null)
+    const hint = ref(null)
     const store = useStore()
+    const router = useRouter()
 
     // computed
     const getCurrentHint = computed(() => store.getCurrentHint)
@@ -161,23 +164,23 @@ export default {
 
     // methods
     function goAboutPage() {
-      this.$router.push('/about')
+      router.push('/about')
     }
     function goLeaderboardPage() {
-      this.$router.push('/leaderboard')
+      router.push('/leaderboard')
     }
     function goPlayersPage() {
-      this.$router.push('/players')
+      router.push('/players')
     }
     function goMapPage() {
-      this.$router.push('/map')
+      router.push('/map')
     }
     function goRoundPage() {
-      this.$router.push('/round')
+      router.push('/round')
     }
     function goWorldwide() {
       window.location = 'http://biketag.org/'
-      // this.$router.push('/worldwide')
+      // router.push('/worldwide')
     }
     function sleep(time) {
       return new Promise((resolve) => setTimeout(resolve, time))
@@ -194,35 +197,33 @@ export default {
         if (popover) {
           popover.classList.add('popover__wrapper')
           const hint = getCurrentHint.value
-          this.$refs.mysteryHint.innerText = ''
+          mysteryHint.value.innerText = ''
           window.scrollBy({ top: 1 })
           for (let i of hint) {
             let j = 0
             if (document.querySelector('.popover__wrapper')) {
               while (j < iterations.value) {
-                this.$refs.mysteryHint.innerText = `${
-                  this.$refs.mysteryHint.innerText
-                }${randomCharacter()}`
+                mysteryHint.value.innerText = `${mysteryHint.value.innerText}${randomCharacter()}`
                 await sleep(timeout.value)
-                this.$refs.mysteryHint.innerText = this.$refs.mysteryHint.innerText.slice(
+                mysteryHint.value.innerText = mysteryHint.value.innerText.slice(
                   0,
-                  this.$refs.mysteryHint.innerText.length - 1
+                  mysteryHint.value.innerText.length - 1
                 )
                 j++
               }
             } else {
-              this.$refs.mysteryHint.innerText = ''
+              mysteryHint.value.innerText = ''
               break
             }
-            this.$refs.mysteryHint.innerText = `${this.$refs.mysteryHint.innerText}${i}`
+            mysteryHint.value.innerText = `${mysteryHint.value.innerText}${i}`
           }
         }
       }, 100)
     }
     function closePopover() {
-      document.getElementById('hint').click()
-      // console.log(this.$refs.hint)
-      // this.$refs.hint.click()
+      hint.value.click()
+      // console.log(hint.value)
+      // hint.value.click()
     }
 
     // before UnMount
@@ -234,6 +235,8 @@ export default {
       showCamera,
       hintIcon,
       closeRounded,
+      mysteryHint,
+      hint,
       getQueuedTags,
       goMapPage,
       goRoundPage,

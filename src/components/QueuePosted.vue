@@ -8,7 +8,7 @@
       </bike-tag-button>
     </div>
     <form
-      ref="submitTag"
+      ref="submitTagRef"
       name="post-new-biketag"
       action="post-new-biketag"
       method="POST"
@@ -56,7 +56,8 @@
   </b-container>
 </template>
 <script>
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import { debug } from '@/common/utils'
@@ -67,8 +68,10 @@ export default {
     BikeTagButton,
   },
   emits: ['submit'],
-  setup() {
+  setup(props, { emit }) {
+    const submitTagRef = ref(null)
     const store = useStore()
+    const router = useRouter
 
     // computed
     const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
@@ -76,11 +79,11 @@ export default {
 
     // methods
     function goViewRound() {
-      this.$router.push('/round')
+      router.push('/round')
     }
     function submitTag(defaultShareSettings) {
-      const formAction = this.$refs.submitTag.getAttribute('action')
-      const formData = new FormData(this.$refs.submitTag)
+      const formAction = submitTagRef.value.getAttribute('action')
+      const formData = new FormData(submitTagRef.value)
       const submittedTag = getPlayerTag.value
       defaultShareSettings = defaultShareSettings ?? {
         postToReddit: this.postToReddit,
@@ -102,7 +105,7 @@ export default {
       formData.append('mentionUrl', submittedTag.mentionUrl)
       // formData.append('shareUrl', submittedTag.shareUrl)
 
-      this.$emit('submit', {
+      emit('submit', {
         formAction,
         formData,
         tag: submittedTag,
@@ -125,9 +128,9 @@ export default {
     })
 
     return {
+      submitTagRef,
       getCurrentBikeTag,
       goViewRound,
-      submitTag,
     }
   },
 }

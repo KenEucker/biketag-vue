@@ -16,6 +16,7 @@
 
 <script>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
@@ -34,13 +35,14 @@ export default {
     const styledHr = StyledHr
     const pin = Pin
     const store = useStore()
+    const router = useRouter()
 
     // computed
     const getGameName = computed(() => store.getGameName)
 
     // methods
     function goBikeTagsPage() {
-      this.$router.push('/biketags')
+      router.push('/biketags')
     }
 
     return {

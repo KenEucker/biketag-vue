@@ -21,8 +21,7 @@ export default {
     const store = useStore
 
     // computed
-    const getLeaderboard = computed(() => store.getLeaderboard)
-    const playersList = computed(() => getLeaderboard.value)
+    const playersList = computed(() => store.getLeaderboard)
 
     return {
       playersList,

@@ -121,13 +121,14 @@ export default {
     BikeTagButton,
   },
   emits: ['submit'],
-  setup() {
+  setup(props, { emit }) {
     const postToReddit = ref(false)
     const postToTwitter = ref(false)
     const postToInstagram = ref(false)
     const showReddit = ref(false)
     const showTwitter = ref(false)
     const showInstagram = ref(false)
+    const submitTag = ref(null)
     const store = useStore()
 
     // computed
@@ -167,8 +168,8 @@ See all BikeTags and more, for ${getGameName.value}:
       navigator.clipboard.writeText(text)
     }
     function onSubmit() {
-      const formAction = this.$refs.submitTag.getAttribute('action')
-      const formData = new FormData(this.$refs.submitTag)
+      const formAction = submitTag.value.getAttribute('action')
+      const formData = new FormData(submitTag.value)
       const submittedTag = getPlayerTag.value
 
       submittedTag.discussionUrl = JSON.stringify({
@@ -185,7 +186,7 @@ See all BikeTags and more, for ${getGameName.value}:
       formData.append('mentionUrl', submittedTag.mentionUrl)
       // formData.append('shareUrl', submittedTag.shareUrl)
 
-      this.$emit('submit', {
+      emit('submit', {
         formAction,
         formData,
         tag: submittedTag,
@@ -207,6 +208,7 @@ See all BikeTags and more, for ${getGameName.value}:
       showTwitter,
       showInstagram,
       postToInstagram,
+      submitTag,
       getPlayerId,
       getGame,
       supportsReddit,

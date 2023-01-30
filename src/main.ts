@@ -5,6 +5,7 @@ import { store } from './store/'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import mitt from 'mitt'
 import { Auth0Plugin } from './auth'
+import { useAuth0 } from './auth/authWrapper'
 import i18nPlugin from './i18n'
 import VueToast from 'vue-toast-notification'
 import VueCookies from 'vue3-cookies'
@@ -64,6 +65,9 @@ class BikeTagApp {
           )
         },
       }
+      const auth = useAuth0(auth0Opts)
+      this.app.provide('auth0', auth)
+
       debug('init::authentication')
       this.app.use(Auth0Plugin, auth0Opts)
     } else {
@@ -83,6 +87,7 @@ class BikeTagApp {
     debug('init::bugs', bugsPlugin)
   }
   components() {
+    this.app.provide('toast', VueToast)
     this.app.use(VueToast)
     this.app.use(BootstrapVue3)
     this.app.use(Markdown)

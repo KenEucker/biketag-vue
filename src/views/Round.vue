@@ -26,14 +26,14 @@
   </div>
 </template>
 <script>
-import { ref, computed, onMounted } from 'vue'
-// watchEffect, onMounted } from 'vue'
+import { ref, inject, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 
 import QueueView from '@/components/QueueView.vue'
+import i18n from '@/i18n'
 
 export default {
   name: 'QueueBikeTagView',
@@ -51,8 +51,9 @@ export default {
     time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
     const timer = ref(useTimer(time.getSeconds()))
     const uploadInProgress = ref(false)
-    let countDown = ref(10)
+    const countDown = ref(10)
     const store = useStore()
+    const toast = inject('toast')
 
     // computed
     const getFormStep = computed(() => store.getFormStep)
@@ -90,15 +91,15 @@ export default {
       }
       window.scrollTo(0, 0)
 
-      this.$toast.open({
-        message: this.$t('notifications.uploading'),
+      toast.open({
+        message: i18n.global.t('notifications.uploading'),
         type: 'info',
         position: 'top',
       })
       const errorAction = this.$refs.queueError.getAttribute('action')
 
       uploadInProgress.value = true
-      const success = await this.$store.dispatch(storeAction, tag)
+      const success = await store[storeAction](tag)
       uploadInProgress.value = false
 
       if (success === true) {
@@ -123,15 +124,15 @@ export default {
           formAction,
           new URLSearchParams(formData).toString(),
           () => {
-            this.$toast.open({
-              message: `${storeAction} ${this.$t('notifications.success')}`,
+            toast.open({
+              message: `${storeAction} ${i18n.global.t('notifications.success')}`,
               type: 'success',
               position: 'top',
             })
           },
           (m) => {
-            this.$toast.open({
-              message: `${this.$t('notifications.error')} ${m}`,
+            toast.open({
+              message: `${i18n.global.t('notifications.error')} ${m}`,
               type: 'error',
               timeout: false,
               position: 'bottom',
@@ -140,8 +141,8 @@ export default {
           }
         )
       } else {
-        const message = `${this.$t('notifications.error')}: ${success}`
-        this.$toast.open({
+        const message = `${i18n.global.t('notifications.error')}: ${success}`
+        toast.open({
           message,
           type: 'error',
           timeout: false,
@@ -155,7 +156,7 @@ export default {
     const created = async () => {
       await store.setCurrentBikeTag(true)
       await store.setQueuedTags(true)
-      // this.countDownTimer()
+      // countDownTimer()
     }
     created()
 

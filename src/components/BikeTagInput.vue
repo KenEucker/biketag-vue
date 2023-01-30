@@ -38,7 +38,7 @@ export default {
     },
   },
   emits: ['update:modelValue'],
-  setup(props) {
+  setup(props, { emit }) {
     // computed
     const backgroundSrc = computed(() => {
       switch (props.variant) {
@@ -51,7 +51,7 @@ export default {
 
     // methods
     function update(e) {
-      this.$emit('update:modelValue', props.type === 'checkbox' ? e.target.checked : e)
+      emit('update:modelValue', props.type === 'checkbox' ? e.target.checked : e)
     }
 
     return {

@@ -72,7 +72,8 @@
   </div>
 </template>
 <script>
-import { computed } from 'vue'
+import { inject, computed, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 
@@ -98,6 +99,8 @@ export default {
   },
   setup(props) {
     const store = useStore()
+    const router = useRouter()
+    const toast = inject('toast')
 
     // computed
     const getQueuedTags = computed(() => store.getImgurImageSized)
@@ -114,15 +117,15 @@ export default {
       await store.fetchCredentials()
       return store.dequeueFoundTag().then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-          return this.$toast.open({
+          return toast.open({
             message: `dequeue tag error: ${dequeueSuccessful}`,
             type: 'error',
             timeout: false,
             position: 'bottom',
           })
         } else {
-          this.$nextTick(() => {
-            this.$router.go()
+          nextTick(() => {
+            router.go()
           })
         }
       })
@@ -131,15 +134,15 @@ export default {
       await store.fetchCredentials()
       return store.dequeueMysteryTag().then((dequeueSuccessful) => {
         if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-          return this.$toast.open({
+          return toast.open({
             message: `dequeue tag error: ${dequeueSuccessful}`,
             type: 'error',
             timeout: false,
             position: 'bottom',
           })
         } else {
-          this.$nextTick(() => {
-            this.$router.go()
+          nextTick(() => {
+            router.go()
           })
         }
       })

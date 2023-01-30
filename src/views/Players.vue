@@ -32,6 +32,7 @@
 </template>
 <script>
 import { ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import Player from '@/components/PlayerBicon.vue'
 
@@ -41,8 +42,10 @@ export default {
     Player,
   },
   setup() {
+    const router = useRouter()
+    const route = useRoute()
     const currentPage = ref(
-      this.$route.params?.currentPage.length ? parseInt(this.$route.params?.currentPage) : 1
+      route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1
     )
     let perPage = ref(10)
     const store = useStore()
@@ -62,12 +65,12 @@ export default {
       currentPage.value = 1
     }
     function changePage(event, pageNumber) {
-      this.$router.push('/players/' + pageNumber)
+      router.push('/players/' + pageNumber)
     }
 
     //watch
     watch(
-      () => '$route.params.currentPage',
+      () => 'route.params.currentPage',
       (val) => {
         currentPage.value = Number(val)
       }

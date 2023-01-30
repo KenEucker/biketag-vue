@@ -19,6 +19,7 @@
 <script>
 import BikeTagButton from '@/components/BikeTagButton'
 import StyledHr from '@/assets/images/hr.svg'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'BikeTagBlurb',
@@ -53,6 +54,7 @@ export default {
   },
   setup(props) {
     const styledHr = StyledHr
+    const router = useRouter()
 
     // methods
     function _linkText() {
@@ -62,7 +64,7 @@ export default {
       if (props.link.indexOf('://') !== -1) {
         window.location = props.link
       }
-      this.$router.push({ path: props.link })
+      router.push({ path: props.link })
     }
 
     return {

@@ -67,6 +67,7 @@
 
 <script>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/pinia.ts'
 import BikeTag from '@/components/BikeTag.vue'
 import biketag from 'biketag'
@@ -89,8 +90,10 @@ export default {
     BikeDex,
   },
   setup() {
+    const router = useRouter()
+    const route = useRoute()
     const currentPage = ref(
-      this.$route.params?.currentPage.length ? parseInt(this.$route.params?.currentPage) : 1
+      route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1
     )
     let perPage = ref(10)
     const tagsAreLoading = ref(true)
@@ -139,11 +142,11 @@ export default {
       currentPage.value = 1
     }
     function playerName() {
-      return decodeURIComponent(encodeURIComponent(this.$route.params.name))
+      return decodeURIComponent(encodeURIComponent(route.params.name))
     }
     function changePage(event, pageNumber) {
       startLoading()
-      this.$router.push('/player/' + encodeURIComponent(playerName()) + '/' + pageNumber)
+      router.push('/player/' + encodeURIComponent(playerName()) + '/' + pageNumber)
     }
     async function startLoading() {
       tagsLoaded.value = []
@@ -170,7 +173,7 @@ export default {
 
     // watch
     watch(
-      () => '$route.params.currentPage',
+      () => 'route.params.currentPage',
       (val) => {
         currentPage.value = Number(val)
       }

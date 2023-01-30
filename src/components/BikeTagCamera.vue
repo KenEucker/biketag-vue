@@ -78,10 +78,17 @@ export default {
     },
   },
   setup(props) {
-    let animationDuration = ref(400)
+    const animationDuration = ref(400)
     const enableCSSFilters = ref(true)
     const hasDownloadedMystery = ref(false)
     const hasDownloadedFound = ref(false)
+    const tagToggleRef = ref(null)
+    const sizeToggleRef = ref(null)
+    const backgroundRef = ref(null)
+    const backroundContainerRef = ref(null)
+    const flashOverlayRef = ref(null)
+    const shutterRef = ref(null)
+    const timerRef = ref(null)
     const state = ref({
       currentAngle: 0,
       backgroundOpacity: 1,
@@ -117,12 +124,12 @@ export default {
     }
     /* Film Door */
     function onClickFilmDoor() {
-      const resetTransform = this.$refs.tagToggleRef.style.transform
+      const resetTransform = tagToggleRef.value.style.transform
 
       if (resetTransform) {
-        this.$refs.tagToggleRef.style.transform = ''
+        tagToggleRef.value.style.transform = ''
       } else {
-        this.$refs.tagToggleRef.style.transform = 'translate(-80px)'
+        tagToggleRef.value.style.transform = 'translate(-80px)'
       }
     }
     /* Lighten/Darken */
@@ -138,18 +145,18 @@ export default {
         .join(' ')
     }
     function sizeToggleClick() {
-      const resetTransform = this.$refs.sizeToggleRef.style.transform
+      const resetTransform = sizeToggleRef.value.style.transform
 
       if (resetTransform) {
-        this.$refs.sizeToggleRef.style.transform = ''
+        sizeToggleRef.value.style.transform = ''
         state.value.backgroundOpacity = 1
         if (enableCSSFilters.value) {
           state.value.backgroundFilters.brightness = 100
           state.value.backgroundFilters.contrast = 100
         }
-      } else if (this.$refs.sizeToggleRef.classList.contains('lighten')) {
-        this.$refs.sizeToggleRef.style.transform = 'translateX(15px)'
-        this.$refs.sizeToggleRef.classList.remove('lighten')
+      } else if (sizeToggleRef.value.classList.contains('lighten')) {
+        sizeToggleRef.value.style.transform = 'translateX(15px)'
+        sizeToggleRef.value.classList.remove('lighten')
         if (enableCSSFilters.value) {
           state.value.backgroundFilters.brightness = 110
           state.value.backgroundFilters.contrast = 90
@@ -158,8 +165,8 @@ export default {
           state.value.backgroundColor = '#fff'
         }
       } else {
-        this.$refs.sizeToggleRef.style.transform = 'translate(-15px)'
-        this.$refs.sizeToggleRef.classList.add('lighten')
+        sizeToggleRef.value.style.transform = 'translate(-15px)'
+        sizeToggleRef.value.classList.add('lighten')
         if (enableCSSFilters.value) {
           state.value.backgroundFilters.brightness = 90
           state.value.backgroundFilters.contrast = 110
@@ -170,63 +177,67 @@ export default {
       }
 
       if (enableCSSFilters.value) {
-        this.$refs.backgroundRef.style.filter = formatBackgroundFilters()
+        backgroundRef.value.style.filter = formatBackgroundFilters()
       } else {
-        this.$refs.backgroundRef.style.opacity = state.value.backgroundOpacity
-        this.$refs.backroundContainerRef.style.backgroundColor = state.value.backgroundColor
+        backgroundRef.value.style.opacity = state.value.backgroundOpacity
+        backroundContainerRef.value.style.backgroundColor = state.value.backgroundColor
       }
     }
     /* Shutter */
     function onTouchShutterStart() {
       if (!state.value.isFlashing) {
         state.value.isFlashing = true
-        this.$refs.backroundContainerRef.style.backgroundColor = '#fff'
-        this.$refs.flashOverlayRef.style.opacity = 1
-        this.$refs.backgroundRef.style.opacity = 0.75
+        backroundContainerRef.value.style.backgroundColor = '#fff'
+        flashOverlayRef.value.style.opacity = 1
+        backgroundRef.value.style.opacity = 0.75
 
         setTimeout(() => {
-          this.$refs.flashOverlayRef.style.transition = `opacity ${
-            this.animationDuration * 2
+          flashOverlayRef.value.style.transition = `opacity ${
+            animationDuration.value * 2
           }ms ease-out`
-          this.$refs.backgroundRef.style.transition = `opacity ${
-            this.animationDuration * 2
-          }ms ease-out`
-          this.$refs.flashOverlayRef.style.opacity = 0
-          this.$refs.backgroundRef.style.opacity = 1
+          backgroundRef.value.style.transition = `opacity ${animationDuration.value * 2}ms ease-out`
+          flashOverlayRef.value.style.opacity = 0
+          backgroundRef.value.style.opacity = 1
         }, 0)
 
         setTimeout(() => {
           state.value.isFlashing = false
-          this.$refs.flashOverlayRef.style.transition = ''
-          this.$refs.backgroundRef.style.transition = ''
-          this.$refs.backroundContainerRef.style.backgroundColor = this.state.backgroundColor
+          flashOverlayRef.value.style.transition = ''
+          backgroundRef.value.style.transition = ''
+          backroundContainerRef.value.style.backgroundColor = this.state.backgroundColor
         }, animationDuration.value * 2)
 
         downloadTag()
       }
     }
     function onTouchShutterStop() {
-      this.$refs.shutterRef.classList.remove('shutter-clicked')
+      shutterRef.value.classList.remove('shutter-clicked')
     }
     /* Timer */
     function onTouchTimerStart() {
-      this.$refs.timerRef.classList.add('timer-clicked')
+      timerRef.value.classList.add('timer-clicked')
     }
     function onTouchTimerStop() {
-      this.$refs.timerRef.classList.remove('timer-clicked')
+      timerRef.value.classList.remove('timer-clicked')
     }
 
     // mounted
     onMounted(function () {
       // Lock background on mobile
       if (/Mobi/.test(navigator.userAgent)) {
-        this.$refs.backgroundRef.style.backgroundSize = 'cover'
+        backgroundRef.value.style.backgroundSize = 'cover'
       }
       document.addEventListener('mouseup', onTouchTimerStop)
       document.addEventListener('mouseup', onTouchShutterStop)
     })
 
     return {
+      tagToggleRef,
+      sizeToggleRef,
+      backroundContainerRef,
+      flashOverlayRef,
+      shutterRef,
+      timerRef,
       state,
       onClickFilmDoor,
       sizeToggleClick,

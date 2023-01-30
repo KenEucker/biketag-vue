@@ -41,6 +41,7 @@
 
 <script>
 import { ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
@@ -53,8 +54,10 @@ export default {
     Loading,
   },
   setup() {
+    const router = useRouter()
+    const route = useRoute()
     const currentPage = ref(
-      this.$route.params?.currentPage.length ? parseInt(this.$route.params?.currentPage) : 1
+      route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1
     )
     const perPage = ref(10)
     const tagsAreLoading = ref(true)
@@ -78,7 +81,7 @@ export default {
     }
     function changePage(event, pageNumber) {
       startLoading()
-      this.$router.push('/biketags/' + pageNumber)
+      router.push('/biketags/' + pageNumber)
     }
     function startLoading() {
       tagsLoaded.value = []
@@ -95,7 +98,7 @@ export default {
 
     // watch
     watch(
-      () => '$route.params.currentPage',
+      () => 'route.params.currentPage',
       (val) => {
         currentPage.value = Number(val)
       }

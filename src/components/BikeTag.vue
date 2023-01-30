@@ -76,7 +76,9 @@
 import { ref, computed, onMounted } from 'vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
+import i18n from '@/i18n'
 
 export default {
   name: 'BikeTag',
@@ -157,17 +159,18 @@ export default {
     },
   },
   emits: ['load'],
-  setup(props) {
+  setup(props, { emit }) {
     const mysteryImageLoaded = ref(false)
     const foundImageLoaded = ref(false)
     const noTagnumberLink = ref(false)
     const store = useStore()
+    const router = useRouter()
 
     // computed
     const getImgurImageSized = computed(() => store.getImgurImageSized)
     const _tagnumber = computed(() => (props.tagnumber ? props.tagnumber : props.tag?.tagnumber))
     const _getHint = computed(function () {
-      return props.tag?.hint ? props.tag.hint : this.$t('pages.play.nohint')
+      return props.tag?.hint ? props.tag.hint : i18n.global.t('pages.play.nohint')
     })
     const _foundTagnumber = computed(() =>
       props.foundTagnumber ? props.foundTagnumber : props.tag?.tagnumber
@@ -215,7 +218,7 @@ export default {
         ? new Date(timestamp * 1000).toLocaleTimeString()
         : new Date(timestamp * 1000).toLocaleDateString()
 
-      return `${timeOnly ? ' @ ' : this.$t('components.biketag.posted_on')} ${datetime}`
+      return `${timeOnly ? ' @ ' : i18n.global.t('components.biketag.posted_on')} ${datetime}`
     }
     function tagImageLoaded(type) {
       if (type === 'mystery') {
@@ -228,16 +231,16 @@ export default {
         mysteryImageLoaded.value &&
         (!!_foundImageUrl.value || foundImageLoaded.value || !_foundImageUrl.value)
       ) {
-        this.$emit('load')
+        emit('load')
       }
     }
     function goTagPage() {
       if (!noTagnumberLink.value) {
-        this.$router.push('/' + encodeURIComponent(_tagnumber.value))
+        router.push('/' + encodeURIComponent(_tagnumber.value))
       }
     }
     function goPlayerPage(player) {
-      this.$router.push('/player/' + encodeURIComponent(player))
+      router.push('/player/' + encodeURIComponent(player))
     }
 
     // mounted

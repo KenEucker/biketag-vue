@@ -119,6 +119,7 @@
 </template>
 <script>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import Markdown from 'vue3-markdown-it'
 import { Settings } from '@/common/types'
@@ -131,14 +132,16 @@ export default {
     BikeTagButton,
   },
   emits: ['submit'],
-  setup() {
+  setup(props, { emit }) {
     const postToReddit = ref(false)
     const postToTwitter = ref(false)
     const postToInstagram = ref(false)
     const showReddit = ref(false)
     const showTwitter = ref(false)
     const showInstagram = ref(false)
+    const submitTag = ref(null)
     const store = useStore()
+    const router = useRouter()
 
     // computed
     const getPlayerTag = computed(() => store.getPlayerTag)
@@ -190,11 +193,11 @@ See all BikeTags and more, for ${getGameName.value}:
       navigator.clipboard.writeText(text)
     }
     function goViewRound() {
-      this.$router.push('/round')
+      router.push('/round')
     }
     function onSubmit() {
-      const formAction = this.$refs.submitTag.getAttribute('action')
-      const formData = new FormData(this.$refs.submitTag)
+      const formAction = submitTag.value.getAttribute('action')
+      const formData = new FormData(submitTag.value)
       const submittedTag = getPlayerTag.value
 
       submittedTag.discussionUrl = JSON.stringify({
@@ -211,7 +214,7 @@ See all BikeTags and more, for ${getGameName.value}:
       formData.append('mentionUrl', submittedTag.mentionUrl)
       // formData.append('shareUrl', submittedTag.shareUrl)
 
-      this.$emit('submit', {
+      emit('submit', {
         formAction,
         formData,
         tag: submittedTag,
@@ -233,6 +236,7 @@ See all BikeTags and more, for ${getGameName.value}:
       showReddit,
       showTwitter,
       showInstagram,
+      submitTag,
       getCurrentBikeTag,
       getPlayerId,
       getGame,

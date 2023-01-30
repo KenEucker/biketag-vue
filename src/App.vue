@@ -25,12 +25,14 @@
   </div>
 </template>
 <script>
-import { ref, computed } from 'vue'
+import { ref, inject, computed, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
 import ServiceWorker from '@/components/ServiceWorker.vue'
 import { debug } from './common/utils'
 import { Head } from '@vueuse/head'
+import i18n from '@/i18n'
 
 export default {
   name: 'App',
@@ -43,17 +45,18 @@ export default {
     // data
     let gameIsSet = ref(false)
     const store = useStore()
-    console.log('un error')
-    console.log(this.$router)
+    const router = useRouter()
+    const auth = inject('auth0')
+    const toast = inject('toast')
 
     // computed
     // eslint-disable-next-line prettier/prettier
-    const isNotLanding = computed(() => gameIsSet.value && this.$router.currentRoute.value.name != 'Landing')
+    const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name != 'Landing')
     // eslint-disable-next-line prettier/prettier
-    const isWhiteBackground = computed(() => this.$router.currentRoute.value.name === 'About' ? 'white-bck' : '')
+    const isWhiteBackground = computed(() => router.currentRoute.value.name === 'About' ? 'white-bck' : '')
     const logo = computed(() => store.getLogoUrl('m'))
     // eslint-disable-next-line prettier/prettier
-    const title = computed(function() { return `${isNotLanding.value ? store.getGameName : this.$t('The Game Of')} BikeTag!`})
+    const title = computed(function() { return `${isNotLanding.value ? store.getGameName : i18n.global.t('The Game Of')} BikeTag!` })
     const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
     // methods
@@ -63,7 +66,7 @@ export default {
         store.getMostRecentlyViewedTagnumber !== 0
       ) {
         debug('ui::new biketag posted!!')
-        this.$toast.open({
+        toast.open({
           message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName} has been posted!`,
           type: 'default',
           position: 'top',
@@ -72,6 +75,23 @@ export default {
     }
 
     // created
+    function checkAuth() {
+      if (auth?.isAuthenticated) {
+        if (!this.getProfile?.nonce?.length) {
+          auth.getIdTokenClaims().then((claims) => {
+            if (claims) {
+              const token = claims.__raw
+              store.setProfile({ ...auth.user, token })
+            } else {
+              debug("what's this? no speaka da mda5hash, brah?")
+            }
+          })
+        }
+        return true
+      }
+      return false
+    }
+
     async function created() {
       const initResults = []
       /// Set it first thing
@@ -80,25 +100,8 @@ export default {
       initResults.push(await store.setAllGames())
       const _gameIsSet = game?.name?.length !== 0
 
-      if (_gameIsSet && this.$router.currentRoute.value.name !== 'landing') {
+      if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
         gameIsSet = true
-
-        const checkAuth = () => {
-          if (this.$auth?.isAuthenticated) {
-            if (!this.getProfile?.nonce?.length) {
-              this.$auth.getIdTokenClaims().then((claims) => {
-                if (claims) {
-                  const token = claims.__raw
-                  store.setProfile({ ...this.$auth.user, token })
-                } else {
-                  debug("what's this? no speaka da mda5hash, brah?")
-                }
-              })
-            }
-            return true
-          }
-          return false
-        }
 
         setTimeout(() => {
           if (!checkAuth()) {
@@ -107,9 +110,9 @@ export default {
         }, 1000)
 
         setTimeout(
-          this.$nextTick(() => {
+          await nextTick(() => {
             if (!game) {
-              this.$router.push('/landing')
+              router.push('/landing')
               gameIsSet = false
               return
             }
@@ -125,7 +128,7 @@ export default {
 
         checkForNewBikeTagPost()
       } else if (!_gameIsSet) {
-        this.$router.push('/landing')
+        router.push('/landing')
       }
       debug(`view::data-init`)
     }

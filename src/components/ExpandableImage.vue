@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="root"
     class="expandable-image"
     :class="{
       expanded: expanded,
@@ -14,7 +15,7 @@
   </div>
 </template>
 <script type="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 export default {
   name: 'ExpandableImage',
   props: {
@@ -28,10 +29,12 @@ export default {
     },
   },
   emits: ['loading', 'loaded'],
-  setup(props) {
+  setup(props, { emit }) {
     const expanded = ref(false)
     const closeButtonRef =  ref(null)
-    const loading = ref(this.$emit('loading') && true)
+    const loading = ref(emit('loading') && true)
+    const root = ref(null)
+    const cloned = ref(null)
 
     // computed
     const imgSrc = computed(() => expanded.value ? props.fullSource : props.source)
@@ -56,43 +59,43 @@ export default {
       e.preventDefault()
     }
     function loaded() {
-      this.$emit('loaded')
+      emit('loaded')
       loading.value = false
     }
 
     // watch
     watch(() => {
       expanded.value, status => {
-        this.$nextTick(() => {
+        nextTick(() => {
           if (status) {
             const closeImageMethod = closeImage
-            this.cloned = this.$el.cloneNode(true)
-            closeButtonRef.value = this.cloned.querySelector('.close-button')
+            cloned.value = root.value.cloneNode(true)
+            closeButtonRef.value = cloned.value.querySelector('.close-button')
             closeButtonRef.value.addEventListener('click', closeImage)
-            // const clonedImg = this.cloned.querySelector('img')
+            // const clonedImg = cloned.value.querySelector('img')
             // console.log({clonedImg})
             // clonedImg.addEventListener('click', (e) => e.stopPropagation())
-            this.cloned.addEventListener('click', function doCloseImageBackground(event) {
+            cloned.value.addEventListener('click', function doCloseImageBackground(event) {
               if(event.target==this) {
                 closeImageMethod(event)
               }
             })
             document.addEventListener('keydown', doCloseImage)
             document.addEventListener('backbutton', doCloseImage)
-            document.body.appendChild(this.cloned)
+            document.body.appendChild(cloned.value)
             document.body.style.overflow = 'hidden'
-            // this.cloned.addEventListener('touchmove', this.freezeVp, false)
+            // cloned.value.addEventListener('touchmove', this.freezeVp, false)
             setTimeout(() => {
-              this.cloned.style.opacity = 1
+              cloned.value.style.opacity = 1
             }, 0)
           } else {
-            this.cloned.style.opacity = 0
-            // this.cloned.removeEventListener('touchmove', this.freezeVp, false)
+            cloned.value.style.opacity = 0
+            // cloned.value.removeEventListener('touchmove', this.freezeVp, false)
             setTimeout(() => {
               closeButtonRef.value.removeEventListener('click', closeImage)
-              this.cloned.remove()
-              this.cloned = null
-              this.closeButtonRef = null
+              cloned.value.remove()
+              cloned.value = null
+              closeButtonRef.value = null
               document.body.style.overflow = 'auto'
             }, 250)
           }
@@ -103,6 +106,7 @@ export default {
     return {
       expanded,
       loading,
+      root,
       imgSrc,
       expandClick,
       loaded,

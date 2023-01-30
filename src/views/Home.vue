@@ -17,7 +17,7 @@
             variant="medium"
             class="play-screen__mystery-player__button"
             :text="getCurrentBikeTag?.mysteryPlayer"
-            @click="$router.push('/player/' + encodeURIComponent(getCurrentBikeTag?.mysteryPlayer))"
+            @click="router.push('/player/' + encodeURIComponent(getCurrentBikeTag?.mysteryPlayer))"
           />
         </div>
         <div v-if="getCurrentBikeTag" class="rel play-screen">
@@ -60,6 +60,7 @@
 </template>
 <script>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
@@ -83,9 +84,9 @@ export default {
     ExpandableImage,
   },
   setup() {
-    const tagnumber = ref(
-      this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0
-    )
+    const router = useRouter()
+    const route = useRoute()
+    const tagnumber = ref(route.params?.tagnumber?.length ? parseInt(route.params.tagnumber) : 0)
     const tagIsLoading = ref(true)
     const store = useStore()
 
@@ -110,19 +111,20 @@ export default {
       if (tagnumber.value === getCurrentBikeTag.value.tagnumber) {
         tagnumber.value = 0
       } else {
-        this.$router.push(`/${tagnumber.value}`)
+        router.push(`/${tagnumber.value}`)
       }
     }
     function goPreviousSingle() {
       tagnumber.value = tagnumber.value > 0 ? tagnumber.value : getCurrentBikeTag.value.tagnumber
       tagnumber.value--
-      this.$router.push(`/${tagnumber.value}`)
+      router.push(`/${tagnumber.value}`)
     }
 
     // mounted
     onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
 
     return {
+      router,
       tagnumber,
       tagIsLoading,
       getCurrentBikeTag,

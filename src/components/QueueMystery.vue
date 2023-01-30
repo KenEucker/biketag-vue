@@ -40,7 +40,7 @@
     </div>
     <div class="container biketag-tagit-form">
       <form
-        ref="mysteryTag"
+        ref="mysteryTagRef"
         name="add-mystery-tag"
         action="add-mystery-tag"
         method="POST"
@@ -93,7 +93,8 @@
   </div>
 </template>
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, inject, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
@@ -115,16 +116,19 @@ export default {
     },
   },
   emits: ['submit'],
-  setup(props) {
+  setup(props, { emit }) {
     const preview = ref(null)
     const mysteryImageUrl = ref(null)
     const confirmNoHint = ref(false)
     const image = ref(props.tag?.mysteryImage)
     const showModal = ref(false)
     const noLongerNew = ref(false)
-    let hint = ref(props.tag?.hint ?? '')
-    let player = ref('')
+    const hint = ref(props.tag?.hint ?? '')
+    const player = ref('')
+    const mysteryTagRef = ref(null)
     const store = useStore()
+    const router = useRouter()
+    const toast = inject('toast')
 
     // computed
     const getGameName = computed(() => store.getGameName)
@@ -145,7 +149,7 @@ export default {
     function onSubmit(e) {
       e.preventDefault()
       if (!image.value) {
-        this.$toast.open({
+        toast.open({
           message: 'Invalid image, add a new one.',
           type: 'error',
           position: 'top',
@@ -154,15 +158,15 @@ export default {
       }
       if (!hint.value.length && !confirmNoHint.value) {
         confirmNoHint.value = true
-        this.$toast.open({
+        toast.open({
           message: "You didn't add a hint, but it would sure be nice if you did.",
           type: 'error',
           position: 'top',
         })
         return
       }
-      const formAction = this.$refs.mysteryTag.getAttribute('action')
-      const formData = new FormData(this.$refs.mysteryTag)
+      const formAction = mysteryTagRef.value.getAttribute('action')
+      const formData = new FormData(mysteryTagRef.value)
       const mysteryTag = {
         mysteryImage: image.value,
         mysteryPlayer: player.value,
@@ -172,7 +176,7 @@ export default {
       }
       noLongerNew.value = true
 
-      this.$emit('submit', {
+      emit('submit', {
         formAction,
         formData,
         tag: mysteryTag,
@@ -190,7 +194,7 @@ export default {
           }
           previewReader.readAsDataURL(input.files[0])
           if (input.files[0].size / Math.pow(1024, 2) > 15) {
-            this.$toast.open({
+            toast.open({
               message: 'Image exceeds 15mb',
               type: 'error',
               position: 'top',
@@ -200,7 +204,7 @@ export default {
               const results = await exifr.parse(value)
               const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
               if (createDate < getCurrentBikeTag.value.mysteryTime) {
-                this.$toast.open({
+                toast.open({
                   message: 'Timestamp Error',
                   type: 'error',
                   position: 'top',
@@ -217,7 +221,7 @@ export default {
     }
     function goViewRound() {
       hideModal()
-      this.$router.push('/round')
+      router.push('/round')
     }
     function showModalIfNew() {
       if (!getPlayerTag.value?.mysteryImageUrl?.length) {
@@ -238,6 +242,7 @@ export default {
       preview,
       mysteryImageUrl,
       player,
+      mysteryTagRef,
       hint,
       showModal,
       getPlayerId,

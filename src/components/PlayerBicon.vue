@@ -27,6 +27,7 @@
 
 <script>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 
 export default {
@@ -53,6 +54,7 @@ export default {
   },
   seturp(props) {
     const store = useStore()
+    const router = useRouter()
 
     // computed
     const getImgurImageSized = computed(() => store.getImgurImageSized)
@@ -89,7 +91,7 @@ export default {
     // methods
     function goPlayerPage() {
       if (!props.noLink) {
-        this.$router.push('/player/' + encodeURIComponent(props.player?.name))
+        router.push('/player/' + encodeURIComponent(props.player?.name))
       }
     }
     function tagColorNumber(count) {

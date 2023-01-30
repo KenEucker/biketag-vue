@@ -141,7 +141,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, inject, computed, onMounted, nextTick } from 'vue'
 import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
@@ -163,8 +163,8 @@ export default {
     BikeTagInput,
     Player,
   },
-  detup() {
-    let profile = ref(null)
+  setup() {
+    const profile = ref(null)
     const socialNetworkIcons = ref([
       ['reddit', Reddit],
       ['instagram', Instagram],
@@ -175,6 +175,8 @@ export default {
     const showModal = ref(false)
     const styledHr = StyledHr
     const store = useStore()
+    const auth = inject('auth0')
+    const toast = inject('toast')
 
     // computed
     const getPlayers = computed(() => store.getPlayers)
@@ -182,7 +184,7 @@ export default {
     const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
     const player = computed(() => {
       const playerList = getPlayers.value?.filter((player) => {
-        return this.$auth.user.name === decodeURIComponent(encodeURIComponent(player.name))
+        return auth.user.name === decodeURIComponent(encodeURIComponent(player.name))
       })
       if (playerList && playerList.length > 0) {
         return playerList[0]
@@ -206,17 +208,17 @@ export default {
     }
     async function onSubmitName() {
       if (profile.value.user_metadata.name.length > 0) {
-        profile.value['token'] = (await this.$auth.getIdTokenClaims()).__raw
+        profile.value['token'] = (await auth.getIdTokenClaims()).__raw
         try {
           await store.assignName(profile.value)
           profile.value = getProfile.value
-          this.$toast.open({
+          toast.open({
             message: 'Success',
             type: 'success',
             position: 'top',
           })
         } catch (e) {
-          this.$toast.open({
+          toast.open({
             message: e.response?.data ?? e.message,
             type: 'error',
             position: 'top',
@@ -226,18 +228,18 @@ export default {
       }
     }
     async function onSubmit() {
-      const claims = await this.$auth.getIdTokenClaims()
+      const claims = await auth.getIdTokenClaims()
       if (claims) {
         profile.value['token'] = claims.__raw
         try {
           await store.updateProfile(profile.value)
-          this.$toast.open({
+          toast.open({
             message: 'Success',
             type: 'success',
             position: 'top',
           })
         } catch (e) {
-          this.$toast.open({
+          toast.open({
             message: e.response?.data ?? e.message,
             type: 'error',
             position: 'top',
@@ -250,7 +252,7 @@ export default {
     onMounted(() => {
       profile.value = getProfile.value
 
-      this.$nextTick(() => {
+      nextTick(() => {
         profile.value = getProfile.value
         profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
         profile.value.user_metadata.options = profile.value.user_metadata.options ?? {

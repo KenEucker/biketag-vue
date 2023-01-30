@@ -94,12 +94,9 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 // Import Swiper styles
 import 'swiper/css/bundle'
 
-import { useStore } from '@/store/index.ts'
 import { ref, computed } from 'vue'
+import { useStore } from '@/store/index.ts'
 import { debug } from '@/common/utils'
-
-// install Swiper components
-SwiperCore.use([Autoplay, Navigation, Pagination])
 
 import BikeTagMap from '@/components/BikeTagMap.vue'
 
@@ -112,6 +109,9 @@ export default {
     BikeTagMap,
   },
   setup() {
+    // install Swiper components
+    SwiperCore.use([Autoplay, Navigation, Pagination])
+
     const playingEaster = ref(false)
     const store = useStore()
 
@@ -120,9 +120,9 @@ export default {
 
     // methods
     function playEasterEgg() {
-      if (this.getEasterEgg) {
+      if (getEasterEgg.value) {
         document.getElementById('jingle').play().then(debug).catch(console.error)
-        this.playingEaster = true
+        playingEaster.value = true
       }
     }
 

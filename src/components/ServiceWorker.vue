@@ -10,9 +10,9 @@
 </template>
 <script>
 import { computed } from 'vue'
+import { useStore } from '@/store/index.ts'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { debug } from '@/common/utils'
-import { useStore } from '@/store/index.ts'
 
 export default {
   name: 'ServiceWorker',

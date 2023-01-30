@@ -34,7 +34,7 @@
 
       <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-lg-0">
-          <li v-if="$auth.isAuthenticated" class="nav-item">
+          <li v-if="auth.isAuthenticated" class="nav-item">
             <img
               class="profile-icon"
               :src="getProfileImageSrc"
@@ -95,7 +95,7 @@
           >
             {{ $t('menu.about') }}
           </li>
-          <template v-if="$auth.isAuthenticated">
+          <template v-if="auth.isAuthenticated">
             <li class="nav-item" @click="logout">
               {{ $t('menu.logout') }}
             </li>
@@ -146,7 +146,8 @@
   </footer>
 </template>
 <script>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, inject, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import BikeTagButton from '@/components/BikeTagButton'
 import { debug } from '@/common/utils'
@@ -169,26 +170,29 @@ export default {
   data() {
     const showLogin = ref(process.env.CONTEXT === 'dev')
     const showHeader = ref(true)
-    let lastScrollPosition = ref(0)
-    let scrollOffset = ref(40)
+    const lastScrollPosition = ref(0)
+    const scrollOffset = ref(40)
+    const buttonCollapse = ref(null)
+    const navList = ref(null)
     const store = useStore()
+    const router = useRouter()
+    const route = useRoute()
+    const auth = inject('auth0')
 
     // computed
     const getGameTitle = computed(() => store.getGameTitle)
     const getLogoUrl = computed(() => store.getLogoUrl)
-    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-    const isDataInitialized = computed(() => store.isDataInitialized)
     const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
     const getQueuedTags = computed(() => store.getQueuedTags)
     const getProfile = computed(() => store.getProfile)
     const isShow = computed(() => {
-      if (this.$route.name) {
-        debug('view::loaded', this.$route.name)
+      if (route.name) {
+        debug('view::loaded', route.name)
       }
-      return this.$route.name !== 'Home'
+      return route.name !== 'Home'
     })
     const currentRoute = computed(() => {
-      return this.$route.name
+      return route.name
     })
     const getProfileImageSrc = computed(() => {
       return isBikeTagAmbassador.value
@@ -215,60 +219,60 @@ export default {
     }
     function login() {
       closeCollapsible()
-      this.$router.push('/login')
+      router.push('/login')
     }
     function logout() {
       store.setProfile()
-      this.$auth.logout({
+      auth.logout({
         returnTo: window.location.origin,
       })
     }
     function closeCollapsible() {
-      this.$refs.buttonCollapse.setAttribute('aria-expanded', false)
-      this.$refs.navList.classList.remove('show')
+      buttonCollapse.value.setAttribute('aria-expanded', false)
+      navList.value.classList.remove('show')
     }
     function goWorldwide() {
       window.location = 'http://biketag.org/'
-      // this.$router.push('/worldwide')
+      // router.push('/worldwide')
     }
     function goApprovePage() {
       closeCollapsible()
-      this.$router.push('/approve')
+      router.push('/approve')
     }
     function goBikeTagsPage() {
       closeCollapsible()
-      this.$router.push('/biketags')
+      router.push('/biketags')
     }
     function goPlayPage() {
       closeCollapsible()
-      this.$router.push('/play')
+      router.push('/play')
     }
     function goProfile() {
       closeCollapsible()
-      this.$router.push('/profile')
+      router.push('/profile')
     }
     function goAboutPage() {
       closeCollapsible()
-      this.$router.push('/about')
+      router.push('/about')
     }
     function goLeaderboardPage() {
       closeCollapsible()
-      this.$router.push('/leaderboard')
+      router.push('/leaderboard')
     }
     function goPlayersPage() {
       closeCollapsible()
-      this.$router.push('/players')
+      router.push('/players')
     }
     function goHowPage() {
       closeCollapsible()
-      this.$router.push('/howtoplay')
+      router.push('/howtoplay')
     }
     function goHomePage() {
       closeCollapsible()
-      this.$router.push('/')
+      router.push('/')
     }
     function goBack() {
-      this.$router.back()
+      router.back()
     }
 
     // mounted
@@ -283,6 +287,9 @@ export default {
     })
 
     return {
+      buttonCollapse,
+      navList,
+      auth,
       showLogin,
       showHeader,
       getGameTitle,

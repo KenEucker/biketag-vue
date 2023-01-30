@@ -45,7 +45,9 @@
 
 <script>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
+import i18n from '@/i18n'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
@@ -69,6 +71,7 @@ export default {
   setup() {
     const controlledSwiper = ref(null)
     const store = useStore()
+    const router = useRouter()
 
     // computed
     const getQueuedTags = computed(() => store.getQueuedTags)
@@ -79,10 +82,10 @@ export default {
       () =>
         `${
           getPlayerTag.value?.mysteryImageUrl?.length > 0
-            ? this.$t('pages.round.submit_queue')
+            ? i18n.global.t('pages.round.submit_queue')
             : getPlayerTag.value?.foundImageUrl?.length > 0
-            ? this.$t('pages.round.complete_queue')
-            : this.$t('pages.round.join_queue')
+            ? i18n.global.t('pages.round.complete_queue')
+            : i18n.global.t('pages.round.join_queue')
         } #${getCurrentBikeTag.value?.tagnumber ?? 1}!`
     )
     const showGoNextButton = computed(
@@ -91,7 +94,7 @@ export default {
 
     // methods
     function goNextQueueStep() {
-      this.$router.push('/play')
+      router.push('/play')
     }
     const setControlledSwiper = (swiper) => {
       controlledSwiper.value = swiper

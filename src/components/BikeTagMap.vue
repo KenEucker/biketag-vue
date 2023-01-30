@@ -76,7 +76,7 @@ export default {
     },
   },
   emits: ['dragend'],
-  setup(props) {
+  setup(props, { emit }) {
     const data = ref({})
     const store = useStore()
 
@@ -128,7 +128,7 @@ export default {
 
     // methods
     function emitDragend(e) {
-      this.$emit('dragend', e)
+      emit('dragend', e)
     }
 
     // created

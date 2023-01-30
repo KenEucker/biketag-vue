@@ -153,6 +153,7 @@ import BikeTagAmbassadorSvg from '@/assets/images/biketag-ambassador.svg'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
 import BikeTagGames from '@/components/BikeTagGames.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
+import { ref } from 'vue'
 
 export default {
   name: 'LandingView',
@@ -162,6 +163,8 @@ export default {
     BikeTagMap,
   },
   setup() {
+    const navList = ref(null)
+
     // methods
     function toSection(id) {
       const section = document.getElementById(id.toLowerCase().replaceAll(' ', '-'))
@@ -169,12 +172,13 @@ export default {
       window.scrollTo({ top: section.offsetTop - 125, behavior: 'smooth' })
     }
     function closeMenu() {
-      if (this.$refs['navList'].classList.contains('show')) {
-        this.$refs['navList'].classList.remove('show')
+      if (navList.value.classList.contains('show')) {
+        navList.value.classList.remove('show')
       }
     }
 
     return {
+      navList,
       BikeTagAmbassadorSvg,
       BikeTagSvg,
       toSection,
