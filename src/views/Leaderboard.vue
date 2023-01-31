@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
     <div class="player-list">
@@ -7,27 +8,19 @@
     </div>
   </div>
 </template>
-<script>
+
+<script setup name="LeaderboardView">
 import { computed } from 'vue'
 import { useStore } from '@/store/index.ts'
+
+// components
 import Player from '@/components/PlayerBicon.vue'
 
-export default {
-  name: 'LeaderboardView',
-  components: {
-    Player,
-  },
-  setup() {
-    const store = useStore
+// data
+const store = useStore
 
-    // computed
-    const playersList = computed(() => store.getLeaderboard)
-
-    return {
-      playersList,
-    }
-  },
-}
+// computed
+const playersList = computed(() => store.getLeaderboard)
 </script>
 <style lang="scss" scoped>
 .player-list {

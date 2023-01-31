@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
     <div class="about d-flex justify-content-center">
@@ -50,30 +51,21 @@
   </div>
 </template>
 
-<script>
+<script setup name="AboutView">
+import StyledHr from '@/assets/images/hr.svg'
+import Pin from '@/assets/images/pin.svg'
+
+// components
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagGames from '@/components/BikeTagGames.vue'
-import StyledHr from '@/assets/images/hr.svg'
-import Pin from '@/assets/images/pin.svg'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 
-export default {
-  name: 'AboutView',
-  components: {
-    HtmlContent,
-    BikeTagButton,
-    BikeTagGames,
-    BikeTagMap,
-  },
-  setup() {
-    const styledHr = StyledHr
-    const pin = Pin
-
-    return { styledHr, pin }
-  },
-}
+// data
+const styledHr = StyledHr
+const pin = Pin
 </script>
+
 <style lang="scss">
 .white-bck {
   background: white !important;

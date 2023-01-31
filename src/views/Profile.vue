@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
@@ -140,160 +141,139 @@
   </div>
 </template>
 
-<script>
+<script setup name="ProfileView">
 import { ref, inject, computed, onMounted, nextTick } from 'vue'
 import { useStore } from '@/store/index.ts'
-import BikeTagButton from '@/components/BikeTagButton.vue'
-import BikeTagInput from '@/components/BikeTagInput.vue'
-import Loading from 'vue-loading-overlay'
+import { useAuth0 } from '@auth0/auth0-vue'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import Reddit from '@/assets/images/Reddit.svg'
 import Instagram from '@/assets/images/Instagram.svg'
 import Twitter from '@/assets/images/Twitter.svg'
 import Imgur from '@/assets/images/Imgur.svg'
 import Discord from '@/assets/images/Discord.svg'
-import Player from '@/components/PlayerBicon.vue'
 import StyledHr from '@/assets/images/hr.svg'
 
-export default {
-  name: 'ProfileView',
-  components: {
-    Loading,
-    BikeTagButton,
-    BikeTagInput,
-    Player,
-  },
-  setup() {
-    const profile = ref(null)
-    const socialNetworkIcons = ref([
-      ['reddit', Reddit],
-      ['instagram', Instagram],
-      ['twitter', Twitter],
-      ['imgur', Imgur],
-      ['discord', Discord],
-    ])
-    const showModal = ref(false)
-    const styledHr = StyledHr
-    const store = useStore()
-    const auth = inject('auth0')
-    const toast = inject('toast')
+// components
+// import Player from '@/components/PlayerBicon.vue'
+import Loading from 'vue-loading-overlay'
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagInput from '@/components/BikeTagInput.vue'
 
-    // computed
-    const getPlayers = computed(() => store.getPlayers)
-    const getProfile = computed(() => store.getProfile)
-    const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
-    const player = computed(() => {
-      const playerList = getPlayers.value?.filter((player) => {
-        return auth.user.name === decodeURIComponent(encodeURIComponent(player.name))
-      })
-      if (playerList && playerList.length > 0) {
-        return playerList[0]
-      }
+// data
+const profile = ref(null)
+const socialNetworkIcons = ref([
+  ['reddit', Reddit],
+  ['instagram', Instagram],
+  ['twitter', Twitter],
+  ['imgur', Imgur],
+  ['discord', Discord],
+])
+const showModal = ref(false)
+const styledHr = StyledHr
+const store = useStore()
+const { idTokenClaims, user } = useAuth0()
+const toast = inject('toast')
 
-      return {}
-    })
+// computed
+const getPlayers = computed(() => store.getPlayers)
+const getProfile = computed(() => store.getProfile)
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const player = computed(() => {
+  const playerList = getPlayers.value?.filter((player) => {
+    return user.value.name === decodeURIComponent(encodeURIComponent(player.name))
+  })
+  if (playerList && playerList.length > 0) {
+    return playerList[0]
+  }
 
-    // methods
-    function hideModal() {
-      showModal.value = false
-    }
-    function firstToUperCase(str) {
-      return str[0].charAt(0).toUpperCase() + str.slice(1)
-    }
-    function splitCamelCase(str) {
-      return firstToUperCase(str).replace(/([a-z])([A-Z])/g, '$1 $2')
-    }
-    function toggleShowFields(name) {
-      this.$refs[name][0].classList.toggle('hide')
-    }
-    async function onSubmitName() {
-      if (profile.value.user_metadata.name.length > 0) {
-        profile.value['token'] = (await auth.getIdTokenClaims()).__raw
-        try {
-          await store.assignName(profile.value)
-          profile.value = getProfile.value
-          toast.open({
-            message: 'Success',
-            type: 'success',
-            position: 'top',
-          })
-        } catch (e) {
-          toast.open({
-            message: e.response?.data ?? e.message,
-            type: 'error',
-            position: 'top',
-          })
-        }
-        showModal.value = false
-      }
-    }
-    async function onSubmit() {
-      const claims = await auth.getIdTokenClaims()
-      if (claims) {
-        profile.value['token'] = claims.__raw
-        try {
-          await store.updateProfile(profile.value)
-          toast.open({
-            message: 'Success',
-            type: 'success',
-            position: 'top',
-          })
-        } catch (e) {
-          toast.open({
-            message: e.response?.data ?? e.message,
-            type: 'error',
-            position: 'top',
-          })
-        }
-      }
-    }
+  return {}
+})
 
-    // mounted
-    onMounted(() => {
-      profile.value = getProfile.value
-
-      nextTick(() => {
-        profile.value = getProfile.value
-        profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
-        profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
-          skipSteps: false,
-        }
-        showModal.value =
-          profile.value?.user_metadata?.name != null && !profile.value?.user_metadata?.name.length
-        switch (profile.value.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
-          case 'reddit':
-            if (!profile.value.user_metadata.social?.reddit) {
-              profile.value.user_metadata.social.reddit = profile.value.name
-            }
-            break
-          case 'imgur':
-            if (!profile.value.user_metadata.social?.imgur) {
-              profile.value.user_metadata.social.imgur = profile.value.name
-            }
-            break
-          case 'twitter':
-            if (!profile.value.user_metadata.social?.twitter) {
-              profile.value.user_metadata.social.twitter = profile.value.name
-            }
-            break
-        }
-      })
-    })
-
-    return {
-      profile,
-      socialNetworkIcons,
-      showModal,
-      styledHr,
-      isBikeTagAmbassador,
-      firstToUperCase,
-      splitCamelCase,
-      toggleShowFields,
-      onSubmitName,
-      onSubmit,
-    }
-  },
+// methods
+function hideModal() {
+  showModal.value = false
 }
+function firstToUperCase(str) {
+  return str[0].charAt(0).toUpperCase() + str.slice(1)
+}
+function splitCamelCase(str) {
+  return firstToUperCase(str).replace(/([a-z])([A-Z])/g, '$1 $2')
+}
+function toggleShowFields(name) {
+  this.$refs[name][0].classList.toggle('hide')
+}
+async function onSubmitName() {
+  if (profile.value.user_metadata.name.length > 0) {
+    profile.value['token'] = idTokenClaims.value.__raw
+    try {
+      await store.assignName(profile.value)
+      profile.value = getProfile.value
+      toast.open({
+        message: 'Success',
+        type: 'success',
+        position: 'top',
+      })
+    } catch (e) {
+      toast.open({
+        message: e.response?.data ?? e.message,
+        type: 'error',
+        position: 'top',
+      })
+    }
+    showModal.value = false
+  }
+}
+async function onSubmit() {
+  if (idTokenClaims.value) {
+    profile.value['token'] = idTokenClaims.value.__raw
+    try {
+      await store.updateProfile(profile.value)
+      toast.open({
+        message: 'Success',
+        type: 'success',
+        position: 'top',
+      })
+    } catch (e) {
+      toast.open({
+        message: e.response?.data ?? e.message,
+        type: 'error',
+        position: 'top',
+      })
+    }
+  }
+}
+
+// mounted
+onMounted(() => {
+  profile.value = getProfile.value
+
+  nextTick(() => {
+    profile.value = getProfile.value
+    profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
+    profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
+      skipSteps: false,
+    }
+    showModal.value =
+      profile.value?.user_metadata?.name != null && !profile.value?.user_metadata?.name.length
+    switch (profile.value.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
+      case 'reddit':
+        if (!profile.value.user_metadata.social?.reddit) {
+          profile.value.user_metadata.social.reddit = profile.value.name
+        }
+        break
+      case 'imgur':
+        if (!profile.value.user_metadata.social?.imgur) {
+          profile.value.user_metadata.social.imgur = profile.value.name
+        }
+        break
+      case 'twitter':
+        if (!profile.value.user_metadata.social?.twitter) {
+          profile.value.user_metadata.social.twitter = profile.value.name
+        }
+        break
+    }
+  })
+})
 </script>
 <style lang="scss">
 .flx-columns {

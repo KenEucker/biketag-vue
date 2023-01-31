@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <loading
     v-show="uploadInProgress"
@@ -8,7 +9,7 @@
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
   </loading>
   <div class="queue-page">
-    <div v-if="usingTimer && isViewingQueue()" class="mt-2 clock-div">
+    <div v-if="props.usingTimer && isViewingQueue()" class="mt-2 clock-div">
       <i class="far fa-clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
@@ -86,13 +87,17 @@
     </div>
   </div>
 </template>
-<script>
-import { ref, inject, computed, watchEffect, onMounted } from 'vue'
+
+<script setup name="QueueBikeTagView">
+import { defineProps, ref, inject, computed, watchEffect, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
+import LineSvg from '@/assets/images/line.svg'
+import ArrowSvg from '@/assets/images/arrow.svg'
 
+// components
 import QueueFound from '@/components/QueueFound.vue'
 import QueueMystery from '@/components/QueueMystery.vue'
 import QueueSubmit from '@/components/QueueSubmit.vue'
@@ -101,168 +106,139 @@ import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import LineSvg from '@/assets/images/line.svg'
-import ArrowSvg from '@/assets/images/arrow.svg'
-import i18n from '@/i18n'
 
-export default {
-  name: 'QueueBikeTagView',
-  components: {
-    QueueFound,
-    QueueMystery,
-    QueueSubmit,
-    QueueJoined,
-    QueuePosted,
-    QueuePostedShare,
-    BikeTagQueue,
-    BikeTagButton,
+// props
+const props = defineProps({
+  usingTimer: {
+    type: Boolean,
+    default: false,
   },
-  props: {
-    usingTimer: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  setup() {
-    const time = new Date()
-    time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
-    const timer = ref(useTimer(time.getSeconds()))
-    const uploadInProgress = ref(false)
-    const countDown = ref(10)
-    const queueError = ref(null)
-    const lineSvg = LineSvg
-    const arrowSvg = ArrowSvg
-    const store = useStore()
-    const toast = inject('toast')
+})
 
-    // computed
-    const getFormStep = computed(() => store.getFormStep)
-    const getPlayerTag = computed(() => store.getPlayerTag)
-    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-    const getGameName = computed(() => store.getGameName)
-    const getPlayerId = computed(() => store.getPlayerId)
+// data
+const time = new Date()
+time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
+const timer = ref(useTimer(time.getSeconds()))
+const uploadInProgress = ref(false)
+const countDown = ref(10)
+const queueError = ref(null)
+const lineSvg = LineSvg
+const arrowSvg = ArrowSvg
+const store = useStore()
+const toast = inject('toast')
+const t = inject('t')
 
-    // methods
-    const isViewingQueue = () => getFormStep.value === BiketagFormSteps[BiketagFormSteps.viewPosted]
-    const countDownTimer = () => {
-      if (countDown.value > 0) {
-        setTimeout(() => {
-          countDown.value -= 1
-          countDownTimer()
-        }, 500)
-      }
+// computed
+const getFormStep = computed(() => store.getFormStep)
+const getPlayerTag = computed(() => store.getPlayerTag)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getGameName = computed(() => store.getGameName)
+const getPlayerId = computed(() => store.getPlayerId)
+
+// methods
+const isViewingQueue = () => getFormStep.value === BiketagFormSteps[BiketagFormSteps.viewPosted]
+const countDownTimer = () => {
+  if (countDown.value > 0) {
+    setTimeout(() => {
+      countDown.value -= 1
+      countDownTimer()
+    }, 500)
+  }
+}
+const isSubmittingData = () =>
+  !(
+    getFormStep.value === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
+    getFormStep.value === BiketagFormSteps[BiketagFormSteps.queuePosted] ||
+    getFormStep.value === BiketagFormSteps[BiketagFormSteps.queuePostedShare]
+  )
+async function onQueueSubmit(newTagSubmission) {
+  const { tag, formAction, formData, storeAction } = newTagSubmission
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual'
+  }
+  window.scrollTo(0, 0)
+
+  toast.open({
+    message: t('notifications.uploading'),
+    type: 'info',
+    position: 'bottom',
+  })
+  const errorAction = queueError.value.getAttribute('action')
+
+  uploadInProgress.value = true
+  const success = await store[storeAction](tag)
+  uploadInProgress.value = false
+
+  if (success === true) {
+    /// Get a clean cache
+    await store.setTags(true)
+    /// Update the queue
+    store.setQueuedTags(true)
+
+    formData.set('game', getGameName.value)
+    formData.set('tag', JSON.stringify(getPlayerTag.value))
+    formData.set(
+      'submission',
+      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`
+    )
+
+    if (tag.foundImage) {
+      formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
+    } else if (tag.mysteryImage) {
+      formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
     }
-    const isSubmittingData = () =>
-      !(
-        getFormStep.value === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
-        getFormStep.value === BiketagFormSteps[BiketagFormSteps.queuePosted] ||
-        getFormStep.value === BiketagFormSteps[BiketagFormSteps.queuePostedShare]
-      )
-    async function onQueueSubmit(newTagSubmission) {
-      const { tag, formAction, formData, storeAction } = newTagSubmission
-      if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'manual'
-      }
-      window.scrollTo(0, 0)
-
-      toast.open({
-        message: i18n.global.t('notifications.uploading'),
-        type: 'info',
-        position: 'bottom',
-      })
-      const errorAction = queueError.value.getAttribute('action')
-
-      uploadInProgress.value = true
-      const success = await store[storeAction](tag)
-      uploadInProgress.value = false
-
-      if (success === true) {
-        /// Get a clean cache
-        await store.setTags(true)
-        /// Update the queue
-        store.setQueuedTags(true)
-
-        formData.set('game', getGameName.value)
-        formData.set('tag', JSON.stringify(getPlayerTag.value))
-        formData.set(
-          'submission',
-          `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`
-        )
-
-        if (tag.foundImage) {
-          formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
-        } else if (tag.mysteryImage) {
-          formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
-        }
-        return sendNetlifyForm(
-          formAction,
-          new URLSearchParams(formData).toString(),
-          () => {
-            toast.open({
-              message: `${storeAction} ${i18n.global.t('notifications.success')}`,
-              type: 'success',
-              position: 'bottom',
-            })
-          },
-          (m) => {
-            toast.open({
-              message: `${i18n.global.t('notifications.error')} ${m}`,
-              type: 'error',
-              timeout: false,
-              position: 'bottom',
-            })
-            return sendNetlifyError(m, undefined, errorAction)
-          }
-        )
-      } else {
-        const message = `${i18n.global.t('notifications.error')}: ${success}`
+    return sendNetlifyForm(
+      formAction,
+      new URLSearchParams(formData).toString(),
+      () => {
         toast.open({
-          message,
+          message: `${storeAction} ${t('notifications.success')}`,
+          type: 'success',
+          position: 'bottom',
+        })
+      },
+      (m) => {
+        toast.open({
+          message: `${t('notifications.error')} ${m}`,
           type: 'error',
           timeout: false,
           position: 'bottom',
         })
-        return sendNetlifyError(message, undefined, errorAction)
+        return sendNetlifyError(m, undefined, errorAction)
       }
-    }
-
-    // created
-    const created = async () => {
-      await store.setCurrentBikeTag(true)
-      await store.setQueuedTags(true)
-      countDownTimer()
-    }
-    created()
-
-    // Mounted
-    onMounted(() => {
-      watchEffect(async () => {
-        if (timer.value.isExpired.value) {
-          console.warn('IsExpired')
-        }
-      })
-
-      uploadInProgress.value = false
+    )
+  } else {
+    const message = `${t('notifications.error')}: ${success}`
+    toast.open({
+      message,
+      type: 'error',
+      timeout: false,
+      position: 'bottom',
     })
-
-    return {
-      timer,
-      BiketagFormSteps,
-      uploadInProgress,
-      countDown,
-      lineSvg,
-      arrowSvg,
-      getFormStep,
-      getPlayerTag,
-      getCurrentBikeTag,
-      getPlayerId,
-      isViewingQueue,
-      isSubmittingData,
-      onQueueSubmit,
-    }
-  },
+    return sendNetlifyError(message, undefined, errorAction)
+  }
 }
+
+// created
+const created = async () => {
+  await store.setCurrentBikeTag(true)
+  await store.setQueuedTags(true)
+  countDownTimer()
+}
+created()
+
+// Mounted
+onMounted(() => {
+  watchEffect(async () => {
+    if (timer.value.isExpired.valueOf) {
+      console.warn('IsExpired')
+    }
+  })
+
+  uploadInProgress.value = false
+})
 </script>
+
 <style lang="scss">
 #app {
   .queue-page {

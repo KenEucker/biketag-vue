@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <header class="biketag-header">
     <nav class="biketag-header-nav navbar navbar-expand-lg">
@@ -147,46 +148,33 @@
     <p><i>© 2022 The BikeTag Project. All Rights Reserved. </i></p>
   </footer>
 </template>
-<script>
-import BikeTagBlurb from '@/components/BikeTagBlurb'
+
+<script setup name="LandingView">
 import BikeTagAmbassadorSvg from '@/assets/images/biketag-ambassador.svg'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
-import BikeTagGames from '@/components/BikeTagGames.vue'
-import BikeTagMap from '@/components/BikeTagMap.vue'
 import { ref } from 'vue'
 
-export default {
-  name: 'LandingView',
-  components: {
-    BikeTagBlurb,
-    BikeTagGames,
-    BikeTagMap,
-  },
-  setup() {
-    const navList = ref(null)
+// components
+import BikeTagBlurb from '@/components/BikeTagBlurb'
+import BikeTagGames from '@/components/BikeTagGames.vue'
+import BikeTagMap from '@/components/BikeTagMap.vue'
 
-    // methods
-    function toSection(id) {
-      const section = document.getElementById(id.toLowerCase().replaceAll(' ', '-'))
+// data
+const navList = ref(null)
 
-      window.scrollTo({ top: section.offsetTop - 125, behavior: 'smooth' })
-    }
-    function closeMenu() {
-      if (navList.value.classList.contains('show')) {
-        navList.value.classList.remove('show')
-      }
-    }
+// methods
+function toSection(id) {
+  const section = document.getElementById(id.toLowerCase().replaceAll(' ', '-'))
 
-    return {
-      navList,
-      BikeTagAmbassadorSvg,
-      BikeTagSvg,
-      toSection,
-      closeMenu,
-    }
-  },
+  window.scrollTo({ top: section.offsetTop - 125, behavior: 'smooth' })
+}
+function closeMenu() {
+  if (navList.value.classList.contains('show')) {
+    navList.value.classList.remove('show')
+  }
 }
 </script>
+
 <style lang="scss">
 main {
   section {

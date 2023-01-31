@@ -7,6 +7,7 @@ import mitt from 'mitt'
 import { Auth0Plugin } from './auth'
 import { useAuth0 } from './auth/authWrapper'
 import i18nPlugin from './i18n'
+import i18n from '@/i18n'
 import VueToast from 'vue-toast-notification'
 import VueCookies from 'vue3-cookies'
 import VueGoogleMaps from '@fawmi/vue-google-maps'
@@ -46,6 +47,7 @@ class BikeTagApp {
     this.app.use(createHead())
   }
   internationalization() {
+    this.app.provide('t', i18n.global.t)
     this.app.use(i18nPlugin)
   }
   cookies() {

@@ -43,76 +43,55 @@
   </div>
 </template>
 
-<script>
-import { ref, computed } from 'vue'
+<script setup name="QueueView">
+import { ref, inject, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
-import i18n from '@/i18n'
 import SwiperCore, { Controller, Pagination } from 'swiper'
-import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'
+import { BiketagFormSteps } from '@/common/types'
+
+// components
+import { Swiper, SwiperSlide } from 'swiper/vue'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
-import { BiketagFormSteps } from '@/common/types'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
 SwiperCore.use([Pagination])
 
-export default {
-  name: 'QueueView',
-  components: {
-    Swiper,
-    SwiperSlide,
-    BikeTag,
-    BikeTagQueue,
-    BikeTagButton,
-  },
-  setup() {
-    const controlledSwiper = ref(null)
-    const store = useStore()
-    const router = useRouter()
+// data
+const controlledSwiper = ref(null)
+const store = useStore()
+const router = useRouter()
+const t = inject('t')
 
-    // computed
-    const getQueuedTags = computed(() => store.getQueuedTags)
-    const getPlayerTag = computed(() => store.getPlayerTag)
-    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-    const getQueuedTagState = computed(() => store.getQueuedTagState)
-    const goNextQueueStepButtonText = computed(
-      () =>
-        `${
-          getPlayerTag.value?.mysteryImageUrl?.length > 0
-            ? i18n.global.t('pages.round.submit_queue')
-            : getPlayerTag.value?.foundImageUrl?.length > 0
-            ? i18n.global.t('pages.round.complete_queue')
-            : i18n.global.t('pages.round.join_queue')
-        } #${getCurrentBikeTag.value?.tagnumber ?? 1}!`
-    )
-    const showGoNextButton = computed(
-      () => getQueuedTagState.value !== BiketagFormSteps.roundPosted
-    )
+// computed
+const getQueuedTags = computed(() => store.getQueuedTags)
+const getPlayerTag = computed(() => store.getPlayerTag)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getQueuedTagState = computed(() => store.getQueuedTagState)
+const goNextQueueStepButtonText = computed(
+  () =>
+    `${
+      getPlayerTag.value?.mysteryImageUrl?.length > 0
+        ? t('pages.round.submit_queue')
+        : getPlayerTag.value?.foundImageUrl?.length > 0
+        ? t('pages.round.complete_queue')
+        : t('pages.round.join_queue')
+    } #${getCurrentBikeTag.value?.tagnumber ?? 1}!`
+)
+const showGoNextButton = computed(() => getQueuedTagState.value !== BiketagFormSteps.roundPosted)
 
-    // methods
-    function goNextQueueStep() {
-      router.push('/play')
-    }
-    const setControlledSwiper = (swiper) => {
-      controlledSwiper.value = swiper
-    }
-
-    return {
-      Controller,
-      controlledSwiper,
-      setControlledSwiper,
-      getQueuedTags,
-      goNextQueueStepButtonText,
-      showGoNextButton,
-      stringifyNumber,
-      goNextQueueStep,
-    }
-  },
+// methods
+function goNextQueueStep() {
+  router.push('/play')
+}
+const setControlledSwiper = (swiper) => {
+  controlledSwiper.value = swiper
 }
 </script>
+
 <style lang="scss">
 #app {
   .queue-view {

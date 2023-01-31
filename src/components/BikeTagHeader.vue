@@ -30,57 +30,43 @@
   </div>
 </template>
 
-<script>
+<script setup name="BikeTagHeader">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
+
+// components
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
-export default {
-  name: 'BikeTagHeader',
-  components: {
-    BikeTagButton,
-  },
-  setup() {
-    const jingle = ref(null)
-    const playingEaster = ref(false)
-    const store = useStore()
-    const router = useRouter()
+// data
+const jingle = ref(null)
+const playingEaster = ref(false)
+const store = useStore()
+const router = useRouter()
 
-    // computed
-    const getEasterEgg = computed(() => store.getEasterEgg)
+// computed
+const getEasterEgg = computed(() => store.getEasterEgg)
 
-    // methods
-    function muteEasterEgg(e) {
-      e.preventDefault()
-      e.stopPropagation()
-      if (playingEaster.value) {
-        document.getElementById('jingle').pause()
-        playingEaster.value = false
-      }
-    }
-    function goBikeTagsPage() {
-      router.push('/biketags')
-    }
-    function goPlayPage() {
-      router.push('/play')
-    }
-    function goHowPage() {
-      router.push('/howtoplay')
-    }
-
-    return {
-      jingle,
-      playingEaster,
-      getEasterEgg,
-      muteEasterEgg,
-      goBikeTagsPage,
-      goPlayPage,
-      goHowPage,
-    }
-  },
+// methods
+function muteEasterEgg(e) {
+  e.preventDefault()
+  e.stopPropagation()
+  if (playingEaster.value) {
+    document.getElementById('jingle').pause()
+    playingEaster.value = false
+  }
+}
+function goBikeTagsPage() {
+  router.push('/biketags')
+}
+function goPlayPage() {
+  router.push('/play')
+}
+function goHowPage() {
+  router.push('/howtoplay')
 }
 </script>
+
 <style lang="scss" scoped>
 .button-group {
   display: flex;

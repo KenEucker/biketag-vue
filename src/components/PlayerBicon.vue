@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="_playerName?.length"
-    :class="'player-wrapper mt-5 avatar-' + size"
+    :class="'player-wrapper mt-5 avatar-' + props.size"
     role="button"
     @click="goPlayerPage"
   >
@@ -15,8 +15,8 @@
       </svg>
       <div class="clipped"></div>
       <span
-        v-if="player?.tags?.length"
-        :class="`tag-count tag-count--color-${tagColorNumber(player.tags.length)}`"
+        v-if="props.player?.tags?.length"
+        :class="`tag-count tag-count--color-${tagColorNumber(props.player.tags.length)}`"
         >{{ getTagCount }}</span
       >
     </div>
@@ -25,99 +25,90 @@
   </div>
 </template>
 
-<script>
-import { computed } from 'vue'
+<script setup name="PlayerBicon">
+import { defineProps, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 
-export default {
-  name: 'PlayerBicon',
-  props: {
-    size: {
-      type: String,
-      default: 'md',
-    },
-    player: {
-      type: Object,
-      default: () => {
-        return {}
-      },
-    },
-    playerName: {
-      type: String,
-      default: null,
-    },
-    noLink: {
-      type: Boolean,
-      default: false,
+// props
+const props = defineProps({
+  size: {
+    type: String,
+    default: 'md',
+  },
+  player: {
+    type: Object,
+    default: () => {
+      return {}
     },
   },
-  seturp(props) {
-    const store = useStore()
-    const router = useRouter()
-
-    // computed
-    const getImgurImageSized = computed(() => store.getImgurImageSized)
-    const _playerName = computed(() => {
-      if (props.playerName) {
-        return props.playerName
-      }
-      if (props.size === 'sm') {
-        return props.player?.name.substr(0, 1)
-      } else {
-        return props.player?.name
-      }
-    })
-    const playerBiconUrl = computed(() => {
-      let url
-      if (props.player && typeof props.player === 'object') {
-        if (props.player.bicon) {
-          url = props.player.bicon
-        } else if (props.player.tags[props.player.tags.length - 1].mysteryImageUrl) {
-          url = props.player.tags[props.player.tags.length - 1].mysteryImageUrl
-        } else {
-          url = props.player.tags[props.player.tags.length - 1].foundImageUrl
-        }
-      }
-      return getImgurImageSized.value(url, props.size[0])
-    })
-    const getTagCount = computed(() => {
-      if (props.size === 'lg') {
-        return props.player.tags.length
-      }
-      return props.player.tags.length > 99 ? '+99' : props.player.tags.length
-    })
-
-    // methods
-    function goPlayerPage() {
-      if (!props.noLink) {
-        router.push('/player/' + encodeURIComponent(props.player?.name))
-      }
-    }
-    function tagColorNumber(count) {
-      if (count === 1) {
-        return 'one'
-      } else if (count < 10) {
-        return 'lessthanten'
-      } else if (count > 49 && count < 100) {
-        return 'fiftyormore'
-      } else if (count > 100 && count < 500) {
-        return 'onehundredormore'
-      } else {
-        return 'fivehundredormore'
-      }
-    }
-
-    return {
-      _playerName,
-      playerBiconUrl,
-      getTagCount,
-      goPlayerPage,
-      tagColorNumber,
-    }
+  playerName: {
+    type: String,
+    default: null,
   },
+  noLink: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+// data
+const store = useStore()
+const router = useRouter()
+
+// computed
+const getImgurImageSized = computed(() => store.getImgurImageSized)
+const _playerName = computed(() => {
+  if (props.playerName) {
+    return props.playerName
+  }
+  if (props.size === 'sm') {
+    return props.player?.name.substr(0, 1)
+  } else {
+    return props.player?.name
+  }
+})
+const playerBiconUrl = computed(() => {
+  let url
+  if (props.player && typeof props.player === 'object') {
+    if (props.player.bicon) {
+      url = props.player.bicon
+    } else if (props.player.tags[props.player.tags.length - 1].mysteryImageUrl) {
+      url = props.player.tags[props.player.tags.length - 1].mysteryImageUrl
+    } else {
+      url = props.player.tags[props.player.tags.length - 1].foundImageUrl
+    }
+  }
+  return getImgurImageSized.value(url, props.size[0])
+})
+const getTagCount = computed(() => {
+  if (props.size === 'lg') {
+    return props.player.tags.length
+  }
+  return props.player.tags.length > 99 ? '+99' : props.player.tags.length
+})
+
+// methods
+function goPlayerPage() {
+  if (!props.noLink) {
+    router.push('/player/' + encodeURIComponent(props.player?.name))
+  }
+}
+function tagColorNumber(count) {
+  if (count === 1) {
+    return 'one'
+  } else if (count < 10) {
+    return 'lessthanten'
+  } else if (count > 49 && count < 100) {
+    return 'fiftyormore'
+  } else if (count > 100 && count < 500) {
+    return 'onehundredormore'
+  } else {
+    return 'fivehundredormore'
+  }
 }
 </script>
+
 <style scoped lang="scss">
 .player-wrapper {
   position: relative;

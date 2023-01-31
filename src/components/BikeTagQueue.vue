@@ -1,13 +1,15 @@
 <template>
-  <div v-if="tag" class="container">
+  <div v-if="props.tag" class="container">
     <div class="bike-pagination-bullet">
-      <span v-if="showNumber">{{ tag.tagnumber }} by {{ tag.mysteryPlayer }}</span>
-      <img :src="tag.mysteryImageUrl" />
-      <img :src="tag.foundImageUrl" />
+      <span v-if="props.showNumber">
+        {{ props.tag.tagnumber }} by {{ props.tag.mysteryPlayer }}
+      </span>
+      <img :src="props.tag.mysteryImageUrl" />
+      <img :src="props.tag.foundImageUrl" />
     </div>
   </div>
   <div v-else-if="getCurrentBikeTag" class="container">
-    <div v-if="onlyMine">
+    <div v-if="props.onlyMine">
       <b-button id="current-mystery-popover" class="navigation">
         <img class="img-fluid" :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')" />
       </b-button>
@@ -63,109 +65,98 @@
         </div>
       </b-popover>
     </div>
-    <div v-if="!onlyMine" class="bike-pagination mt-3 mb-3">
+    <div v-if="!props.onlyMine" class="bike-pagination mt-3 mb-3">
       <div v-for="(mine, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
         <img :src="mine.foundImageUrl" @click="paginationClick(index)" />
-        <span v-if="showNumber">{{ index + 1 }}</span>
+        <span v-if="props.showNumber">{{ index + 1 }}</span>
       </div>
     </div>
   </div>
 </template>
-<script>
-import { inject, computed, nextTick } from 'vue'
+
+<script setup name="BikeTagQueue">
+import { defineProps, inject, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 
-export default {
-  name: 'BikeTagQueue',
-  props: {
-    tag: {
-      type: Object,
-      default: null,
-    },
-    onlyMine: {
-      type: Boolean,
-      default: false,
-    },
-    showNumber: {
-      type: Boolean,
-      default: true,
-    },
-    paginationRef: {
-      type: Object,
-      default: null,
-    },
+// props
+const props = defineProps({
+  tag: {
+    type: Object,
+    default: null,
   },
-  setup(props) {
-    const store = useStore()
-    const router = useRouter()
-    const toast = inject('toast')
+  onlyMine: {
+    type: Boolean,
+    default: false,
+  },
+  showNumber: {
+    type: Boolean,
+    default: true,
+  },
+  paginationRef: {
+    type: Object,
+    default: null,
+  },
+})
 
-    // computed
-    const getQueuedTags = computed(() => store.getImgurImageSized)
-    const getCurrentBikeTag = computed(() => store.getImgurImageSized)
-    const getPlayerTag = computed(() => store.getImgurImageSized)
-    const getImgurImageSized = computed(() => store.getImgurImageSized)
-    const getQueuedTagState = computed(() => store.getImgurImageSized)
+// data
+const store = useStore()
+const router = useRouter()
+const toast = inject('toast')
 
-    // methods
-    function canReset() {
-      return getQueuedTagState.value !== BiketagFormSteps.roundPosted
-    }
-    async function resetToFound() {
-      await store.fetchCredentials()
-      return store.dequeueFoundTag().then((dequeueSuccessful) => {
-        if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-          return toast.open({
-            message: `dequeue tag error: ${dequeueSuccessful}`,
-            type: 'error',
-            timeout: false,
-            position: 'bottom',
-          })
-        } else {
-          nextTick(() => {
-            router.go()
-          })
-        }
+// computed
+const getQueuedTags = computed(() => store.getImgurImageSized)
+const getCurrentBikeTag = computed(() => store.getImgurImageSized)
+const getPlayerTag = computed(() => store.getImgurImageSized)
+const getImgurImageSized = computed(() => store.getImgurImageSized)
+const getQueuedTagState = computed(() => store.getImgurImageSized)
+
+// methods
+function canReset() {
+  return getQueuedTagState.value !== BiketagFormSteps.roundPosted
+}
+async function resetToFound() {
+  await store.fetchCredentials()
+  return store.dequeueFoundTag().then((dequeueSuccessful) => {
+    if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
+      return toast.open({
+        message: `dequeue tag error: ${dequeueSuccessful}`,
+        type: 'error',
+        timeout: false,
+        position: 'bottom',
+      })
+    } else {
+      nextTick(() => {
+        router.go()
       })
     }
-    async function resetToMystery() {
-      await store.fetchCredentials()
-      return store.dequeueMysteryTag().then((dequeueSuccessful) => {
-        if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-          return toast.open({
-            message: `dequeue tag error: ${dequeueSuccessful}`,
-            type: 'error',
-            timeout: false,
-            position: 'bottom',
-          })
-        } else {
-          nextTick(() => {
-            router.go()
-          })
-        }
+  })
+}
+async function resetToMystery() {
+  await store.fetchCredentials()
+  return store.dequeueMysteryTag().then((dequeueSuccessful) => {
+    if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
+      return toast.open({
+        message: `dequeue tag error: ${dequeueSuccessful}`,
+        type: 'error',
+        timeout: false,
+        position: 'bottom',
+      })
+    } else {
+      nextTick(() => {
+        router.go()
       })
     }
-    function paginationClick(key) {
-      if (props.paginationRef) {
-        props.paginationRef.slideTo(key)
-      }
-    }
-
-    return {
-      getQueuedTags,
-      getCurrentBikeTag,
-      getPlayerTag,
-      getImgurImageSized,
-      canReset,
-      resetToFound,
-      resetToMystery,
-      paginationClick,
-    }
-  },
+  })
+}
+function paginationClick(key) {
+  if (props.paginationRef) {
+    props.paginationRef.slideTo(key)
+  }
 }
 </script>
+
 <style lang="scss" scoped>
 .navigation {
   width: 5rem;

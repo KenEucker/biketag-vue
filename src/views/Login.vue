@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
     <img v-if="isBikeTagAmbassador" :src="bikeTag" />
@@ -7,57 +8,41 @@
     <bike-tag-button variant="bold" :text="$t('menu.login')" @click="login" />
   </div>
 </template>
-<script>
+
+<script setup name="LoginView">
 import { inject, computed } from 'vue'
 import { useStore } from '@/store/index.ts'
-import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useAuth0 } from '@auth0/auth0-vue'
 import BikeTag from '@/assets/images/BikeTag.svg'
-import { debug } from '@/common/utils'
 
-export default {
-  name: 'LoginView',
-  components: {
-    BikeTagButton,
-  },
-  setup() {
-    const bikeTag = BikeTag
-    const store = useStore()
-    const auth = inject('auth0')
-    const toast = inject('toast')
+// components
+import BikeTagButton from '@/components/BikeTagButton.vue'
 
-    // computed
-    const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+// data
+const bikeTag = BikeTag
+const store = useStore()
+const { isAuthenticated, loginWithRedirect, idTokenClaims, user } = useAuth0()
+const toast = inject('toast')
 
-    // methods
-    function login() {
-      if (auth.loginWithRedirect) {
-        auth.loginWithRedirect().then(async () => {
-          debugger
-          const claims = await auth.getIdTokenClaims()
-          if (claims) {
-            const token = claims.__raw
-            store.setProfile({ ...auth.user, token })
-          } else {
-            debug('what is this? No sprechen sie Deutsch?')
-          }
-        })
-      } else {
-        toast.open({
-          message: 'cannot login because authentication is not configured',
-          type: 'error',
-          position: 'top',
-        })
-      }
+// computed
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+
+// methods
+async function login() {
+  if (!isAuthenticated.value) {
+    toast.open({
+      message: 'cannot login because authentication is not configured',
+      type: 'error',
+      position: 'top',
+    })
+    await loginWithRedirect()
+    if (isAuthenticated.value && idTokenClaims.value) {
+      store.setProfile({ ...user.value, token: idTokenClaims.value._raw })
     }
-
-    return {
-      bikeTag,
-      isBikeTagAmbassador,
-      login,
-    }
-  },
+  }
 }
 </script>
+
 <style lang="scss" scoped>
 .container {
   img {

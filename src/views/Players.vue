@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
     <b-pagination
@@ -30,60 +31,42 @@
     ></b-pagination>
   </div>
 </template>
-<script>
+
+<script setup name="PlayersView">
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
+
+// components
 import Player from '@/components/PlayerBicon.vue'
 
-export default {
-  name: 'PlayersView',
-  components: {
-    Player,
-  },
-  setup() {
-    const router = useRouter()
-    const route = useRoute()
-    const currentPage = ref(
-      route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1
-    )
-    let perPage = ref(10)
-    const store = useStore()
+// data
+const router = useRouter()
+const route = useRoute()
+const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
+let perPage = ref(10)
+const store = useStore()
 
-    // computed
-    const getPlayers = computed(() => store.getPlayers)
-    const playersForList = computed(() =>
-      getPlayers.value.slice(
-        (currentPage.value - 1) * perPage.value,
-        currentPage.value * perPage.value
-      )
-    )
-    const totalCount = () => getPlayers.value.length
+// computed
+const getPlayers = computed(() => store.getPlayers)
+const playersForList = computed(() =>
+  getPlayers.value.slice((currentPage.value - 1) * perPage.value, currentPage.value * perPage.value)
+)
+const totalCount = () => getPlayers.value.length
 
-    // methods
-    function resetCurrentPage() {
-      currentPage.value = 1
-    }
-    function changePage(event, pageNumber) {
-      router.push('/players/' + pageNumber)
-    }
-
-    //watch
-    watch(
-      () => 'route.params.currentPage',
-      (val) => {
-        currentPage.value = Number(val)
-      }
-    )
-
-    return {
-      currentPage,
-      perPage,
-      playersForList,
-      totalCount,
-      resetCurrentPage,
-      changePage,
-    }
-  },
+// methods
+function resetCurrentPage() {
+  currentPage.value = 1
 }
+function changePage(event, pageNumber) {
+  router.push('/players/' + pageNumber)
+}
+
+//watch
+watch(
+  () => 'route.params.currentPage',
+  (val) => {
+    currentPage.value = Number(val)
+  }
+)
 </script>

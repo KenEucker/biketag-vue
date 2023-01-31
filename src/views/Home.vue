@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="play-biketag vld-parent">
     <div class="play-screen__label-group-top">
@@ -58,85 +59,64 @@
     />
   </div>
 </template>
-<script>
+
+<script setup name="HomeView">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
-import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
+// import useSWRV from 'swrv'
+
+// components
+import Loading from 'vue-loading-overlay'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagHeader from '@/components/BikeTagHeader.vue'
 import BikeTagFooter from '@/components/BikeTagFooter.vue'
-import BikeTagLabel from '@/components/BikeTagLabel.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagLabel from '@/components/BikeTagLabel.vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
-// import useSWRV from 'swrv'
 
-export default {
-  name: 'HomeView',
-  components: {
-    Loading,
-    BikeTag,
-    BikeTagHeader,
-    BikeTagFooter,
-    BikeTagButton,
-    BikeTagLabel,
-    ExpandableImage,
-  },
-  setup() {
-    const router = useRouter()
-    const route = useRoute()
-    const tagnumber = ref(route.params?.tagnumber?.length ? parseInt(route.params.tagnumber) : 0)
-    const tagIsLoading = ref(true)
-    const store = useStore()
+// data
+const router = useRouter()
+const route = useRoute()
+const tagnumber = ref(route.params?.tagnumber?.length ? parseInt(route.params.tagnumber) : 0)
+const tagIsLoading = ref(true)
+const store = useStore()
 
-    // computed
-    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-    const getImgurImageSized = computed(() => store.getImgurImageSized)
-    const getTags = computed(() => store.getTags)
-    const tag = computed(() => {
-      if (tagnumber.value !== 0) {
-        const tag = getTags.value?.filter((t) => t.tagnumber === tagnumber.value)
-        return tag && tag.length ? tag[0] : {}
-      }
-      return undefined
-    })
+// computed
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getImgurImageSized = computed(() => store.getImgurImageSized)
+const getTags = computed(() => store.getTags)
+const tag = computed(() => {
+  if (tagnumber.value !== 0) {
+    const tag = getTags.value?.filter((t) => t.tagnumber === tagnumber.value)
+    return tag && tag.length ? tag[0] : {}
+  }
+  return undefined
+})
 
-    // methods
-    function tagImageLoaded() {
-      tagIsLoading.value = false
-    }
-    function goNextSingle() {
-      tagnumber.value++
-      if (tagnumber.value === getCurrentBikeTag.value.tagnumber) {
-        tagnumber.value = 0
-      } else {
-        router.push(`/${tagnumber.value}`)
-      }
-    }
-    function goPreviousSingle() {
-      tagnumber.value = tagnumber.value > 0 ? tagnumber.value : getCurrentBikeTag.value.tagnumber
-      tagnumber.value--
-      router.push(`/${tagnumber.value}`)
-    }
-
-    // mounted
-    onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
-
-    return {
-      router,
-      tagnumber,
-      tagIsLoading,
-      getCurrentBikeTag,
-      getImgurImageSized,
-      tagImageLoaded,
-      goNextSingle,
-      goPreviousSingle,
-      tag,
-    }
-  },
+// methods
+function tagImageLoaded() {
+  tagIsLoading.value = false
 }
+function goNextSingle() {
+  tagnumber.value++
+  if (tagnumber.value === getCurrentBikeTag.value.tagnumber) {
+    tagnumber.value = 0
+  } else {
+    router.push(`/${tagnumber.value}`)
+  }
+}
+function goPreviousSingle() {
+  tagnumber.value = tagnumber.value > 0 ? tagnumber.value : getCurrentBikeTag.value.tagnumber
+  tagnumber.value--
+  router.push(`/${tagnumber.value}`)
+}
+
+// mounted
+onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
 </script>
+
 <style lang="scss">
 @import '../assets/styles/style';
 

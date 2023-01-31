@@ -107,41 +107,38 @@
     </div>
   </b-container>
 </template>
-<script>
-import { ref, computed, onMounted } from 'vue'
+
+<script setup name="QueueSubmit">
+import { defineEmits, ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
-import Markdown from 'vue3-markdown-it'
 import { Settings } from '@/common/types'
+
+// components
+import Markdown from 'vue3-markdown-it'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
-export default {
-  name: 'QueueSubmit',
-  components: {
-    Markdown,
-    BikeTagButton,
-  },
-  emits: ['submit'],
-  setup(props, { emit }) {
-    const postToReddit = ref(false)
-    const postToTwitter = ref(false)
-    const postToInstagram = ref(false)
-    const showReddit = ref(false)
-    const showTwitter = ref(false)
-    const showInstagram = ref(false)
-    const submitTag = ref(null)
-    const store = useStore()
+// data
+const emit = defineEmits(['submit'])
+const postToReddit = ref(false)
+const postToTwitter = ref(false)
+const postToInstagram = ref(false)
+const showReddit = ref(false)
+const showTwitter = ref(false)
+const showInstagram = ref(false)
+const submitTag = ref(null)
+const store = useStore()
 
-    // computed
-    const getPlayerTag = computed(() => store.getPlayerTag)
-    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-    const getPlayerId = computed(() => store.getPlayerId)
-    const getGameName = computed(() => store.getGameName)
-    const getGame = computed(() => store.getGame)
-    const supportsReddit = computed(() => !!getGame.value?.settings[Settings.SupportsReddit])
-    const supportsTwitter = computed(() => !!getGame.value?.settings[Settings.SupportsTwitter])
-    const supportsInstagram = computed(() => !!getGame.value?.settings[Settings.SupportsInstagram])
-    const redditPostText = computed(
-      () => `
+// computed
+const getPlayerTag = computed(() => store.getPlayerTag)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getPlayerId = computed(() => store.getPlayerId)
+const getGameName = computed(() => store.getGameName)
+const getGame = computed(() => store.getGame)
+const supportsReddit = computed(() => !!getGame.value?.settings[Settings.SupportsReddit])
+const supportsTwitter = computed(() => !!getGame.value?.settings[Settings.SupportsTwitter])
+const supportsInstagram = computed(() => !!getGame.value?.settings[Settings.SupportsInstagram])
+const redditPostText = computed(
+  () => `
 [#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://biketag.org/#/${getPlayerTag.value.tagnumber})
 
 Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurrentBikeTag.value.tagnumber}](${getCurrentBikeTag.value.discussionUrl}) that ${getCurrentBikeTag.value.mysteryPlayer} posted!
@@ -151,77 +148,57 @@ Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurr
 See all BikeTags and more, for ${getGameName.value}:
 
 [biketag.org](https://https://biketag.org) | [Leaderboard](https://https://biketag.org/leaderboard) | [Rules](https://https://biketag.org/#howto)
-        `
-    )
-    const twitterPostText = computed(
-      () => `
-  Seattle BikeTag!
-  
-  This is bike tag number ${getPlayerTag.value.tagnumber} by ${getPlayerTag.value.foundPlayer}.
-  Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
-  
-  #SeattleBikeTag #SeaBikes #BikeSeattle`
-    )
+    `
+)
+const twitterPostText = computed(
+  () => `
+Seattle BikeTag!
 
-    // methods
-    function copyTabContents(text) {
-      navigator.clipboard.writeText(text)
-    }
-    function onSubmit() {
-      const formAction = submitTag.value.getAttribute('action')
-      const formData = new FormData(submitTag.value)
-      const submittedTag = getPlayerTag.value
+This is bike tag number ${getPlayerTag.value.tagnumber} by ${getPlayerTag.value.foundPlayer}.
+Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
 
-      submittedTag.discussionUrl = JSON.stringify({
-        postToReddit: postToReddit.value,
-      })
-      submittedTag.mentionUrl = JSON.stringify({
-        postToTwitter: postToTwitter.value,
-      })
-      submittedTag.shareUrl = JSON.stringify({
-        postToInstagram: postToInstagram.value,
-      })
+#SeattleBikeTag #SeaBikes #BikeSeattle`
+)
 
-      formData.append('discussionUrl', submittedTag.discussionUrl)
-      formData.append('mentionUrl', submittedTag.mentionUrl)
-      // formData.append('shareUrl', submittedTag.shareUrl)
-
-      emit('submit', {
-        formAction,
-        formData,
-        tag: submittedTag,
-        storeAction: 'postNewBikeTag',
-      })
-    }
-
-    // mounted
-    onMounted(() => {
-      postToReddit.value = showReddit.value = supportsReddit.value
-      postToTwitter.value = showTwitter.value = supportsTwitter.value
-      postToInstagram.value = showInstagram.value = supportsInstagram.value
-    })
-
-    return {
-      postToReddit,
-      postToTwitter,
-      showReddit,
-      showTwitter,
-      showInstagram,
-      postToInstagram,
-      submitTag,
-      getPlayerId,
-      getGame,
-      supportsReddit,
-      supportsTwitter,
-      supportsInstagram,
-      redditPostText,
-      twitterPostText,
-      copyTabContents,
-      onSubmit,
-    }
-  },
+// methods
+function copyTabContents(text) {
+  navigator.clipboard.writeText(text)
 }
+function onSubmit() {
+  const formAction = submitTag.value.getAttribute('action')
+  const formData = new FormData(submitTag.value)
+  const submittedTag = getPlayerTag.value
+
+  submittedTag.discussionUrl = JSON.stringify({
+    postToReddit: postToReddit.value,
+  })
+  submittedTag.mentionUrl = JSON.stringify({
+    postToTwitter: postToTwitter.value,
+  })
+  submittedTag.shareUrl = JSON.stringify({
+    postToInstagram: postToInstagram.value,
+  })
+
+  formData.append('discussionUrl', submittedTag.discussionUrl)
+  formData.append('mentionUrl', submittedTag.mentionUrl)
+  // formData.append('shareUrl', submittedTag.shareUrl)
+
+  emit('submit', {
+    formAction,
+    formData,
+    tag: submittedTag,
+    storeAction: 'postNewBikeTag',
+  })
+}
+
+// mounted
+onMounted(() => {
+  postToReddit.value = showReddit.value = supportsReddit.value
+  postToTwitter.value = showTwitter.value = supportsTwitter.value
+  postToInstagram.value = showInstagram.value = supportsInstagram.value
+})
 </script>
+
 <style lang="scss">
 .queue-submit {
   .nav-tabs {

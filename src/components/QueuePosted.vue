@@ -55,83 +55,73 @@
     </form>
   </b-container>
 </template>
-<script>
-import { ref, computed, onMounted } from 'vue'
+
+<script setup name="QueuePosted">
+import { defineEmits, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
-import BikeTagButton from '@/components/BikeTagButton.vue'
 import { debug } from '@/common/utils'
 
-export default {
-  name: 'QueuePosted',
-  components: {
-    BikeTagButton,
-  },
-  emits: ['submit'],
-  setup(props, { emit }) {
-    const submitTagRef = ref(null)
-    const store = useStore()
-    const router = useRouter
+// components
+import BikeTagButton from '@/components/BikeTagButton.vue'
 
-    // computed
-    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-    const getPlayerTag = computed(() => store.getPlayerTag)
+// data
+const emit = defineEmits(['submit'])
+const submitTagRef = ref(null)
+const store = useStore()
+const router = useRouter
 
-    // methods
-    function goViewRound() {
-      router.push('/round')
-    }
-    function submitTag(defaultShareSettings) {
-      const formAction = submitTagRef.value.getAttribute('action')
-      const formData = new FormData(submitTagRef.value)
-      const submittedTag = getPlayerTag.value
-      defaultShareSettings = defaultShareSettings ?? {
-        postToReddit: this.postToReddit,
-        postToTwitter: this.postToTwitter,
-        postToInstagram: this.postToInstagram,
-      }
+// computed
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getPlayerTag = computed(() => store.getPlayerTag)
 
-      submittedTag.discussionUrl = JSON.stringify({
-        postToReddit: defaultShareSettings.postToReddit,
-      })
-      submittedTag.mentionUrl = JSON.stringify({
-        postToTwitter: defaultShareSettings.postToTwitter,
-      })
-      submittedTag.shareUrl = JSON.stringify({
-        postToInstagram: defaultShareSettings.postToInstagram,
-      })
-
-      formData.append('discussionUrl', submittedTag.discussionUrl)
-      formData.append('mentionUrl', submittedTag.mentionUrl)
-      // formData.append('shareUrl', submittedTag.shareUrl)
-
-      emit('submit', {
-        formAction,
-        formData,
-        tag: submittedTag,
-        storeAction: 'postNewBikeTag',
-      })
-    }
-
-    // mounted
-    onMounted(() => {
-      if (!getPlayerTag.value?.discussionUrl?.length) {
-        /// TODO: check game settings for queue and remove this hardcoded hack
-        const defaultShareSettings = {
-          postToReddit: this.postToReddit,
-          postToTwitter: this.postToTwitter,
-          postToInstagram: this.postToInstagram,
-        }
-        debug('autosubmitting tag with default share settings', defaultShareSettings)
-        submitTag(defaultShareSettings)
-      }
-    })
-
-    return {
-      submitTagRef,
-      getCurrentBikeTag,
-      goViewRound,
-    }
-  },
+// methods
+function goViewRound() {
+  router.push('/round')
 }
+function submitTag(defaultShareSettings) {
+  const formAction = submitTagRef.value.getAttribute('action')
+  const formData = new FormData(submitTagRef.value)
+  const submittedTag = getPlayerTag.value
+  defaultShareSettings = defaultShareSettings ?? {
+    postToReddit: this.postToReddit,
+    postToTwitter: this.postToTwitter,
+    postToInstagram: this.postToInstagram,
+  }
+
+  submittedTag.discussionUrl = JSON.stringify({
+    postToReddit: defaultShareSettings.postToReddit,
+  })
+  submittedTag.mentionUrl = JSON.stringify({
+    postToTwitter: defaultShareSettings.postToTwitter,
+  })
+  submittedTag.shareUrl = JSON.stringify({
+    postToInstagram: defaultShareSettings.postToInstagram,
+  })
+
+  formData.append('discussionUrl', submittedTag.discussionUrl)
+  formData.append('mentionUrl', submittedTag.mentionUrl)
+  // formData.append('shareUrl', submittedTag.shareUrl)
+
+  emit('submit', {
+    formAction,
+    formData,
+    tag: submittedTag,
+    storeAction: 'postNewBikeTag',
+  })
+}
+
+// mounted
+onMounted(() => {
+  if (!getPlayerTag.value?.discussionUrl?.length) {
+    /// TODO: check game settings for queue and remove this hardcoded hack
+    const defaultShareSettings = {
+      postToReddit: this.postToReddit,
+      postToTwitter: this.postToTwitter,
+      postToInstagram: this.postToInstagram,
+    }
+    debug('autosubmitting tag with default share settings', defaultShareSettings)
+    submitTag(defaultShareSettings)
+  }
+})
 </script>

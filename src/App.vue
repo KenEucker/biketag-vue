@@ -24,99 +24,93 @@
     </template> -->
   </div>
 </template>
-<script>
+
+<script setup name="App">
 import { ref, inject, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { useAuth0 } from '@auth0/auth0-vue'
+import { debug } from './common/utils'
+
+// componets
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
 import ServiceWorker from '@/components/ServiceWorker.vue'
-import { debug } from './common/utils'
 import { Head } from '@vueuse/head'
-import i18n from '@/i18n'
 
-export default {
-  name: 'App',
-  components: {
-    ServiceWorker,
-    BikeTagMenu,
-    Head,
-  },
-  setup() {
-    // data
-    const gameIsSet = ref(false)
-    const store = useStore()
-    const router = useRouter()
-    const toast = inject('toast')
-    const { isAuthenticated, idTokenClaims, user } = useAuth0()
+// data
+const gameIsSet = ref(false)
+const store = useStore()
+const router = useRouter()
+const t = inject('t')
+const toast = inject('toast')
+const { isAuthenticated, idTokenClaims, user } = useAuth0()
 
-    // computed
-    // eslint-disable-next-line prettier/prettier
-    const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name != 'Landing')
-    // eslint-disable-next-line prettier/prettier
-    const isWhiteBackground = computed(() => router.currentRoute.value.name === 'About' ? 'white-bck' : '')
-    const logo = computed(() => store.getLogoUrl('m'))
-    // eslint-disable-next-line prettier/prettier
-    const title = computed(function() { return `${isNotLanding.value ? store.getGameName : i18n.global.t('The Game Of')} BikeTag!` })
-    const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
+// computed
+const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name != 'Landing')
+const isWhiteBackground = computed(() =>
+  router.currentRoute.value.name === 'About' ? 'white-bck' : ''
+)
+const logo = computed(() => store.getLogoUrl('m'))
+const title = computed(function () {
+  return `${isNotLanding.value ? store.getGameName : t('The Game Of')} BikeTag!`
+})
+const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
-    // methods
-    function checkForNewBikeTagPost() {
-      if (
-        store.getCurrentBikeTag?.tagnumber > store.getMostRecentlyViewedTagnumber &&
-        store.getMostRecentlyViewedTagnumber !== 0
-      ) {
-        debug('ui::new biketag posted!!')
-        toast.open({
-          message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName} has been posted!`,
-          type: 'default',
-          position: 'top',
-        })
-      }
-    }
-
-    async function created() {
-      const initResults = []
-      /// Set it first thing
-      store.SET_DATA_INITIALIZED()
-      const game = await store.setGame()
-      initResults.push(await store.setAllGames())
-      const _gameIsSet = game?.name?.length !== 0
-
-      if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
-        gameIsSet.value = true
-
-        if (isAuthenticated.value) {
-          if (!this.getProfile?.nonce?.length) {
-            if (idTokenClaims.value)
-              store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
-            else debug("what's this? no speaka da mda5hash, brah?")
-          }
-        }
-
-        if (!game) {
-          router.push('/landing')
-          gameIsSet.value = false
-        }
-
-        initResults.push(await store.setTags())
-        initResults.push(await store.setCurrentBikeTag())
-        initResults.push(await store.setQueuedTags())
-        initResults.push(await store.setPlayers())
-        initResults.push(await store.setLeaderboard())
-
-        checkForNewBikeTagPost()
-      } else if (!_gameIsSet) {
-        router.push('/landing')
-      }
-      debug(`view::data-init`)
-    }
-    created()
-
-    return { gameIsSet, isWhiteBackground, logo, title, description }
-  },
+// methods
+function checkForNewBikeTagPost() {
+  if (
+    store.getCurrentBikeTag?.tagnumber > store.getMostRecentlyViewedTagnumber &&
+    store.getMostRecentlyViewedTagnumber !== 0
+  ) {
+    debug('ui::new biketag posted!!')
+    toast.open({
+      message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName} has been posted!`,
+      type: 'default',
+      position: 'top',
+    })
+  }
 }
+
+// created
+async function created() {
+  const initResults = []
+  /// Set it first thing
+  store.SET_DATA_INITIALIZED()
+  const game = await store.setGame()
+  initResults.push(await store.setAllGames())
+  const _gameIsSet = game?.name?.length !== 0
+
+  if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
+    gameIsSet.value = true
+
+    if (isAuthenticated.value) {
+      if (!store.getProfile?.nonce?.length) {
+        if (idTokenClaims.value)
+          store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
+        else debug("what's this? no speaka da mda5hash, brah?")
+      }
+    }
+
+    if (!game) {
+      router.push('/landing')
+      gameIsSet.value = false
+    }
+
+    initResults.push(await store.setTags())
+    initResults.push(await store.setCurrentBikeTag())
+    initResults.push(await store.setQueuedTags())
+    initResults.push(await store.setPlayers())
+    initResults.push(await store.setLeaderboard())
+
+    checkForNewBikeTagPost()
+  } else if (!_gameIsSet) {
+    router.push('/landing')
+  }
+  debug(`view::data-init`)
+}
+created()
 </script>
+
 <style lang="scss">
 @import './assets/styles/style';
 

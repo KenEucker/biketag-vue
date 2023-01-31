@@ -14,48 +14,41 @@
     </div>
   </b-container>
 </template>
-<script>
-import { computed } from 'vue'
+
+<script setup name="QueueJoined">
+import { defineProps, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
+
+// components
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
-export default {
-  name: 'QueueJoined',
-  components: {
-    BikeTagButton,
-  },
-  props: {
-    tag: {
-      type: Object,
-      default: () => {
-        return {}
-      },
+// props
+const props = defineProps({
+  tag: {
+    type: Object,
+    default: () => {
+      return {}
     },
   },
-  setup() {
-    const store = useStore()
-    const router = useRouter()
+})
 
-    // computed
-    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+// data
+const store = useStore()
+const router = useRouter()
 
-    // methods
-    function goViewRound() {
-      router.push('/round')
-    }
-    function goMysteryQueue() {
-      store.setFormStepToJoin(true)
-    }
+// computed
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 
-    return {
-      getCurrentBikeTag,
-      goViewRound,
-      goMysteryQueue,
-    }
-  },
+// methods
+function goViewRound() {
+  router.push('/round')
+}
+function goMysteryQueue() {
+  store.setFormStepToJoin(true)
 }
 </script>
+
 <style lang="scss">
 .btn-mystery {
   background-color: blue;

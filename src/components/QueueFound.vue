@@ -117,301 +117,279 @@
     </form>
   </div>
 </template>
-<script>
-import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
+
+<script setup name="QueueFoundTag">
+import {
+  defineProps,
+  defineEmits,
+  ref,
+  inject,
+  computed,
+  nextTick,
+  onMounted,
+  onBeforeUnmount,
+} from 'vue'
 import { useStore } from '@/store/index.ts'
-import BikeTagButton from '@/components/BikeTagButton.vue'
-import BikeTagInput from '@/components/BikeTagInput.vue'
-import BikeTagMap from '@/components/BikeTagMap.vue'
+import { useAuth0 } from '@auth0/auth0-vue'
 import exifr from 'exifr'
 import { debug } from '@/common/utils'
 
-export default {
-  name: 'QueueFoundTag',
-  components: {
-    BikeTagButton,
-    BikeTagInput,
-    BikeTagMap,
-  },
-  props: {
-    tag: {
-      type: Object,
-      default: () => {
-        return {}
-      },
+// components
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagInput from '@/components/BikeTagInput.vue'
+import BikeTagMap from '@/components/BikeTagMap.vue'
+
+// props
+const props = defineProps({
+  tag: {
+    type: Object,
+    default: () => {
+      return {}
     },
   },
-  emits: ['submit'],
-  setup(props, { emit }) {
-    const preview = ref(null)
-    const image = ref(props.tag?.foundImage ?? '')
-    const foundImageUrl = ref(null)
-    const locationDisabled = ref(true)
-    const center = ref({ lat: 0, lng: 0 })
-    const gps = ref({ lat: null, lng: null })
-    const isGpsDefault = ref(true)
-    const showPopover = ref(false)
-    const inputDOM = ref(null)
-    const showModal = ref(false)
-    const uploadInProgress = ref(false)
-    const location = ref('')
-    const player = ref('')
-    const passcode = ref(Date.now().toString()) // don't let them just get away with it
-    const foundTagRef = ref(null)
-    const store = useStore()
-    const auth = inject('auth0')
-    const toast = inject('toast')
+})
 
-    // computed
-    const getGameName = computed(() => store.getGameName)
-    const getPlayerId = computed(() => store.getPlayerId)
-    const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-    const getProfile = computed(() => store.getProfile)
-    const getGame = computed(() => store.getGame)
-    const getName = computed(
-      () => getProfile.value?.user_metadata?.name ?? props.tag?.foundPlayer ?? ''
-    )
-    const isGps = computed(() => gps.value.lat && gps.value.lng)
-    const getLocation = computed(() => {
-      if (location.value.length > 0) {
-        return location.value
-      } else if (isGps.value) {
-        return `${gps.value.lat}, ${gps.value.lng}`
-      }
+// data
+const emit = defineEmits(['submit'])
+const preview = ref(null)
+const image = ref(props.tag?.foundImage ?? '')
+const foundImageUrl = ref(null)
+const locationDisabled = ref(true)
+const center = ref({ lat: 0, lng: 0 })
+const gps = ref({ lat: null, lng: null })
+const isGpsDefault = ref(true)
+const showPopover = ref(false)
+const inputDOM = ref(null)
+const showModal = ref(false)
+const uploadInProgress = ref(false)
+const location = ref('')
+const player = ref('')
+const passcode = ref(Date.now().toString()) // don't let them just get away with it
+const foundTagRef = ref(null)
+const store = useStore()
+const { isAuthenticated } = useAuth0()
+const toast = inject('toast')
 
-      return location.value
+// computed
+const getGameName = computed(() => store.getGameName)
+const getPlayerId = computed(() => store.getPlayerId)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getProfile = computed(() => store.getProfile)
+const getGame = computed(() => store.getGame)
+const getName = computed(
+  () => getProfile.value?.user_metadata?.name ?? props.tag?.foundPlayer ?? ''
+)
+const isGps = computed(() => gps.value.lat && gps.value.lng)
+const getLocation = computed(() => {
+  if (location.value.length > 0) {
+    return location.value
+  } else if (isGps.value) {
+    return `${gps.value.lat}, ${gps.value.lng}`
+  }
+
+  return location.value
+})
+
+// methods
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time))
+}
+function hideModal() {
+  showModal.value = false
+}
+async function onSubmit(e) {
+  e.preventDefault()
+  uploadInProgress.value = true
+  if (!location.value?.length) {
+    toast.open({
+      message: 'Please add your Found Location',
+      type: 'error',
+      position: 'top',
     })
-    const isAuthenticated = computed(function () {
-      return auth.isAuthenticated
+    uploadInProgress.value = false
+    return
+  }
+  if (!player.value) {
+    toast.open({
+      message: 'Please enter a name',
+      type: 'error',
+      position: 'top',
     })
-
-    // methods
-    function sleep(time) {
-      return new Promise((resolve) => setTimeout(resolve, time))
-    }
-    function hideModal() {
-      showModal.value = false
-    }
-    async function onSubmit(e) {
-      e.preventDefault()
-      uploadInProgress.value = true
-      if (!location.value?.length) {
-        toast.open({
-          message: 'Please add your Found Location',
-          type: 'error',
-          position: 'top',
-        })
-        uploadInProgress.value = false
-        return
-      }
-      if (!player.value) {
-        toast.open({
-          message: 'Please enter a name',
-          type: 'error',
-          position: 'top',
-        })
-        uploadInProgress.value = false
-        return
-      }
-      if (!auth?.isAuthenticated) {
-        try {
-          await store.checkPasscode({
-            name: player.value,
-            passcode: passcode.value,
-          })
-          showModal.value = false
-          await sleep(100)
-        } catch {
-          if (showModal.value) {
-            toast.open({
-              message: 'Incorrect passcode',
-              type: 'error',
-              position: 'top',
-            })
-          }
-          nextTick(() => (showModal.value = !showModal.value))
-          passcode.value = ''
-          uploadInProgress.value = false
-          return
-        }
-      }
-      if (!image.value) {
-        toast.open({
-          message: 'Invalid image, add a new one.',
-          type: 'error',
-          position: 'top',
-        })
-        uploadInProgress.value = false
-        return
-      }
-      if (location.value?.length == 0) {
-        if (gps.value.lat == null) {
-          debug('location must be set')
-          uploadInProgress.value = false
-          return
-        }
-      }
-      if (player.value.length == 0) {
-        if (getName.value.length == 0) {
-          debug('player name must set')
-          uploadInProgress.value = false
-          return
-        } else {
-          player.value = getName.value
-        }
-      }
-      document.querySelector('.popover')?.remove()
-      console.log(foundTagRef.value)
-      const formAction = foundTagRef.value.getAttribute('action')
-      const formData = new FormData(foundTagRef.value)
-      const foundTag = {
-        foundImage: image.value,
-        foundPlayer: player.value,
-        foundLocation: location.value,
-        tagnumber: getCurrentBikeTag.value?.tagnumber ?? 0,
-        game: getGameName.value,
-        gps: {
-          lat: gps.value.lat,
-          long: gps.value.lng,
-          alt: gps.value.alt,
-        },
-      }
-      uploadInProgress.value = false
-
-      emit('submit', {
-        formAction,
-        formData,
-        tag: foundTag,
-        storeAction: 'addFoundTag',
+    uploadInProgress.value = false
+    return
+  }
+  if (!isAuthenticated) {
+    try {
+      await store.checkPasscode({
+        name: player.value,
+        passcode: passcode.value,
       })
-    }
-    function changeLocation(e) {
-      location.value = e.target.value
-      if (inputDOM.value == null) {
-        inputDOM.value = e.target
+      showModal.value = false
+      await sleep(100)
+    } catch {
+      if (showModal.value) {
+        toast.open({
+          message: 'Incorrect passcode',
+          type: 'error',
+          position: 'top',
+        })
       }
+      nextTick(() => (showModal.value = !showModal.value))
+      passcode.value = ''
+      uploadInProgress.value = false
+      return
     }
-    function setPlace(e) {
-      gps.value['lat'] = round(e.geometry.location.lat())
-      gps.value['lng'] = round(e.geometry.location.lng())
-      center.value = { ...gps.value }
-      location.value = inputDOM.value.value.split(',')[0]
-      if (isGpsDefault.value) {
-        isGpsDefault.value = false
+  }
+  if (!image.value) {
+    toast.open({
+      message: 'Invalid image, add a new one.',
+      type: 'error',
+      position: 'top',
+    })
+    uploadInProgress.value = false
+    return
+  }
+  if (location.value?.length == 0) {
+    if (gps.value.lat == null) {
+      debug('location must be set')
+      uploadInProgress.value = false
+      return
+    }
+  }
+  if (player.value.length == 0) {
+    if (getName.value.length == 0) {
+      debug('player name must set')
+      uploadInProgress.value = false
+      return
+    } else {
+      player.value = getName.value
+    }
+  }
+  document.querySelector('.popover')?.remove()
+  console.log(foundTagRef.value)
+  const formAction = foundTagRef.value.getAttribute('action')
+  const formData = new FormData(foundTagRef.value)
+  const foundTag = {
+    foundImage: image.value,
+    foundPlayer: player.value,
+    foundLocation: location.value,
+    tagnumber: getCurrentBikeTag.value?.tagnumber ?? 0,
+    game: getGameName.value,
+    gps: {
+      lat: gps.value.lat,
+      long: gps.value.lng,
+      alt: gps.value.alt,
+    },
+  }
+  uploadInProgress.value = false
+
+  emit('submit', {
+    formAction,
+    formData,
+    tag: foundTag,
+    storeAction: 'addFoundTag',
+  })
+}
+function changeLocation(e) {
+  location.value = e.target.value
+  if (inputDOM.value == null) {
+    inputDOM.value = e.target
+  }
+}
+function setPlace(e) {
+  gps.value['lat'] = round(e.geometry.location.lat())
+  gps.value['lng'] = round(e.geometry.location.lng())
+  center.value = { ...gps.value }
+  location.value = inputDOM.value.value.split(',')[0]
+  if (isGpsDefault.value) {
+    isGpsDefault.value = false
+  }
+}
+function updateMarker(e) {
+  gps.value['lat'] = round(e.latLng.lat())
+  gps.value['lng'] = round(e.latLng.lng())
+  if (isGpsDefault.value) {
+    isGpsDefault.value = false
+  }
+}
+function round(number) {
+  return Number(Math.round(number + 'e4') + 'e-4')
+}
+function setImage(event) {
+  store.fetchCredentials()
+  const input = event.target
+  if (input.files) {
+    locationDisabled.value = false
+    try {
+      const previewReader = new FileReader()
+      previewReader.onload = (e) => {
+        preview.value = e.target.result
       }
-    }
-    function updateMarker(e) {
-      gps.value['lat'] = round(e.latLng.lat())
-      gps.value['lng'] = round(e.latLng.lng())
-      if (isGpsDefault.value) {
-        isGpsDefault.value = false
-      }
-    }
-    function round(number) {
-      return Number(Math.round(number + 'e4') + 'e-4')
-    }
-    function setImage(event) {
-      store.fetchCredentials()
-      const input = event.target
-      if (input.files) {
-        locationDisabled.value = false
-        try {
-          const previewReader = new FileReader()
-          previewReader.onload = (e) => {
-            preview.value = e.target.result
-          }
-          previewReader.readAsDataURL(input.files[0])
-          if (input.files[0].size / Math.pow(1024, 2) > 15) {
+      previewReader.readAsDataURL(input.files[0])
+      if (input.files[0].size / Math.pow(1024, 2) > 15) {
+        toast.open({
+          message: 'Image exceds 15mb',
+          type: 'error',
+          position: 'top',
+        })
+      } else {
+        input.files[0].arrayBuffer().then(async (value) => {
+          const results = await exifr.parse(value)
+          const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
+
+          if (createDate < getCurrentBikeTag.value.mysteryTime) {
             toast.open({
-              message: 'Image exceds 15mb',
+              message: 'Timestamp Error',
               type: 'error',
               position: 'top',
             })
           } else {
-            input.files[0].arrayBuffer().then(async (value) => {
-              const results = await exifr.parse(value)
-              const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
-
-              if (createDate < getCurrentBikeTag.value.mysteryTime) {
-                toast.open({
-                  message: 'Timestamp Error',
-                  type: 'error',
-                  position: 'top',
-                })
-              } else {
-                image.value = input.files[0]
-              }
-
-              const GPSData = await exifr.gps(value)
-
-              if (GPSData) {
-                if (GPSData.latitude != null && GPSData.longitude != null) {
-                  gps.value = {
-                    lat: round(GPSData.latitude),
-                    lng: round(GPSData.longitude),
-                  }
-                  isGpsDefault.value = false
-                }
-              } else {
-                gps.value = getGame.value?.boundary
-                isGpsDefault.value = true
-              }
-              center.value = { ...gps.value }
-              location.value = ''
-            })
+            image.value = input.files[0]
           }
-        } catch (e) {
-          console.error(e)
-        }
+
+          const GPSData = await exifr.gps(value)
+
+          if (GPSData) {
+            if (GPSData.latitude != null && GPSData.longitude != null) {
+              gps.value = {
+                lat: round(GPSData.latitude),
+                lng: round(GPSData.longitude),
+              }
+              isGpsDefault.value = false
+            }
+          } else {
+            gps.value = getGame.value?.boundary
+            isGpsDefault.value = true
+          }
+          center.value = { ...gps.value }
+          location.value = ''
+        })
       }
+    } catch (e) {
+      console.error(e)
     }
-
-    // created
-    nextTick(() => (showPopover.value = true))
-
-    // mounted
-    onMounted(function () {
-      nextTick(() => {
-        setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
-        // this.showPopover = false
-        player.value = getName.value
-        uploadInProgress.value = false
-      })
-    })
-
-    // beforeUnmount
-    onBeforeUnmount(() => {
-      document.querySelector('.popover')?.remove()
-    })
-
-    return {
-      foundTagRef,
-      preview,
-      location,
-      player,
-      foundImageUrl,
-      locationDisabled,
-      center,
-      gps,
-      isGpsDefault,
-      showPopover,
-      passcode,
-      showModal,
-      uploadInProgress,
-      getPlayerId,
-      isGps,
-      getLocation,
-      isAuthenticated,
-      hideModal,
-      onSubmit,
-      changeLocation,
-      setPlace,
-      updateMarker,
-      setImage,
-    }
-  },
+  }
 }
+
+// created
+nextTick(() => (showPopover.value = true))
+
+// mounted
+onMounted(function () {
+  nextTick(() => {
+    setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
+    // showPopover = false
+    player.value = getName.value
+    uploadInProgress.value = false
+  })
+})
+
+// beforeUnmount
+onBeforeUnmount(() => {
+  document.querySelector('.popover')?.remove()
+})
 </script>
+
 <style lang="scss">
 input#found {
   margin-left: 3.5rem;

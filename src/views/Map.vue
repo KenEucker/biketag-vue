@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container mt-5">
     <div class="map d-flex justify-content-center">
@@ -14,46 +15,33 @@
   </div>
 </template>
 
-<script>
+<script setup name="MapView">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
+// import StyledHr from '@/assets/images/hr.svg'
+// import Pin from '@/assets/images/pin.svg'
+
+// components
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import StyledHr from '@/assets/images/hr.svg'
-import Pin from '@/assets/images/pin.svg'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 
-export default {
-  name: 'MapView',
-  components: {
-    HtmlContent,
-    BikeTagButton,
-    BikeTagMap,
-  },
-  setup() {
-    const styledHr = StyledHr
-    const pin = Pin
-    const store = useStore()
-    const router = useRouter()
+// data
+// const styledHr = StyledHr
+// const pin = Pin
+const store = useStore()
+const router = useRouter()
 
-    // computed
-    const getGameName = computed(() => store.getGameName)
+// computed
+const getGameName = computed(() => store.getGameName)
 
-    // methods
-    function goBikeTagsPage() {
-      router.push('/biketags')
-    }
-
-    return {
-      styledHr,
-      pin,
-      getGameName,
-      goBikeTagsPage,
-    }
-  },
+// methods
+function goBikeTagsPage() {
+  router.push('/biketags')
 }
 </script>
+
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 
