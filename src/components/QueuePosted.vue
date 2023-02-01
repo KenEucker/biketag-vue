@@ -64,12 +64,14 @@ import { debug } from '@/common/utils'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useI18n } from 'vue-i18n'
 
 // data
 const emit = defineEmits(['submit'])
 const submitTagRef = ref(null)
 const store = useStore()
 const router = useRouter
+const { t } = useI18n()
 
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)

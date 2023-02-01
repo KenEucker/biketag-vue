@@ -138,6 +138,7 @@ import { debug } from '@/common/utils'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
+import { useI18n } from 'vue-i18n'
 
 // props
 const props = defineProps({
@@ -169,6 +170,7 @@ const foundTagRef = ref(null)
 const store = useStore()
 const { isAuthenticated } = useAuth0()
 const toast = inject('toast')
+const { t } = useI18n()
 
 // computed
 const getGameName = computed(() => store.getGameName)

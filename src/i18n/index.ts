@@ -6,6 +6,7 @@ export type MessageSchema = typeof enUS
 
 const i18n = createI18n<[MessageSchema], 'en-US'>({
   locale: 'en-US',
+  allowComposition: true,
   messages: {
     'en-US': enUS,
     'ru-RU': ruRU,

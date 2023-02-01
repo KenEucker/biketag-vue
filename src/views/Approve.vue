@@ -41,6 +41,7 @@ import { debug } from '@/common/utils'
 
 // components
 import QueueApprove from '@/components/QueueApprove.vue'
+import { useI18n } from 'vue-i18n'
 
 // props
 const props = defineProps({
@@ -59,7 +60,7 @@ const queueError = ref(null)
 const store = useStore()
 const { isAuthenticated, idTokenClaims, user } = useAuth0()
 const toast = inject('toast')
-const t = inject('t')
+const { t } = useI18n()
 
 // computed
 const getPlayerTag = computed(() => store.getPlayerTag)

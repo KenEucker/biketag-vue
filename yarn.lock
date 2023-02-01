@@ -12728,9 +12728,9 @@ vue-timer-hook@^0.0.22:
   resolved "https://registry.npmjs.org/vue-timer-hook/-/vue-timer-hook-0.0.22.tgz"
   integrity sha512-MPwvUXq7AKzHEo3ySQHyWysACu6badpNXsdZBXDrDztCc0S9mTwKuuwxYXqYwQ2udODGslA4WB2du+4tbUf2RQ==
 
-vue-toast-notification@^3.0.0:
+vue-toast-notification@3.0:
   version "3.0.4"
-  resolved "https://registry.npmjs.org/vue-toast-notification/-/vue-toast-notification-3.0.4.tgz"
+  resolved "https://registry.yarnpkg.com/vue-toast-notification/-/vue-toast-notification-3.0.4.tgz#dfd6ff37daa99be18f13c3e56dc0074fe3f3cdbe"
   integrity sha512-rEhLtcKg8SVdBpdN7PrNst5nmY8dw0j3NkNImqurhlGurqR/QDKoou0t2PuCReEOCTKqHvfLCle2I3kwQWDWDQ==
 
 vue3-cookies@^1.0.6:

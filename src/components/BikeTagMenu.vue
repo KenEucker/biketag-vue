@@ -155,6 +155,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { debug } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
+import { useI18n } from 'vue-i18n'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton'
@@ -182,6 +183,7 @@ const store = useStore()
 const router = useRouter()
 const route = useRoute()
 const { logout, isAuthenticated } = useAuth0()
+const { t } = useI18n()
 
 // computed
 const getGameTitle = computed(() => store.getGameTitle)

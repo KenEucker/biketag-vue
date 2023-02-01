@@ -79,6 +79,7 @@ import { defineProps, inject, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
+import { useI18n } from 'vue-i18n'
 
 // props
 const props = defineProps({
@@ -104,6 +105,7 @@ const props = defineProps({
 const store = useStore()
 const router = useRouter()
 const toast = inject('toast')
+const { t } = useI18n()
 
 // computed
 const getQueuedTags = computed(() => store.getImgurImageSized)

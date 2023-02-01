@@ -84,7 +84,7 @@
 </template>
 
 <script setup name="BikeTagFooter">
-import { defineProps, defineEmits, ref, inject, computed, onBeforeUnmount } from 'vue'
+import { defineProps, defineEmits, ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import HintIcon from '@/assets/images/hint-icon.svg'
@@ -93,6 +93,7 @@ import CloseRounded from '@/assets/images/close-rounded.svg'
 // componets
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagCamera from '@/components/BikeTagCamera.vue'
+import { useI18n } from 'vue-i18n'
 
 // props
 const props = defineProps({
@@ -156,7 +157,7 @@ const mysteryHint = ref(null)
 const hint = ref(null)
 const store = useStore()
 const router = useRouter()
-const t = inject('t')
+const { t } = useI18n()
 
 // computed
 const getCurrentHint = computed(() => store.getCurrentHint)
@@ -189,7 +190,7 @@ function getRandomInteger(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 function randomCharacter() {
-  return characters.value[getRandomInteger(0, characters.value.length - 1)]
+  return characters[getRandomInteger(0, characters.length - 1)]
 }
 function showHint() {
   setTimeout(async () => {

@@ -36,12 +36,13 @@ import { debug } from './common/utils'
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
 import ServiceWorker from '@/components/ServiceWorker.vue'
 import { Head } from '@vueuse/head'
+import { useI18n } from 'vue-i18n'
 
 // data
 const gameIsSet = ref(false)
 const store = useStore()
 const router = useRouter()
-const t = inject('t')
+const { t } = useI18n()
 const toast = inject('toast')
 const { isAuthenticated, idTokenClaims, user } = useAuth0()
 

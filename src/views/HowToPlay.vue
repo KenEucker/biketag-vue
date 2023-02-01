@@ -97,6 +97,7 @@ import { debug } from '@/common/utils'
 // components
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
+import { useI18n } from 'vue-i18n'
 
 // install Swiper components
 SwiperCore.use([Autoplay, Navigation, Pagination])
@@ -104,6 +105,7 @@ SwiperCore.use([Autoplay, Navigation, Pagination])
 // data
 const playingEaster = ref(false)
 const store = useStore()
+const { t } = useI18n()
 
 // computed
 const getEasterEgg = computed(() => store.getEasterEgg)

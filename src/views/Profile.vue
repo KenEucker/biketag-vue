@@ -106,7 +106,7 @@
               :text="`${firstToUperCase(credential)} Configuration`"
               @click.prevent="() => toggleShowFields(credential)"
             />
-            <div :ref="credential" class="input-block mt-3 hide">
+            <div :ref="credentialsRef[credential]" class="input-block mt-3 hide">
               <bike-tag-input
                 v-for="(inputField, j) in Object.keys(
                   profile.user_metadata.credentials[credential]
@@ -158,6 +158,7 @@ import StyledHr from '@/assets/images/hr.svg'
 import Loading from 'vue-loading-overlay'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
+import { useI18n } from 'vue-i18n'
 
 // data
 const profile = ref(null)
@@ -173,6 +174,8 @@ const styledHr = StyledHr
 const store = useStore()
 const { idTokenClaims, user } = useAuth0()
 const toast = inject('toast')
+const credentialsRefs = ref({})
+const { t } = useI18n()
 
 // computed
 const getPlayers = computed(() => store.getPlayers)
@@ -200,7 +203,7 @@ function splitCamelCase(str) {
   return firstToUperCase(str).replace(/([a-z])([A-Z])/g, '$1 $2')
 }
 function toggleShowFields(name) {
-  this.$refs[name][0].classList.toggle('hide')
+  credentialsRefs.value[name][0].classList.toggle('hide')
 }
 async function onSubmitName() {
   if (profile.value.user_metadata.name.length > 0) {

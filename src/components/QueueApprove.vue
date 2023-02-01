@@ -110,6 +110,7 @@ import { useStore } from '@/store/index.ts'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'
+import { useI18n } from 'vue-i18n'
 
 // components
 import { Swiper, SwiperSlide } from 'swiper/vue'
@@ -130,6 +131,7 @@ const dequeueTag = ref(null)
 const approveTag = ref(null)
 const store = useStore()
 const router = useRouter()
+const { t } = useI18n()
 
 // computed
 const getQueuedTags = computed(() => store.getQueuedTags)

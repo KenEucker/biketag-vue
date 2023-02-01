@@ -116,6 +116,7 @@ import { Settings } from '@/common/types'
 // components
 import Markdown from 'vue3-markdown-it'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useI18n } from 'vue-i18n'
 
 // data
 const emit = defineEmits(['submit'])
@@ -127,6 +128,7 @@ const showTwitter = ref(false)
 const showInstagram = ref(false)
 const submitTag = ref(null)
 const store = useStore()
+const { t } = useI18n()
 
 // computed
 const getPlayerTag = computed(() => store.getPlayerTag)

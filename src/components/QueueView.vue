@@ -57,6 +57,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useI18n } from 'vue-i18n'
 
 SwiperCore.use([Pagination])
 
@@ -64,7 +65,7 @@ SwiperCore.use([Pagination])
 const controlledSwiper = ref(null)
 const store = useStore()
 const router = useRouter()
-const t = inject('t')
+const { t } = useI18n()
 
 // computed
 const getQueuedTags = computed(() => store.getQueuedTags)

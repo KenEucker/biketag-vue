@@ -60,10 +60,12 @@ import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagGames from '@/components/BikeTagGames.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
+import { useI18n } from 'vue-i18n'
 
 // data
 const styledHr = StyledHr
 const pin = Pin
+const { t } = useI18n()
 </script>
 
 <style lang="scss">

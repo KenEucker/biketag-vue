@@ -19,6 +19,7 @@
 import { defineProps, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
+import { useI18n } from 'vue-i18n'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
@@ -36,6 +37,7 @@ const props = defineProps({
 // data
 const store = useStore()
 const router = useRouter()
+const { t } = useI18n()
 
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)

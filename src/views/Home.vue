@@ -75,6 +75,7 @@ import BikeTagFooter from '@/components/BikeTagFooter.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagLabel from '@/components/BikeTagLabel.vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
+import { useI18n } from 'vue-i18n'
 
 // data
 const router = useRouter()
@@ -82,6 +83,7 @@ const route = useRoute()
 const tagnumber = ref(route.params?.tagnumber?.length ? parseInt(route.params.tagnumber) : 0)
 const tagIsLoading = ref(true)
 const store = useStore()
+const { t } = useI18n()
 
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)

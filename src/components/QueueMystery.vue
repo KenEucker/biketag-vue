@@ -99,6 +99,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { ordinalSuffixOf } from '@/common/utils'
 import exifr from 'exifr'
+import { useI18n } from 'vue-i18n'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
@@ -128,6 +129,7 @@ const mysteryTagRef = ref(null)
 const store = useStore()
 const router = useRouter()
 const toast = inject('toast')
+const { t } = useI18n()
 
 // computed
 const getGameName = computed(() => store.getGameName)

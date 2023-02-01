@@ -4,11 +4,8 @@ import router from './router'
 import { store } from './store/'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import mitt from 'mitt'
-import { Auth0Plugin } from './auth'
-import { useAuth0 } from './auth/authWrapper'
-import i18nPlugin from './i18n'
+import { useToast } from 'vue-toast-notification'
 import i18n from '@/i18n'
-import VueToast from 'vue-toast-notification'
 import VueCookies from 'vue3-cookies'
 import VueGoogleMaps from '@fawmi/vue-google-maps'
 
@@ -47,8 +44,7 @@ class BikeTagApp {
     this.app.use(createHead())
   }
   internationalization() {
-    this.app.provide('t', i18n.global.t)
-    this.app.use(i18nPlugin)
+    this.app.use(i18n)
   }
   cookies() {
     this.app.use(VueCookies)
@@ -82,8 +78,7 @@ class BikeTagApp {
     debug('init::bugs', bugsPlugin)
   }
   components() {
-    this.app.provide('toast', VueToast)
-    this.app.use(VueToast)
+    this.app.provide('toast', useToast())
     this.app.use(BootstrapVue3)
     this.app.use(Markdown)
     this.app.use(VueIframe)

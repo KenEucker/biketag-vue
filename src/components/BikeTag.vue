@@ -93,6 +93,7 @@
 import { defineProps, defineEmits, ref, inject, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
+import { useI18n } from 'vue-i18n'
 
 // componets
 import ExpandableImage from '@/components/ExpandableImage.vue'
@@ -179,7 +180,7 @@ const foundImageLoaded = ref(false)
 const noTagnumberLink = ref(false)
 const store = useStore()
 const router = useRouter()
-const t = inject('t')
+const { t } = useI18n()
 
 // computed
 const getImgurImageSized = computed(() => store.getImgurImageSized)

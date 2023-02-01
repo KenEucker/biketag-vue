@@ -158,9 +158,11 @@ import { ref } from 'vue'
 import BikeTagBlurb from '@/components/BikeTagBlurb'
 import BikeTagGames from '@/components/BikeTagGames.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
+import { useI18n } from 'vue-i18n'
 
 // data
 const navList = ref(null)
+const { t } = useI18n()
 
 // methods
 function toSection(id) {

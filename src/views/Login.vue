@@ -17,6 +17,7 @@ import BikeTag from '@/assets/images/BikeTag.svg'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useI18n } from 'vue-i18n'
 
 // data
 const bikeTag = BikeTag
@@ -26,6 +27,7 @@ const toast = inject('toast')
 
 // computed
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const { t } = useI18n()
 
 // methods
 async function login() {

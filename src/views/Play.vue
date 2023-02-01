@@ -106,6 +106,7 @@ import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useI18n } from 'vue-i18n'
 
 // props
 const props = defineProps({
@@ -126,7 +127,7 @@ const lineSvg = LineSvg
 const arrowSvg = ArrowSvg
 const store = useStore()
 const toast = inject('toast')
-const t = inject('t')
+const { t } = useI18n()
 
 // computed
 const getFormStep = computed(() => store.getFormStep)

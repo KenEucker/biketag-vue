@@ -45,7 +45,7 @@
     "vue-loading-overlay": "^5.0.3",
     "vue-router": "^4.0.12",
     "vue-timer-hook": "^0.0.22",
-    "vue-toast-notification": "^3.0.0",
+    "vue-toast-notification": "3.0",
     "vue3-cookies": "^1.0.6",
     "vue3-markdown-it": "^1.0.10",
     "vuex": "^4.0.2"

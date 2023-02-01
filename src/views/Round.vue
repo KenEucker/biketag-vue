@@ -34,6 +34,7 @@ import { useTimer } from 'vue-timer-hook'
 
 // components
 import QueueView from '@/components/QueueView.vue'
+import { useI18n } from 'vue-i18n'
 
 // props
 const props = defineProps({
@@ -52,7 +53,7 @@ time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 const timer = ref(useTimer(time.getSeconds()))
 const uploadInProgress = ref(false)
 const store = useStore()
-const t = inject('t')
+const { t } = useI18n()
 
 // computed
 // const getPlayerTag = computed(() => store.getPlayerTag)
