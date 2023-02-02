@@ -7,20 +7,20 @@
       map-type-id="roadmap"
     >
       <GMapMarker
-        :icon="pinIcon"
+        :icon="data.pinIcon"
         :position="props.gps"
         :draggable="true"
         :clickeable="true"
         @dragend="emitDragend"
       />
     </GMapMap>
-    <div v-else-if="props.variant === 'biketags'" class="game-map">
-      <GMapMap :center="center" :zoom="10" map-type-id="roadmap">
+    <div v-else-if="variant === 'biketags'" class="game-map">
+      <GMapMap :center="data.center" :zoom="10" map-type-id="roadmap">
         <template v-for="(tag, i) in getTags" :key="i">
           <template v-if="tag.gps.lat && tag.gps.long">
             <GMapMarker
               :id="`marker_${i}`"
-              :icon="pinIcon"
+              :icon="data.pinIcon"
               :position="{ lat: tag.gps.lat ?? 0, lng: tag.gps.long ?? 0 }"
               :clickable="true"
             />
@@ -33,7 +33,7 @@
       </GMapMap>
     </div>
     <div v-else-if="props.variant === 'worldwide'" class="world-map">
-      <GMapMap :center="center" :zoom="4" map-type-id="roadmap">
+      <GMapMap :center="data.center" :zoom="4" map-type-id="roadmap">
         <GMapMarker
           v-for="(game, i) in getMarkers"
           :key="i"
@@ -42,11 +42,23 @@
         />
       </GMapMap>
     </div>
-    <GMapMap v-else class="map" :click="true" :center="center" :zoom="11" map-type-id="terrain">
+    <GMapMap
+      v-else
+      class="map"
+      :click="true"
+      :center="data.center"
+      :zoom="11"
+      map-type-id="terrain"
+    >
       <template v-if="multipolygon">
-        <GMapPolygon v-for="(n_path, i) in paths" :key="i" :options="options" :paths="n_path" />
+        <GMapPolygon
+          v-for="(n_path, i) in data.paths"
+          :key="i"
+          :options="data.options"
+          :paths="n_path"
+        />
       </template>
-      <GMapPolygon v-else :options="options" :paths="paths" />
+      <GMapPolygon v-else :options="data.options" :paths="data.paths" />
     </GMapMap>
   </div>
 </template>
