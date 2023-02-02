@@ -3,25 +3,24 @@
   <div class="container" v-html="html" />
   <!--eslint-enable-->
 </template>
-<script>
-import { defineComponent } from 'vue'
+
+<script setup name="HtmlContent">
+import { defineProps, ref, onMounted } from 'vue'
 import axios from 'axios'
 
-export default defineComponent({
-  name: 'HtmlContent',
-  props: {
-    filename: {
-      type: String,
-      default: '',
-    },
+// props
+const props = defineProps({
+  filename: {
+    type: String,
+    default: '',
   },
-  data() {
-    return {
-      html: String,
-    }
-  },
-  mounted() {
-    axios.get('./' + this.filename).then((response) => (this.html = response.data))
-  },
+})
+
+// data
+const html = ref(String)
+
+// mounted
+onMounted(() => {
+  axios.get('./' + props.filename).then((response) => (html.value = response.data))
 })
 </script>

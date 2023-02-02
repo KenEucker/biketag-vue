@@ -1,8 +1,11 @@
 <template>
-  <section :id="title.toLowerCase().replaceAll(' ', '-')" :class="`biketag-blurb ${variant}`">
+  <section
+    :id="props.title.toLowerCase().replaceAll(' ', '-')"
+    :class="`biketag-blurb ${props.variant}`"
+  >
     <div class="header">
-      <h1>{{ title }}</h1>
-      <h5>{{ subtitle }}</h5>
+      <h1>{{ props.title }}</h1>
+      <h5>{{ props.subtitle }}</h5>
     </div>
     <hr :style="`background-image: url(${styledHr})`" />
     <div class="container">
@@ -10,66 +13,65 @@
         <slot />
       </article>
       <article class="img-container">
-        <img :src="imgSrc" />
-        <bike-tag-button v-if="link" :text="_linkText()" @click="buttonClick" />
+        <img :src="props.imgSrc" />
+        <bike-tag-button v-if="props.link" :text="_linkText()" @click="buttonClick" />
       </article>
     </div>
   </section>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import BikeTagButton from '@/components/BikeTagButton'
+
+<script setup name="BikeTagBlurb">
+import { defineProps } from 'vue'
+import { useRouter } from 'vue-router'
 import StyledHr from '@/assets/images/hr.svg'
 
-export default defineComponent({
-  name: 'BikeTagBlurb',
-  components: {
-    BikeTagButton,
+// componets
+import BikeTagButton from '@/components/BikeTagButton'
+
+// props
+const props = defineProps({
+  title: {
+    type: String,
+    required: true,
   },
-  props: {
-    title: {
-      type: String,
-      required: true,
-    },
-    subtitle: {
-      type: String,
-      default: '',
-    },
-    imgSrc: {
-      type: String,
-      required: true,
-    },
-    link: {
-      type: String,
-      default: null,
-    },
-    linkText: {
-      type: String,
-      default: null,
-    },
-    variant: {
-      type: String,
-      default: 'center',
-    },
+  subtitle: {
+    type: String,
+    default: '',
   },
-  data() {
-    return {
-      styledHr: StyledHr,
-    }
+  imgSrc: {
+    type: String,
+    required: true,
   },
-  methods: {
-    _linkText() {
-      return this.linkText ?? this.link
-    },
-    buttonClick() {
-      if (this.link.indexOf('://') !== -1) {
-        window.location = this.link
-      }
-      this.$router.push({ path: this.link })
-    },
+  link: {
+    type: String,
+    default: null,
+  },
+  linkText: {
+    type: String,
+    default: null,
+  },
+  variant: {
+    type: String,
+    default: 'center',
   },
 })
+
+// data
+const styledHr = StyledHr
+const router = useRouter()
+
+// methods
+function _linkText() {
+  return props.linkText ?? props.link
+}
+function buttonClick() {
+  if (props.link.indexOf('://') !== -1) {
+    window.location = props.link
+  }
+  router.push({ path: props.link })
+}
 </script>
+
 <style lang="scss" scoped>
 hr,
 .header {

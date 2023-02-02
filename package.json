@@ -12,7 +12,7 @@
     "preview": "yarn build -w & serve dist"
   },
   "dependencies": {
-    "@auth0/auth0-spa-js": "^1.19.4",
+    "@auth0/auth0-vue": "^2.0.0",
     "@fawmi/vue-google-maps": "^0.9.4",
     "@img-comparison-slider/vue": "^7.4.3",
     "@netlify/functions": "^0.11.0",
@@ -35,6 +35,7 @@
     "mitt": "^3.0.0",
     "netlify-identity-widget": "^1.9.2",
     "nodemailer": "^6.7.2",
+    "pinia": "^2.0.28",
     "qs": "^6.10.3",
     "register-service-worker": "^1.7.2",
     "swiper": "^8.0.3",
@@ -44,7 +45,7 @@
     "vue-loading-overlay": "^5.0.3",
     "vue-router": "^4.0.12",
     "vue-timer-hook": "^0.0.22",
-    "vue-toast-notification": "^3.0.0",
+    "vue-toast-notification": "3.0",
     "vue3-cookies": "^1.0.6",
     "vue3-markdown-it": "^1.0.10",
     "vuex": "^4.0.2"

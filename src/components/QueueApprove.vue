@@ -61,7 +61,7 @@
           method="POST"
           data-netlify="true"
           data-netlify-honeypot="bot-field"
-          @submit.prevent="approveTag"
+          @submit.prevent="approveTagFunction"
         >
           <input type="hidden" name="form-name" value="approve-new-biketag" />
           <input type="hidden" name="ambassadorId" value="" />
@@ -90,7 +90,7 @@
           v-model="confirmRemove"
           class="confirm-modal"
           title="Confirm Removal of Queued Tag"
-          @ok="dequeueTag"
+          @ok="dequeueTagFunction"
         >
           <p>{{ $t('pages.approve.confirm_remove') }}</p>
         </b-modal>
@@ -103,117 +103,96 @@
   </div>
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue'
-import { mapGetters } from 'vuex'
+<script setup name="QueueApprove">
+import { defineEmits, ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from '@/store/index.ts'
 import SwiperCore, { Controller, Pagination } from 'swiper'
-import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'
+import { useI18n } from 'vue-i18n'
+
+// components
+import { Swiper, SwiperSlide } from 'swiper/vue'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
 SwiperCore.use([Pagination])
 
-export default defineComponent({
-  name: 'QueueApprove',
-  components: {
-    Swiper,
-    SwiperSlide,
-    BikeTag,
-    BikeTagQueue,
-    BikeTagButton,
-  },
-  emits: ['submit'],
-  setup() {
-    const controlledSwiper = ref(null)
-    const setControlledSwiper = (swiper) => {
-      controlledSwiper.value = swiper
-    }
+// data
+const emit = defineEmits(['submit'])
+const controlledSwiper = ref(null)
+const setControlledSwiper = (swiper) => {
+  controlledSwiper.value = swiper
+}
+const confirmRemove = ref(false)
+const dequeueTag = ref(null)
+const approveTag = ref(null)
+const store = useStore()
+const router = useRouter()
+const { t } = useI18n()
 
-    return {
-      Controller,
-      controlledSwiper,
-      setControlledSwiper,
-    }
-  },
-  data() {
-    return {
-      confirmRemove: false,
-    }
-  },
-  computed: {
-    ...mapGetters([
-      'getQueuedTags',
-      'getPlayerTag',
-      'getCurrentBikeTag',
-      'isBikeTagAmbassador',
-      'getAmbassadorId',
-    ]),
-    currentIsReadyForApproval() {
-      return this.currentlySelectedTag?.mysteryImageUrl && this.currentlySelectedTag?.foundImageUrl
-    },
-    currentlySelectedTag() {
-      return this.getQueuedTags[this.controlledSwiper?.activeIndex]
-    },
-  },
-  async mounted() {
-    if (!this.isBikeTagAmbassador) {
-      /// kick it sideways
-      for (let x = 0; x < 1000; ++x) {
-        const uhuhuh = () => console.log("YOU DIDN'T SAY THE MAGIC WORD!")
-        await setTimeout(uhuhuh, 1)
-      }
-      this.$router.push('/')
-    }
-  },
-  methods: {
-    dequeueTagConfirm() {
-      this.confirmRemove = true
-    },
-    dequeueTagConfirmYes() {
-      this.confirmRemove = false
-    },
-    dequeueTagConfirmNo() {
-      this.confirmRemove = false
-    },
-    dequeueTag() {
-      const formAction = this.$refs.dequeueTag.getAttribute('action')
-      const formData = new FormData(this.$refs.dequeueTag)
+// computed
+const getQueuedTags = computed(() => store.getQueuedTags)
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const currentlySelectedTag = computed(() => {
+  return getQueuedTags.value[controlledSwiper.value?.activeIndex]
+})
+const currentIsReadyForApproval = computed(
+  () => currentlySelectedTag.value?.mysteryImageUrl && currentlySelectedTag.value?.foundImageUrl
+)
 
-      this.$emit('submit', {
-        formAction,
-        formData,
-        tag: this.currentlySelectedTag,
-        storeAction: 'dequeueTag',
+// methods
+function dequeueTagConfirm() {
+  confirmRemove.value = true
+}
+function dequeueTagFunction() {
+  const formAction = dequeueTag.value.getAttribute('action')
+  const formData = new FormData(dequeueTag.value)
+
+  emit('submit', {
+    formAction,
+    formData,
+    tag: currentlySelectedTag.value,
+    storeAction: 'dequeueTag',
+  })
+}
+function approveTagFunction() {
+  const formAction = approveTag.value.getAttribute('action')
+  const formData = new FormData(approveTag.value)
+  const approvedTag = currentlySelectedTag.value
+
+  emit('submit', {
+    formAction,
+    formData,
+    tag: approvedTag,
+    storeAction: 'approveTag',
+  })
+}
+function mysteryDescription(tag) {
+  return `"${tag?.hint}"`
+}
+
+// mounted
+onMounted(async () => {
+  if (!isBikeTagAmbassador.value) {
+    const uhuhuh = () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          console.log("YOU DIDN'T SAY THE MAGIC WORD!")
+          resolve()
+        }, 1)
       })
-    },
-    approveTag() {
-      const formAction = this.$refs.approveTag.getAttribute('action')
-      const formData = new FormData(this.$refs.approveTag)
-      const approvedTag = this.currentlySelectedTag
-
-      this.$emit('submit', {
-        formAction,
-        formData,
-        tag: approvedTag,
-        storeAction: 'approveTag',
-      })
-    },
-    mysteryDescription(tag) {
-      return `"${tag?.hint}"`
-    },
-    mysteryPlayer() {
-      return 'ken'
-    },
-    selectedTagPlayer() {
-      return 1
-    },
-    stringifyNumber,
-  },
+    /// kick it sideways
+    for (let x = 0; x < 1000; ++x) {
+      await uhuhuh()
+    }
+    router.push('/')
+  }
 })
 </script>
+
 <style lang="scss">
 @import '../assets/styles/style';
 

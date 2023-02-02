@@ -55,189 +55,182 @@
     <div ref="backgroundRef" class="transition background-image"></div>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
+
+<script setup name="BikeTagCamera">
+import { defineProps, ref, onMounted } from 'vue'
 import { exportHtmlToDownload } from '@/common/utils'
 
-export default defineComponent({
-  name: 'BikeTagCamera',
-  props: {
-    title: {
-      type: String,
-      default: '',
-    },
-    subtitle: {
-      type: String,
-      default: '',
-    },
-    tag: {
-      type: Object,
-      default: () => {
-        return {}
-      },
-    },
+const props = defineProps({
+  title: {
+    type: String,
+    default: '',
   },
-  data() {
-    return {
-      animationDuration: 400,
-      enableCSSFilters: true,
-      hasDownloadedMystery: false,
-      hasDownloadedFound: false,
-
-      state: {
-        currentAngle: 0,
-        backgroundOpacity: 1,
-        backgroundColor: '#fff',
-        isFlashing: false,
-        backgroundFilters: {
-          brightness: 100,
-          contrast: 100,
-          blur: 0,
-        },
-      },
-    }
+  subtitle: {
+    type: String,
+    default: '',
   },
-  mounted() {
-    // Lock background on mobile
-    if (/Mobi/.test(navigator.userAgent)) {
-      this.$refs.backgroundRef.style.backgroundSize = 'cover'
-    }
-    document.addEventListener('mouseup', this.onTouchTimerStop)
-    document.addEventListener('mouseup', this.onTouchShutterStop)
-  },
-  methods: {
-    async downloadTag() {
-      this.downloadingTag = true
-      const downloadPrefix = `BikeTag-${this.tag.game}-${this.tag.tagnumber}--`
-      if (!this.hasDownloadedMystery) {
-        const mysteryImageDataUrl = await exportHtmlToDownload(
-          `${downloadPrefix}mystery`,
-          undefined,
-          '#the-tag .mystery-tag'
-        )
-        this.hasDownloadedMystery = !!mysteryImageDataUrl
-      } else if (!this.hasDownloadedFound) {
-        const foundImageDataUrl = await exportHtmlToDownload(
-          `${downloadPrefix}found`,
-          undefined,
-          '#the-tag .found-tag'
-        )
-        this.hasDownloadedFound = !!foundImageDataUrl
-      }
-      this.downloadingTag = false
-    },
-
-    /* Film Door */
-    onClickFilmDoor() {
-      const resetTransform = this.$refs.tagToggleRef.style.transform
-
-      if (resetTransform) {
-        this.$refs.tagToggleRef.style.transform = ''
-      } else {
-        this.$refs.tagToggleRef.style.transform = 'translate(-80px)'
-      }
-    },
-
-    /* Lighten/Darken */
-    formatBackgroundFilters() {
-      const units = {
-        brightness: '%',
-        contrast: '%',
-        blur: 'px',
-      }
-
-      return Object.keys(this.state.backgroundFilters)
-        .map((filter) => `${filter}(${this.state.backgroundFilters[filter]}${units[filter]})`)
-        .join(' ')
-    },
-
-    sizeToggleClick() {
-      const resetTransform = this.$refs.sizeToggleRef.style.transform
-
-      if (resetTransform) {
-        this.$refs.sizeToggleRef.style.transform = ''
-        this.state.backgroundOpacity = 1
-        if (this.enableCSSFilters) {
-          this.state.backgroundFilters.brightness = 100
-          this.state.backgroundFilters.contrast = 100
-        }
-      } else if (this.$refs.sizeToggleRef.classList.contains('lighten')) {
-        this.$refs.sizeToggleRef.style.transform = 'translateX(15px)'
-        this.$refs.sizeToggleRef.classList.remove('lighten')
-        if (this.enableCSSFilters) {
-          this.state.backgroundFilters.brightness = 110
-          this.state.backgroundFilters.contrast = 90
-        } else {
-          this.state.backgroundOpacity = 0.9
-          this.state.backgroundColor = '#fff'
-        }
-      } else {
-        this.$refs.sizeToggleRef.style.transform = 'translate(-15px)'
-        this.$refs.sizeToggleRef.classList.add('lighten')
-        if (this.enableCSSFilters) {
-          this.state.backgroundFilters.brightness = 90
-          this.state.backgroundFilters.contrast = 110
-        } else {
-          this.state.backgroundOpacity = 0.9
-          this.state.backgroundColor = '#000'
-        }
-      }
-
-      if (this.enableCSSFilters) {
-        this.$refs.backgroundRef.style.filter = this.formatBackgroundFilters()
-      } else {
-        this.$refs.backgroundRef.style.opacity = this.state.backgroundOpacity
-        this.$refs.backroundContainerRef.style.backgroundColor = this.state.backgroundColor
-      }
-    },
-
-    /* Shutter */
-    onTouchShutterStart() {
-      if (!this.state.isFlashing) {
-        this.state.isFlashing = true
-        this.$refs.backroundContainerRef.style.backgroundColor = '#fff'
-        this.$refs.flashOverlayRef.style.opacity = 1
-        this.$refs.backgroundRef.style.opacity = 0.75
-
-        setTimeout(() => {
-          this.$refs.flashOverlayRef.style.transition = `opacity ${
-            this.animationDuration * 2
-          }ms ease-out`
-          this.$refs.backgroundRef.style.transition = `opacity ${
-            this.animationDuration * 2
-          }ms ease-out`
-          this.$refs.flashOverlayRef.style.opacity = 0
-          this.$refs.backgroundRef.style.opacity = 1
-        }, 0)
-
-        setTimeout(() => {
-          this.state.isFlashing = false
-          this.$refs.flashOverlayRef.style.transition = ''
-          this.$refs.backgroundRef.style.transition = ''
-          this.$refs.backroundContainerRef.style.backgroundColor = this.state.backgroundColor
-        }, this.animationDuration * 2)
-
-        this.downloadTag()
-      }
-    },
-
-    onTouchShutterStop() {
-      this.$refs.shutterRef.classList.remove('shutter-clicked')
-    },
-
-    /* Timer */
-    onTouchTimerStart() {
-      this.$refs.timerRef.classList.add('timer-clicked')
-    },
-
-    onTouchTimerStop() {
-      this.$refs.timerRef.classList.remove('timer-clicked')
+  tag: {
+    type: Object,
+    default: () => {
+      return {}
     },
   },
 })
 
-/* Drag lens */
+// data
+const animationDuration = ref(400)
+const enableCSSFilters = ref(true)
+const hasDownloadedMystery = ref(false)
+const hasDownloadedFound = ref(false)
+const tagToggleRef = ref(null)
+const sizeToggleRef = ref(null)
+const backgroundRef = ref(null)
+const backroundContainerRef = ref(null)
+const flashOverlayRef = ref(null)
+const shutterRef = ref(null)
+const timerRef = ref(null)
+const downloadingTag = ref(false)
+const state = ref({
+  currentAngle: 0,
+  backgroundOpacity: 1,
+  backgroundColor: '#fff',
+  isFlashing: false,
+  backgroundFilters: {
+    brightness: 100,
+    contrast: 100,
+    blur: 0,
+  },
+})
+
+// methods
+async function downloadTag() {
+  downloadingTag.value = true
+  const downloadPrefix = `BikeTag-${props.tag.game}-${props.tag.tagnumber}--`
+  if (!hasDownloadedMystery.value) {
+    const mysteryImageDataUrl = await exportHtmlToDownload(
+      `${downloadPrefix}mystery`,
+      undefined,
+      '#the-tag .mystery-tag'
+    )
+    hasDownloadedMystery.value = !!mysteryImageDataUrl
+  } else if (!hasDownloadedFound.value) {
+    const foundImageDataUrl = await exportHtmlToDownload(
+      `${downloadPrefix}found`,
+      undefined,
+      '#the-tag .found-tag'
+    )
+    hasDownloadedFound.value = !!foundImageDataUrl
+  }
+  downloadingTag.value = false
+}
+/* Film Door */
+function onClickFilmDoor() {
+  const resetTransform = tagToggleRef.value.style.transform
+
+  if (resetTransform) {
+    tagToggleRef.value.style.transform = ''
+  } else {
+    tagToggleRef.value.style.transform = 'translate(-80px)'
+  }
+}
+/* Lighten/Darken */
+function formatBackgroundFilters() {
+  const units = {
+    brightness: '%',
+    contrast: '%',
+    blur: 'px',
+  }
+
+  return Object.keys(state.value.backgroundFilters)
+    .map((filter) => `${filter}(${state.value.backgroundFilters[filter]}${units[filter]})`)
+    .join(' ')
+}
+function sizeToggleClick() {
+  const resetTransform = sizeToggleRef.value.style.transform
+
+  if (resetTransform) {
+    sizeToggleRef.value.style.transform = ''
+    state.value.backgroundOpacity = 1
+    if (enableCSSFilters.value) {
+      state.value.backgroundFilters.brightness = 100
+      state.value.backgroundFilters.contrast = 100
+    }
+  } else if (sizeToggleRef.value.classList.contains('lighten')) {
+    sizeToggleRef.value.style.transform = 'translateX(15px)'
+    sizeToggleRef.value.classList.remove('lighten')
+    if (enableCSSFilters.value) {
+      state.value.backgroundFilters.brightness = 110
+      state.value.backgroundFilters.contrast = 90
+    } else {
+      state.value.backgroundOpacity = 0.9
+      state.value.backgroundColor = '#fff'
+    }
+  } else {
+    sizeToggleRef.value.style.transform = 'translate(-15px)'
+    sizeToggleRef.value.classList.add('lighten')
+    if (enableCSSFilters.value) {
+      state.value.backgroundFilters.brightness = 90
+      state.value.backgroundFilters.contrast = 110
+    } else {
+      state.value.backgroundOpacity = 0.9
+      state.value.backgroundColor = '#000'
+    }
+  }
+
+  if (enableCSSFilters.value) {
+    backgroundRef.value.style.filter = formatBackgroundFilters()
+  } else {
+    backgroundRef.value.style.opacity = state.value.backgroundOpacity
+    backroundContainerRef.value.style.backgroundColor = state.value.backgroundColor
+  }
+}
+/* Shutter */
+function onTouchShutterStart() {
+  if (!state.value.isFlashing) {
+    state.value.isFlashing = true
+    backroundContainerRef.value.style.backgroundColor = '#fff'
+    flashOverlayRef.value.style.opacity = 1
+    backgroundRef.value.style.opacity = 0.75
+
+    setTimeout(() => {
+      flashOverlayRef.value.style.transition = `opacity ${animationDuration.value * 2}ms ease-out`
+      backgroundRef.value.style.transition = `opacity ${animationDuration.value * 2}ms ease-out`
+      flashOverlayRef.value.style.opacity = 0
+      backgroundRef.value.style.opacity = 1
+    }, 0)
+
+    setTimeout(() => {
+      state.value.isFlashing = false
+      flashOverlayRef.value.style.transition = ''
+      backgroundRef.value.style.transition = ''
+      backroundContainerRef.value.style.backgroundColor = state.value.backgroundColor
+    }, animationDuration.value * 2)
+
+    downloadTag()
+  }
+}
+function onTouchShutterStop() {
+  shutterRef.value.classList.remove('shutter-clicked')
+}
+/* Timer */
+function onTouchTimerStart() {
+  timerRef.value.classList.add('timer-clicked')
+}
+function onTouchTimerStop() {
+  timerRef.value.classList.remove('timer-clicked')
+}
+
+// mounted
+onMounted(function () {
+  // Lock background on mobile
+  if (/Mobi/.test(navigator.userAgent)) {
+    backgroundRef.value.style.backgroundSize = 'cover'
+  }
+  document.addEventListener('mouseup', onTouchTimerStop)
+  document.addEventListener('mouseup', onTouchShutterStop)
+})
 </script>
+
 <style lang="scss" scoped>
 .camera {
   display: block;

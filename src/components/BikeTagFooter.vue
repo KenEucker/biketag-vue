@@ -1,48 +1,48 @@
 <template>
-  <div :class="`${variant} button-group`">
-    <div v-if="variant === 'current'">
+  <div :class="`${props.variant} button-group`">
+    <div v-if="props.variant === 'current'">
       <!-- Left Button -->
-      <bike-tag-button class="button-group__left" :text="$t('menu.map')" @click="goMapPage" />
+      <bike-tag-button class="button-group__left" :text="t('menu.map')" @click="goMapPage" />
       <!-- Middle Button -->
       <bike-tag-button
         id="hint"
         ref="hint"
         class="button-group__middle"
-        :text="$t('menu.hint')"
+        :text="t('menu.hint')"
         variant="bold"
         @click="showHint"
       />
       <b-popover hide-header target="hint" triggers="click" placement="top">
         <img :src="hintIcon" class="popover__hint-icon" />
         <p ref="mysteryHint" class="popover__hint-text"></p>
-        <img :src="closeRounded" class="popover__close"  @click="closePopover"/>
+        <img :src="closeRounded" class="popover__close" @click="closePopover" />
       </b-popover>
       <!-- Right Button -->
       <bike-tag-button
         v-if="getQueuedTags?.length"
         class="button-group__right"
-        :text="$t('menu.queue')"
+        :text="t('menu.queue')"
         @click="goRoundPage"
       />
       <bike-tag-button
         v-else
         class="button-group__right"
-        :text="$t('menu.last')"
-        @click="$emit('previous')"
+        :text="t('menu.last')"
+        @click="emit('previous')"
       />
     </div>
-    <div v-if="variant === 'single'">
+    <div v-if="props.variant === 'single'">
       <!-- Left Button -->
       <bike-tag-button
         class="button-group__left"
-        :text="$t('menu.previous')"
-        @click="$emit('previous')"
+        :text="t('menu.previous')"
+        @click="emit('previous')"
       />
       <!-- Middle Button -->
       <bike-tag-button
         class="tag-screen-download__button"
         variant="bold"
-        :text="$t('menu.download')"
+        :text="t('menu.download')"
         @click="showCamera = true"
       />
       <b-modal
@@ -52,10 +52,10 @@
         hide-footer
         hide-header
       >
-        <bike-tag-camera :tag="tag" />
+        <bike-tag-camera :tag="props.tag" />
       </b-modal>
       <!-- Right Button -->
-      <bike-tag-button class="button-group__right" :text="$t('menu.next')" @click="$emit('next')" />
+      <bike-tag-button class="button-group__right" :text="t('menu.next')" @click="emit('next')" />
     </div>
   </div>
   <!-- World -->
@@ -82,155 +82,157 @@
     </div>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import BikeTagButton from '@/components/BikeTagButton.vue'
-import BikeTagCamera from '@/components/BikeTagCamera.vue'
+
+<script setup name="BikeTagFooter">
+import { defineProps, defineEmits, ref, computed, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from '@/store/index.ts'
 import HintIcon from '@/assets/images/hint-icon.svg'
 import CloseRounded from '@/assets/images/close-rounded.svg'
 
-export default defineComponent({
-  name: 'BikeTagFooter',
-  components: {
-    BikeTagButton,
-    BikeTagCamera,
+// componets
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagCamera from '@/components/BikeTagCamera.vue'
+import { useI18n } from 'vue-i18n'
+
+// props
+const props = defineProps({
+  variant: {
+    type: String,
+    default: 'current',
   },
-  props: {
-    variant: {
-      type: String,
-      default: 'current',
-    },
-    tag: {
-      type: Object,
-      default: () => {
-        return {}
-      },
-    },
-  },
-  refs: ['mysteryHint', 'hint'],
-  emits: ['next', 'previous'],
-  data() {
-    return {
-      showCamera: false,
-      characters: [
-        'a',
-        'b',
-        'c',
-        'd',
-        'e',
-        'f',
-        'g',
-        'h',
-        'i',
-        'j',
-        'k',
-        'l',
-        'm',
-        'n',
-        'o',
-        'p',
-        'q',
-        'r',
-        's',
-        't',
-        'u',
-        'v',
-        'x',
-        'y',
-        'x',
-        '#',
-        '%',
-        '&',
-        '-',
-        '+',
-        '_',
-        '?',
-        '/',
-        '\\',
-        '=',
-      ],
-      timeout: 5,
-      iterations: 10,
-      hintIcon: HintIcon,
-      closeRounded: CloseRounded,
-      showPopover: false,
-    }
-  },
-  computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getQueuedTags']),
-  },
-  beforeUnmount() {
-    document.querySelector('.popover')?.remove()
-  },
-  methods: {
-    goAboutPage() {
-      this.$router.push('/about')
-    },
-    goLeaderboardPage() {
-      this.$router.push('/leaderboard')
-    },
-    goPlayersPage() {
-      this.$router.push('/players')
-    },
-    goMapPage() {
-      this.$router.push('/map')
-    },
-    goRoundPage() {
-      this.$router.push('/round')
-    },
-    goWorldwide() {
-      window.location = 'http://biketag.org/'
-      // this.$router.push('/worldwide')
-    },
-    sleep(time) {
-      return new Promise((resolve) => setTimeout(resolve, time))
-    },
-    getRandomInteger(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min
-    },
-    randomCharacter() {
-      return this.characters[this.getRandomInteger(0, this.characters.length - 1)]
-    },
-    showHint() {
-      setTimeout(async () => {
-        const popover = document.querySelector('.popover')
-        if (popover) {
-          popover.classList.add('popover__wrapper')
-          const hint = this.getCurrentHint
-          this.$refs.mysteryHint.innerText = ''
-          window.scrollBy({ top: 1 })
-          for (let i of hint) {
-            let j = 0
-            if (document.querySelector('.popover__wrapper')) {
-              while (j < this.iterations) {
-                this.$refs.mysteryHint.innerText = `${
-                  this.$refs.mysteryHint.innerText
-                }${this.randomCharacter()}`
-                await this.sleep(this.timeout)
-                this.$refs.mysteryHint.innerText = this.$refs.mysteryHint.innerText.slice(
-                  0,
-                  this.$refs.mysteryHint.innerText.length - 1
-                )
-                j++
-              }
-            } else {
-              this.$refs.mysteryHint.innerText = ''
-              break
-            }
-            this.$refs.mysteryHint.innerText = `${this.$refs.mysteryHint.innerText}${i}`
-          }
-        }
-      }, 100)
-    },
-    closePopover() {
-      document.getElementById('hint').click()
-      // console.log(this.$refs.hint)
-      // this.$refs.hint.click()
+  tag: {
+    type: Object,
+    default: () => {
+      return {}
     },
   },
 })
+
+// data
+const emit = defineEmits(['next', 'previous'])
+const showCamera = ref(false)
+const characters = [
+  'a',
+  'b',
+  'c',
+  'd',
+  'e',
+  'f',
+  'g',
+  'h',
+  'i',
+  'j',
+  'k',
+  'l',
+  'm',
+  'n',
+  'o',
+  'p',
+  'q',
+  'r',
+  's',
+  't',
+  'u',
+  'v',
+  'x',
+  'y',
+  'x',
+  '#',
+  '%',
+  '&',
+  '-',
+  '+',
+  '_',
+  '?',
+  '/',
+  '\\',
+  '=',
+]
+let timeout = ref(5)
+let iterations = ref(10)
+const hintIcon = HintIcon
+const closeRounded = CloseRounded
+const mysteryHint = ref(null)
+const hint = ref(null)
+const store = useStore()
+const router = useRouter()
+const { t } = useI18n()
+
+// computed
+const getCurrentHint = computed(() => store.getCurrentHint)
+const getQueuedTags = computed(() => store.getQueuedTags)
+
+// methods
+// function goAboutPage() {
+//   router.push('/about')
+// }
+// function goLeaderboardPage() {
+//   router.push('/leaderboard')
+// }
+// function goPlayersPage() {
+//   router.push('/players')
+// }
+function goMapPage() {
+  router.push('/map')
+}
+function goRoundPage() {
+  router.push('/round')
+}
+function goWorldwide() {
+  window.location = 'http://biketag.org/'
+  // router.push('/worldwide')
+}
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time))
+}
+function getRandomInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+function randomCharacter() {
+  return characters[getRandomInteger(0, characters.length - 1)]
+}
+function showHint() {
+  setTimeout(async () => {
+    const popover = document.querySelector('.popover')
+    if (popover) {
+      popover.classList.add('popover__wrapper')
+      const hint = getCurrentHint.value
+      mysteryHint.value.innerText = ''
+      window.scrollBy({ top: 1 })
+      for (let i of hint) {
+        let j = 0
+        if (document.querySelector('.popover__wrapper')) {
+          while (j < iterations.value) {
+            mysteryHint.value.innerText = `${mysteryHint.value.innerText}${randomCharacter()}`
+            await sleep(timeout.value)
+            mysteryHint.value.innerText = mysteryHint.value.innerText.slice(
+              0,
+              mysteryHint.value.innerText.length - 1
+            )
+            j++
+          }
+        } else {
+          mysteryHint.value.innerText = ''
+          break
+        }
+        mysteryHint.value.innerText = `${mysteryHint.value.innerText}${i}`
+      }
+    }
+  }, 100)
+}
+function closePopover() {
+  hint.value.click()
+  // console.log(hint.value)
+  // hint.value.click()
+}
+
+// before UnMount
+onBeforeUnmount(() => {
+  document.querySelector('.popover')?.remove()
+})
 </script>
+
 <style lang="scss">
 @import '../assets/styles/style';
 

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
-    <h3 v-if="showHeading">{{ title ?? $t('components.games.games_title') }}</h3>
-    <hr v-if="showHeading" :style="`background-image: url(${styledHr})`" />
+    <h3 v-if="props.showHeading">{{ props.title ?? $t('components.games.games_title') }}</h3>
+    <hr v-if="props.showHeading" :style="`background-image: url(${styledHr})`" />
     <div class="games">
       <div class="m-auto games__list">
         <div v-for="(game, index) in getAllGames" :key="index" class="games__list__biketag">
@@ -13,37 +13,39 @@
     </div>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import StyledHr from '@/assets/images/hr.svg'
-import { mapGetters } from 'vuex'
 
-export default defineComponent({
-  name: 'BikeTagGames',
-  props: {
-    variant: {
-      type: String,
-      default: '',
-    },
-    title: {
-      type: String,
-      default: null,
-    },
-    showHeading: {
-      type: Boolean,
-      default: true,
-    },
+<script setup name="BikeTagGames">
+import { defineProps, computed } from 'vue'
+import StyledHr from '@/assets/images/hr.svg'
+import { useStore } from '@/store/index.ts'
+import { useI18n } from 'vue-i18n'
+
+// props
+const props = defineProps({
+  variant: {
+    type: String,
+    default: '',
   },
-  data() {
-    return {
-      styledHr: StyledHr,
-    }
+  title: {
+    type: String,
+    default: null,
   },
-  computed: {
-    ...mapGetters(['getAllGames', 'getLogoUrl']),
+  showHeading: {
+    type: Boolean,
+    default: true,
   },
 })
+
+// data
+const styledHr = StyledHr
+const store = useStore()
+const { t } = useI18n()
+
+// computed
+const getAllGames = computed(() => store.getAllGames)
+const getLogoUrl = computed(() => store.getLogoUrl)
 </script>
+
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 

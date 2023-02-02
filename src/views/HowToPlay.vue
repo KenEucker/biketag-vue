@@ -84,50 +84,41 @@
     </swiper>
   </div>
 </template>
-<script>
+
+<script setup name="HowToView">
 // import Swiper core and required components
 import SwiperCore, { Autoplay, Navigation, Pagination } from 'swiper'
-
-// Import Swiper Vue.js components
-import { Swiper, SwiperSlide } from 'swiper/vue'
-
 // Import Swiper styles
 import 'swiper/css/bundle'
-
-import { mapGetters } from 'vuex'
+import { ref, computed } from 'vue'
+import { useStore } from '@/store/index.ts'
 import { debug } from '@/common/utils'
+
+// components
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import BikeTagMap from '@/components/BikeTagMap.vue'
+import { useI18n } from 'vue-i18n'
 
 // install Swiper components
 SwiperCore.use([Autoplay, Navigation, Pagination])
 
-import BikeTagMap from '@/components/BikeTagMap.vue'
+// data
+const playingEaster = ref(false)
+const store = useStore()
+const { t } = useI18n()
 
-// Import Swiper styles
-export default {
-  name: 'HowToView',
-  components: {
-    Swiper,
-    SwiperSlide,
-    BikeTagMap,
-  },
-  data() {
-    return {
-      playingEaster: false,
-    }
-  },
-  computed: {
-    ...mapGetters(['getGameSlug', 'getEasterEgg', 'getGame']),
-  },
-  methods: {
-    playEasterEgg() {
-      if (this.getEasterEgg) {
-        document.getElementById('jingle').play().then(debug).catch(console.error)
-        this.playingEaster = true
-      }
-    },
-  },
+// computed
+const getEasterEgg = computed(() => store.getEasterEgg)
+
+// methods
+function playEasterEgg() {
+  if (getEasterEgg.value) {
+    document.getElementById('jingle').play().then(debug).catch(console.error)
+    playingEaster.value = true
+  }
 }
 </script>
+
 <style scoped lang="scss">
 .swiper {
   max-width: 600px;

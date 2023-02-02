@@ -40,7 +40,7 @@
     </div>
     <div class="container biketag-tagit-form">
       <form
-        ref="mysteryTag"
+        ref="mysteryTagRef"
         name="add-mystery-tag"
         action="add-mystery-tag"
         method="POST"
@@ -92,153 +92,154 @@
     </div>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+
+<script setup name="QueueMysteryTag">
+import { defineProps, defineEmits, ref, inject, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from '@/store/index.ts'
+import { ordinalSuffixOf } from '@/common/utils'
+import exifr from 'exifr'
+import { useI18n } from 'vue-i18n'
+
+// components
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
-import { stringifyNumber, ordinalSuffixOf } from '@/common/utils'
-import exifr from 'exifr'
 
-export default defineComponent({
-  name: 'QueueMysteryTag',
-  components: {
-    BikeTagButton,
-    BikeTagInput,
-  },
-  props: {
-    tag: {
-      type: Object,
-      default: () => {
-        return {}
-      },
+// props
+const props = defineProps({
+  tag: {
+    type: Object,
+    default: () => {
+      return {}
     },
   },
-  emits: ['submit'],
-  data: function () {
-    return {
-      preview: null,
-      mysteryImageUrl: null,
-      player: '',
-      confirmNoHint: false,
-      hint: this.tag?.hint ?? '',
-      image: this.tag?.mysteryImage,
-      showModal: false,
-      noLongerNew: false,
+})
+
+// data
+const emit = defineEmits(['submit'])
+const preview = ref(null)
+const mysteryImageUrl = ref(null)
+const confirmNoHint = ref(false)
+const image = ref(props.tag?.mysteryImage)
+const showModal = ref(false)
+const noLongerNew = ref(false)
+const hint = ref(props.tag?.hint ?? '')
+const player = ref('')
+const mysteryTagRef = ref(null)
+const store = useStore()
+const router = useRouter()
+const toast = inject('toast')
+const { t } = useI18n()
+
+// computed
+const getGameName = computed(() => store.getGameName)
+const getPlayerTag = computed(() => store.getPlayerTag)
+const getPlayerId = computed(() => store.getPlayerId)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getQueuedTags = computed(() => store.getQueuedTags)
+const numberInQueue = computed(() => {
+  return getQueuedTags.value?.reduce((o, t, n) => {
+    if (t.playerId === getPlayerTag.value?.playerId) {
+      o = n + 1
     }
-  },
-  computed: {
-    ...mapGetters([
-      'getGameName',
-      'getPlayerTag',
-      'getPlayerId',
-      'getCurrentBikeTag',
-      'getQueuedTags',
-    ]),
-    numberInQueue() {
-      return this.getQueuedTags?.reduce((o, t, n) => {
-        if (t.playerId === this.getPlayerTag?.playerId) {
-          o = n + 1
-        }
-        return o
-      }, 0)
-    },
-  },
-  mounted() {
-    this.player = this.getPlayerTag?.foundPlayer
-    this.showModalIfNew()
-  },
-  methods: {
-    onSubmit(e) {
-      e.preventDefault()
-      if (!this.image) {
-        this.$toast.open({
-          message: 'Invalid image, add a new one.',
-          type: 'error',
-          position: 'top',
-        })
-        return
-      }
-      if (!this.hint.length && !this.confirmNoHint) {
-        this.confirmNoHint = true
-        this.$toast.open({
-          message: "You didn't add a hint, but it would sure be nice if you did.",
-          type: 'error',
-          position: 'top',
-        })
-        return
-      }
-      const formAction = this.$refs.mysteryTag.getAttribute('action')
-      const formData = new FormData(this.$refs.mysteryTag)
-      const mysteryTag = {
-        mysteryImage: this.image,
-        mysteryPlayer: this.player,
-        hint: this.hint ?? '',
-        tagnumber: this.getCurrentBikeTag?.tagnumber + 1 ?? 1,
-        game: this.getGameName,
-      }
-      this.noLongerNew = true
+    return o
+  }, 0)
+})
 
-      this.$emit('submit', {
-        formAction,
-        formData,
-        tag: mysteryTag,
-        storeAction: 'addMysteryTag',
-      })
-    },
-    setImage(event) {
-      this.$store.dispatch('fetchCredentials')
-      const input = event.target
-      if (input.files) {
-        try {
-          const previewReader = new FileReader()
-          previewReader.onload = (e) => {
-            this.preview = e.target.result
-          }
-          previewReader.readAsDataURL(input.files[0])
-          if (input.files[0].size / Math.pow(1024, 2) > 15) {
-            this.$toast.open({
-              message: 'Image exceeds 15mb',
+// methods
+function onSubmit(e) {
+  e.preventDefault()
+  if (!image.value) {
+    toast.open({
+      message: 'Invalid image, add a new one.',
+      type: 'error',
+      position: 'top',
+    })
+    return
+  }
+  if (!hint.value.length && !confirmNoHint.value) {
+    confirmNoHint.value = true
+    toast.open({
+      message: "You didn't add a hint, but it would sure be nice if you did.",
+      type: 'error',
+      position: 'top',
+    })
+    return
+  }
+  const formAction = mysteryTagRef.value.getAttribute('action')
+  const formData = new FormData(mysteryTagRef.value)
+  const mysteryTag = {
+    mysteryImage: image.value,
+    mysteryPlayer: player.value,
+    hint: hint.value ?? '',
+    tagnumber: getCurrentBikeTag.value?.tagnumber + 1 ?? 1,
+    game: getGameName.value,
+  }
+  noLongerNew.value = true
+
+  emit('submit', {
+    formAction,
+    formData,
+    tag: mysteryTag,
+    storeAction: 'addMysteryTag',
+  })
+}
+function setImage(event) {
+  store.fetchCredentials()
+  const input = event.target
+  if (input.files) {
+    try {
+      const previewReader = new FileReader()
+      previewReader.onload = (e) => {
+        preview.value = e.target.result
+      }
+      previewReader.readAsDataURL(input.files[0])
+      if (input.files[0].size / Math.pow(1024, 2) > 15) {
+        toast.open({
+          message: 'Image exceeds 15mb',
+          type: 'error',
+          position: 'top',
+        })
+      } else {
+        input.files[0].arrayBuffer().then(async (value) => {
+          const results = await exifr.parse(value)
+          const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
+          if (createDate < getCurrentBikeTag.value.mysteryTime) {
+            toast.open({
+              message: 'Timestamp Error',
               type: 'error',
               position: 'top',
             })
           } else {
-            input.files[0].arrayBuffer().then(async (value) => {
-              const results = await exifr.parse(value)
-              const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
-              if (createDate < this.getCurrentBikeTag.mysteryTime) {
-                this.$toast.open({
-                  message: 'Timestamp Error',
-                  type: 'error',
-                  position: 'top',
-                })
-              } else {
-                this.image = input.files[0]
-              }
-            })
+            image.value = input.files[0]
           }
-        } catch (e) {
-          console.error(e)
-        }
+        })
       }
-    },
-    goViewRound() {
-      this.hideModal()
-      this.$router.push('/round')
-    },
-    showModalIfNew() {
-      if (!this.getPlayerTag?.mysteryImageUrl?.length) {
-        this.showModal = true
-      }
-    },
-    hideModal() {
-      this.showModal = false
-    },
-    stringifyNumber,
-    ordinalSuffixOf,
-  },
+    } catch (e) {
+      console.error(e)
+    }
+  }
+}
+function goViewRound() {
+  hideModal()
+  router.push('/round')
+}
+function showModalIfNew() {
+  if (!getPlayerTag.value?.mysteryImageUrl?.length) {
+    showModal.value = true
+  }
+}
+function hideModal() {
+  showModal.value = false
+}
+
+// mounted
+onMounted(() => {
+  player.value = getPlayerTag.value?.foundPlayer
+  showModalIfNew()
 })
 </script>
+
 <style lang="scss">
 @import '../assets/styles/style';
 

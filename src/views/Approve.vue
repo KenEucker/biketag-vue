@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <loading
     v-show="uploadInProgress"
@@ -29,174 +30,156 @@
     </form>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-// watchEffect, onMounted } from 'vue'
-import { mapGetters } from 'vuex'
-import { BiketagFormSteps } from '@/common/types'
-import { useTimer } from 'vue-timer-hook'
+
+<script setup name="ApproveBikeTagView">
+import { defineProps, ref, inject, computed, onMounted /*, watchEffect*/ } from 'vue'
+import { useStore } from '@/store/index.ts'
+import { useAuth0 } from '@auth0/auth0-vue'
+// import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
-import QueueApprove from '@/components/QueueApprove.vue'
 import { debug } from '@/common/utils'
 
-export default defineComponent({
-  name: 'ApproveBikeTagView',
-  components: {
-    QueueApprove,
+// components
+import QueueApprove from '@/components/QueueApprove.vue'
+import { useI18n } from 'vue-i18n'
+
+// props
+const props = defineProps({
+  usingTimer: {
+    type: Boolean,
+    default: false,
   },
-  props: {
-    usingTimer: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  data() {
-    const time = new Date()
-    time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
-    const timer = useTimer(time)
-    // onMounted(() => {
-    //   watchEffect(async () => {
-    //     if (timer.isExpired.value) {
-    //       console.warn('IsExpired')
-    //     }
-    //   })
-    // })
-    return {
-      timer,
-      BiketagFormSteps,
-      uploadInProgress: false,
-      countDown: 10,
-    }
-  },
-  computed: {
-    ...mapGetters([
-      'getFormStep',
-      'getPlayerTag',
-      'getCurrentBikeTag',
-      'getGameName',
-      'getAmbassadorId',
-    ]),
-  },
-  async mounted() {
-    await this.$store.dispatch('setQueuedTags', true)
-    await this.$store.dispatch('fetchCredentials')
+})
 
-    /// Get the user credentials for BikeTag Ambassador functions
-    await setTimeout(() => {
-      if (!this.checkAuth()) {
-        setTimeout(() => this.checkAuth, 1000)
-      }
-    }, 1000)
-    this.uploadInProgress = false
-  },
-  async created() {
-    // this.countDownTimer()
-  },
-  methods: {
-    countDownTimer() {
-      if (this.countDown > 0) {
-        setTimeout(() => {
-          this.countDown -= 1
-          this.countDownTimer()
-        }, 500)
-      }
-    },
-    async checkAuth() {
-      if (this.$auth?.isAuthenticated) {
-        if (!this.getProfile?.nonce?.length) {
-          return this.$auth.getIdTokenClaims().then((claims) => {
-            if (claims) {
-              const token = claims.__raw
-              this.$store.dispatch('setProfile', { ...this.$auth.user, token })
-              return true
-            } else {
-              debug('BikeTag Ambassador profile could not be authenticated')
-              return false
-            }
-          })
-        }
-        return true
-      }
-      return false
-    },
-    async onApproveSubmit(newTagSubmission) {
-      const { tag, formAction, formData, storeAction } = newTagSubmission
-      if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'manual'
-      }
-      window.scrollTo(0, 0)
+// data
+const time = new Date()
+time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
+// const timer = ref(useTimer(time))
+const uploadInProgress = ref(false)
+const queueError = ref(null)
+const store = useStore()
+const { isAuthenticated, idTokenClaims, user } = useAuth0()
+const toast = inject('toast')
+const { t } = useI18n()
 
-      this.$toast.open({
-        message:
-          storeAction.indexOf('approve') !== -1
-            ? this.$t('notifications.approving')
-            : this.$t('notifications.removing'),
-        type: 'info',
-        position: 'top',
-      })
-      const errorAction = this.$refs.queueError.getAttribute('action')
+// computed
+const getPlayerTag = computed(() => store.getPlayerTag)
+const getGameName = computed(() => store.getGameName)
+const getAmbassadorId = computed(() => store.getAmbassadorId)
 
-      const claims = await this.$auth.getIdTokenClaims()
-      if (claims) {
-        /// If no token, the request will be rejected
-        tag.token = claims.__raw
-      }
-
-      this.uploadInProgress = true
-      const success = await this.$store.dispatch(storeAction, tag)
-      this.uploadInProgress = false
-
-      if (success === true) {
-        /// Update the queue
-        this.$store.dispatch('setQueuedTags', true)
-
-        formData.set('game', this.getGameName)
-        formData.set('tag', JSON.stringify(this.getPlayerTag))
-        formData.set(
-          'approve',
-          `${this.getGameName}-${this.getPlayerTag.tagnumber}--${this.getPlayerTag.foundPlayer}`
-        )
-
-        if (tag.foundImage) {
-          formData.set('foundImageUrl', this.getPlayerTag.foundImageUrl)
-        } else if (tag.mysteryImage) {
-          formData.set('mysteryImageUrl', this.getPlayerTag.mysteryImageUrl)
-        }
-        return sendNetlifyForm(
-          formAction,
-          new URLSearchParams(formData).toString(),
-          () => {
-            this.$toast.open({
-              message: `${storeAction} ${this.$t('notifications.success')}`,
-              type: 'success',
-              position: 'top',
-            })
-            this.$store.dispatch('setQueuedTags')
-          },
-          (m) => {
-            this.$toast.open({
-              message: `${this.$t('notifications.error')} ${m}`,
-              type: 'error',
-              timeout: false,
-              position: 'bottom',
-            })
-            return sendNetlifyError(m, undefined, errorAction)
-          }
-        )
+// methods
+function checkAuth() {
+  if (isAuthenticated.value) {
+    if (!store.getProfile?.nonce?.length) {
+      if (idTokenClaims.value) {
+        store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
       } else {
-        const message = `${this.$t('notifications.error')}: ${success}`
-        this.$toast.open({
-          message,
+        debug("what's this? no speaka da mda5hash, brah?")
+        return false
+      }
+    }
+    return true
+  }
+  return false
+}
+async function onApproveSubmit(newTagSubmission) {
+  const { tag, formAction, formData, storeAction } = newTagSubmission
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual'
+  }
+  window.scrollTo(0, 0)
+
+  toast.open({
+    message:
+      storeAction.indexOf('approve') !== -1
+        ? t('notifications.approving')
+        : t('notifications.removing'),
+    type: 'info',
+    position: 'top',
+  })
+  const errorAction = queueError.value.getAttribute('action')
+
+  const claims = idTokenClaims.value
+  if (claims) {
+    /// If no token, the request will be rejected
+    tag.token = claims.__raw
+  }
+
+  uploadInProgress.value = true
+  const success = await store[storeAction](tag)
+  uploadInProgress.value = false
+
+  if (success === true) {
+    /// Update the queue
+    store.setQueuedTags(true)
+
+    formData.set('game', getGameName.value)
+    formData.set('tag', JSON.stringify(getPlayerTag.value))
+    formData.set(
+      'approve',
+      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`
+    )
+
+    if (tag.foundImage) {
+      formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
+    } else if (tag.mysteryImage) {
+      formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
+    }
+    return sendNetlifyForm(
+      formAction,
+      new URLSearchParams(formData).toString(),
+      () => {
+        toast.open({
+          message: `${storeAction} ${t('notifications.success')}`,
+          type: 'success',
+          position: 'top',
+        })
+        store.setQueuedTags()
+      },
+      (m) => {
+        toast.open({
+          message: `${t('notifications.error')} ${m}`,
           type: 'error',
           timeout: false,
           position: 'bottom',
         })
-        return sendNetlifyError(message, undefined, errorAction)
+        return sendNetlifyError(m, undefined, errorAction)
       }
-    },
-  },
+    )
+  } else {
+    const message = `${t('notifications.error')}: ${success}`
+    toast.open({
+      message,
+      type: 'error',
+      timeout: false,
+      position: 'bottom',
+    })
+    return sendNetlifyError(message, undefined, errorAction)
+  }
+}
+
+// mounted
+onMounted(async () => {
+  await store.setQueuedTags(true)
+  await store.fetchCredentials()
+
+  /// Get the user credentials for BikeTag Ambassador functions
+  if (!checkAuth()) {
+    await (() =>
+      new Promise((resolve) => {
+        setTimeout(resolve(checkAuth()), 1000)
+      }))()
+  }
+  uploadInProgress.value = false
+
+  // watchEffect(async () => {
+  //   if (timer.value.isExpired.valueof) {
+  //     console.warn('IsExpired')
+  //   }
+  // })
 })
 </script>
+
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 

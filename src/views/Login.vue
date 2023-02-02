@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
     <img v-if="isBikeTagAmbassador" :src="bikeTag" />
@@ -7,50 +8,43 @@
     <bike-tag-button variant="bold" :text="$t('menu.login')" @click="login" />
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import BikeTagButton from '@/components/BikeTagButton.vue'
-import BikeTag from '@/assets/images/BikeTag.svg'
-import { debug } from '@/common/utils'
 
-export default defineComponent({
-  name: 'LoginView',
-  components: {
-    BikeTagButton,
-  },
-  data() {
-    return {
-      bikeTag: BikeTag,
+<script setup name="LoginView">
+import { inject, computed } from 'vue'
+import { useStore } from '@/store/index.ts'
+import { useAuth0 } from '@auth0/auth0-vue'
+import BikeTag from '@/assets/images/BikeTag.svg'
+
+// components
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useI18n } from 'vue-i18n'
+
+// data
+const bikeTag = BikeTag
+const store = useStore()
+const { isAuthenticated, loginWithRedirect, idTokenClaims, user } = useAuth0()
+const toast = inject('toast')
+
+// computed
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const { t } = useI18n()
+
+// methods
+async function login() {
+  if (!isAuthenticated.value) {
+    toast.open({
+      message: 'cannot login because authentication is not configured',
+      type: 'error',
+      position: 'top',
+    })
+    await loginWithRedirect()
+    if (isAuthenticated.value && idTokenClaims.value) {
+      store.setProfile({ ...user.value, token: idTokenClaims.value._raw })
     }
-  },
-  computed: {
-    ...mapGetters(['isBikeTagAmbassador']),
-  },
-  methods: {
-    login() {
-      if (this.$auth.loginWithRedirect) {
-        this.$auth.loginWithRedirect().then(async () => {
-          debugger
-          const claims = await this.$auth.getIdTokenClaims()
-          if (claims) {
-            const token = claims.__raw
-            this.$store.dispatch('setProfile', { ...this.$auth.user, token })
-          } else {
-            debug('what is this? No sprechen sie Deutsch?')
-          }
-        })
-      } else {
-        this.$toast.open({
-          message: 'cannot login because authentication is not configured',
-          type: 'error',
-          position: 'top',
-        })
-      }
-    },
-  },
-})
+  }
+}
 </script>
+
 <style lang="scss" scoped>
 .container {
   img {
