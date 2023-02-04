@@ -103,9 +103,7 @@ const props = defineProps({
   },
   tag: {
     type: Object,
-    default: () => {
-      return {}
-    },
+    default: () => ({}),
   },
 })
 

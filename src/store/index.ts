@@ -169,7 +169,7 @@ export const useStore = defineStore('store', {
             options.imgur.queuehash = game.queuehash
             client = new BikeTagClient(options)
 
-            await this.SET_GAME(game)
+            this.SET_GAME(game)
             return game
           }
           return false
