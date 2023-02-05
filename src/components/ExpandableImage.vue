@@ -1,6 +1,5 @@
 <template>
   <div
-    ref="root"
     class="expandable-image"
     :class="{
       expanded: expanded,
@@ -31,7 +30,7 @@
 </template>
 
 <script setup name="ExpandableImage" type="ts">
-import { defineProps, defineEmits, ref} from 'vue'
+import { defineProps, defineEmits, ref, watch, watchEffect } from 'vue'
 
 // props
 const props = defineProps({
@@ -49,34 +48,33 @@ const props = defineProps({
 const emit = defineEmits(['loading', 'loaded'])
 const expanded = ref(false)
 const loading = ref(emit('loading') && true)
-const root = ref(null)
 
 // methods
-function expandClick() {
-  if (!expanded.value) {
-    document.addEventListener('keydown', doCloseImage)
-    document.addEventListener('backbutton', doCloseImage)
-    expanded.value = true
-  }
-}
-function shrinkImage() {
-  if (expanded.value) {
-    document.removeEventListener('keydown', doCloseImage)
-    document.removeEventListener('backbutton', doCloseImage)
-    expanded.value = false
-  }
-}
-function doCloseImage(event) {
-  event.stopPropagation()
+const expandClick = () => expanded.value = true
+const shrinkImage = () => expanded.value = false
+const doCloseImage = event => {
   const key = event.key.toLowerCase()
   if ( key === 'escape' || key === 'backspace') {
     shrinkImage()
   }
 }
-function loaded() {
+const loaded = () => {
   emit('loaded')
   loading.value = false
 }
+
+// watch
+watch(() => {
+  expanded.value, watchEffect(() => {
+    if (!expanded.value) {
+      document.removeEventListener('keydown', doCloseImage)
+      document.removeEventListener('backbutton', doCloseImage)
+    } else {
+      document.addEventListener('keydown', doCloseImage)
+      document.addEventListener('backbutton', doCloseImage)
+    }
+  })
+})
 </script>
 
 <style scoped lang="scss">
@@ -115,6 +113,7 @@ body {
     background: rgb(0 0 0 / 90%);
     display: flex;
     align-items: center;
+    justify-content: center;
     opacity: 1;
     padding-bottom: 0 !important;
     cursor: zoom-out;
@@ -123,7 +122,7 @@ body {
       z-index: 999999;
       max-height: 100%;
       object-fit: contain;
-      margin: 0 auto;
+      margin: 0;
     }
   }
 
