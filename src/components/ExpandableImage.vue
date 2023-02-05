@@ -1,22 +1,36 @@
 <template>
   <div
-    ref="root"
     class="expandable-image"
     :class="{
       expanded: expanded,
     }"
-    @click="expandClick"
   >
     <b-spinner v-show="loading" />
-    <img v-show="!loading" :src="imgSrc" class="img-fluid" v-bind="$attrs" @load="loaded" />
-    <i v-if="expanded" class="close-button">
+    <div v-show="!loading">
+      <img
+        v-show="!expanded"
+        :src="props.source"
+        class="img-fluid"
+        v-bind="$attrs"
+        @click="expandClick"
+        @load="loaded"
+      />
+      <img
+        v-show="expanded"
+        :src="props.fullSource"
+        class="img-fluid"
+        v-bind="$attrs"
+        @load="loaded"
+      />
+    </div>
+    <i v-if="expanded" class="close-button" @click="shrinkImage">
       <img src="@/assets/images/close.svg" />
     </i>
   </div>
 </template>
 
 <script setup name="ExpandableImage" type="ts">
-import { defineProps, defineEmits, ref, computed, watch, nextTick } from 'vue'
+import { defineProps, defineEmits, ref, watch, watchEffect } from 'vue'
 
 // props
 const props = defineProps({
@@ -33,76 +47,33 @@ const props = defineProps({
 // data
 const emit = defineEmits(['loading', 'loaded'])
 const expanded = ref(false)
-const closeButtonRef =  ref(null)
 const loading = ref(emit('loading') && true)
-const root = ref(null)
-const cloned = ref(null)
-
-// computed
-const imgSrc = computed(() => expanded.value ? props.fullSource : props.source)
 
 // methods
-function expandClick() {
-  expanded.value = true
-}
-function doCloseImage(event) {
-  if (event.key.toLowerCase() == 'escape') {
-    closeImage(event)
+const expandClick = () => expanded.value = true
+const shrinkImage = () => expanded.value = false
+const doCloseImage = event => {
+  const key = event.key.toLowerCase()
+  if ( key === 'escape' || key === 'backspace') {
+    shrinkImage()
   }
 }
-function closeImage(event) {
-  expanded.value = false
-  document.removeEventListener('keydown', doCloseImage)
-  document.removeEventListener('backbutton', doCloseImage)
-  document.addEventListener('gesturestart', function() { /* */ });
-  event.stopPropagation()
-}
-// function freezeVp(e) {
-//   e.preventDefault()
-// }
-function loaded() {
+const loaded = () => {
   emit('loaded')
   loading.value = false
 }
 
 // watch
 watch(() => {
-  expanded.value, status => {
-    nextTick(() => {
-      if (status) {
-        const closeImageMethod = closeImage
-        cloned.value = root.value.cloneNode(true)
-        closeButtonRef.value = cloned.value.querySelector('.close-button')
-        closeButtonRef.value.addEventListener('click', closeImage)
-        // const clonedImg = cloned.value.querySelector('img')
-        // console.log({clonedImg})
-        // clonedImg.addEventListener('click', (e) => e.stopPropagation())
-        cloned.value.addEventListener('click', function doCloseImageBackground(event) {
-          if(event.target==this) {
-            closeImageMethod(event)
-          }
-        })
-        document.addEventListener('keydown', doCloseImage)
-        document.addEventListener('backbutton', doCloseImage)
-        document.body.appendChild(cloned.value)
-        document.body.style.overflow = 'hidden'
-        // cloned.value.addEventListener('touchmove', freezeVp, false)
-        setTimeout(() => {
-          cloned.value.style.opacity = 1
-        }, 0)
-      } else {
-        cloned.value.style.opacity = 0
-        // cloned.value.removeEventListener('touchmove', freezeVp, false)
-        setTimeout(() => {
-          closeButtonRef.value.removeEventListener('click', closeImage)
-          cloned.value.remove()
-          cloned.value = null
-          closeButtonRef.value = null
-          document.body.style.overflow = 'auto'
-        }, 250)
-      }
-    })
-  }
+  expanded.value, watchEffect(() => {
+    if (!expanded.value) {
+      document.removeEventListener('keydown', doCloseImage)
+      document.removeEventListener('backbutton', doCloseImage)
+    } else {
+      document.addEventListener('keydown', doCloseImage)
+      document.addEventListener('backbutton', doCloseImage)
+    }
+  })
 })
 </script>
 
@@ -132,7 +103,7 @@ watch(() => {
 }
 
 body {
-  .expandable-image.expanded {
+  .expanded {
     position: fixed;
     z-index: 99999;
     top: 0;
@@ -142,7 +113,8 @@ body {
     background: rgb(0 0 0 / 90%);
     display: flex;
     align-items: center;
-    opacity: 0;
+    justify-content: center;
+    opacity: 1;
     padding-bottom: 0 !important;
     cursor: zoom-out;
 
@@ -150,7 +122,7 @@ body {
       z-index: 999999;
       max-height: 100%;
       object-fit: contain;
-      margin: 0 auto;
+      margin: 0;
     }
   }
 

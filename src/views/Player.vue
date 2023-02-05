@@ -87,7 +87,7 @@ import BikeDex from '@/components/BikeDex.vue'
 const router = useRouter()
 const route = useRoute()
 const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
-let perPage = ref(10)
+const perPage = ref(10)
 const tagsAreLoading = ref(true)
 const tagsLoaded = ref([])
 const playerSocial = ref(null)
@@ -110,10 +110,11 @@ const store = useStore()
 
 // computed
 const getPlayers = computed(() => store.getPlayers)
+console.log(getPlayers)
 const player = computed(() => {
   const playerList = getPlayers.value?.filter((player) => {
-    const playerName = playerName()
-    return decodeURIComponent(encodeURIComponent(player.name)) == playerName
+    const player_name = playerName()
+    return decodeURIComponent(encodeURIComponent(player.name)) == player_name
   })
   const player = playerList[0]
   return player
@@ -129,18 +130,16 @@ const tagsForList = computed(() => {
 const totalCount = computed(() => player.value?.tags?.length)
 
 // methods
-function resetCurrentPage() {
+const resetCurrentPage = () => {
   startLoading()
   currentPage.value = 1
 }
-function playerName() {
-  return decodeURIComponent(encodeURIComponent(route.params.name))
-}
-function changePage(event, pageNumber) {
+const playerName = () => decodeURIComponent(encodeURIComponent(route.params.name))
+const changePage = (event, pageNumber) => {
   startLoading()
   router.push('/player/' + encodeURIComponent(playerName()) + '/' + pageNumber)
 }
-async function startLoading() {
+const startLoading = async () => {
   tagsLoaded.value = []
   tagsAreLoading.value = true
   if (perPage.value <= 10) {
@@ -152,22 +151,22 @@ async function startLoading() {
   playerSocial.value = playerSocial.value.length ? playerSocial.value[0]?.user_metadata?.social : {}
   playerSocial.value?.discord && (playerSocial.value.discord = '')
 }
-function showModal() {
+const showModal = () => {
   modal.value = true
   console.log(modal)
 }
-// function hideModal() {
+// const hideModal = () => {
 //   modal.value = false
 //   console.log(modal)
 // }
 
 // watch
-watch(
-  () => 'route.params.currentPage',
-  (val) => {
-    currentPage.value = Number(val)
-  }
-)
+watch(() => {
+  route.params.currentPage,
+    (val) => {
+      currentPage.value = Number(val)
+    }
+})
 
 // created
 startLoading()

@@ -45,8 +45,8 @@
           </div>
         </div>
         <div v-else>
-          <span>{{ $t('pages.play.game_not_exists') }}</span>
-          <span>{{ $t('pages.play.send_hello_email') }}</span>
+          <span>{{ t('pages.play.game_not_exists') }}</span>
+          <span>{{ t('pages.play.send_hello_email') }}</span>
         </div>
       </div>
     </div>
@@ -80,7 +80,7 @@ import { useI18n } from 'vue-i18n'
 // data
 const router = useRouter()
 const route = useRoute()
-const tagnumber = ref(route.params?.tagnumber?.length ? parseInt(route.params.tagnumber) : 0)
+const tagnumber = ref(route.params?.tagnumber ? parseInt(route.params.tagnumber) : 0)
 const tagIsLoading = ref(true)
 const store = useStore()
 const { t } = useI18n()
@@ -94,7 +94,7 @@ const tag = computed(() => {
     const tag = getTags.value?.filter((t) => t.tagnumber === tagnumber.value)
     return tag && tag.length ? tag[0] : {}
   }
-  return undefined
+  return {}
 })
 
 // methods
