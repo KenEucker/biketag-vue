@@ -13,7 +13,7 @@
         <slot />
       </article>
       <article class="img-container">
-        <img :src="props.imgSrc" />
+        <img v-if="props.imgSrc" :src="props.imgSrc" />
         <bike-tag-button v-if="props.link" :text="_linkText()" @click="buttonClick" />
       </article>
     </div>
@@ -40,7 +40,7 @@ const props = defineProps({
   },
   imgSrc: {
     type: String,
-    required: true,
+    default: '',
   },
   link: {
     type: String,
