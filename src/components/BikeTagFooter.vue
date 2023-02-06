@@ -1,5 +1,5 @@
 <template>
-  <div :class="`${props.variant} button-group`">
+  <div ref="root" :class="[props.variant, 'button-group']">
     <div v-if="props.variant === 'current'">
       <!-- Left Button -->
       <bike-tag-button class="button-group__left" :text="t('menu.map')" @click="goMapPage" />
@@ -89,11 +89,11 @@ import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import HintIcon from '@/assets/images/hint-icon.svg'
 import CloseRounded from '@/assets/images/close-rounded.svg'
+import { useI18n } from 'vue-i18n'
 
 // componets
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagCamera from '@/components/BikeTagCamera.vue'
-import { useI18n } from 'vue-i18n'
 
 // props
 const props = defineProps({
@@ -109,6 +109,7 @@ const props = defineProps({
 
 // data
 const emit = defineEmits(['next', 'previous'])
+const root = ref(null)
 const showCamera = ref(false)
 const characters = [
   'a',
@@ -147,8 +148,8 @@ const characters = [
   '\\',
   '=',
 ]
-let timeout = ref(5)
-let iterations = ref(10)
+const timeout = ref(5)
+const iterations = ref(10)
 const hintIcon = HintIcon
 const closeRounded = CloseRounded
 const mysteryHint = ref(null)
@@ -162,35 +163,35 @@ const getCurrentHint = computed(() => store.getCurrentHint)
 const getQueuedTags = computed(() => store.getQueuedTags)
 
 // methods
-// function goAboutPage() {
+// const goAboutPage = () => {
 //   router.push('/about')
 // }
-// function goLeaderboardPage() {
+// const goLeaderboardPage = () => {
 //   router.push('/leaderboard')
 // }
-// function goPlayersPage() {
+// const goPlayersPage = () => {
 //   router.push('/players')
 // }
-function goMapPage() {
+const goMapPage = () => {
   router.push('/map')
 }
-function goRoundPage() {
+const goRoundPage = () => {
   router.push('/round')
 }
-function goWorldwide() {
+const goWorldwide = () => {
   window.location = 'http://biketag.org/'
   // router.push('/worldwide')
 }
-function sleep(time) {
+const sleep = (time) => {
   return new Promise((resolve) => setTimeout(resolve, time))
 }
-function getRandomInteger(min, max) {
+const getRandomInteger = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
-function randomCharacter() {
+const randomCharacter = () => {
   return characters[getRandomInteger(0, characters.length - 1)]
 }
-function showHint() {
+const showHint = () => {
   setTimeout(async () => {
     const popover = document.querySelector('.popover')
     if (popover) {
@@ -219,7 +220,7 @@ function showHint() {
     }
   }, 100)
 }
-function closePopover() {
+const closePopover = () => {
   hint.value.click()
   // console.log(hint.value)
   // hint.value.click()

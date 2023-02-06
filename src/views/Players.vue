@@ -11,7 +11,7 @@
     ></b-pagination>
     <div class="player-list">
       <div v-for="player in playersForList" :key="player.name" class="p-lg-3 p-md-2 mb-2">
-        <player size="md" :player="player" />
+        <player-bicon size="md" :player="player" />
       </div>
     </div>
     <b-form-group>
@@ -38,13 +38,13 @@ import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 
 // components
-import Player from '@/components/PlayerBicon.vue'
+import PlayerBicon from '@/components/PlayerBicon.vue'
 
 // data
 const router = useRouter()
 const route = useRoute()
 const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
-let perPage = ref(10)
+const perPage = ref(10)
 const store = useStore()
 
 // computed
@@ -52,13 +52,13 @@ const getPlayers = computed(() => store.getPlayers)
 const playersForList = computed(() =>
   getPlayers.value.slice((currentPage.value - 1) * perPage.value, currentPage.value * perPage.value)
 )
-const totalCount = () => getPlayers.value.length
+const totalCount = computed(() => getPlayers.value.length)
 
 // methods
-function resetCurrentPage() {
+const resetCurrentPage = () => {
   currentPage.value = 1
 }
-function changePage(event, pageNumber) {
+const changePage = (event, pageNumber) => {
   router.push('/players/' + pageNumber)
 }
 
