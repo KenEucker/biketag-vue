@@ -70,7 +70,7 @@ export const useStore = defineStore('store', {
   }),
   actions: {
     // eslint-disable-next-line no-empty-pattern
-    async getRegionPolygon({}, region: any) {
+    async getRegionPolygon(region: any) {
       try {
         console.log({ zip: region.zipcode })
         const firstOfRegion = region.description.split(',')[0].toLowerCase()
@@ -334,7 +334,7 @@ export const useStore = defineStore('store', {
       return this.SET_PROFILE(updatedProfileResponse.data)
     },
     // eslint-disable-next-line no-empty-pattern
-    async checkPasscode({}, { name, passcode }: any) {
+    async checkPasscode({ name, passcode }: any) {
       return await client.plainRequest({
         method: 'GET',
         url: getApiUrl('profile'),
@@ -344,7 +344,7 @@ export const useStore = defineStore('store', {
       })
     },
     // eslint-disable-next-line no-empty-pattern
-    async getUserSocial({}, name: any) {
+    async getUserSocial(name: any) {
       return await client.plainRequest({
         method: 'GET',
         url: getApiUrl('profile'),
