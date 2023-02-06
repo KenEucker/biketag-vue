@@ -5,7 +5,9 @@
       expanded: expanded,
     }"
   >
-    <b-spinner v-show="loading" />
+    <Loading v-if="loading" v-model:active="loading" :is-full-page="true">
+      <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+    </Loading>
     <div v-show="!loading">
       <img
         v-show="!expanded"
@@ -30,7 +32,10 @@
 </template>
 
 <script setup name="ExpandableImage" type="ts">
-import { defineProps, defineEmits, ref, watch, watchEffect } from 'vue'
+import { defineProps, defineEmits, ref, watch } from 'vue'
+
+// components
+import Loading from 'vue-loading-overlay'
 
 // props
 const props = defineProps({
@@ -64,16 +69,16 @@ const loaded = () => {
 }
 
 // watch
-watch(() => {
-  expanded.value, watchEffect(() => {
-    if (!expanded.value) {
+watch(
+  () => expanded.value,
+  (val) => {
+    if (!val) {
       document.removeEventListener('keydown', doCloseImage)
       document.removeEventListener('backbutton', doCloseImage)
     } else {
       document.addEventListener('keydown', doCloseImage)
       document.addEventListener('backbutton', doCloseImage)
-    }
-  })
+  }
 })
 </script>
 

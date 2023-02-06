@@ -6,7 +6,7 @@
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
       <div style="margin-top: 2rem">
-        <p>{{ $t('pages.round.player_name_reserved') }}</p>
+        <p>{{ t('pages.round.player_name_reserved') }}</p>
         <bike-tag-input id="passcode" v-model="passcode" name="passcode" placeholder="passcode" />
         <bike-tag-button class="modal-sub-btn" variant="medium" text="Submit" />
       </div>
@@ -15,7 +15,7 @@
   <div :class="`add-found-tag ${uploadInProgress ? 'hidden' : ''}`">
     <div class="title-container">
       <bike-tag-button variant="medium" @click="$refs.file.click()">
-        <h3 class="queue-title">{{ $t('pages.round.found_title') }}</h3>
+        <h3 class="queue-title">{{ t('pages.round.found_title') }}</h3>
       </bike-tag-button>
     </div>
     <div class="preview-container">
@@ -58,14 +58,14 @@
         required
         @change="setImage"
       />
-      <p class="queue-text">{{ $t('pages.round.found_text') }}</p>
+      <p class="queue-text">{{ t('pages.round.found_text') }}</p>
       <div class="mt-3 mb-3 input-container">
         <bike-tag-input
           id="found"
           :disabled="locationDisabled"
           name="found"
           required
-          :placeholder="$t('pages.round.location_placeholder')"
+          :placeholder="t('pages.round.location_placeholder')"
         >
           <img :src="pinIcon" />
           <GMapAutocomplete
@@ -88,7 +88,7 @@
         </bike-tag-input>
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
-          <p v-if="locationDisabled">{{ $t('pages.round.image_first') }}</p>
+          <p v-if="locationDisabled">{{ t('pages.round.image_first') }}</p>
           <bike-tag-map
             v-if="isGps"
             variant="play/input"
@@ -103,14 +103,14 @@
           name="player"
           required
           :readonly="isAuthenticated"
-          :placeholder="$t('pages.round.name_placeholder')"
+          :placeholder="t('pages.round.name_placeholder')"
         />
       </div>
       <div class="sub-container">
         <bike-tag-button
           variant="medium"
           type="submit"
-          :text="$t('pages.round.queue_found_tag')"
+          :text="t('pages.round.queue_found_tag')"
           @click="onSubmit"
         />
       </div>
@@ -131,14 +131,16 @@ import {
 } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { useAuth0 } from '@auth0/auth0-vue'
-import exifr from 'exifr'
 import { debug } from '@/common/utils'
+import { useI18n } from 'vue-i18n'
+import exifr from 'exifr'
+import Pin from '@/assets/images/pin.svg'
 
 // components
+import Loading from 'vue-loading-overlay'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
-import { useI18n } from 'vue-i18n'
 
 // props
 const props = defineProps({
@@ -151,6 +153,7 @@ const props = defineProps({
 })
 
 // data
+const pinIcon = Pin
 const emit = defineEmits(['submit'])
 const preview = ref(null)
 const image = ref(props.tag?.foundImage ?? '')
@@ -268,7 +271,6 @@ async function onSubmit(e) {
     }
   }
   document.querySelector('.popover')?.remove()
-  console.log(foundTagRef.value)
   const formAction = foundTagRef.value.getAttribute('action')
   const formData = new FormData(foundTagRef.value)
   const foundTag = {

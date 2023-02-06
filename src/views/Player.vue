@@ -10,7 +10,7 @@
   </b-modal>
   <div v-if="player" class="container mt-5">
     <div class="social">
-      <player class="social__cnt--center" size="lg" :player="player" :no-link="true" />
+      <player-bicon class="social__cnt--center" size="lg" :player="player" :no-link="true" />
       <div class="social__cnt--left" @click="showModal">
         <img
           class="social__icon"
@@ -78,7 +78,7 @@ import Imgur from '@/assets/images/Imgur.svg'
 import Discord from '@/assets/images/Discord.svg'
 
 // components
-// import Player from '@/components/PlayerBicon.vue'
+import PlayerBicon from '@/components/PlayerBicon.vue'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import BikeDex from '@/components/BikeDex.vue'
@@ -91,33 +91,31 @@ const perPage = ref(10)
 const tagsAreLoading = ref(true)
 const tagsLoaded = ref([])
 const playerSocial = ref(null)
-const socialNetworkIcons = ref({
+const socialNetworkIcons = {
   reddit: Reddit,
   instagram: Instagram,
   twitter: Twitter,
   imgur: Imgur,
   discord: Discord,
-})
-const socialLinks = ref({
+}
+const socialLinks = {
   imgur: 'http://imgur.com/user/',
   instagram: 'http://instagram.com/',
   twitter: 'http://twitter.com/',
   reddit: 'http://reddit.com/u/',
   discord: '',
-})
+}
 const modal = ref(false)
 const store = useStore()
 
 // computed
 const getPlayers = computed(() => store.getPlayers)
-console.log(getPlayers)
 const player = computed(() => {
   const playerList = getPlayers.value?.filter((player) => {
     const player_name = playerName()
     return decodeURIComponent(encodeURIComponent(player.name)) == player_name
   })
-  const player = playerList[0]
-  return player
+  return playerList[0]
 })
 const tagsForList = computed(() => {
   const tags = player.value?.tags
@@ -161,12 +159,12 @@ const showModal = () => {
 // }
 
 // watch
-watch(() => {
-  route.params.currentPage,
-    (val) => {
-      currentPage.value = Number(val)
-    }
-})
+watch(
+  () => route.params.currentPage,
+  (val) => {
+    currentPage.value = Number(val)
+  }
+)
 
 // created
 startLoading()

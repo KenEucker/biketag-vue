@@ -19,7 +19,7 @@
         triggers="hover focus"
         placement="bottom"
       >
-        <template #title>{{ $t('components.queue.current_mystery_location') }}</template>
+        <template #title>{{ t('components.queue.current_mystery_location') }}</template>
         <img class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
       </b-popover>
 
@@ -33,12 +33,12 @@
         placement="bottom"
         class="queued-found"
       >
-        <template #title>{{ $t('components.queue.view_found_image') }}</template>
+        <template #title>{{ t('components.queue.view_found_image') }}</template>
         <img class="img-fluid" :src="getPlayerTag.foundImageUrl" />
         <div v-if="canReset()" class="row">
-          <b-button class="col" variant="danger" @click="resetToFound">{{
-            $t('components.queue.reset_queue_button')
-          }}</b-button>
+          <b-button class="col" variant="danger" @click="resetToFound">
+            {{ t('components.queue.reset_queue_button') }}
+          </b-button>
         </div>
       </b-popover>
 
@@ -56,12 +56,12 @@
         placement="bottom"
         class="queued-mystery"
       >
-        <template #title>{{ $t('components.queue.view_mystery_image') }}</template>
+        <template #title>{{ t('components.queue.view_mystery_image') }}</template>
         <img class="img-fluid" :src="getPlayerTag.mysteryImageUrl" />
         <div v-if="canReset()" class="row">
-          <b-button class="col" variant="danger" @click="resetToMystery">{{
-            $t('components.queue.reset_queue_button')
-          }}</b-button>
+          <b-button class="col" variant="danger" @click="resetToMystery">
+            {{ t('components.queue.reset_queue_button') }}
+          </b-button>
         </div>
       </b-popover>
     </div>
@@ -108,11 +108,11 @@ const toast = inject('toast')
 const { t } = useI18n()
 
 // computed
-const getQueuedTags = computed(() => store.getImgurImageSized)
-const getCurrentBikeTag = computed(() => store.getImgurImageSized)
-const getPlayerTag = computed(() => store.getImgurImageSized)
+const getQueuedTags = computed(() => store.getQueuedTags)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getPlayerTag = computed(() => store.getPlayerTag)
 const getImgurImageSized = computed(() => store.getImgurImageSized)
-const getQueuedTagState = computed(() => store.getImgurImageSized)
+const getQueuedTagState = computed(() => store.getQueuedTagState)
 
 // methods
 function canReset() {

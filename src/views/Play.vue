@@ -67,7 +67,7 @@
         <queue-posted :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
       <span v-if="isSubmittingData()" class="player-agree">
-        * {{ $t('pages.round.user_agree') }}
+        * {{ t('pages.round.user_agree') }}
       </span>
       <form
         ref="queueError"
@@ -94,10 +94,12 @@ import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
+import { useI18n } from 'vue-i18n'
 import LineSvg from '@/assets/images/line.svg'
 import ArrowSvg from '@/assets/images/arrow.svg'
 
 // components
+import Loading from 'vue-loading-overlay'
 import QueueFound from '@/components/QueueFound.vue'
 import QueueMystery from '@/components/QueueMystery.vue'
 import QueueSubmit from '@/components/QueueSubmit.vue'
@@ -106,7 +108,6 @@ import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import { useI18n } from 'vue-i18n'
 
 // props
 const props = defineProps({
