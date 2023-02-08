@@ -1,4 +1,7 @@
 {
+  "app": {
+    "gameof": "The Game Of"
+  },
   "notifications": {
     "approving": "Approving new BikeTag",
     "uploading": "Uploading tag information...",

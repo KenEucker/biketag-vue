@@ -70,8 +70,11 @@ import { useI18n } from 'vue-i18n'
 const emit = defineEmits(['submit'])
 const submitTagRef = ref(null)
 const store = useStore()
-const router = useRouter
+const router = useRouter()
 const { t } = useI18n()
+const postToReddit = ref(false)
+const postToTwitter = ref(false)
+const postToInstagram = ref(false)
 
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
@@ -86,19 +89,19 @@ function submitTag(defaultShareSettings) {
   const formData = new FormData(submitTagRef.value)
   const submittedTag = getPlayerTag.value
   defaultShareSettings = defaultShareSettings ?? {
-    postToReddit: this.postToReddit,
-    postToTwitter: this.postToTwitter,
-    postToInstagram: this.postToInstagram,
+    postToReddit,
+    postToTwitter,
+    postToInstagram,
   }
 
   submittedTag.discussionUrl = JSON.stringify({
-    postToReddit: defaultShareSettings.postToReddit,
+    postToReddit: defaultShareSettings.postToReddit.value,
   })
   submittedTag.mentionUrl = JSON.stringify({
-    postToTwitter: defaultShareSettings.postToTwitter,
+    postToTwitter: defaultShareSettings.postToTwitter.value,
   })
   submittedTag.shareUrl = JSON.stringify({
-    postToInstagram: defaultShareSettings.postToInstagram,
+    postToInstagram: defaultShareSettings.postToInstagram.value,
   })
 
   formData.append('discussionUrl', submittedTag.discussionUrl)
@@ -118,9 +121,9 @@ onMounted(() => {
   if (!getPlayerTag.value?.discussionUrl?.length) {
     /// TODO: check game settings for queue and remove this hardcoded hack
     const defaultShareSettings = {
-      postToReddit: this.postToReddit,
-      postToTwitter: this.postToTwitter,
-      postToInstagram: this.postToInstagram,
+      postToReddit: postToReddit.value,
+      postToTwitter: postToTwitter.value,
+      postToInstagram: postToInstagram.value,
     }
     debug('autosubmitting tag with default share settings', defaultShareSettings)
     submitTag(defaultShareSettings)

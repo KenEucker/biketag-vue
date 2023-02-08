@@ -90,7 +90,7 @@
 </template>
 
 <script setup name="BikeTag">
-import { defineProps, defineEmits, ref, inject, computed, onMounted } from 'vue'
+import { defineProps, defineEmits, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { useI18n } from 'vue-i18n'

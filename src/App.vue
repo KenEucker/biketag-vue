@@ -53,7 +53,7 @@ const isWhiteBackground = computed(() =>
 )
 const logo = computed(() => store.getLogoUrl('m'))
 const title = computed(function () {
-  return `${isNotLanding.value ? store.getGameName : t('The Game Of')} BikeTag!`
+  return `${isNotLanding.value ? store.getGameName : t('app.gameof')} BikeTag!`
 })
 const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
