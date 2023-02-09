@@ -1,20 +1,27 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "outDir": "dist",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "allowUmdGlobalAccess": true,
-    "jsx": "preserve",
-    "baseUrl": ".",
+    "useDefineForClassFields": true,
+    "moduleResolution": "Node",
     "strict": true,
+    "strictNullChecks": true,
+    "jsx": "preserve",
     "allowJs": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowUmdGlobalAccess": true,
+    "baseUrl": ".",
     "sourceMap": true,
     "importHelpers": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    
-    "types": ["./src/vue-shim", "./src/vuex-shim"],
+
+    "types": ["./src/vue-shim"],
     "paths": {
       "@/*": ["src/*"]
     },

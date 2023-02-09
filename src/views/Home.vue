@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="play-biketag vld-parent">
     <div class="play-screen__label-group-top">
@@ -17,7 +18,7 @@
             variant="medium"
             class="play-screen__mystery-player__button"
             :text="getCurrentBikeTag?.mysteryPlayer"
-            @click="$router.push('/player/' + encodeURIComponent(getCurrentBikeTag?.mysteryPlayer))"
+            @click="router.push('/player/' + encodeURIComponent(getCurrentBikeTag?.mysteryPlayer))"
           />
         </div>
         <div v-if="getCurrentBikeTag" class="rel play-screen">
@@ -44,8 +45,8 @@
           </div>
         </div>
         <div v-else>
-          <span>{{ $t('pages.play.game_not_exists') }}</span>
-          <span>{{ $t('pages.play.send_hello_email') }}</span>
+          <span>{{ t('pages.play.game_not_exists') }}</span>
+          <span>{{ t('pages.play.send_hello_email') }}</span>
         </div>
       </div>
     </div>
@@ -58,86 +59,66 @@
     />
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import Loading from 'vue-loading-overlay'
+
+<script setup name="HomeView">
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useStore } from '@/store/index.ts'
 import 'vue-loading-overlay/dist/vue-loading.css'
+// import useSWRV from 'swrv'
+
+// components
+import Loading from 'vue-loading-overlay'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagHeader from '@/components/BikeTagHeader.vue'
 import BikeTagFooter from '@/components/BikeTagFooter.vue'
-import BikeTagLabel from '@/components/BikeTagLabel.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagLabel from '@/components/BikeTagLabel.vue'
 import ExpandableImage from '@/components/ExpandableImage.vue'
-// import useSWRV from 'swrv'
+import { useI18n } from 'vue-i18n'
 
-export default defineComponent({
-  name: 'HomeView',
-  components: {
-    Loading,
-    BikeTag,
-    BikeTagHeader,
-    BikeTagFooter,
-    BikeTagButton,
-    BikeTagLabel,
-    ExpandableImage,
-  },
-  data() {
-    // const { data, error } = useSWRV('/api/game', this.$store.dispatch('setGame'), {})
-    // console.log({ data, error })
+// data
+const router = useRouter()
+const route = useRoute()
+const tagnumber = ref(route.params?.tagnumber ? parseInt(route.params.tagnumber) : 0)
+const tagIsLoading = ref(true)
+const store = useStore()
+const { t } = useI18n()
 
-    return {
-      tagnumber: this.$route.params?.tagnumber?.length ? parseInt(this.$route.params.tagnumber) : 0,
-      tagIsLoading: true,
-    }
-  },
-  computed: {
-    ...mapGetters([
-      'getCurrentBikeTag',
-      'getTags',
-      'getGame',
-      'getGameName',
-      'getPlayers',
-      'getImgurImageSized',
-    ]),
-    tag() {
-      if (this.tagnumber !== 0) {
-        const tag = this.getTags?.filter((t) => t.tagnumber === this.tagnumber)
-        return tag && tag.length ? tag[0] : {}
-      }
-      return undefined
-    },
-  },
-  mounted() {
-    this.tagIsLoading = this.tagnumber === 0
-  },
-  methods: {
-    tagImageLoaded() {
-      this.tagIsLoading = false
-    },
-    getPlayer(playerName) {
-      const playerList =
-        this.getPlayers?.filter((player) => {
-          return decodeURIComponent(encodeURIComponent(player.name)) == playerName
-        }) ?? []
-      return playerList[0]
-    },
-    goNextSingle() {
-      this.tagnumber++
-      if (this.tagnumber === this.getCurrentBikeTag.tagnumber) {
-        this.tagnumber = 0
-      } else {
-        this.$router.push(`/${this.tagnumber}`)
-      }
-    },
-    goPreviousSingle() {
-      this.tagnumber = this.tagnumber > 0 ? this.tagnumber : this.getCurrentBikeTag.tagnumber
-      this.tagnumber--
-      this.$router.push(`/${this.tagnumber}`)
-    },
-  },
+// computed
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getImgurImageSized = computed(() => store.getImgurImageSized)
+const getTags = computed(() => store.getTags)
+const tag = computed(() => {
+  if (tagnumber.value !== 0) {
+    const tag = getTags.value?.filter((t) => t.tagnumber === tagnumber.value)
+    return tag && tag.length ? tag[0] : {}
+  }
+  return {}
 })
+
+// methods
+function tagImageLoaded() {
+  tagIsLoading.value = false
+}
+function goNextSingle() {
+  tagnumber.value++
+  if (tagnumber.value === getCurrentBikeTag.value.tagnumber) {
+    tagnumber.value = 0
+  } else {
+    router.push(`/${tagnumber.value}`)
+  }
+}
+function goPreviousSingle() {
+  tagnumber.value = tagnumber.value > 0 ? tagnumber.value : getCurrentBikeTag.value.tagnumber
+  tagnumber.value--
+  router.push(`/${tagnumber.value}`)
+}
+
+// mounted
+onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
 </script>
+
 <style lang="scss">
 @import '../assets/styles/style';
 

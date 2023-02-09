@@ -1,5 +1,8 @@
 <template>
-  <header v-if="variant === 'top'" :class="`biketag-header ${!showHeader ? 'is-hidden' : ''}`">
+  <header
+    v-if="props.variant === 'top'"
+    :class="`biketag-header ${!showHeader ? 'is-hidden' : ''}`"
+  >
     <!-- The header logo and profile and hamburger buttons go here -->
     <nav id="navmenu" class="biketag-header-nav navbar navbar-expand-xl">
       <!-- Back Arrow -->
@@ -34,7 +37,7 @@
 
       <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-lg-0">
-          <li v-if="$auth.isAuthenticated" class="nav-item">
+          <li v-if="isAuthenticated" class="nav-item">
             <img
               class="profile-icon"
               :src="getProfileImageSrc"
@@ -95,8 +98,8 @@
           >
             {{ $t('menu.about') }}
           </li>
-          <template v-if="$auth.isAuthenticated">
-            <li class="nav-item" @click="logout">
+          <template v-if="isAuthenticated">
+            <li class="nav-item" @click="logoutFunction">
               {{ $t('menu.logout') }}
             </li>
           </template>
@@ -114,7 +117,7 @@
       </div>
     </nav>
   </header>
-  <footer v-if="variant === 'bottom'" class="container pb-5 mt-5 footer">
+  <footer v-if="props.variant === 'bottom'" class="container pb-5 mt-5 footer">
     <!-- Fixed Footer -->
     <div class="footer-fixed__wrapper">
       <!-- Leaderboard -->
@@ -145,144 +148,148 @@
     </div>
   </footer>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import BikeTagButton from '@/components/BikeTagButton'
-import { debug } from '@/common/utils'
 
-export default defineComponent({
-  name: 'BikeTagMenu',
-  components: {
-    BikeTagButton,
+<script setup name="BikeTagMenu">
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useStore } from '@/store/index.ts'
+import { debug } from '@/common/utils'
+import { useAuth0 } from '@auth0/auth0-vue'
+import { useI18n } from 'vue-i18n'
+
+// components
+import BikeTagButton from '@/components/BikeTagButton'
+
+// props
+const props = defineProps({
+  logo: {
+    type: String,
+    default: null,
   },
-  props: {
-    logo: {
-      type: String,
-      default: null,
-    },
-    variant: {
-      type: String,
-      default: 'top',
-    },
-  },
-  data() {
-    return {
-      showLogin: process.env.CONTEXT === 'dev',
-      showHeader: true,
-      lastScrollPosition: 0,
-      scrollOffset: 40,
-    }
-  },
-  computed: {
-    ...mapGetters([
-      'getGameTitle',
-      'getLogoUrl',
-      'getCurrentBikeTag',
-      'isDataInitialized',
-      'isBikeTagAmbassador',
-      'getQueuedTags',
-      'getProfile',
-    ]),
-    isShow() {
-      if (this.$route.name) {
-        debug('view::loaded', this.$route.name)
-      }
-      return this.$route.name !== 'Home'
-    },
-    currentRoute() {
-      return this.$route.name
-    },
-    getProfileImageSrc() {
-      return this.isBikeTagAmbassador
-        ? '/images/biketag-ambassador.svg'
-        : '/images/biketag-player.svg'
-    },
-  },
-  mounted() {
-    this.lastScrollPosition = window.pageYOffset
-    window.addEventListener('scroll', this.onScroll)
-  },
-  beforeUnmount() {
-    window.removeEventListener('scroll', this.onScroll)
-  },
-  methods: {
-    // Toggle if navigation is shown or hidden
-    onScroll() {
-      if (window.pageYOffset < 0) {
-        return
-      }
-      if (Math.abs(window.pageYOffset - this.lastScrollPosition) < this.scrollOffset) {
-        return
-      }
-      this.showHeader = window.pageYOffset < this.lastScrollPosition
-      this.lastScrollPosition = window.pageYOffset
-    },
-    async clearTagCache() {
-      await this.$store.dispatch('setGame', true)
-      await this.$store.dispatch('setTags', true)
-      await this.$store.dispatch('setQueuedTags', true)
-    },
-    login() {
-      this.closeCollapsible()
-      this.$router.push('/login')
-    },
-    logout() {
-      this.$store.dispatch('setProfile')
-      this.$auth.logout({
-        returnTo: window.location.origin,
-      })
-    },
-    closeCollapsible() {
-      this.$refs.buttonCollapse.setAttribute('aria-expanded', false)
-      this.$refs.navList.classList.remove('show')
-    },
-    goWorldwide() {
-      window.location = 'http://biketag.org/'
-      // this.$router.push('/worldwide')
-    },
-    goApprovePage: function () {
-      this.closeCollapsible()
-      this.$router.push('/approve')
-    },
-    goBikeTagsPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/biketags')
-    },
-    goPlayPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/play')
-    },
-    goProfile: function () {
-      this.closeCollapsible()
-      this.$router.push('/profile')
-    },
-    goAboutPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/about')
-    },
-    goLeaderboardPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/leaderboard')
-    },
-    goPlayersPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/players')
-    },
-    goHowPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/howtoplay')
-    },
-    goHomePage: function () {
-      this.closeCollapsible()
-      this.$router.push('/')
-    },
-    goBack: function () {
-      this.$router.back()
-    },
+  variant: {
+    type: String,
+    default: 'top',
   },
 })
+
+// data
+const showLogin = ref(process.env.CONTEXT === 'dev')
+const showHeader = ref(true)
+const lastScrollPosition = ref(0)
+const scrollOffset = ref(40)
+const buttonCollapse = ref(null)
+const navList = ref(null)
+const store = useStore()
+const router = useRouter()
+const route = useRoute()
+const { logout, isAuthenticated } = useAuth0()
+const { t } = useI18n()
+
+// computed
+const getGameTitle = computed(() => store.getGameTitle)
+const getLogoUrl = computed(() => store.getLogoUrl)
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const getQueuedTags = computed(() => store.getQueuedTags)
+const isShow = computed(() => {
+  if (route.name) {
+    debug('view::loaded', route.name)
+  }
+  return route.name !== 'Home'
+})
+const currentRoute = computed(() => {
+  return route.name
+})
+const getProfileImageSrc = computed(() => {
+  return isBikeTagAmbassador.value ? '/images/biketag-ambassador.svg' : '/images/biketag-player.svg'
+})
+
+// methods
+// Toggle if navigation is shown or hidden
+function onScroll() {
+  if (window.pageYOffset < 0) {
+    return
+  }
+  if (Math.abs(window.pageYOffset - lastScrollPosition.value) < scrollOffset.value) {
+    return
+  }
+  showHeader.value = window.pageYOffset < lastScrollPosition.value
+  lastScrollPosition.value = window.pageYOffset
+}
+async function clearTagCache() {
+  await store.setGame(true)
+  await store.setTags(true)
+  await store.setQueuedTags(true)
+}
+function login() {
+  closeCollapsible()
+  router.push('/login')
+}
+function logoutFunction() {
+  store.setProfile()
+  logout({
+    returnTo: window.location.origin,
+  })
+}
+function closeCollapsible() {
+  buttonCollapse.value.setAttribute('aria-expanded', false)
+  navList.value.classList.remove('show')
+}
+function goWorldwide() {
+  window.location = 'http://biketag.org/'
+  // router.push('/worldwide')
+}
+function goApprovePage() {
+  closeCollapsible()
+  router.push('/approve')
+}
+function goBikeTagsPage() {
+  closeCollapsible()
+  router.push('/biketags')
+}
+function goPlayPage() {
+  closeCollapsible()
+  router.push('/play')
+}
+function goProfile() {
+  closeCollapsible()
+  router.push('/profile')
+}
+function goAboutPage() {
+  closeCollapsible()
+  router.push('/about')
+}
+function goLeaderboardPage() {
+  closeCollapsible()
+  router.push('/leaderboard')
+}
+function goPlayersPage() {
+  closeCollapsible()
+  router.push('/players')
+}
+function goHowPage() {
+  closeCollapsible()
+  router.push('/howtoplay')
+}
+function goHomePage() {
+  closeCollapsible()
+  router.push('/')
+}
+function goBack() {
+  router.back()
+}
+
+// mounted
+onMounted(() => {
+  lastScrollPosition.value = window.pageYOffset
+  window.addEventListener('scroll', onScroll)
+})
+
+// beforeUnmount
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
+})
 </script>
+
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 

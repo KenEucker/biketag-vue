@@ -4,108 +4,84 @@
     :class="{
       expanded: expanded,
     }"
-    @click="expandClick"
   >
-    <b-spinner v-show="loading" />
-    <img v-show="!loading" :src="imgSrc" class="img-fluid" v-bind="$attrs" @load="loaded" />
-    <i v-if="expanded" class="close-button">
+    <Loading v-if="loading" v-model:active="loading" :is-full-page="true">
+      <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+    </Loading>
+    <div v-show="!loading">
+      <img
+        v-show="!expanded"
+        :src="props.source"
+        class="img-fluid"
+        v-bind="$attrs"
+        @click="expandClick"
+        @load="loaded"
+      />
+      <img
+        v-show="expanded"
+        :src="props.fullSource"
+        class="img-fluid"
+        v-bind="$attrs"
+        @load="loaded"
+      />
+    </div>
+    <i v-if="expanded" class="close-button" @click="shrinkImage">
       <img src="@/assets/images/close.svg" />
     </i>
   </div>
 </template>
-<script type="ts">
-import { defineComponent } from 'vue'
-export default defineComponent({
-  name: 'ExpandableImage',
-  props: {
-    source: {
-      type: String,
-      default: null,
-    },
-    fullSource: {
-      type: String,
-      default: null,
-    },
-  },
-  emits: ['loading', 'loaded'],
-  data() {
-    return {
-      expanded: false,
-      closeButtonRef: null,
-      loading: this.$emit('loading') && true,
-    }
-  },
-  computed: {
-    imgSrc() {
-      return this.expanded ? this.fullSource : this.source
-    }
-  },
-  watch: {
-    expanded(status) {
-      this.$nextTick(() => {
-        if (status) {
-          const closeImageMethod = this.closeImage
-          this.cloned = this.$el.cloneNode(true)
-          this.closeButtonRef = this.cloned.querySelector('.close-button')
-          this.closeButtonRef.addEventListener('click', this.closeImage)
-          // const clonedImg = this.cloned.querySelector('img')
-          // console.log({clonedImg})
-          // clonedImg.addEventListener('click', (e) => e.stopPropagation())
-          this.cloned.addEventListener('click', function doCloseImageBackground(event) {
-            if(event.target==this) {
-              closeImageMethod(event)
-            }
-          })
-          document.addEventListener('keydown', this.doCloseImage)
-          document.addEventListener('backbutton', this.doCloseImage)
-          document.body.appendChild(this.cloned)
-          document.body.style.overflow = 'hidden'
-          // this.cloned.addEventListener('touchmove', this.freezeVp, false)
-          setTimeout(() => {
-            this.cloned.style.opacity = 1
-          }, 0)
-        } else {
-          this.cloned.style.opacity = 0
-          // this.cloned.removeEventListener('touchmove', this.freezeVp, false)
-          setTimeout(() => {
-            this.closeButtonRef.removeEventListener('click', this.closeImage)
-            this.cloned.remove()
-            this.cloned = null
-            this.closeButtonRef = null
-            document.body.style.overflow = 'auto'
-          }, 250)
-        }
-      })
-    },
-  },
 
-  methods: {
-    expandClick() {
-      this.expanded = true
-    },
-    doCloseImage(event) {
-      if (event.key.toLowerCase() == 'escape') {
-        this.closeImage(event)
-      }
-    },
-    closeImage(event) {
-      this.expanded = false
-      document.removeEventListener('keydown', this.doCloseImage)
-      document.removeEventListener('backbutton', this.doCloseImage)
-      document.addEventListener('gesturestart', function() { /* */ });
-      event.stopPropagation()
-    },
-    freezeVp(e) {
-      e.preventDefault()
-    },
-    loaded() {
-      this.$emit('loaded')
-      this.loading = false
-    },
+<script setup name="ExpandableImage" type="ts">
+import { ref, watch } from 'vue'
+
+// components
+import Loading from 'vue-loading-overlay'
+
+// props
+const props = defineProps({
+  source: {
+    type: String,
+    default: null,
   },
-  // template: '#expandable-image',
+  fullSource: {
+    type: String,
+    default: null,
+  },
+})
+
+// data
+const emit = defineEmits(['loading', 'loaded'])
+const expanded = ref(false)
+const loading = ref(emit('loading') && true)
+
+// methods
+const expandClick = () => expanded.value = true
+const shrinkImage = () => expanded.value = false
+const doCloseImage = event => {
+  const key = event.key.toLowerCase()
+  if ( key === 'escape' || key === 'backspace') {
+    shrinkImage()
+  }
+}
+const loaded = () => {
+  emit('loaded')
+  loading.value = false
+}
+
+// watch
+watch(
+  () => expanded.value,
+  (val) => {
+    if (!val) {
+      document.removeEventListener('keydown', doCloseImage)
+      document.removeEventListener('backbutton', doCloseImage)
+    } else {
+      document.addEventListener('keydown', doCloseImage)
+      document.addEventListener('backbutton', doCloseImage)
+  }
 })
 </script>
+
 <style scoped lang="scss">
 .close-button {
   position: fixed;
@@ -132,7 +108,7 @@ export default defineComponent({
 }
 
 body {
-  .expandable-image.expanded {
+  .expanded {
     position: fixed;
     z-index: 99999;
     top: 0;
@@ -142,7 +118,8 @@ body {
     background: rgb(0 0 0 / 90%);
     display: flex;
     align-items: center;
-    opacity: 0;
+    justify-content: center;
+    opacity: 1;
     padding-bottom: 0 !important;
     cursor: zoom-out;
 
@@ -150,7 +127,7 @@ body {
       z-index: 999999;
       max-height: 100%;
       object-fit: contain;
-      margin: 0 auto;
+      margin: 0;
     }
   }
 

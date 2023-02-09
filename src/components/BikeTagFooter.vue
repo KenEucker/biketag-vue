@@ -1,236 +1,243 @@
 <template>
-  <div :class="`${variant} button-group`">
-    <div v-if="variant === 'current'">
-      <!-- Left Button -->
-      <bike-tag-button class="button-group__left" :text="$t('menu.map')" @click="goMapPage" />
-      <!-- Middle Button -->
-      <bike-tag-button
-        id="hint"
-        ref="hint"
-        class="button-group__middle"
-        :text="$t('menu.hint')"
-        variant="bold"
-        @click="showHint"
-      />
-      <b-popover hide-header target="hint" triggers="click" placement="top">
-        <img :src="hintIcon" class="popover__hint-icon" />
-        <p ref="mysteryHint" class="popover__hint-text"></p>
-        <img :src="closeRounded" class="popover__close"  @click="closePopover"/>
-      </b-popover>
-      <!-- Right Button -->
-      <bike-tag-button
-        v-if="getQueuedTags?.length"
-        class="button-group__right"
-        :text="$t('menu.queue')"
-        @click="goRoundPage"
-      />
-      <bike-tag-button
-        v-else
-        class="button-group__right"
-        :text="$t('menu.last')"
-        @click="$emit('previous')"
-      />
+  <div>
+    <div ref="root" :class="[props.variant, 'button-group']">
+      <div v-if="props.variant === 'current'">
+        <!-- Left Button -->
+        <bike-tag-button class="button-group__left" :text="t('menu.map')" @click="goMapPage" />
+        <!-- Middle Button -->
+        <bike-tag-button
+          id="hint"
+          ref="hint"
+          class="button-group__middle"
+          :text="t('menu.hint')"
+          variant="bold"
+          @click="showHint"
+        />
+        <b-popover hide-header target="hint" triggers="click" placement="top">
+          <img :src="hintIcon" class="popover__hint-icon" />
+          <p ref="mysteryHint" class="popover__hint-text"></p>
+          <img :src="closeRounded" class="popover__close" @click="closePopover" />
+        </b-popover>
+        <!-- Right Button -->
+        <bike-tag-button
+          v-if="getQueuedTags?.length"
+          class="button-group__right"
+          :text="t('menu.queue')"
+          @click="goRoundPage"
+        />
+        <bike-tag-button
+          v-else
+          class="button-group__right"
+          :text="t('menu.last')"
+          @click="emit('previous')"
+        />
+      </div>
+      <div v-if="props.variant === 'single'">
+        <!-- Left Button -->
+        <bike-tag-button
+          class="button-group__left"
+          :text="t('menu.previous')"
+          @click="emit('previous')"
+        />
+        <!-- Middle Button -->
+        <bike-tag-button
+          class="tag-screen-download__button"
+          variant="bold"
+          :text="t('menu.download')"
+          @click="showCamera = true"
+        />
+        <b-modal
+          v-model="showCamera"
+          class="camera-modal"
+          title="BikeTag Camera"
+          hide-footer
+          hide-header
+        >
+          <bike-tag-camera :tag="props.tag" />
+        </b-modal>
+        <!-- Right Button -->
+        <bike-tag-button class="button-group__right" :text="t('menu.next')" @click="emit('next')" />
+      </div>
     </div>
-    <div v-if="variant === 'single'">
-      <!-- Left Button -->
-      <bike-tag-button
-        class="button-group__left"
-        :text="$t('menu.previous')"
-        @click="$emit('previous')"
-      />
-      <!-- Middle Button -->
-      <bike-tag-button
-        class="tag-screen-download__button"
-        variant="bold"
-        :text="$t('menu.download')"
-        @click="showCamera = true"
-      />
-      <b-modal
-        v-model="showCamera"
-        class="camera-modal"
-        title="BikeTag Camera"
-        hide-footer
-        hide-header
-      >
-        <bike-tag-camera :tag="tag" />
-      </b-modal>
-      <!-- Right Button -->
-      <bike-tag-button class="button-group__right" :text="$t('menu.next')" @click="$emit('next')" />
+    <!-- World -->
+    <div class="button-reset-container">
+      <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
+        <img
+          class="footer-fixed_image"
+          src="@/assets/images/npworld.png"
+          alt="BikeTag World Wide"
+        />
+      </bike-tag-button>
     </div>
-  </div>
-  <!-- World -->
-  <div class="button-reset-container">
-    <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
-      <img class="footer-fixed_image" src="@/assets/images/npworld.png" alt="BikeTag World Wide" />
-    </bike-tag-button>
-  </div>
-  <div class="mt-5 mb-5 foss-container">
-    <div class="row">
-      <a href="https://github.com/KenEucker/biketag-vue">
-        <img src="@/assets/images/github-logo.png" alt="GitHub" />
-        <img src="@/assets/images/github-mark.png" alt="GitHub Mark" />
-      </a>
-      <a href="https://www.netlify.com/">
-        <img src="@/assets/images/netlify-logo-dark.svg" alt="Netlify" />
-      </a>
-    </div>
-    <div class="mt-2 row">
-      <i>
-        BikeTag is an entirely free and open-source project that is on GitHub for open collaboration
-        and graciously hosted by Netlify on their free open-source plan.
-      </i>
+    <div class="mt-5 mb-5 foss-container">
+      <div class="row">
+        <a href="https://github.com/KenEucker/biketag-vue">
+          <img src="@/assets/images/github-logo.png" alt="GitHub" />
+          <img src="@/assets/images/github-mark.png" alt="GitHub Mark" />
+        </a>
+        <a href="https://www.netlify.com/">
+          <img src="@/assets/images/netlify-logo-dark.svg" alt="Netlify" />
+        </a>
+      </div>
+      <div class="mt-2 row">
+        <i>
+          BikeTag is an entirely free and open-source project that is on GitHub for open
+          collaboration and graciously hosted by Netlify on their free open-source plan.
+        </i>
+      </div>
     </div>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import BikeTagButton from '@/components/BikeTagButton.vue'
-import BikeTagCamera from '@/components/BikeTagCamera.vue'
+
+<script setup name="BikeTagFooter">
+import { ref, computed, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from '@/store/index.ts'
 import HintIcon from '@/assets/images/hint-icon.svg'
 import CloseRounded from '@/assets/images/close-rounded.svg'
+import { useI18n } from 'vue-i18n'
 
-export default defineComponent({
-  name: 'BikeTagFooter',
-  components: {
-    BikeTagButton,
-    BikeTagCamera,
+// componets
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagCamera from '@/components/BikeTagCamera.vue'
+
+// props
+const props = defineProps({
+  variant: {
+    type: String,
+    default: 'current',
   },
-  props: {
-    variant: {
-      type: String,
-      default: 'current',
-    },
-    tag: {
-      type: Object,
-      default: () => {
-        return {}
-      },
-    },
-  },
-  refs: ['mysteryHint', 'hint'],
-  emits: ['next', 'previous'],
-  data() {
-    return {
-      showCamera: false,
-      characters: [
-        'a',
-        'b',
-        'c',
-        'd',
-        'e',
-        'f',
-        'g',
-        'h',
-        'i',
-        'j',
-        'k',
-        'l',
-        'm',
-        'n',
-        'o',
-        'p',
-        'q',
-        'r',
-        's',
-        't',
-        'u',
-        'v',
-        'x',
-        'y',
-        'x',
-        '#',
-        '%',
-        '&',
-        '-',
-        '+',
-        '_',
-        '?',
-        '/',
-        '\\',
-        '=',
-      ],
-      timeout: 5,
-      iterations: 10,
-      hintIcon: HintIcon,
-      closeRounded: CloseRounded,
-      showPopover: false,
-    }
-  },
-  computed: {
-    ...mapGetters(['getCurrentBikeTag', 'getCurrentHint', 'getQueuedTags']),
-  },
-  beforeUnmount() {
-    document.querySelector('.popover')?.remove()
-  },
-  methods: {
-    goAboutPage() {
-      this.$router.push('/about')
-    },
-    goLeaderboardPage() {
-      this.$router.push('/leaderboard')
-    },
-    goPlayersPage() {
-      this.$router.push('/players')
-    },
-    goMapPage() {
-      this.$router.push('/map')
-    },
-    goRoundPage() {
-      this.$router.push('/round')
-    },
-    goWorldwide() {
-      window.location = 'http://biketag.org/'
-      // this.$router.push('/worldwide')
-    },
-    sleep(time) {
-      return new Promise((resolve) => setTimeout(resolve, time))
-    },
-    getRandomInteger(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min
-    },
-    randomCharacter() {
-      return this.characters[this.getRandomInteger(0, this.characters.length - 1)]
-    },
-    showHint() {
-      setTimeout(async () => {
-        const popover = document.querySelector('.popover')
-        if (popover) {
-          popover.classList.add('popover__wrapper')
-          const hint = this.getCurrentHint
-          this.$refs.mysteryHint.innerText = ''
-          window.scrollBy({ top: 1 })
-          for (let i of hint) {
-            let j = 0
-            if (document.querySelector('.popover__wrapper')) {
-              while (j < this.iterations) {
-                this.$refs.mysteryHint.innerText = `${
-                  this.$refs.mysteryHint.innerText
-                }${this.randomCharacter()}`
-                await this.sleep(this.timeout)
-                this.$refs.mysteryHint.innerText = this.$refs.mysteryHint.innerText.slice(
-                  0,
-                  this.$refs.mysteryHint.innerText.length - 1
-                )
-                j++
-              }
-            } else {
-              this.$refs.mysteryHint.innerText = ''
-              break
-            }
-            this.$refs.mysteryHint.innerText = `${this.$refs.mysteryHint.innerText}${i}`
-          }
-        }
-      }, 100)
-    },
-    closePopover() {
-      document.getElementById('hint').click()
-      // console.log(this.$refs.hint)
-      // this.$refs.hint.click()
-    },
+  tag: {
+    type: Object,
+    default: () => ({}),
   },
 })
+
+// data
+const emit = defineEmits(['next', 'previous'])
+const root = ref(null)
+const showCamera = ref(false)
+const characters = [
+  'a',
+  'b',
+  'c',
+  'd',
+  'e',
+  'f',
+  'g',
+  'h',
+  'i',
+  'j',
+  'k',
+  'l',
+  'm',
+  'n',
+  'o',
+  'p',
+  'q',
+  'r',
+  's',
+  't',
+  'u',
+  'v',
+  'x',
+  'y',
+  'x',
+  '#',
+  '%',
+  '&',
+  '-',
+  '+',
+  '_',
+  '?',
+  '/',
+  '\\',
+  '=',
+]
+const timeout = ref(5)
+const iterations = ref(10)
+const hintIcon = HintIcon
+const closeRounded = CloseRounded
+const mysteryHint = ref(null)
+const hint = ref(null)
+const store = useStore()
+const router = useRouter()
+const { t } = useI18n()
+
+// computed
+const getCurrentHint = computed(() => store.getCurrentHint)
+const getQueuedTags = computed(() => store.getQueuedTags)
+
+// methods
+// const goAboutPage = () => {
+//   router.push('/about')
+// }
+// const goLeaderboardPage = () => {
+//   router.push('/leaderboard')
+// }
+// const goPlayersPage = () => {
+//   router.push('/players')
+// }
+const goMapPage = () => {
+  router.push('/map')
+}
+const goRoundPage = () => {
+  router.push('/round')
+}
+const goWorldwide = () => {
+  window.location = 'http://biketag.org/'
+  // router.push('/worldwide')
+}
+const sleep = (time) => {
+  return new Promise((resolve) => setTimeout(resolve, time))
+}
+const getRandomInteger = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+const randomCharacter = () => {
+  return characters[getRandomInteger(0, characters.length - 1)]
+}
+const showHint = () => {
+  setTimeout(async () => {
+    const popover = document.querySelector('.popover')
+    if (popover) {
+      popover.classList.add('popover__wrapper')
+      const hint = getCurrentHint.value
+      mysteryHint.value.innerText = ''
+      window.scrollBy({ top: 1 })
+      for (let i of hint) {
+        let j = 0
+        if (document.querySelector('.popover__wrapper')) {
+          while (j < iterations.value) {
+            mysteryHint.value.innerText = `${mysteryHint.value.innerText}${randomCharacter()}`
+            await sleep(timeout.value)
+            mysteryHint.value.innerText = mysteryHint.value.innerText.slice(
+              0,
+              mysteryHint.value.innerText.length - 1
+            )
+            j++
+          }
+        } else {
+          mysteryHint.value.innerText = ''
+          break
+        }
+        mysteryHint.value.innerText = `${mysteryHint.value.innerText}${i}`
+      }
+    }
+  }, 100)
+}
+const closePopover = () => {
+  hint.value.click()
+  // console.log(hint.value)
+  // hint.value.click()
+}
+
+// before UnMount
+onBeforeUnmount(() => {
+  document.querySelector('.popover')?.remove()
+})
 </script>
+
 <style lang="scss">
 @import '../assets/styles/style';
 

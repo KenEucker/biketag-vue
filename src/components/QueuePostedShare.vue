@@ -117,126 +117,118 @@
     </div>
   </b-container>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import Markdown from 'vue3-markdown-it'
+
+<script setup name="QueueSubmit">
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from '@/store/index.ts'
 import { Settings } from '@/common/types'
+
+// components
+import Markdown from 'vue3-markdown-it'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useI18n } from 'vue-i18n'
 
-export default defineComponent({
-  name: 'QueueSubmit',
-  components: {
-    Markdown,
-    BikeTagButton,
-  },
-  emits: ['submit'],
-  data() {
-    return {
-      foundImagePreview: '',
-      mysteryImagePreview: '',
-      postToReddit: false,
-      postToTwitter: false,
-      showReddit: false,
-      showTwitter: false,
-      showInstagram: false,
-    }
-  },
-  computed: {
-    ...mapGetters([
-      'getQueue',
-      'getPlayerTag',
-      'getCurrentBikeTag',
-      'getPlayerId',
-      'getGameName',
-      'getGame',
-    ]),
-    supportsReddit() {
-      return !!this.getGame?.settings[Settings.SupportsReddit]
-    },
-    supportsTwitter() {
-      return !!this.getGame?.settings[Settings.SupportsTwitter]
-    },
-    supportsInstagram() {
-      return !!this.getGame?.settings[Settings.SupportsInstagram]
-    },
-    redditPostText() {
-      return `
-[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://${this.getGameName}.biketag.org/#/${this.getPlayerTag.tagnumber})
+// data
+const emit = defineEmits(['submit'])
+const postToReddit = ref(false)
+const postToTwitter = ref(false)
+const postToInstagram = ref(false)
+const showReddit = ref(false)
+const showTwitter = ref(false)
+const showInstagram = ref(false)
+const submitTag = ref(null)
+const store = useStore()
+const router = useRouter()
+const { t } = useI18n()
 
-Credit goes to ${this.getPlayerTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
+// computed
+const getPlayerTag = computed(() => store.getPlayerTag)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getPlayerId = computed(() => store.getPlayerId)
+const getGameName = computed(() => store.getGameName)
+const getGame = computed(() => store.getGame)
+const supportsReddit = computed(() => !!getGame.value?.settings[Settings.SupportsReddit])
+const supportsTwitter = computed(() => !!getGame.value?.settings[Settings.SupportsTwitter])
+const supportsInstagram = computed(() => !!getGame.value?.settings[Settings.SupportsInstagram])
+const redditPostText = computed(
+  () => `
+[#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://${getGameName.value}.biketag.org/#/${getPlayerTag.value.tagnumber})
 
-"[${this.getPlayerTag.foundLocation}](https://${this.getGameName}.biketag.org/#/${this.getCurrentBikeTag.tagnumber})"
+Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurrentBikeTag.value.tagnumber}](${getCurrentBikeTag.value.discussionUrl}) that ${getCurrentBikeTag.value.mysteryPlayer} posted!
 
-See all BikeTags and more, for ${this.getGameName}:
+"[${getPlayerTag.value.foundLocation}](https://${getGameName.value}.biketag.org/#/${getCurrentBikeTag.value.tagnumber})"
 
-[${this.getGameName}.biketag.org](https://${this.getGameName}.biketag.org) | [Leaderboard](https://${this.getGameName}.biketag.org/leaderboard) | [Rules](https://${this.getGameName}.biketag.org/#howto)
-        `
-    },
-    twitterPostText() {
-      return `
-  Seattle BikeTag!
-  
-  This is bike tag number ${this.getPlayerTag.tagnumber} by ${this.getPlayerTag.foundPlayer}.
-  Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
-  
-  #SeattleBikeTag #SeaBikes #BikeSeattle`
-    },
-    instgramPostText() {
-      return `
-[#${this.getPlayerTag.tagnumber} tag by ${this.getPlayerTag.foundPlayer}](https://${this.getGameName}biketag.org/#/${this.getPlayerTag.tagnumber})
+See all BikeTags and more, for ${getGameName.value}:
 
-Credit goes to ${this.getPlayerTag.foundPlayer} for finding BikeTag [#${this.getCurrentBikeTag.tagnumber}](${this.getCurrentBikeTag.discussionUrl}) that ${this.getCurrentBikeTag.mysteryPlayer} posted!
+[${getGameName.value}.biketag.org](https://${getGameName.value}.biketag.org) | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/#howto)
+    `
+)
+const twitterPostText = computed(
+  () => `
+Seattle BikeTag!
 
-"[${this.getPlayerTag.foundLocation}](https://${this.getGameName}biketag.org/#/${this.getCurrentBikeTag.tagnumber})"
+This is bike tag number ${getPlayerTag.value.tagnumber} by ${getPlayerTag.value.foundPlayer}.
+Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
 
-See all BikeTags and more, for ${this.getGameName}:
+#SeattleBikeTag #SeaBikes #BikeSeattle`
+)
+// const instgramPostText = computed(
+//   () => `
+// [#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://${getGameName.value}biketag.org/#/${getPlayerTag.value.tagnumber})
 
-[${this.getGameName}.biketag.org](https://${this.getGameName}.biketag.org) | [Leaderboard](https://${this.getGameName}.biketag.org/leaderboard) | [Rules](https://${this.getGameName}.biketag.org/#howto)
-        `
-    },
-  },
-  mounted() {
-    this.postToReddit = this.showReddit = this.supportsReddit
-    this.postToTwitter = this.showTwitter = this.supportsTwitter
-    this.postToInstagram = this.showInstagram = this.supportsInstagram
-  },
-  methods: {
-    copyTabContents(text) {
-      navigator.clipboard.writeText(text)
-    },
-    goViewRound() {
-      this.$router.push('/round')
-    },
-    onSubmit() {
-      const formAction = this.$refs.submitTag.getAttribute('action')
-      const formData = new FormData(this.$refs.submitTag)
-      const submittedTag = this.getPlayerTag
+// Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurrentBikeTag.value.tagnumber}](${getCurrentBikeTag.value.discussionUrl}) that ${getCurrentBikeTag.value.mysteryPlayer} posted!
 
-      submittedTag.discussionUrl = JSON.stringify({
-        postToReddit: this.postToReddit,
-      })
-      submittedTag.mentionUrl = JSON.stringify({
-        postToTwitter: this.postToTwitter,
-      })
-      submittedTag.shareUrl = JSON.stringify({
-        postToInstagram: this.postToInstagram,
-      })
+// "[${getPlayerTag.value.foundLocation}](https://${getGameName.value}biketag.org/#/${getCurrentBikeTag.value.tagnumber})"
 
-      formData.append('discussionUrl', submittedTag.discussionUrl)
-      formData.append('mentionUrl', submittedTag.mentionUrl)
-      // formData.append('shareUrl', submittedTag.shareUrl)
+// See all BikeTags and more, for ${getGameName.value}:
 
-      this.$emit('submit', {
-        formAction,
-        formData,
-        tag: submittedTag,
-        storeAction: 'postNewBikeTag',
-      })
-    },
-  },
+// [${getGameName.value}.biketag.org](https://${getGameName.value}.biketag.org) | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/#howto)
+//     `
+// )
+
+// methods
+function copyTabContents(text) {
+  navigator.clipboard.writeText(text)
+}
+function goViewRound() {
+  router.push('/round')
+}
+function onSubmit() {
+  const formAction = submitTag.value.getAttribute('action')
+  const formData = new FormData(submitTag.value)
+  const submittedTag = getPlayerTag.value
+
+  submittedTag.discussionUrl = JSON.stringify({
+    postToReddit: postToReddit.value,
+  })
+  submittedTag.mentionUrl = JSON.stringify({
+    postToTwitter: postToTwitter.value,
+  })
+  submittedTag.shareUrl = JSON.stringify({
+    postToInstagram: postToInstagram.value,
+  })
+
+  formData.append('discussionUrl', submittedTag.discussionUrl)
+  formData.append('mentionUrl', submittedTag.mentionUrl)
+  // formData.append('shareUrl', submittedTag.shareUrl)
+
+  emit('submit', {
+    formAction,
+    formData,
+    tag: submittedTag,
+    storeAction: 'postNewBikeTag',
+  })
+}
+
+// mounted
+onMounted(() => {
+  postToReddit.value = showReddit.value = supportsReddit.value
+  postToTwitter.value = showTwitter.value = supportsTwitter.value
+  postToInstagram.value = showInstagram.value = supportsInstagram.value
 })
 </script>
+
 <style lang="scss">
 .queue-posted-share {
   .nav-tabs {

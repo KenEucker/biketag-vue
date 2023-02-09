@@ -1,12 +1,11 @@
 import App from './App.vue'
 import { createApp } from 'vue'
 import router from './router'
-import { store } from './store'
+import { store } from './store/'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import mitt from 'mitt'
-import { Auth0Plugin } from './auth'
-import i18nPlugin from './i18n'
-import VueToast from 'vue-toast-notification'
+import { useToast } from 'vue-toast-notification'
+import i18n from '@/i18n'
 import VueCookies from 'vue3-cookies'
 import VueGoogleMaps from '@fawmi/vue-google-maps'
 
@@ -25,9 +24,8 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 import 'highlight.js/styles/monokai.css'
 import { debug } from './common/utils'
 import { createHead } from '@vueuse/head'
-import Bugsnag from '@bugsnag/js'
-import BugsnagPluginVue from '@bugsnag/plugin-vue'
 
+import { createAuth0 } from '@auth0/auth0-vue'
 class BikeTagApp {
   protected emitter
   protected app
@@ -44,7 +42,7 @@ class BikeTagApp {
     this.app.use(createHead())
   }
   internationalization() {
-    this.app.use(i18nPlugin)
+    this.app.use(i18n)
   }
   cookies() {
     this.app.use(VueCookies)
@@ -54,36 +52,19 @@ class BikeTagApp {
   }
   authentication() {
     if (process.env.A_DOMAIN?.length) {
-      const auth0Opts = {
-        domain: process.env.A_DOMAIN,
-        client_id: process.env.A_CID,
-        audience: process.env.A_AUDIENCE,
-        onRedirectCallback: (appState: any) => {
-          router.push(
-            appState && appState.targetUrl ? appState.targetUrl : window.location.pathname
-          )
-        },
-      }
       debug('init::authentication')
-      this.app.use(Auth0Plugin, auth0Opts)
-    } else {
-      this.app.config.globalProperties.$auth = () => () => null
+      const auth = createAuth0({
+        domain: process.env.A_DOMAIN as string,
+        clientId: process.env.A_CID as string,
+        authorizationParams: {
+          redirect_uri: window.location.origin,
+        },
+      })
+      this.app.use(auth)
     }
   }
-  bugs() {
-    Bugsnag.start({
-      apiKey: process.env.B_AKEY ?? '',
-      plugins: [new BugsnagPluginVue()],
-    })
-    const bugsPlugin = Bugsnag.getPlugin('vue')
-
-    // eslint-disable-next-line
-    // @ts-ignore
-    this.app.use(bugsPlugin)
-    debug('init::bugs', bugsPlugin)
-  }
   components() {
-    this.app.use(VueToast)
+    this.app.provide('toast', useToast())
     this.app.use(BootstrapVue3)
     this.app.use(Markdown)
     this.app.use(VueIframe)
@@ -101,7 +82,6 @@ class BikeTagApp {
 
   run() {
     this.init()
-    // this.bugs()
     this.authentication()
     this.cookies()
     this.internationalization()

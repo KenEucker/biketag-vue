@@ -1,11 +1,8 @@
 {
   "editor.formatOnSave": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[vue]": {
-    "editor.defaultFormatter": "Vue.volar"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
+  "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
   },
   "i18n-ally.localesPaths": ["src/i18n", "src/i18n/locales"]
 }

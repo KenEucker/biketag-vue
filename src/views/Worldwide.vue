@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <vue-iframe
     src="https://biketag.org"
@@ -9,18 +10,14 @@
   />
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+<script setup name="WorldwideView">
+import { ref } from 'vue'
 
-export default defineComponent({
-  name: 'WorldwideView',
-  data: () => ({
-    myIframe: null,
-  }),
-  methods: {
-    onLoad(frame) {
-      this.myIframe = frame.contentWindow
-    },
-  },
-})
+// data
+const myIframe = ref(null)
+
+// methods
+function onLoad(frame) {
+  myIframe.value = frame.contentWindow
+}
 </script>

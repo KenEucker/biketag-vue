@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
     <div class="about d-flex justify-content-center">
@@ -50,31 +51,23 @@
   </div>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+<script setup name="AboutView">
+import StyledHr from '@/assets/images/hr.svg'
+import Pin from '@/assets/images/pin.svg'
+
+// components
 import HtmlContent from '@/components/HtmlContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagGames from '@/components/BikeTagGames.vue'
-import StyledHr from '@/assets/images/hr.svg'
-import Pin from '@/assets/images/pin.svg'
 import BikeTagMap from '@/components/BikeTagMap.vue'
+import { useI18n } from 'vue-i18n'
 
-export default defineComponent({
-  name: 'AboutView',
-  components: {
-    HtmlContent,
-    BikeTagButton,
-    BikeTagGames,
-    BikeTagMap,
-  },
-  data() {
-    return {
-      styledHr: StyledHr,
-      pin: Pin,
-    }
-  },
-})
+// data
+const styledHr = StyledHr
+const pin = Pin
+const { t } = useI18n()
 </script>
+
 <style lang="scss">
 .white-bck {
   background: white !important;
