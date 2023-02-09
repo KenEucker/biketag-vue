@@ -120,8 +120,6 @@
 
 <script setup name="QueueFoundTag">
 import {
-  defineProps,
-  defineEmits,
   ref,
   inject,
   computed,

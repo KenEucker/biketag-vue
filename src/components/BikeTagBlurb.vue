@@ -21,7 +21,6 @@
 </template>
 
 <script setup name="BikeTagBlurb">
-import { defineProps } from 'vue'
 import { useRouter } from 'vue-router'
 import StyledHr from '@/assets/images/hr.svg'
 

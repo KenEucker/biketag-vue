@@ -10,7 +10,7 @@
 </template>
 
 <script setup name="ServiceWorker">
-import { defineProps, /* defineEmits, */ computed } from 'vue'
+import { computed } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { debug } from '@/common/utils'

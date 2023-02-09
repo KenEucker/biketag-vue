@@ -24,8 +24,6 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 import 'highlight.js/styles/monokai.css'
 import { debug } from './common/utils'
 import { createHead } from '@vueuse/head'
-import Bugsnag from '@bugsnag/js'
-import BugsnagPluginVue from '@bugsnag/plugin-vue'
 
 import { createAuth0 } from '@auth0/auth0-vue'
 class BikeTagApp {
@@ -65,18 +63,6 @@ class BikeTagApp {
       this.app.use(auth)
     }
   }
-  bugs() {
-    Bugsnag.start({
-      apiKey: process.env.B_AKEY ?? '',
-      plugins: [new BugsnagPluginVue()],
-    })
-    const bugsPlugin = Bugsnag.getPlugin('vue')
-
-    // eslint-disable-next-line
-    // @ts-ignore
-    this.app.use(bugsPlugin)
-    debug('init::bugs', bugsPlugin)
-  }
   components() {
     this.app.provide('toast', useToast())
     this.app.use(BootstrapVue3)
@@ -96,7 +82,6 @@ class BikeTagApp {
 
   run() {
     this.init()
-    // this.bugs()
     this.authentication()
     this.cookies()
     this.internationalization()

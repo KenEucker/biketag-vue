@@ -13,7 +13,7 @@
 </template>
 
 <script setup name="BikeTagButton">
-import { defineProps, computed } from 'vue'
+import { computed } from 'vue'
 import { variants } from '@/common/bikeTagButton_variants.ts'
 
 // props

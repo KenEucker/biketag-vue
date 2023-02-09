@@ -94,7 +94,7 @@
 </template>
 
 <script setup name="QueueMysteryTag">
-import { defineProps, defineEmits, ref, inject, computed, onMounted } from 'vue'
+import { ref, inject, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { ordinalSuffixOf } from '@/common/utils'

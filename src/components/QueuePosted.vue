@@ -1,63 +1,5 @@
-<template>
-  <b-container class="queue-posted">
-    <h3 class="queue-title">{{ $t('pages.round.posted_title') }}</h3>
-    <p class="queue-text">{{ $t('pages.round.posted_text') }}</p>
-    <div class="mt-3">
-      <bike-tag-button variant="medium" @click="goViewRound">
-        {{ $t('pages.round.joined_button') }} #{{ getCurrentBikeTag?.tagnumber }}
-      </bike-tag-button>
-    </div>
-    <form
-      ref="submitTagRef"
-      name="post-new-biketag"
-      action="post-new-biketag"
-      method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="bot-field"
-    >
-      <input type="hidden" name="form-name" value="post-new-biketag" />
-      <input type="hidden" name="playerId" :value="getPlayerId" />
-      <fieldset v-if="supportsReddit">
-        <label for="postToReddit">{{ $t('pages.round.post_to_reddit') }}</label>
-        <input
-          v-model="postToReddit"
-          name="postToReddit"
-          type="checkbox"
-          @click="showReddit = !showReddit"
-        />
-      </fieldset>
-      <fieldset v-if="supportsTwitter">
-        <label for="postToTwitter">{{ $t('pages.round.post_to_twitter') }}</label>
-        <input
-          v-model="postToTwitter"
-          name="postToTwitter"
-          type="checkbox"
-          @click="showTwitter = !showTwitter"
-        />
-      </fieldset>
-      <fieldset v-if="supportsInstagram">
-        <label for="postToInstagram">{{ $t('pages.round.post_to_instagram') }}</label>
-        <input
-          v-model="postToInstagram"
-          name="postToInstagram"
-          type="checkbox"
-          @click="showInstagram = !showInstagram"
-        />
-      </fieldset>
-      <!-- <div class="mt-3 align-center">
-        <bike-tag-button
-          variant="medium"
-          class="mt-2 mb-2 border-0"
-          :text="$t('pages.round.post_new_tag')"
-          @click="onSubmit"
-        />
-      </div> -->
-    </form>
-  </b-container>
-</template>
-
 <script setup name="QueuePosted">
-import { defineEmits, ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { debug } from '@/common/utils'
@@ -130,3 +72,61 @@ onMounted(() => {
   }
 })
 </script>
+
+<template>
+  <b-container class="queue-posted">
+    <h3 class="queue-title">{{ $t('pages.round.posted_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.round.posted_text') }}</p>
+    <div class="mt-3">
+      <bike-tag-button variant="medium" @click="goViewRound">
+        {{ $t('pages.round.joined_button') }} #{{ getCurrentBikeTag?.tagnumber }}
+      </bike-tag-button>
+    </div>
+    <form
+      ref="submitTagRef"
+      name="post-new-biketag"
+      action="post-new-biketag"
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+    >
+      <input type="hidden" name="form-name" value="post-new-biketag" />
+      <input type="hidden" name="playerId" :value="getPlayerId" />
+      <fieldset v-if="supportsReddit">
+        <label for="postToReddit">{{ $t('pages.round.post_to_reddit') }}</label>
+        <input
+          v-model="postToReddit"
+          name="postToReddit"
+          type="checkbox"
+          @click="showReddit = !showReddit"
+        />
+      </fieldset>
+      <fieldset v-if="supportsTwitter">
+        <label for="postToTwitter">{{ $t('pages.round.post_to_twitter') }}</label>
+        <input
+          v-model="postToTwitter"
+          name="postToTwitter"
+          type="checkbox"
+          @click="showTwitter = !showTwitter"
+        />
+      </fieldset>
+      <fieldset v-if="supportsInstagram">
+        <label for="postToInstagram">{{ $t('pages.round.post_to_instagram') }}</label>
+        <input
+          v-model="postToInstagram"
+          name="postToInstagram"
+          type="checkbox"
+          @click="showInstagram = !showInstagram"
+        />
+      </fieldset>
+      <!-- <div class="mt-3 align-center">
+        <bike-tag-button
+          variant="medium"
+          class="mt-2 mb-2 border-0"
+          :text="$t('pages.round.post_new_tag')"
+          @click="onSubmit"
+        />
+      </div> -->
+    </form>
+  </b-container>
+</template>

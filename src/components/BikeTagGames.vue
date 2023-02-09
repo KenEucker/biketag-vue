@@ -15,7 +15,8 @@
 </template>
 
 <script setup name="BikeTagGames">
-import { defineProps, computed } from 'vue'
+import { computed } from 'vue'
+
 import StyledHr from '@/assets/images/hr.svg'
 import { useStore } from '@/store/index.ts'
 import { useI18n } from 'vue-i18n'

@@ -5,7 +5,7 @@
 </template>
 
 <script setup name="HtmlContent">
-import { defineProps, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 // props

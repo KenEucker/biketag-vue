@@ -62,7 +62,11 @@
     <!-- World -->
     <div class="button-reset-container">
       <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
-        <img class="footer-fixed_image" src="@/assets/images/npworld.png" alt="BikeTag World Wide" />
+        <img
+          class="footer-fixed_image"
+          src="@/assets/images/npworld.png"
+          alt="BikeTag World Wide"
+        />
       </bike-tag-button>
     </div>
     <div class="mt-5 mb-5 foss-container">
@@ -77,8 +81,8 @@
       </div>
       <div class="mt-2 row">
         <i>
-          BikeTag is an entirely free and open-source project that is on GitHub for open collaboration
-          and graciously hosted by Netlify on their free open-source plan.
+          BikeTag is an entirely free and open-source project that is on GitHub for open
+          collaboration and graciously hosted by Netlify on their free open-source plan.
         </i>
       </div>
     </div>
@@ -86,7 +90,7 @@
 </template>
 
 <script setup name="BikeTagFooter">
-import { defineProps, defineEmits, ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import HintIcon from '@/assets/images/hint-icon.svg'
