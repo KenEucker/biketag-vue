@@ -27,7 +27,7 @@ module.exports = {
   plugins: ['@typescript-eslint'],
 
   rules: {
-    'vue/script-setup-uses-vars': 'errors',
+    'vue/script-setup-uses-vars': 'error',
 
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',

@@ -12,7 +12,6 @@
 <script setup name="BikeTagLoader">
 import { computed } from 'vue'
 
-
 // props
 const props = defineProps({
   loaderImage: {

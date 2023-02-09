@@ -119,14 +119,7 @@
 </template>
 
 <script setup name="QueueFoundTag">
-import {
-  ref,
-  inject,
-  computed,
-  nextTick,
-  onMounted,
-  onBeforeUnmount,
-} from 'vue'
+import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { debug } from '@/common/utils'

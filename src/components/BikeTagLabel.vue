@@ -9,7 +9,6 @@
 <script setup name="BikeTagLabel">
 import { computed } from 'vue'
 
-
 // props
 const props = defineProps({
   text: {
