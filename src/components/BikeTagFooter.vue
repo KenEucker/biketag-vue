@@ -1,90 +1,96 @@
 <template>
-  <div ref="root" :class="[props.variant, 'button-group']">
-    <div v-if="props.variant === 'current'">
-      <!-- Left Button -->
-      <bike-tag-button class="button-group__left" :text="t('menu.map')" @click="goMapPage" />
-      <!-- Middle Button -->
-      <bike-tag-button
-        id="hint"
-        ref="hint"
-        class="button-group__middle"
-        :text="t('menu.hint')"
-        variant="bold"
-        @click="showHint"
-      />
-      <b-popover hide-header target="hint" triggers="click" placement="top">
-        <img :src="hintIcon" class="popover__hint-icon" />
-        <p ref="mysteryHint" class="popover__hint-text"></p>
-        <img :src="closeRounded" class="popover__close" @click="closePopover" />
-      </b-popover>
-      <!-- Right Button -->
-      <bike-tag-button
-        v-if="getQueuedTags?.length"
-        class="button-group__right"
-        :text="t('menu.queue')"
-        @click="goRoundPage"
-      />
-      <bike-tag-button
-        v-else
-        class="button-group__right"
-        :text="t('menu.last')"
-        @click="emit('previous')"
-      />
+  <div>
+    <div ref="root" :class="[props.variant, 'button-group']">
+      <div v-if="props.variant === 'current'">
+        <!-- Left Button -->
+        <bike-tag-button class="button-group__left" :text="t('menu.map')" @click="goMapPage" />
+        <!-- Middle Button -->
+        <bike-tag-button
+          id="hint"
+          ref="hint"
+          class="button-group__middle"
+          :text="t('menu.hint')"
+          variant="bold"
+          @click="showHint"
+        />
+        <b-popover hide-header target="hint" triggers="click" placement="top">
+          <img :src="hintIcon" class="popover__hint-icon" />
+          <p ref="mysteryHint" class="popover__hint-text"></p>
+          <img :src="closeRounded" class="popover__close" @click="closePopover" />
+        </b-popover>
+        <!-- Right Button -->
+        <bike-tag-button
+          v-if="getQueuedTags?.length"
+          class="button-group__right"
+          :text="t('menu.queue')"
+          @click="goRoundPage"
+        />
+        <bike-tag-button
+          v-else
+          class="button-group__right"
+          :text="t('menu.last')"
+          @click="emit('previous')"
+        />
+      </div>
+      <div v-if="props.variant === 'single'">
+        <!-- Left Button -->
+        <bike-tag-button
+          class="button-group__left"
+          :text="t('menu.previous')"
+          @click="emit('previous')"
+        />
+        <!-- Middle Button -->
+        <bike-tag-button
+          class="tag-screen-download__button"
+          variant="bold"
+          :text="t('menu.download')"
+          @click="showCamera = true"
+        />
+        <b-modal
+          v-model="showCamera"
+          class="camera-modal"
+          title="BikeTag Camera"
+          hide-footer
+          hide-header
+        >
+          <bike-tag-camera :tag="props.tag" />
+        </b-modal>
+        <!-- Right Button -->
+        <bike-tag-button class="button-group__right" :text="t('menu.next')" @click="emit('next')" />
+      </div>
     </div>
-    <div v-if="props.variant === 'single'">
-      <!-- Left Button -->
-      <bike-tag-button
-        class="button-group__left"
-        :text="t('menu.previous')"
-        @click="emit('previous')"
-      />
-      <!-- Middle Button -->
-      <bike-tag-button
-        class="tag-screen-download__button"
-        variant="bold"
-        :text="t('menu.download')"
-        @click="showCamera = true"
-      />
-      <b-modal
-        v-model="showCamera"
-        class="camera-modal"
-        title="BikeTag Camera"
-        hide-footer
-        hide-header
-      >
-        <bike-tag-camera :tag="props.tag" />
-      </b-modal>
-      <!-- Right Button -->
-      <bike-tag-button class="button-group__right" :text="t('menu.next')" @click="emit('next')" />
+    <!-- World -->
+    <div class="button-reset-container">
+      <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
+        <img
+          class="footer-fixed_image"
+          src="@/assets/images/npworld.png"
+          alt="BikeTag World Wide"
+        />
+      </bike-tag-button>
     </div>
-  </div>
-  <!-- World -->
-  <div class="button-reset-container">
-    <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
-      <img class="footer-fixed_image" src="@/assets/images/npworld.png" alt="BikeTag World Wide" />
-    </bike-tag-button>
-  </div>
-  <div class="mt-5 mb-5 foss-container">
-    <div class="row">
-      <a href="https://github.com/KenEucker/biketag-vue">
-        <img src="@/assets/images/github-logo.png" alt="GitHub" />
-        <img src="@/assets/images/github-mark.png" alt="GitHub Mark" />
-      </a>
-      <a href="https://www.netlify.com/">
-        <img src="@/assets/images/netlify-logo-dark.svg" alt="Netlify" />
-      </a>
-    </div>
-    <div class="mt-2 row">
-      <i>
-        BikeTag is an entirely free and open-source project that is on GitHub for open collaboration
-        and graciously hosted by Netlify on their free open-source plan.
-      </i>
+    <div class="mt-5 mb-5 foss-container">
+      <div class="row">
+        <a href="https://github.com/KenEucker/biketag-vue">
+          <img src="@/assets/images/github-logo.png" alt="GitHub" />
+          <img src="@/assets/images/github-mark.png" alt="GitHub Mark" />
+        </a>
+        <a href="https://www.netlify.com/">
+          <img src="@/assets/images/netlify-logo-dark.svg" alt="Netlify" />
+        </a>
+      </div>
+      <div class="mt-2 row">
+        <i>
+          BikeTag is an entirely free and open-source project that is on GitHub for open
+          collaboration and graciously hosted by Netlify on their free open-source plan.
+        </i>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup name="BikeTagFooter">
-import { defineProps, defineEmits, ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import HintIcon from '@/assets/images/hint-icon.svg'

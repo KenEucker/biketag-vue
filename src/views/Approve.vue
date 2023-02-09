@@ -32,7 +32,7 @@
 </template>
 
 <script setup name="ApproveBikeTagView">
-import { defineProps, ref, inject, computed, onMounted /*, watchEffect*/ } from 'vue'
+import { ref, inject, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { useAuth0 } from '@auth0/auth0-vue'
 // import { useTimer } from 'vue-timer-hook'

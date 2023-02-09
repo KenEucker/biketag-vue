@@ -13,7 +13,7 @@
         <slot />
       </article>
       <article class="img-container">
-        <img :src="props.imgSrc" />
+        <img v-if="props.imgSrc" :src="props.imgSrc" />
         <bike-tag-button v-if="props.link" :text="_linkText()" @click="buttonClick" />
       </article>
     </div>
@@ -21,7 +21,6 @@
 </template>
 
 <script setup name="BikeTagBlurb">
-import { defineProps } from 'vue'
 import { useRouter } from 'vue-router'
 import StyledHr from '@/assets/images/hr.svg'
 
@@ -40,7 +39,7 @@ const props = defineProps({
   },
   imgSrc: {
     type: String,
-    required: true,
+    default: '',
   },
   link: {
     type: String,

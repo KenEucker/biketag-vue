@@ -150,7 +150,7 @@
 </template>
 
 <script setup name="BikeTagMenu">
-import { defineProps, ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { debug } from '@/common/utils'

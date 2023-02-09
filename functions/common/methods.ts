@@ -1002,9 +1002,14 @@ const getAuthManagementToken = async () => {
   }
 }
 
-export const auth0Headers = async () => ({
-    'Authorization': `Bearer ${(await getAuthManagementToken()).data?.access_token}`
-})
+export const auth0Headers = async () => {
+  const { data } = (await getAuthManagementToken()) as any
+  if (data?.access_token?.length) {
+    return { 'Authorization': `Bearer ${data.access_token}}` }
+  }
+
+  return {}
+}
 
 export const acceptCorsHeaders = () => ({
     Accept: '*',

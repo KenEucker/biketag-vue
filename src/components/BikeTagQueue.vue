@@ -75,7 +75,7 @@
 </template>
 
 <script setup name="BikeTagQueue">
-import { defineProps, inject, computed, nextTick } from 'vue'
+import { inject, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'

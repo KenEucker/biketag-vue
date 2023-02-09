@@ -50,7 +50,7 @@
       :zoom="11"
       map-type-id="terrain"
     >
-      <template v-if="multipolygon">
+      <template v-if="data.multipolygon">
         <GMapPolygon
           v-for="(n_path, i) in data.paths"
           :key="i"
@@ -64,7 +64,7 @@
 </template>
 
 <script setup name="BikeTagMap">
-import { defineProps, defineEmits, ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
 import Pin from '@/assets/images/pin.svg'
 

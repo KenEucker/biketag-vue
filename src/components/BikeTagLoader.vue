@@ -10,7 +10,7 @@
 </template>
 
 <script setup name="BikeTagLoader">
-import { defineProps, computed } from 'vue'
+import { computed } from 'vue'
 
 // props
 const props = defineProps({

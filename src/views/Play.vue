@@ -89,7 +89,7 @@
 </template>
 
 <script setup name="QueueBikeTagView">
-import { defineProps, ref, inject, computed, watchEffect, onMounted } from 'vue'
+import { ref, inject, computed, watchEffect, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
@@ -231,11 +231,13 @@ created()
 
 // Mounted
 onMounted(() => {
-  watchEffect(async () => {
-    if (timer.value.isExpired.valueOf) {
-      console.warn('IsExpired')
-    }
-  })
+  if (props.usingTimer) {
+    watchEffect(async () => {
+      if (timer.value.isExpired.valueOf) {
+        console.warn('IsExpired')
+      }
+    })
+  }
 
   uploadInProgress.value = false
 })
