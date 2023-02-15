@@ -20,8 +20,6 @@
 </template>
 
 <script setup name="BikeDex">
-import { defineProps } from 'vue'
-
 // props
 const props = defineProps({
   tags: {

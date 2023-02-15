@@ -16,7 +16,7 @@
 </template>
 
 <script setup name="QueueJoined">
-import { defineProps, computed } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { useI18n } from 'vue-i18n'

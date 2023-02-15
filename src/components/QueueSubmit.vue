@@ -109,7 +109,7 @@
 </template>
 
 <script setup name="QueueSubmit">
-import { defineEmits, ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { Settings } from '@/common/types'
 
