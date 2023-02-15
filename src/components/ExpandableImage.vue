@@ -1,38 +1,24 @@
 <template>
   <div
+    ref="el"
     class="expandable-image"
     :class="{
       expanded: expanded,
     }"
+    @click="expandClick"
   >
     <Loading v-if="loading" v-model:active="loading" :is-full-page="true">
       <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
     </Loading>
-    <div v-show="!loading">
-      <img
-        v-show="!expanded"
-        :src="props.source"
-        class="img-fluid"
-        v-bind="$attrs"
-        @click="expandClick"
-        @load="loaded"
-      />
-      <img
-        v-show="expanded"
-        :src="props.fullSource"
-        class="img-fluid"
-        v-bind="$attrs"
-        @load="loaded"
-      />
-    </div>
-    <i v-if="expanded" class="close-button" @click="shrinkImage">
+    <img v-show="!loading" :src="imgSrc" class="img-fluid" v-bind="$attrs" @load="loaded" />
+    <i v-show="expanded" class="close-button">
       <img src="@/assets/images/close.svg" />
     </i>
   </div>
 </template>
 
 <script setup name="ExpandableImage" type="ts">
-import { ref, watch } from 'vue'
+import { defineProps, defineEmits, ref, watch, computed, nextTick } from 'vue'
 
 // components
 import Loading from 'vue-loading-overlay'
@@ -53,6 +39,11 @@ const props = defineProps({
 const emit = defineEmits(['loading', 'loaded'])
 const expanded = ref(false)
 const loading = ref(emit('loading') && true)
+const el = ref(null)
+const cloned = ref(null)
+const closeButtonRef = ref(null)
+
+const imgSrc = computed(() => expanded.value ?  props.fullSource :  props.source)
 
 // methods
 const expandClick = () => expanded.value = true
@@ -63,6 +54,13 @@ const doCloseImage = event => {
     shrinkImage()
   }
 }
+const closeImage = event => {
+  expanded.value = false
+  document.removeEventListener('keydown', doCloseImage)
+  document.removeEventListener('backbutton', doCloseImage)
+  document.addEventListener('gesturestart', function() { /* */ });
+  event.stopPropagation()
+}
 const loaded = () => {
   emit('loaded')
   loading.value = false
@@ -70,15 +68,37 @@ const loaded = () => {
 
 // watch
 watch(
-  () => expanded.value,
+  expanded,
   (val) => {
-    if (!val) {
-      document.removeEventListener('keydown', doCloseImage)
-      document.removeEventListener('backbutton', doCloseImage)
-    } else {
-      document.addEventListener('keydown', doCloseImage)
-      document.addEventListener('backbutton', doCloseImage)
-  }
+    nextTick(() => {
+      if (val) {
+        cloned.value = el.value.cloneNode(true)
+        closeButtonRef.value = cloned.value.querySelector('.close-button')
+        closeButtonRef.value.addEventListener('click', closeImage)
+
+        cloned.value.addEventListener('click', function doCloseImageBackground(event) {
+          if(event.target==el.value) {
+            closeImage(event)
+          }
+        })
+        document.addEventListener('keydown', doCloseImage)
+        document.addEventListener('backbutton', doCloseImage)
+        document.body.appendChild(cloned.value)
+        document.body.style.overflow = 'hidden'
+        setTimeout(() => {
+          cloned.value.style.opacity = 1
+        }, 0)
+      } else {
+        cloned.value.style.opacity = 0
+            setTimeout(() => {
+              closeButtonRef.value.removeEventListener('click', closeImage)
+              cloned.value.remove()
+              cloned.value = null
+              closeButtonRef.value = null
+              document.body.style.overflow = 'auto'
+            }, 250)
+      }
+    })
 })
 </script>
 
