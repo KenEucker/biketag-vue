@@ -115,6 +115,7 @@
         />
       </div>
     </form>
+    <button @click="inBoundary">Push Paths</button>
   </div>
 </template>
 
@@ -165,6 +166,7 @@ const store = useStore()
 const { isAuthenticated } = useAuth0()
 const toast = inject('toast')
 const { t } = useI18n()
+const boundary = ref({})
 
 // computed
 const getGameName = computed(() => store.getGameName)
@@ -187,13 +189,9 @@ const getLocation = computed(() => {
 })
 
 // methods
-function sleep(time) {
-  return new Promise((resolve) => setTimeout(resolve, time))
-}
-function hideModal() {
-  showModal.value = false
-}
-async function onSubmit(e) {
+const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
+const hideModal = () => (showModal.value = false)
+const onSubmit = async (e) => {
   e.preventDefault()
   uploadInProgress.value = true
   if (!location.value?.length) {
@@ -275,6 +273,7 @@ async function onSubmit(e) {
       long: gps.value.lng,
       alt: gps.value.alt,
     },
+    inBoundary: inBoundary(boundary.value.paths, gps.value),
   }
   uploadInProgress.value = false
 
@@ -285,13 +284,13 @@ async function onSubmit(e) {
     storeAction: 'addFoundTag',
   })
 }
-function changeLocation(e) {
+const changeLocation = (e) => {
   location.value = e.target.value
   if (inputDOM.value == null) {
     inputDOM.value = e.target
   }
 }
-function setPlace(e) {
+const setPlace = (e) => {
   gps.value['lat'] = round(e.geometry.location.lat())
   gps.value['lng'] = round(e.geometry.location.lng())
   center.value = { ...gps.value }
@@ -300,17 +299,15 @@ function setPlace(e) {
     isGpsDefault.value = false
   }
 }
-function updateMarker(e) {
+const updateMarker = (e) => {
   gps.value['lat'] = round(e.latLng.lat())
   gps.value['lng'] = round(e.latLng.lng())
   if (isGpsDefault.value) {
     isGpsDefault.value = false
   }
 }
-function round(number) {
-  return Number(Math.round(number + 'e4') + 'e-4')
-}
-function setImage(event) {
+const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
+const setImage = (event) => {
   store.fetchCredentials()
   const input = event.target
   if (input.files) {
@@ -365,9 +362,48 @@ function setImage(event) {
     }
   }
 }
+const inBoundary = (orderedPathsLat, _gps) => {
+  const isInBoundary = false
+  for (let index = 0; index < orderedPathsLat.length - 2; index++) {
+    if (orderedPathsLat[index].lat <= _gps.lat <= orderedPathsLat[index + 1].lat) {
+      if (orderedPathsLat[index].lng <= _gps.lng <= orderedPathsLat[index + 1]) {
+        return true
+      }
+    }
+  }
+  if (!isInBoundary) {
+    const len = orderedPathsLat.length - 1
+    if (orderedPathsLat[len].lat <= _gps.lat <= orderedPathsLat[0].lat) {
+      if (orderedPathsLat[len].lng <= _gps.lng <= orderedPathsLat[0]) {
+        return true
+      }
+    }
+  }
+  return isInBoundary
+}
 
 // created
 nextTick(() => (showPopover.value = true))
+// created
+async function created() {
+  const regionData = await store.getRegionPolygon(getGame.value.region)
+  if (regionData) {
+    boundary.value.multipolygon = regionData?.geojson?.type === 'MultiPolygon'
+    if (boundary.value.multipolygon) {
+      boundary.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
+        return v.map((u) => {
+          return { lng: u[0], lat: u[1] }
+        })
+      })
+    } else {
+      boundary.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
+        return { lng: v[0], lat: v[1] }
+      })
+      boundary.value.paths.sort((a, b) => a.lat - b.lat)
+    }
+  }
+}
+created()
 
 // mounted
 onMounted(function () {
