@@ -105,6 +105,14 @@
           :readonly="isAuthenticated"
           :placeholder="t('pages.round.name_placeholder')"
         />
+        <b-modal
+          v-model="confirmInBoundary"
+          class="confirm-modal"
+          title="Confirm location outside the limits"
+          @ok="confirmedBoundary = true"
+        >
+          <p>The chosen location is outside the allowed limits. Do you want to continue?</p>
+        </b-modal>
       </div>
       <div class="sub-container">
         <bike-tag-button
@@ -115,7 +123,6 @@
         />
       </div>
     </form>
-    <button @click="inBoundary">Push Paths</button>
   </div>
 </template>
 
@@ -167,6 +174,9 @@ const { isAuthenticated } = useAuth0()
 const toast = inject('toast')
 const { t } = useI18n()
 const boundary = ref({})
+const isInBoundary = ref(false)
+const confirmInBoundary = ref(false)
+const confirmedBoundary = ref(false)
 
 // computed
 const getGameName = computed(() => store.getGameName)
@@ -197,6 +207,16 @@ const onSubmit = async (e) => {
   if (!location.value?.length) {
     toast.open({
       message: 'Please add your Found Location',
+      type: 'error',
+      position: 'top',
+    })
+    uploadInProgress.value = false
+    return
+  }
+  CalculateInBoundary()
+  if (!inBoundary.value && !confirmedBoundary.value) {
+    toast.open({
+      message: 'Please add a location within the allowed limits',
       type: 'error',
       position: 'top',
     })
@@ -273,7 +293,7 @@ const onSubmit = async (e) => {
       long: gps.value.lng,
       alt: gps.value.alt,
     },
-    inBoundary: inBoundary(boundary.value.paths, gps.value),
+    inBoundary: isInBoundary.value,
   }
   uploadInProgress.value = false
 
@@ -362,30 +382,62 @@ const setImage = (event) => {
     }
   }
 }
-const inBoundary = (orderedPathsLat, _gps) => {
-  const isInBoundary = false
-  for (let index = 0; index < orderedPathsLat.length - 2; index++) {
-    if (orderedPathsLat[index].lat <= _gps.lat <= orderedPathsLat[index + 1].lat) {
-      if (orderedPathsLat[index].lng <= _gps.lng <= orderedPathsLat[index + 1]) {
-        return true
+const getDistance = (point1, point2) => {
+  const constante = Math.PI / 180
+  let theta = point1.lng - point2.lng
+  let distance =
+    60 *
+    1.1515 *
+    (180 / Math.PI) *
+    Math.acos(
+      Math.sin(point1.lat * constante) * Math.sin(point2.lat * constante) +
+        Math.cos(point1.lat * constante) *
+          Math.cos(point2.lat * constante) *
+          Math.cos(theta * constante)
+    )
+  return distance * 1.609344
+}
+const inBoundary = (orderedPathsLat = null, _gps = null) => {
+  let inPaths = []
+  if (orderedPathsLat && _gps) {
+    let len = orderedPathsLat.length - 1
+    inPaths = orderedPathsLat.filter(
+      (path, index) =>
+        path.lat <= _gps.lat && _gps.lat <= orderedPathsLat[index < len - 10 ? index + 10 : len].lat
+    )
+    len = inPaths.length
+    if (len) {
+      inPaths.sort((a, b) => a.lng - b.lng)
+      inPaths = inPaths.filter(
+        (path, index) =>
+          path.lng <= _gps.lng && _gps.lng <= inPaths[index < len - 2 ? index + 1 : index].lng
+      )
+    }
+    if (inPaths.length === 0) {
+      const _100ft = 0.03048
+      for (let index = 0; index < len; index++) {
+        if (getDistance(orderedPathsLat[index], _gps) <= _100ft) {
+          return true
+        }
       }
     }
   }
-  if (!isInBoundary) {
-    const len = orderedPathsLat.length - 1
-    if (orderedPathsLat[len].lat <= _gps.lat <= orderedPathsLat[0].lat) {
-      if (orderedPathsLat[len].lng <= _gps.lng <= orderedPathsLat[0]) {
-        return true
-      }
-    }
+
+  return inPaths.length !== 0
+}
+const CalculateInBoundary = () => {
+  if (!boundary.value?.paths) {
+    created()
   }
-  return isInBoundary
+  isInBoundary.value = inBoundary(boundary.value.paths, gps.value)
+  if (!isInBoundary.value) {
+    confirmInBoundary.value = true
+  }
 }
 
 // created
 nextTick(() => (showPopover.value = true))
-// created
-async function created() {
+const created = async () => {
   const regionData = await store.getRegionPolygon(getGame.value.region)
   if (regionData) {
     boundary.value.multipolygon = regionData?.geojson?.type === 'MultiPolygon'
