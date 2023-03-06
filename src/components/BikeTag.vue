@@ -35,7 +35,10 @@
             >
               {{ props.tag.foundPlayer }}
             </span>
-            <span :class="`${props.tag.inBoundary ? 'tag-inBoundary' : 'tag-outBoundary'}`">
+            <span
+              v-if="showInBoundary"
+              :class="`${props.tag.inBoundary ? 'tag-inBoundary' : 'tag-outBoundary'}`"
+            >
               {{ tagInBoundary }}
             </span>
             <span v-if="props.showPostedDate" class="tag-date">
@@ -174,6 +177,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showInBoundary: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 // data
@@ -227,12 +234,12 @@ const _mysteryDescription = computed(() => {
 })
 const tagInBoundary = computed(() => {
   if (props.tag.inBoundary === undefined) {
-    return 'No boundaries information'
+    return ''
   } else if (!props.tag.inBoundary) {
     return 'Outside boundaries'
   }
 
-  return 'In boudaries'
+  return 'Inside boudaries'
 })
 
 // methods
