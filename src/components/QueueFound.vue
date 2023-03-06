@@ -108,10 +108,10 @@
         <b-modal
           v-model="confirmInBoundary"
           class="confirm-modal"
-          title="Confirm location outside the limits"
+          :title="t('pages.round.missing_gps_alert.title')"
           @ok="confirmedBoundary = true"
         >
-          <p>The chosen location is outside the allowed limits. Do you want to continue?</p>
+          <p>{{ t('pages.round.missing_gps_alert.body') }}</p>
         </b-modal>
       </div>
       <div class="sub-container">
@@ -213,8 +213,8 @@ const onSubmit = async (e) => {
     uploadInProgress.value = false
     return
   }
-  CalculateInBoundary()
-  if (!inBoundary.value && !confirmedBoundary.value) {
+  calculateInBoundary()
+  if (!isInBoundary.value && !confirmedBoundary.value) {
     toast.open({
       message: 'Please add a location within the allowed limits',
       type: 'error',
@@ -425,17 +425,13 @@ const inBoundary = (orderedPathsLat = null, _gps = null) => {
 
   return inPaths.length !== 0
 }
-const CalculateInBoundary = () => {
-  if (!boundary.value?.paths) {
-    created()
-  }
+const calculateInBoundary = () => {
   isInBoundary.value = inBoundary(boundary.value.paths, gps.value)
   if (!isInBoundary.value) {
     confirmInBoundary.value = true
   }
 }
 
-// created
 nextTick(() => (showPopover.value = true))
 const created = async () => {
   const regionData = await store.getRegionPolygon(getGame.value.region)
