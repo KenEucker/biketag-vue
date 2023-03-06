@@ -123,7 +123,11 @@
       "dequeue_queued_tag": "Delete this BikeTag post",
       "reset_tag": "Reset tag submission",
       "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project",
-      "image_first": "Please upload your image first!"
+      "image_first": "Please upload your image first!",
+      "missing_gps_alert": {
+        "title": "Confirm location outside the limits",
+        "body": "The chosen location is outside the allowed limits. Do you want to continue?"
+      }
     },
     "howto": {
       "browser_not_support_audio": "Your browser does not support the audio element.",

@@ -32,6 +32,7 @@
           :reverse="true"
           :show-posted-date="true"
           :tag="tag"
+          :show-in-boundary="true"
           size="l"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
           :mystery-description="mysteryDescription(tag)"
