@@ -133,7 +133,7 @@ export default defineConfig({
   },
   // root: './public',
   server: {
-    host: 'prime.localhost',
+    host: 'miami.localhost',
     port: 8080,
   },
   preview: {

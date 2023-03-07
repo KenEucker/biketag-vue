@@ -105,6 +105,14 @@
           :readonly="isAuthenticated"
           :placeholder="t('pages.round.name_placeholder')"
         />
+        <b-modal
+          v-model="confirmInBoundary"
+          class="confirm-modal"
+          :title="t('pages.round.missing_gps_alert.title')"
+          @ok="confirmedBoundary = true"
+        >
+          <p>{{ t('pages.round.missing_gps_alert.body') }}</p>
+        </b-modal>
       </div>
       <div class="sub-container">
         <bike-tag-button
@@ -165,6 +173,10 @@ const store = useStore()
 const { isAuthenticated } = useAuth0()
 const toast = inject('toast')
 const { t } = useI18n()
+const boundary = ref({})
+const isInBoundary = ref(false)
+const confirmInBoundary = ref(false)
+const confirmedBoundary = ref(false)
 
 // computed
 const getGameName = computed(() => store.getGameName)
@@ -187,18 +199,24 @@ const getLocation = computed(() => {
 })
 
 // methods
-function sleep(time) {
-  return new Promise((resolve) => setTimeout(resolve, time))
-}
-function hideModal() {
-  showModal.value = false
-}
-async function onSubmit(e) {
+const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
+const hideModal = () => (showModal.value = false)
+const onSubmit = async (e) => {
   e.preventDefault()
   uploadInProgress.value = true
   if (!location.value?.length) {
     toast.open({
       message: 'Please add your Found Location',
+      type: 'error',
+      position: 'top',
+    })
+    uploadInProgress.value = false
+    return
+  }
+  calculateInBoundary()
+  if (!isInBoundary.value && !confirmedBoundary.value) {
+    toast.open({
+      message: 'Please add a location within the allowed limits',
       type: 'error',
       position: 'top',
     })
@@ -275,6 +293,7 @@ async function onSubmit(e) {
       long: gps.value.lng,
       alt: gps.value.alt,
     },
+    inBoundary: isInBoundary.value,
   }
   uploadInProgress.value = false
 
@@ -285,13 +304,13 @@ async function onSubmit(e) {
     storeAction: 'addFoundTag',
   })
 }
-function changeLocation(e) {
+const changeLocation = (e) => {
   location.value = e.target.value
   if (inputDOM.value == null) {
     inputDOM.value = e.target
   }
 }
-function setPlace(e) {
+const setPlace = (e) => {
   gps.value['lat'] = round(e.geometry.location.lat())
   gps.value['lng'] = round(e.geometry.location.lng())
   center.value = { ...gps.value }
@@ -300,17 +319,15 @@ function setPlace(e) {
     isGpsDefault.value = false
   }
 }
-function updateMarker(e) {
+const updateMarker = (e) => {
   gps.value['lat'] = round(e.latLng.lat())
   gps.value['lng'] = round(e.latLng.lng())
   if (isGpsDefault.value) {
     isGpsDefault.value = false
   }
 }
-function round(number) {
-  return Number(Math.round(number + 'e4') + 'e-4')
-}
-function setImage(event) {
+const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
+const setImage = (event) => {
   store.fetchCredentials()
   const input = event.target
   if (input.files) {
@@ -365,9 +382,76 @@ function setImage(event) {
     }
   }
 }
+const getDistance = (point1, point2) => {
+  const constante = Math.PI / 180
+  let theta = point1.lng - point2.lng
+  let distance =
+    60 *
+    1.1515 *
+    (180 / Math.PI) *
+    Math.acos(
+      Math.sin(point1.lat * constante) * Math.sin(point2.lat * constante) +
+        Math.cos(point1.lat * constante) *
+          Math.cos(point2.lat * constante) *
+          Math.cos(theta * constante)
+    )
+  return distance * 1.609344
+}
+const inBoundary = (orderedPathsLat = null, _gps = null) => {
+  let inPaths = []
+  if (orderedPathsLat && _gps) {
+    let len = orderedPathsLat.length - 1
+    inPaths = orderedPathsLat.filter(
+      (path, index) =>
+        path.lat <= _gps.lat && _gps.lat <= orderedPathsLat[index < len - 10 ? index + 10 : len].lat
+    )
+    len = inPaths.length
+    if (len) {
+      inPaths.sort((a, b) => a.lng - b.lng)
+      inPaths = inPaths.filter(
+        (path, index) =>
+          path.lng <= _gps.lng && _gps.lng <= inPaths[index < len - 2 ? index + 1 : index].lng
+      )
+    }
+    if (inPaths.length === 0) {
+      const _100ft = 0.03048
+      for (let index = 0; index < len; index++) {
+        if (getDistance(orderedPathsLat[index], _gps) <= _100ft) {
+          return true
+        }
+      }
+    }
+  }
 
-// created
+  return inPaths.length !== 0
+}
+const calculateInBoundary = () => {
+  isInBoundary.value = inBoundary(boundary.value.paths, gps.value)
+  if (!isInBoundary.value) {
+    confirmInBoundary.value = true
+  }
+}
+
 nextTick(() => (showPopover.value = true))
+const created = async () => {
+  const regionData = await store.getRegionPolygon(getGame.value.region)
+  if (regionData) {
+    boundary.value.multipolygon = regionData?.geojson?.type === 'MultiPolygon'
+    if (boundary.value.multipolygon) {
+      boundary.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
+        return v.map((u) => {
+          return { lng: u[0], lat: u[1] }
+        })
+      })
+    } else {
+      boundary.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
+        return { lng: v[0], lat: v[1] }
+      })
+      boundary.value.paths.sort((a, b) => a.lat - b.lat)
+    }
+  }
+}
+created()
 
 // mounted
 onMounted(function () {

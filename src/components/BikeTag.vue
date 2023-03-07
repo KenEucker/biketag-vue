@@ -35,6 +35,12 @@
             >
               {{ props.tag.foundPlayer }}
             </span>
+            <span
+              v-if="showInBoundary"
+              :class="`${props.tag.inBoundary ? 'tag-inBoundary' : 'tag-outBoundary'}`"
+            >
+              {{ tagInBoundary }}
+            </span>
             <span v-if="props.showPostedDate" class="tag-date">
               {{ getPostedDate(props.tag.foundTime) }}
             </span>
@@ -171,6 +177,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showInBoundary: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 // data
@@ -185,9 +195,7 @@ const { t } = useI18n()
 // computed
 const getImgurImageSized = computed(() => store.getImgurImageSized)
 const _tagnumber = computed(() => (props.tagnumber ? props.tagnumber : props.tag?.tagnumber))
-const _getHint = computed(function () {
-  return props.tag?.hint ? props.tag.hint : t('pages.play.nohint')
-})
+const _getHint = computed(() => (props.tag?.hint ? props.tag.hint : t('pages.play.nohint')))
 const _foundTagnumber = computed(() =>
   props.foundTagnumber ? props.foundTagnumber : props.tag?.tagnumber
 )
@@ -224,9 +232,18 @@ const _mysteryDescription = computed(() => {
     ? props.mysteryDescription
     : `#${_tagnumber.value} ${props.tag?.hint?.length > 0 ? `"${props.tag.hint}"` : ''}`
 })
+const tagInBoundary = computed(() => {
+  if (props.tag.inBoundary === undefined) {
+    return ''
+  } else if (!props.tag.inBoundary) {
+    return 'Outside boundaries'
+  }
+
+  return 'Inside boudaries'
+})
 
 // methods
-function getPostedDate(timestamp, timeOnly = false) {
+const getPostedDate = (timestamp, timeOnly = false) => {
   if (!timestamp) {
     return ''
   }
@@ -236,7 +253,7 @@ function getPostedDate(timestamp, timeOnly = false) {
 
   return `${timeOnly ? ' @ ' : t('components.biketag.posted_on')} ${datetime}`
 }
-function tagImageLoaded(type) {
+const tagImageLoaded = (type) => {
   if (type === 'mystery') {
     mysteryImageLoaded.value = true
   } else if (type === 'found') {
@@ -250,12 +267,12 @@ function tagImageLoaded(type) {
     emit('load')
   }
 }
-function goTagPage() {
+const goTagPage = () => {
   if (!noTagnumberLink.value) {
     router.push('/' + encodeURIComponent(_tagnumber.value))
   }
 }
-function goPlayerPage(player) {
+const goPlayerPage = (player) => {
   router.push('/player/' + encodeURIComponent(player))
 }
 
@@ -277,6 +294,12 @@ onMounted(() => {
 }
 </style>
 <style lang="scss" scoped>
+.tag-inBoundary {
+  color: green;
+}
+.tag-outBoundary {
+  color: red;
+}
 .reversed {
   flex-flow: row-reverse wrap;
 }
