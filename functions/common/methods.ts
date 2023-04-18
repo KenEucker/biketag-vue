@@ -892,6 +892,45 @@ export const setNewBikeTagPost = async (
           ? game.logo
           : getSanityImageUrl(game.logo)
         : `${host}${defaultLogo}`
+
+      if (false) {
+        // https://discord.com/developers/docs/resources/webhook
+        const currentPostedBikeTag = currentBikeTagUpdateResult.data as unknown as Tag
+        const currentNumber = currentBikeTag.tagnumber
+        const data = JSON.stringify({
+          content: `#${currentNumber} found at ${currentPostedBikeTag.foundLocation} by ${currentPostedBikeTag.foundPlayer}`,
+          embeds: [
+            {
+              timestamp: new Date(newPostedBikeTag.foundTime).toISOString(),
+              fields: [
+                {
+                  name: `#${winningTagnumber}`,
+                  value: `||${newPostedBikeTag.hint}||`,
+                  inline: true,
+                },
+                {
+                  name: '', // purposely left blank
+                  value: `[View previous round](${host}/#/${currentNumber})`,
+                  inline: true,
+                },
+              ],
+              image: {
+                url: newPostedBikeTag.foundImageUrl,
+              },
+            },
+          ],
+        })
+
+        axios({
+          method: 'post',
+          url: 'https://discord.com/api/webhooks/foo/bar', //TODO: read config value
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          data,
+        })
+      }
+
       await sendEmailsToAmbassadors(
         'biketag-auto-posted',
         `New BikeTag Round (#${winningTagnumber}) Auto-Posted for [${game.name}]`,
