@@ -133,6 +133,7 @@ import { useAuth0 } from '@auth0/auth0-vue'
 import { debug } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
 import exifr from 'exifr'
+import { point, polygon, buffer, booleanPointInPolygon } from '@turf/turf'
 import Pin from '@/assets/images/pin.svg'
 
 // components
@@ -382,51 +383,27 @@ const setImage = (event) => {
     }
   }
 }
-const getDistance = (point1, point2) => {
-  const constante = Math.PI / 180
-  let theta = point1.lng - point2.lng
-  let distance =
-    60 *
-    1.1515 *
-    (180 / Math.PI) *
-    Math.acos(
-      Math.sin(point1.lat * constante) * Math.sin(point2.lat * constante) +
-        Math.cos(point1.lat * constante) *
-          Math.cos(point2.lat * constante) *
-          Math.cos(theta * constante)
-    )
-  return distance * 1.609344
-}
-const inBoundary = (orderedPathsLat = null, _gps = null) => {
-  let inPaths = []
-  if (orderedPathsLat && _gps) {
-    let len = orderedPathsLat.length - 1
-    inPaths = orderedPathsLat.filter(
-      (path, index) =>
-        path.lat <= _gps.lat && _gps.lat <= orderedPathsLat[index < len - 10 ? index + 10 : len].lat
-    )
-    len = inPaths.length
-    if (len) {
-      inPaths.sort((a, b) => a.lng - b.lng)
-      inPaths = inPaths.filter(
-        (path, index) =>
-          path.lng <= _gps.lng && _gps.lng <= inPaths[index < len - 2 ? index + 1 : index].lng
-      )
-    }
-    if (inPaths.length === 0) {
-      const _100ft = 0.03048
-      for (let index = 0; index < len; index++) {
-        if (getDistance(orderedPathsLat[index], _gps) <= _100ft) {
-          return true
-        }
-      }
-    }
-  }
 
-  return inPaths.length !== 0
+const feetToKm = (feets) => feets * 0.0003048
+
+const isPointInPolygon = (polygon_array, gps, errorInFeet) => {
+  const errorInKilometers = feetToKm(errorInFeet)
+  // polygon_array = closePolygonIfNeeded(polygon_array)
+
+  console.log({ gps, polygon_array })
+  // Create turf.js point and polygon
+  const turfPoint = point([gps.lng, gps.lat])
+  const turfPolygon = polygon(polygon_array)
+
+  // Buffer the polygon by the error amount
+  const bufferedPolygon = buffer(turfPolygon, errorInKilometers, { units: 'kilometers' })
+
+  // Check if the point is inside the buffered polygon
+  return booleanPointInPolygon(turfPoint, bufferedPolygon)
 }
+
 const calculateInBoundary = () => {
-  isInBoundary.value = inBoundary(boundary.value.paths, gps.value)
+  isInBoundary.value = isPointInPolygon(boundary.value.paths, gps.value, 100)
   if (!isInBoundary.value) {
     confirmInBoundary.value = true
   }
@@ -437,18 +414,7 @@ const created = async () => {
   const regionData = await store.getRegionPolygon(getGame.value.region)
   if (regionData) {
     boundary.value.multipolygon = regionData?.geojson?.type === 'MultiPolygon'
-    if (boundary.value.multipolygon) {
-      boundary.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
-        return v.map((u) => {
-          return { lng: u[0], lat: u[1] }
-        })
-      })
-    } else {
-      boundary.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
-        return { lng: v[0], lat: v[1] }
-      })
-      boundary.value.paths.sort((a, b) => a.lat - b.lat)
-    }
+    boundary.value.paths = regionData?.geojson?.coordinates
   }
 }
 created()
