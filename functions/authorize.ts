@@ -18,7 +18,7 @@ const authorizeHandler: Handler = async (event) => {
 
   // console.log({ clientKey, clientToken, accessToken, grantType, controlCheck, self })
   if (clientKey?.length > 0 && clientToken?.length > 0 && accessToken?.length > 0) {
-    if (getBikeTagHash(clientKey) === clientToken && controlCheck === clientToken) {
+    if (getBikeTagHash(clientKey) === clientToken && clientToken === controlCheck) {
       const biketagOpts = getBikeTagClientOpts(
         {
           ...event,
