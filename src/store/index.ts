@@ -1,20 +1,20 @@
-import { createPinia, defineStore } from 'pinia'
-import BikeTagClient from 'biketag'
-import { Game, Tag, Player } from 'biketag/lib/common/schema'
+import { BiketagFormSteps, State } from '@/common/types'
 import {
+  getApiUrl,
+  getBikeTagClientOpts,
+  getBikeTagHash,
   getDomainInfo,
   getImgurImageSized,
+  getMostRecentlyViewedBikeTagTagnumber,
   getProfileFromCookie,
-  getBikeTagClientOpts,
   getQueuedTagState,
   getSanityImageUrl,
-  getMostRecentlyViewedBikeTagTagnumber,
-  getApiUrl,
+  setNPAuthorization,
   setProfileCookie,
-  getBikeTagHash,
 } from '@/common/utils'
-import { BiketagFormSteps, State } from '@/common/types'
-import { setNPAuthorization } from '@/common/utils'
+import BikeTagClient from 'biketag'
+import { Game, Player, Tag } from 'biketag/lib/common/schema'
+import { createPinia, defineStore } from 'pinia'
 import { debug } from '../common/utils'
 // import { inject } from 'vue'
 
@@ -77,10 +77,10 @@ export const useStore = defineStore('store', {
         const results = (
           await client.plainRequest({
             method: 'GET',
-            url: 'https://nominatim.openstreetmap.org/search.php',
+            url: 'https://nominatim.openstreetmap.org/search',
             params: {
               q: region.description,
-              postalcode: region.zipcode,
+              // postalcode: region.zipcode,
               polygon_geojson: 1,
               format: 'json',
             },
@@ -88,7 +88,7 @@ export const useStore = defineStore('store', {
         ).data
         const filteredResults = results.filter(
           (v: any) =>
-            v?.type == 'administrative' ||
+            v?.type == 'postcode' ||
             (v?.type == 'city' &&
               v?.geojson?.coordinates?.length &&
               v?.geojson.coordinates[0].length > 1)
