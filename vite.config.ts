@@ -133,7 +133,7 @@ export default defineConfig({
   },
   // root: './public',
   server: {
-    host: 'portland.localhost',
+    host: 'seattle.localhost',
     port: 8080,
   },
   preview: {

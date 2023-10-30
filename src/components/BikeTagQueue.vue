@@ -4,8 +4,8 @@
       <span v-if="props.showNumber">
         {{ props.tag.tagnumber }} by {{ props.tag.mysteryPlayer }}
       </span>
-      <img :src="props.tag.mysteryImageUrl" />
-      <img :src="props.tag.foundImageUrl" />
+      <img :src="getImgurImageSized(props.tag.mysteryImageUrl, 's')" />
+      <img :src="getImgurImageSized(props.tag.foundImageUrl, 's')" />
     </div>
   </div>
   <div v-else-if="getCurrentBikeTag" class="container">
@@ -20,7 +20,7 @@
         placement="bottom"
       >
         <template #title>{{ t('components.queue.current_mystery_location') }}</template>
-        <img class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
+        <img class="img-fluid" :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')" />
       </b-popover>
 
       <b-button v-if="getPlayerTag.foundImageUrl" id="queued-found-popover" class="navigation">
@@ -34,7 +34,7 @@
         class="queued-found"
       >
         <template #title>{{ t('components.queue.view_found_image') }}</template>
-        <img class="img-fluid" :src="getPlayerTag.foundImageUrl" />
+        <img class="img-fluid" :src="getImgurImageSized(getPlayerTag.foundImageUrl, 's')" />
         <div v-if="canReset()" class="row">
           <b-button class="col" variant="danger" @click="resetToFound">
             {{ t('components.queue.reset_queue_button') }}

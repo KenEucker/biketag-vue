@@ -126,7 +126,7 @@
       "image_first": "Please upload your image first!",
       "missing_gps_alert": {
         "title": "Confirm location outside the limits",
-        "body": "The chosen location is outside the allowed limits. Do you want to continue?"
+        "body": "The chosen location is outside the suggested game boundaries. Are you sure you want to continue?"
       }
     },
     "howto": {
