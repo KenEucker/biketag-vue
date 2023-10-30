@@ -1,13 +1,13 @@
-import App from './App.vue'
-import { createApp } from 'vue'
-import router from './router'
-import { store } from './store/'
+import i18n from '@/i18n'
+import VueGoogleMaps from '@fawmi/vue-google-maps'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import mitt from 'mitt'
+import { createApp } from 'vue'
 import { useToast } from 'vue-toast-notification'
-import i18n from '@/i18n'
 import VueCookies from 'vue3-cookies'
-import VueGoogleMaps from '@fawmi/vue-google-maps'
+import App from './App.vue'
+import router from './router'
+import { store } from './store/'
 
 // eslint-disable-next-line
 // @ts-ignore
@@ -16,14 +16,14 @@ import Markdown from 'vue3-markdown-it'
 // @ts-ignore
 import VueIframe from 'vue-iframes'
 
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
-import '@/assets/styles/style.scss'
 import '@/assets/styles/flashy.scss'
-import 'vue-toast-notification/dist/theme-sugar.css'
-import 'highlight.js/styles/monokai.css'
-import { debug } from './common/utils'
+import '@/assets/styles/style.scss'
 import { createHead } from '@vueuse/head'
+import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'highlight.js/styles/monokai.css'
+import 'vue-toast-notification/dist/theme-sugar.css'
+import { debug } from './common/utils'
 
 import { createAuth0 } from '@auth0/auth0-vue'
 class BikeTagApp {
@@ -72,6 +72,7 @@ class BikeTagApp {
       load: {
         key: process.env.G_AKEY,
         libraries: 'places',
+        v: 3.54,
       },
     })
   }

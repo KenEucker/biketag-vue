@@ -151,7 +151,7 @@ const startLoading = async () => {
 }
 const showModal = () => {
   modal.value = true
-  console.log(modal)
+  // console.log(modal)
 }
 // const hideModal = () => {
 //   modal.value = false

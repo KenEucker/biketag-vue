@@ -72,7 +72,6 @@ export const useStore = defineStore('store', {
     // eslint-disable-next-line no-empty-pattern
     async getRegionPolygon(region: any) {
       try {
-        console.log({ zip: region.zipcode })
         const firstOfRegion = region.description.split(',')[0].toLowerCase()
         const results = (
           await client.plainRequest({
@@ -102,7 +101,7 @@ export const useStore = defineStore('store', {
           }
           return 0
         })
-        console.log({ region, firstOfRegion, results, filteredResults, sortedResults })
+        // console.log({ region, firstOfRegion, results, filteredResults, sortedResults })
         return sortedResults[0]
       } catch (e) {
         console.log('map cannot continue')
@@ -193,7 +192,7 @@ export const useStore = defineStore('store', {
               (g: Game) =>
                 g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length
             )
-            console.log({ setAllGames: supportedGames, games })
+            // console.log({ setAllGames: supportedGames, games })
             return this.SET_ALL_GAMES(supportedGames)
           }
 
