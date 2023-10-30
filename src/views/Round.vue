@@ -26,7 +26,7 @@
 </template>
 
 <script setup name="QueueBikeTagView">
-import { defineProps, ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'

@@ -17,7 +17,7 @@ import { useStore } from '@/store/index.ts'
 import Player from '@/components/PlayerBicon.vue'
 
 // data
-const store = useStore
+const store = useStore()
 
 // computed
 const playersList = computed(() => store.getLeaderboard)

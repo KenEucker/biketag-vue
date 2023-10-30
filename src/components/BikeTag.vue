@@ -297,9 +297,11 @@ onMounted(() => {
 .tag-inBoundary {
   color: green;
 }
+
 .tag-outBoundary {
   color: red;
 }
+
 .reversed {
   flex-flow: row-reverse wrap;
 }

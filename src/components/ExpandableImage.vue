@@ -18,7 +18,7 @@
 </template>
 
 <script setup name="ExpandableImage" type="ts">
-import { defineProps, defineEmits, ref, watch, computed, nextTick } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 
 // components
 import Loading from 'vue-loading-overlay'

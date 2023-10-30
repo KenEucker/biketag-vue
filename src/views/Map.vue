@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="container mt-5">
+  <div class="container mt-5 mb-5">
     <div class="map d-flex justify-content-center">
       <h2>This is the boundary for the game of BikeTag in {{ getGameName }}</h2>
       <bike-tag-map class="biketags-map mt-5 mb-5" />
