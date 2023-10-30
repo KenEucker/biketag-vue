@@ -88,6 +88,7 @@ export const useStore = defineStore('store', {
         ).data
         const filteredResults = results.filter(
           (v: any) =>
+            v?.type == 'administrative' ||
             v?.type == 'postcode' ||
             (v?.type == 'city' &&
               v?.geojson?.coordinates?.length &&
@@ -101,7 +102,7 @@ export const useStore = defineStore('store', {
           }
           return 0
         })
-        console.log({ results, filteredResults, sortedResults })
+        console.log({ region, firstOfRegion, results, filteredResults, sortedResults })
         return sortedResults[0]
       } catch (e) {
         console.log('map cannot continue')

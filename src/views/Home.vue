@@ -51,7 +51,7 @@
       </div>
     </div>
     <bike-tag-footer
-      class="bike-tag-footer"
+      :class="`bike-tag-footer ${tagIsLoading ? 'padded' : ''}`"
       :variant="`${tagnumber ? 'single' : 'current'}`"
       :tag="tag"
       @next="goNextSingle"
@@ -123,10 +123,9 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
 @import '../assets/styles/style';
 
 .tag-hidden {
-  margin-top: -350px;
   visibility: hidden;
   opacity: 0.1;
-  height: 400px;
+  height: 500px;
 }
 
 .play-screen {
@@ -209,6 +208,13 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
 
 .bike-tag-footer {
   margin-top: 4rem;
+
+  &.padded {
+    top: 400px;
+    position: absolute;
+    left: 25%;
+    right: 25%;
+  }
 }
 
 .play-biketag {
