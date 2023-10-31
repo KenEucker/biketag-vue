@@ -75,9 +75,9 @@
       </b-popover>
     </div>
     <div v-if="!props.onlyMine" class="bike-pagination mt-3 mb-3">
-      <div v-for="(tag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
+      <div v-for="(queuedTag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
         <v-lazy-image
-          :src="getImgurImageSized(tag.foundImageUrl)"
+          :src="getImgurImageSized(queuedTag.foundImageUrl)"
           @click="paginationClick(index)"
         />
         <span v-if="props.showNumber">{{ index + 1 }}</span>
