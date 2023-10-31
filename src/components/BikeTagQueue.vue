@@ -189,7 +189,7 @@ function paginationClick(key) {
     border-radius: 5rem;
   }
 
-  @media (min-width: 500px) {
+  @media (width >= 500px) {
     width: 8rem;
     height: 8rem;
 

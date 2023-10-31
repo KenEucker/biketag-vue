@@ -91,7 +91,7 @@ export const useStore = defineStore('store', {
             v?.type == 'postcode' ||
             (v?.type == 'city' &&
               v?.geojson?.coordinates?.length &&
-              v?.geojson.coordinates[0].length > 1)
+              v?.geojson.coordinates[0].length > 1),
         )
         const sortedResults = filteredResults.sort((v1: any, v2: any) => {
           if (v2?.display_name.toLowerCase().indexOf(firstOfRegion) === 0) {
@@ -183,14 +183,17 @@ export const useStore = defineStore('store', {
           { game: '' },
           {
             source: 'sanity',
-          }
+          },
         )
         .then((d) => {
           if (d.success) {
             const games = d.data as unknown as Game[]
             const supportedGames = games.filter(
               (g: Game) =>
-                g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length
+                g.mainhash?.length &&
+                g.archivehash?.length &&
+                g.queuehash?.length &&
+                g.logo?.length,
             )
             // console.log({ setAllGames: supportedGames, games })
             return this.SET_ALL_GAMES(supportedGames)
@@ -200,28 +203,26 @@ export const useStore = defineStore('store', {
         })
     },
     setCurrentBikeTag(cached = true) {
-      return client.getTag(undefined, { cached }).then((r) => {
+      return client.getTag({ cached }).then((r) => {
         return this.SET_CURRENT_TAG(r.data)
       })
     },
     setTags(cached = true) {
-      return client.tags(undefined, { cached }).then((d) => {
-        return this.SET_TAGS(d)
-      })
+      return client.tags({ cached }).then(this.SET_TAGS)
     },
     setQueuedTags(cached = true) {
       if (this.currentBikeTag?.tagnumber > 0) {
-        return client.queue(undefined, { cached }).then((d) => {
+        return client.queue({ cached }).then((d) => {
           if ((d as Tag[])?.length > 0) {
             const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
-              (t) => t.tagnumber >= this.currentBikeTag.tagnumber
+              (t) => t.tagnumber >= this.currentBikeTag.tagnumber,
             )
             const queuedTag = currentBikeTagQueue.filter((t) => t.playerId === this.profile.sub)
 
             if (queuedTag.length) {
               const fullyQueuedTag = queuedTag[0]
               const queuedMysteryTag = (d as Tag[]).filter(
-                (t) => t.mysteryPlayer === queuedTag[0].foundPlayer
+                (t) => t.mysteryPlayer === queuedTag[0].foundPlayer,
               )
               if (queuedMysteryTag.length) {
                 fullyQueuedTag.mysteryImage = queuedMysteryTag[0].mysteryImage
@@ -242,14 +243,10 @@ export const useStore = defineStore('store', {
       return false
     },
     setPlayers(cached = true) {
-      return client.players(undefined, { cached }).then((d) => {
-        return this.SET_PLAYERS(d)
-      })
+      return client.players({ cached }).then(this.SET_PLAYERS)
     },
     setLeaderboard(cached = true) {
-      return client.players({ sort: 'top', limit: 10 }, { cached }).then((d) => {
-        return this.SET_LEADERBOARD(d)
-      })
+      return client.players({ sort: 'top', limit: 10, cached }).then(this.SET_LEADERBOARD)
     },
     setQueuedTag(d: any) {
       return this.SET_QUEUED_TAG(d)
@@ -376,7 +373,7 @@ export const useStore = defineStore('store', {
       if (this.playerTag?.playerId === this.profile.sub) {
         const queuedFoundTag: any = BikeTagClient.getters.getOnlyFoundTagFromTagData(this.playerTag)
         const queuedMysteryTag: any = BikeTagClient.getters.getOnlyMysteryTagFromTagData(
-          this.playerTag
+          this.playerTag,
         )
         queuedMysteryTag.hash = this.game.queuehash
         return client.deleteTag(queuedMysteryTag).then(async (t) => {

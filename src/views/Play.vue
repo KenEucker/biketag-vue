@@ -181,7 +181,7 @@ async function onQueueSubmit(newTagSubmission) {
     formData.set('tag', JSON.stringify(getPlayerTag.value))
     formData.set(
       'submission',
-      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`
+      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
     )
 
     if (tag.foundImage) {
@@ -207,7 +207,7 @@ async function onQueueSubmit(newTagSubmission) {
           position: 'bottom',
         })
         return sendNetlifyError(m, undefined, errorAction)
-      }
+      },
     )
   } else {
     const message = `${t('notifications.error')}: ${success}`
@@ -285,7 +285,7 @@ onMounted(() => {
 
 .realign-spinner {
   margin-left: -15%;
-  @media (min-width: 620px) {
+  @media (width >= 620px) {
     margin-left: 0;
   }
 }

@@ -149,8 +149,7 @@ function cardClick(i, e) {
       display: grid;
       grid-template-columns: 1fr 2fr;
       padding: 1rem;
-      justify-items: center;
-      align-items: center;
+      place-items: center center;
     }
 
     &--active {
@@ -158,11 +157,11 @@ function cardClick(i, e) {
     }
   }
 
-  @media (min-width: 576px) {
+  @media (width >= 576px) {
     height: 330px;
   }
 
-  @media (min-width: 770px) {
+  @media (width >= 770px) {
     height: 400px;
   }
 }

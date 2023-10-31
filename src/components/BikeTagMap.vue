@@ -135,7 +135,7 @@ const getTags = computed(() => store.getTags)
 const getMarkers = computed(() =>
   getAllGames.value
     .filter((game) => game.boundary.lat != undefined) // add gps location to all games
-    .map((game) => ({ point: game.boundary, logo: game.logo }))
+    .map((game) => ({ point: game.boundary, logo: game.logo })),
 )
 
 // methods

@@ -69,10 +69,10 @@ function goMysteryQueue() {
       }
 
       width: 90%;
-      @media (min-width: 48rem) {
+      @media (width >= 48rem) {
         width: 60%;
       }
-      @media (min-width: 64rem) {
+      @media (width >= 64rem) {
         width: 23rem;
       }
     }

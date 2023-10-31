@@ -6,11 +6,8 @@
       <bike-tag-map class="biketags-map mt-5 mb-5" />
       <html-content class="about" filename="about-map.html" />
       <bike-tag-button class="m-5" text="See all BikeTag Posts" @click="goBikeTagsPage" />
-      <h4>
-        Experimental BikeTags Map!! <br />
-        (if your tag shows up here it means we have the data for it)
-      </h4>
-      <bike-tag-map class="biketags-map mt-5 mb-5" variant="biketags" />
+      <h4>Map of all BikeTag locations in {{ getGameName }}</h4>
+      <bike-tag-map class="biketags-map mt-2 mb-5" variant="biketags" />
     </div>
   </div>
 </template>

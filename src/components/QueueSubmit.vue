@@ -150,7 +150,7 @@ Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurr
 See all BikeTags and more, for ${getGameName.value}:
 
 [biketag.org](https://https://biketag.org) | [Leaderboard](https://https://biketag.org/leaderboard) | [Rules](https://https://biketag.org/#howto)
-    `
+    `,
 )
 const twitterPostText = computed(
   () => `
@@ -159,7 +159,7 @@ Seattle BikeTag!
 This is bike tag number ${getPlayerTag.value.tagnumber} by ${getPlayerTag.value.foundPlayer}.
 Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
 
-#SeattleBikeTag #SeaBikes #BikeSeattle`
+#SeattleBikeTag #SeaBikes #BikeSeattle`,
 )
 
 // methods

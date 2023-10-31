@@ -197,7 +197,7 @@ const getImgurImageSized = computed(() => store.getImgurImageSized)
 const _tagnumber = computed(() => (props.tagnumber ? props.tagnumber : props.tag?.tagnumber))
 const _getHint = computed(() => (props.tag?.hint ? props.tag.hint : t('pages.play.nohint')))
 const _foundTagnumber = computed(() =>
-  props.foundTagnumber ? props.foundTagnumber : props.tag?.tagnumber
+  props.foundTagnumber ? props.foundTagnumber : props.tag?.tagnumber,
 )
 const _foundImageUrl = computed(() => {
   return props.foundImageUrl
@@ -333,7 +333,9 @@ onMounted(() => {
 
 .polaroid {
   background-color: white;
-  box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
+  box-shadow:
+    0 4px 8px 0 rgb(0 0 0 / 20%),
+    0 6px 20px 0 rgb(0 0 0 / 19%);
   margin-bottom: 25px;
   width: 100%;
 }

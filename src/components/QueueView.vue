@@ -80,7 +80,7 @@ const goNextQueueStepButtonText = computed(
         : getPlayerTag.value?.foundImageUrl?.length > 0
         ? t('pages.round.complete_queue')
         : t('pages.round.join_queue')
-    } #${getCurrentBikeTag.value?.tagnumber ?? 1}!`
+    } #${getCurrentBikeTag.value?.tagnumber ?? 1}!`,
 )
 const showGoNextButton = computed(() => getQueuedTagState.value !== BiketagFormSteps.roundPosted)
 

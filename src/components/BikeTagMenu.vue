@@ -304,7 +304,9 @@ header {
   top: 0;
   left: 0;
   z-index: 999;
-  box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
+  box-shadow:
+    0 3px 6px rgb(0 0 0 / 16%),
+    0 3px 6px rgb(0 0 0 / 23%);
   transition: transform 0.5s ease-out;
 
   nav {
@@ -324,7 +326,7 @@ header {
       max-width: 25vw;
       height: auto;
     }
-    @media (min-width: 990px) {
+    @media (width >= 990px) {
       .profile-icon {
         max-width: 10vh;
       }
@@ -346,7 +348,7 @@ header {
       }
 
       ul > li {
-        @media (min-width: 992px) {
+        @media (width >= 992px) {
           margin: 1rem;
         }
       }
@@ -371,7 +373,7 @@ header {
       color: black;
       font-family: $default-secondary-font-family;
 
-      @media (max-width: 990px) {
+      @media (width <= 990px) {
         display: none;
       }
     }
@@ -382,8 +384,10 @@ header {
       font-size: 2rem;
       cursor: pointer;
 
-      @media (max-width: 990px) {
-        box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+      @media (width <= 990px) {
+        box-shadow:
+          0 1px 3px rgb(0 0 0 / 12%),
+          0 1px 2px rgb(0 0 0 / 24%);
         border-bottom: 1px solid black;
         padding: 1rem 0;
       }
@@ -405,7 +409,7 @@ header {
 .navbar-nav {
   align-items: center;
 
-  @media (max-width: 990px) {
+  @media (width <= 990px) {
     align-items: unset;
     height: 100vh;
   }
@@ -427,7 +431,7 @@ header {
 
   border-bottom: 3px solid black;
 
-  @media (max-width: 990px) {
+  @media (width <= 990px) {
     border-bottom: none;
     background-color: black;
     color: white;
@@ -492,7 +496,9 @@ footer {
 
   .footer-fixed {
     &__wrapper {
-      box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
+      box-shadow:
+        0 3px 6px rgb(0 0 0 / 16%),
+        0 3px 6px rgb(0 0 0 / 23%);
       z-index: 100;
       width: 100%;
       background-color: #e5e5e5;

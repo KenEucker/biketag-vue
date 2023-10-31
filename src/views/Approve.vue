@@ -117,7 +117,7 @@ async function onApproveSubmit(newTagSubmission) {
     formData.set('tag', JSON.stringify(getPlayerTag.value))
     formData.set(
       'approve',
-      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`
+      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
     )
 
     if (tag.foundImage) {
@@ -144,7 +144,7 @@ async function onApproveSubmit(newTagSubmission) {
           position: 'bottom',
         })
         return sendNetlifyError(m, undefined, errorAction)
-      }
+      },
     )
   } else {
     const message = `${t('notifications.error')}: ${success}`

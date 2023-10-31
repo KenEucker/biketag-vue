@@ -141,7 +141,7 @@ const currentlySelectedTag = computed(() => {
   return getQueuedTags.value[controlledSwiper.value?.activeIndex]
 })
 const currentIsReadyForApproval = computed(
-  () => currentlySelectedTag.value?.mysteryImageUrl && currentlySelectedTag.value?.foundImageUrl
+  () => currentlySelectedTag.value?.mysteryImageUrl && currentlySelectedTag.value?.foundImageUrl,
 )
 
 // methods

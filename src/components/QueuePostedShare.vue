@@ -162,7 +162,7 @@ Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurr
 See all BikeTags and more, for ${getGameName.value}:
 
 [${getGameName.value}.biketag.org](https://${getGameName.value}.biketag.org) | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/#howto)
-    `
+    `,
 )
 const twitterPostText = computed(
   () => `
@@ -171,7 +171,7 @@ Seattle BikeTag!
 This is bike tag number ${getPlayerTag.value.tagnumber} by ${getPlayerTag.value.foundPlayer}.
 Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
 
-#SeattleBikeTag #SeaBikes #BikeSeattle`
+#SeattleBikeTag #SeaBikes #BikeSeattle`,
 )
 // const instgramPostText = computed(
 //   () => `

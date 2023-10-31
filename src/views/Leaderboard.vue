@@ -24,7 +24,7 @@ const playersList = computed(() => store.getLeaderboard)
 </script>
 <style lang="scss" scoped>
 .player-list {
-  @media (min-width: 1200px) {
+  @media (width >= 1200px) {
     margin-top: 13em;
   }
 }

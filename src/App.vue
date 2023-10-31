@@ -49,7 +49,7 @@ const { isAuthenticated, idTokenClaims, user } = useAuth0()
 // computed
 const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name != 'Landing')
 const isWhiteBackground = computed(() =>
-  router.currentRoute.value.name === 'About' ? 'white-bck' : ''
+  router.currentRoute.value.name === 'About' ? 'white-bck' : '',
 )
 const logo = computed(() => store.getLogoUrl('m'))
 const title = computed(function () {
@@ -132,7 +132,7 @@ created()
 
 .spacer-top {
   height: 85px;
-  @media (min-width: 990px) {
+  @media (width >= 990px) {
     height: 105px;
   }
   @media (min-width: $breakpoint-desktop) {

@@ -1,6 +1,6 @@
 import i18n from '@/i18n'
 import VueGoogleMaps from '@fawmi/vue-google-maps'
-import BootstrapVue3 from 'bootstrap-vue-3'
+import BootstrapVueNext from 'bootstrap-vue-next'
 import mitt from 'mitt'
 import { createApp } from 'vue'
 import { useToast } from 'vue-toast-notification'
@@ -19,7 +19,7 @@ import VueIframe from 'vue-iframes'
 import '@/assets/styles/flashy.scss'
 import '@/assets/styles/style.scss'
 import { createHead } from '@vueuse/head'
-import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
+import 'bootstrap-vue-next/dist/bootstrap-vue-next.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'highlight.js/styles/monokai.css'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -65,7 +65,7 @@ class BikeTagApp {
   }
   components() {
     this.app.provide('toast', useToast())
-    this.app.use(BootstrapVue3)
+    this.app.use(BootstrapVueNext)
     this.app.use(Markdown)
     this.app.use(VueIframe)
     this.app.use(VueGoogleMaps, {

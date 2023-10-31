@@ -89,7 +89,6 @@ const backgroundSrc = computed(() => {
 
       &-reverse {
         img {
-          margin-top: 80px;
           margin-top: 40px;
           transform: rotate(180deg);
         }

@@ -43,7 +43,7 @@
               (key) =>
                 profile?.user_metadata[key] != null &&
                 profile?.user_metadata[key].length > 0 &&
-                key != 'passcode'
+                key != 'passcode',
             )"
             :key="`${i}_label`"
             class="player-name mt-4"
@@ -109,7 +109,7 @@
             <div :ref="credentialsRef[credential]" class="input-block mt-3 hide">
               <bike-tag-input
                 v-for="(inputField, j) in Object.keys(
-                  profile.user_metadata.credentials[credential]
+                  profile.user_metadata.credentials[credential],
                 )"
                 :key="`${j}_config_ipnuts`"
                 v-model="profile.user_metadata.credentials[credential][inputField]"
@@ -342,7 +342,7 @@ hr {
   max-width: 800px;
   margin: auto;
 
-  @media (min-width: 600px) {
+  @media (width >= 600px) {
     flex-flow: row nowrap;
 
     .player-name {

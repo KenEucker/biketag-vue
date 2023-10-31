@@ -215,7 +215,7 @@ function tagColorNumber(count) {
     top: 15%;
   }
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     .tag-count {
       left: 52%;
     }

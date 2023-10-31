@@ -213,7 +213,7 @@ const showHint = () => {
             await sleep(timeout.value)
             mysteryHint.value.innerText = mysteryHint.value.innerText.slice(
               0,
-              mysteryHint.value.innerText.length - 1
+              mysteryHint.value.innerText.length - 1,
             )
             j++
           }

@@ -4,7 +4,7 @@ import path from 'path'
 import { defineConfig } from 'vite'
 import envCompatible from 'vite-plugin-env-compatible'
 import EnvironmentPlugin from 'vite-plugin-environment'
-import { injectHtml } from 'vite-plugin-html'
+import { createHtmlPlugin } from 'vite-plugin-html'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
@@ -120,7 +120,7 @@ export default defineConfig({
     }),
     viteCommonjs(),
     envCompatible(),
-    injectHtml(),
+    createHtmlPlugin(),
   ],
   build: {
     rollupOptions: {

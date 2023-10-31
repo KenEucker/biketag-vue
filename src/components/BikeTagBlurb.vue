@@ -107,8 +107,7 @@ hr {
   .img-container {
     display: flex;
     flex-flow: column nowrap;
-    justify-content: center;
-    align-content: space-around;
+    place-content: space-around center;
     align-items: center;
 
     img {
@@ -150,7 +149,7 @@ hr {
     text-align: left;
   }
 }
-@media (min-width: 600px) {
+@media (width >= 600px) {
   hr,
   .header {
     width: 80%;

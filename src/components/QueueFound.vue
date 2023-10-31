@@ -186,7 +186,7 @@ const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getProfile = computed(() => store.getProfile)
 const getGame = computed(() => store.getGame)
 const getName = computed(
-  () => getProfile.value?.user_metadata?.name ?? props.tag?.foundPlayer ?? ''
+  () => getProfile.value?.user_metadata?.name ?? props.tag?.foundPlayer ?? '',
 )
 const isGps = computed(() => gps.value.lat && gps.value.lng)
 const getLocation = computed(() => {
@@ -217,7 +217,7 @@ const onSubmit = async (e) => {
 
   if (calculateInBoundary()) {
     toast.open({
-      message: 'Please add a location within the allowed limits',
+      message: 'That location is outside of the game boundaries.',
       type: 'error',
       position: 'top',
     })
@@ -483,7 +483,7 @@ input#found {
   .vue-map {
     height: 400px;
   }
-  @media (min-width: 600px) {
+  @media (width >= 600px) {
     max-width: 420px;
     width: 420px;
 
@@ -491,7 +491,7 @@ input#found {
       width: 400px;
     }
   }
-  @media (min-width: 800px) {
+  @media (width >= 800px) {
     width: 620px;
     max-width: 620px;
   }

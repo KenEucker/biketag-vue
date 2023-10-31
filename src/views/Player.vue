@@ -163,7 +163,7 @@ watch(
   () => route.params.currentPage,
   (val) => {
     currentPage.value = Number(val)
-  }
+  },
 )
 
 // created
@@ -187,7 +187,7 @@ onMounted(async () => {
     border: unset;
   }
 
-  @media (min-width: 576px) {
+  @media (width >= 576px) {
     .modal-dialog {
       max-width: 650px;
     }

@@ -93,7 +93,7 @@ hr {
   }
 }
 
-@media (min-width: 600px) {
+@media (width >= 600px) {
   hr,
   .header {
     width: 80%;

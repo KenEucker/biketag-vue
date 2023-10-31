@@ -128,7 +128,7 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
     try {
       const existingProfileDecodedString = CryptoJS.AES.decrypt(
         existingProfileString,
-        process.env.HOST_KEY ?? 'BikeTag'
+        process.env.HOST_KEY ?? 'BikeTag',
       )
       const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
       return existingProfile
@@ -169,7 +169,7 @@ export const setQueuedTagInCookie = (queuedTag?: Tag, biketagCookieKey = 'biketa
 
 export const setProfileCookie = (
   profile?: BikeTagProfile,
-  profileCookieKey = 'profile'
+  profileCookieKey = 'profile',
 ): boolean => {
   try {
     const { cookies } = useCookies()
@@ -177,7 +177,7 @@ export const setProfileCookie = (
     if (profile) {
       const encryptedProfileString = CryptoJS.AES.encrypt(
         JSON.stringify(profile),
-        process.env.HOST_KEY ?? 'BikeTag'
+        process.env.HOST_KEY ?? 'BikeTag',
       ).toString()
       cookies.set(profileCookieKey, encryptedProfileString)
     } else {
@@ -197,7 +197,7 @@ export const setNPAuthorization = (basic: string): string => {
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
   currentTagnumber: number,
-  mostRecentCookieKey = 'mostRecentlyViewedTagnumber'
+  mostRecentCookieKey = 'mostRecentlyViewedTagnumber',
 ): number => {
   const { cookies } = useCookies()
   const existingMostRecent = cookies.get(mostRecentCookieKey)
@@ -230,7 +230,7 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
 export const sendNetlifyError = function (
   message: any,
   then?: (value: Response) => Response | PromiseLike<Response>,
-  action = 'post-tag-error'
+  action = 'post-tag-error',
 ) {
   const body = new URLSearchParams({
     message,
@@ -255,7 +255,7 @@ export const sendNetlifyForm = function (
   action: string,
   body: any,
   then: (value: Response) => Response | PromiseLike<Response>,
-  error = sendNetlifyError
+  error = sendNetlifyError,
 ) {
   return fetch(action, {
     method: 'POST',
@@ -305,7 +305,7 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
 export const getSanityImageUrl = (
   logo: string,
   size = '',
-  sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/'
+  sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/',
 ) => {
   switch (size) {
     case 'l':

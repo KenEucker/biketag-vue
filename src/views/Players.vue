@@ -50,7 +50,10 @@ const store = useStore()
 // computed
 const getPlayers = computed(() => store.getPlayers)
 const playersForList = computed(() =>
-  getPlayers.value.slice((currentPage.value - 1) * perPage.value, currentPage.value * perPage.value)
+  getPlayers.value.slice(
+    (currentPage.value - 1) * perPage.value,
+    currentPage.value * perPage.value,
+  ),
 )
 const totalCount = computed(() => getPlayers.value.length)
 
@@ -67,6 +70,6 @@ watch(
   () => 'route.params.currentPage',
   (val) => {
     currentPage.value = Number(val)
-  }
+  },
 )
 </script>

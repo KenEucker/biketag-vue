@@ -214,7 +214,9 @@ footer {
 }
 
 header {
-  box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
+  box-shadow:
+    0 3px 6px rgb(0 0 0 / 16%),
+    0 3px 6px rgb(0 0 0 / 23%);
   position: fixed;
   background-color: #e5e5e5;
   width: 100%;
@@ -247,14 +249,16 @@ header {
         background-color: #e5e5e5;
         font-family: $default-secondary-font-family;
         text-transform: uppercase;
-        box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+        box-shadow:
+          0 1px 3px rgb(0 0 0 / 12%),
+          0 1px 2px rgb(0 0 0 / 24%);
         border-bottom: 1px solid black;
         padding: 1rem 0;
         font-size: 2rem;
         cursor: pointer;
       }
     }
-    @media (min-width: 992px) {
+    @media (width >= 992px) {
       width: 90%;
 
       .navbar-brand,
@@ -344,7 +348,7 @@ footer {
     }
   }
 
-  @media (min-width: 780px) {
+  @media (width >= 780px) {
     display: flex;
     flex-flow: row-reverse nowrap;
 
@@ -371,7 +375,7 @@ footer {
     }
   }
 }
-@media (min-width: 780px) {
+@media (width >= 780px) {
   main {
     margin-bottom: calc(-220px - 1rem);
   }

@@ -63,8 +63,8 @@ const getTags = computed(() => store.getTags)
 const tagsList = computed(() =>
   getTags.value.slice(
     (currentPage.value - 1) * perPage.value + (currentPage.value === 1 ? 1 : 0), // exclude current mystery tag
-    currentPage.value * perPage.value // exclude current mystery tag
-  )
+    currentPage.value * perPage.value, // exclude current mystery tag
+  ),
 )
 const totalCount = computed(() => getTags.value.length)
 
@@ -95,6 +95,6 @@ watch(
   () => 'route.params.currentPage',
   (val) => {
     currentPage.value = Number(val)
-  }
+  },
 )
 </script>
