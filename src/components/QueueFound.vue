@@ -384,67 +384,6 @@ const setImage = (event) => {
   }
 }
 
-// function isPointInsidePolygon(point, polygon) {
-//   let x = point.lng,
-//     y = point.lat
-//   let inside = false
-
-//   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-//     let xi = polygon[i].lng,
-//       yi = polygon[i].lat
-//     let xj = polygon[j].lng,
-//       yj = polygon[j].lat
-
-//     let intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
-//     if (intersect) inside = !inside
-//   }
-
-//   return inside
-// }
-
-// function calculateWithinBoundary(boundaries, point) {
-//   for (let i = 0; i < boundaries.length; i++) {
-//     if (isPointInsidePolygon(point, boundaries[i])) {
-//       return true // The point is inside one of the boundaries
-//     }
-//   }
-//   return false // The point is not inside any of the boundaries
-// }
-
-// const inBoundary = (orderedPathsLat = null, _gps = null) => {
-//   if (orderedPathsLat && _gps) {
-//     // console.log('both are set', {orderedPathsLat, _gps})
-//     return calculateWithinBoundary(orderedPathsLat, _gps)
-//   } else {
-//     // console.log('both are not set', _gps)
-//     return orderedPathsLat.length !== 0
-//   }
-// }
-
-// const calculateInBoundary = () => {
-//   // If the boundary is set
-//   if (boundary.value.paths) {
-//     isInBoundary.value = inBoundary(boundary.value.paths, gps.value)
-
-//     console.log({
-//       isInBoundary: isInBoundary.value,
-//       boundary: boundary.value,
-//       bounds: boundary.value.paths,
-//       gps: gps.value,
-//     })
-//     if (!isInBoundary.value) {
-//       confirmInBoundary.value = true
-//     }
-//   } else {
-//     console.log('boundary not set')
-//     isInBoundary.value = true
-//     confirmedBoundary.value = true
-//     confirmInBoundary.value = false
-//   }
-
-//   return !isInBoundary.value && !confirmedBoundary.value
-// }
-
 const feetToKm = (feets) => feets * 0.0003048
 
 const isPointInPolygon = (polygon_array, gps, distanceOffInFeet) => {
@@ -485,7 +424,6 @@ const calculateInBoundary = () => {
 
   return !isInBoundary.value && !confirmedBoundary.value
 }
-
 
 nextTick(() => (showPopover.value = true))
 const created = async () => {

@@ -11,7 +11,10 @@
   <div v-else-if="getCurrentBikeTag" class="container">
     <div v-if="props.onlyMine">
       <b-button id="current-mystery-popover" class="navigation">
-        <v-lazy-image class="img-fluid" :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')" />
+        <v-lazy-image
+          class="img-fluid"
+          :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')"
+        />
       </b-button>
       <b-popover
         target="current-mystery-popover"
@@ -24,7 +27,10 @@
       </b-popover>
 
       <b-button v-if="getPlayerTag.foundImageUrl" id="queued-found-popover" class="navigation">
-        <v-lazy-image class="img-fluid" :src="getImgurImageSized(getPlayerTag.foundImageUrl, 's')" />
+        <v-lazy-image
+          class="img-fluid"
+          :src="getImgurImageSized(getPlayerTag.foundImageUrl, 's')"
+        />
       </b-button>
       <b-popover
         v-if="getPlayerTag.foundImageUrl?.length > 0"
@@ -47,7 +53,10 @@
         id="queued-mystery-popover"
         class="navigation"
       >
-        <v-lazy-image class="img-fluid" :src="getImgurImageSized(getPlayerTag.mysteryImageUrl, 's')" />
+        <v-lazy-image
+          class="img-fluid"
+          :src="getImgurImageSized(getPlayerTag.mysteryImageUrl, 's')"
+        />
       </b-button>
       <b-popover
         v-if="getPlayerTag.mysteryImageUrl?.length > 0"
@@ -67,7 +76,10 @@
     </div>
     <div v-if="!props.onlyMine" class="bike-pagination mt-3 mb-3">
       <div v-for="(tag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
-        <v-lazy-image :src="getImgurImageSized(tag.foundImageUrl)" @click="paginationClick(index)" />
+        <v-lazy-image
+          :src="getImgurImageSized(tag.foundImageUrl)"
+          @click="paginationClick(index)"
+        />
         <span v-if="props.showNumber">{{ index + 1 }}</span>
       </div>
     </div>
@@ -80,7 +92,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 import { useI18n } from 'vue-i18n'
-import VLazyImage from "v-lazy-image"
+import VLazyImage from 'v-lazy-image'
 
 // props
 const props = defineProps({
