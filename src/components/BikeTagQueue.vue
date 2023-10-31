@@ -4,14 +4,14 @@
       <span v-if="props.showNumber">
         {{ props.tag.tagnumber }} by {{ props.tag.mysteryPlayer }}
       </span>
-      <img :src="getImgurImageSized(props.tag.mysteryImageUrl, 's')" />
-      <img :src="getImgurImageSized(props.tag.foundImageUrl, 's')" />
+      <v-lazy-image :src="getImgurImageSized(props.tag.mysteryImageUrl, 's')" />
+      <v-lazy-image :src="getImgurImageSized(props.tag.foundImageUrl, 's')" />
     </div>
   </div>
   <div v-else-if="getCurrentBikeTag" class="container">
     <div v-if="props.onlyMine">
       <b-button id="current-mystery-popover" class="navigation">
-        <img class="img-fluid" :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')" />
+        <v-lazy-image class="img-fluid" :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')" />
       </b-button>
       <b-popover
         target="current-mystery-popover"
@@ -20,11 +20,11 @@
         placement="bottom"
       >
         <template #title>{{ t('components.queue.current_mystery_location') }}</template>
-        <img class="img-fluid" :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')" />
+        <v-lazy-image class="img-fluid" :src="getCurrentBikeTag.mysteryImageUrl" />
       </b-popover>
 
       <b-button v-if="getPlayerTag.foundImageUrl" id="queued-found-popover" class="navigation">
-        <img class="img-fluid" :src="getImgurImageSized(getPlayerTag.foundImageUrl, 's')" />
+        <v-lazy-image class="img-fluid" :src="getImgurImageSized(getPlayerTag.foundImageUrl, 's')" />
       </b-button>
       <b-popover
         v-if="getPlayerTag.foundImageUrl?.length > 0"
@@ -34,7 +34,7 @@
         class="queued-found"
       >
         <template #title>{{ t('components.queue.view_found_image') }}</template>
-        <img class="img-fluid" :src="getImgurImageSized(getPlayerTag.foundImageUrl, 's')" />
+        <v-lazy-image class="img-fluid" :src="getPlayerTag.foundImageUrl" />
         <div v-if="canReset()" class="row">
           <b-button class="col" variant="danger" @click="resetToFound">
             {{ t('components.queue.reset_queue_button') }}
@@ -47,7 +47,7 @@
         id="queued-mystery-popover"
         class="navigation"
       >
-        <img class="img-fluid" :src="getImgurImageSized(getPlayerTag.mysteryImageUrl, 's')" />
+        <v-lazy-image class="img-fluid" :src="getImgurImageSized(getPlayerTag.mysteryImageUrl, 's')" />
       </b-button>
       <b-popover
         v-if="getPlayerTag.mysteryImageUrl?.length > 0"
@@ -57,7 +57,7 @@
         class="queued-mystery"
       >
         <template #title>{{ t('components.queue.view_mystery_image') }}</template>
-        <img class="img-fluid" :src="getPlayerTag.mysteryImageUrl" />
+        <v-lazy-image class="img-fluid" :src="getPlayerTag.mysteryImageUrl" />
         <div v-if="canReset()" class="row">
           <b-button class="col" variant="danger" @click="resetToMystery">
             {{ t('components.queue.reset_queue_button') }}
@@ -66,8 +66,8 @@
       </b-popover>
     </div>
     <div v-if="!props.onlyMine" class="bike-pagination mt-3 mb-3">
-      <div v-for="(mine, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
-        <img :src="mine.foundImageUrl" @click="paginationClick(index)" />
+      <div v-for="(tag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
+        <v-lazy-image :src="getImgurImageSized(tag.foundImageUrl)" @click="paginationClick(index)" />
         <span v-if="props.showNumber">{{ index + 1 }}</span>
       </div>
     </div>
@@ -80,6 +80,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { BiketagFormSteps } from '@/common/types'
 import { useI18n } from 'vue-i18n'
+import VLazyImage from "v-lazy-image"
 
 // props
 const props = defineProps({

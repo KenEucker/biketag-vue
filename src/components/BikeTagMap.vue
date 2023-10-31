@@ -24,7 +24,7 @@
               :position="{ lat: tag.gps.lat ?? 0, lng: tag.gps.long ?? 0 }"
               :clickable="true"
             />
-            <b-popover :target="`marker_${i}`" triggers="hover" placement="top">
+            <b-popover :target="`marker_${i}`" triggers="hover focus" placement="top">
               <template #title> {{ `#${i}` }} by {{ tag.mysteryPlayer }}</template>
               <bike-tag-queue class="world-map__popover" :tag="tag" :show-number="false" />
             </b-popover>
