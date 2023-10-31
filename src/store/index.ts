@@ -67,11 +67,14 @@ export const useStore = defineStore('store', {
     profile,
     mostRecentlyViewedTagnumber,
     credentialsFetched: false,
+    regionPolyon: null,
   }),
   actions: {
     // eslint-disable-next-line no-empty-pattern
     async getRegionPolygon(region: any) {
       try {
+        if (this.regionPolyon) return this.regionPolyon
+
         const firstOfRegion = region.description.split(',')[0].toLowerCase()
         const results = (
           await client.plainRequest({
@@ -102,6 +105,7 @@ export const useStore = defineStore('store', {
           return 0
         })
         // console.log({ region, firstOfRegion, results, filteredResults, sortedResults })
+        this.SET_REGION_POLYGON(sortedResults[0])
         return sortedResults[0]
       } catch (e) {
         console.log('map cannot continue')
@@ -678,6 +682,9 @@ export const useStore = defineStore('store', {
     RESET_FORM_STEP_TO_MYSTERY() {
       this.formStep = BiketagFormSteps.addMysteryImage
       // debug('state::queue', BiketagFormSteps[this.formStep])
+    },
+    SET_REGION_POLYGON(regionPolygon: any) {
+      this.regionPolyon = regionPolygon
     },
   },
   getters: {
