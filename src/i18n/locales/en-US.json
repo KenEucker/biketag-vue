@@ -1,4 +1,7 @@
 {
+  "app": {
+    "gameof": "The Game Of"
+  },
   "notifications": {
     "approving": "Approving new BikeTag",
     "uploading": "Uploading tag information...",
@@ -33,7 +36,7 @@
     "mysterylocation": "Current Mystery Location",
     "previous": "Prev",
     "next": "Next",
-    "download": "Capture"
+    "download": "Download"
   },
   "components": {
     "biketag": {
@@ -69,6 +72,7 @@
     },
     "login":{
       "player": "BikeTag Player Login",
+      "description": "The BikeTag Game doesn't require you to log in to play the game, but creating a login does give you the opportunity to secure your player name and prevent others from using it.",
       "ambassador": "BikeTag Ambassador Login"
     },
     "profile": {
@@ -120,7 +124,11 @@
       "dequeue_queued_tag": "Delete this BikeTag post",
       "reset_tag": "Reset tag submission",
       "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project",
-      "image_first": "Please upload your image first!"
+      "image_first": "Please upload your image first!",
+      "missing_gps_alert": {
+        "title": "Confirm location outside the limits",
+        "body": "The chosen location is outside the suggested game boundaries. Are you sure you want to continue?"
+      }
     },
     "howto": {
       "browser_not_support_audio": "Your browser does not support the audio element.",

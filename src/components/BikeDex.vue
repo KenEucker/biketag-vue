@@ -1,6 +1,6 @@
 <template>
   <div class="deck">
-    <template v-for="(tag, i) in tags" :key="i">
+    <template v-for="(tag, i) in props.tags" :key="i">
       <div
         v-if="tag.foundImageUrl"
         :id="`card-${i}`"
@@ -18,35 +18,33 @@
     </template>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
 
-export default defineComponent({
-  name: 'BikeDex',
-  props: {
-    tags: {
-      type: Array,
-      default: () => [],
-    },
-  },
-  methods: {
-    cardClick(i, e) {
-      const card = document.getElementById(e)
-      let zIndex
-      if (Array.from(card.classList).includes('deck__card--active')) {
-        zIndex = -(1 + i)
-      } else {
-        zIndex = 1 + i
-      }
-      card.classList.toggle('deck__card--active')
-      const timeoutID = setTimeout(() => {
-        card.style.zIndex = zIndex
-        clearTimeout(timeoutID)
-      }, 500)
-    },
+<script setup name="BikeDex">
+// props
+const props = defineProps({
+  tags: {
+    type: Array,
+    default: () => [],
   },
 })
+
+// methods
+function cardClick(i, e) {
+  const card = document.getElementById(e)
+  let zIndex
+  if (Array.from(card.classList).includes('deck__card--active')) {
+    zIndex = -(1 + i)
+  } else {
+    zIndex = 1 + i
+  }
+  card.classList.toggle('deck__card--active')
+  const timeoutID = setTimeout(() => {
+    card.style.zIndex = zIndex
+    clearTimeout(timeoutID)
+  }, 500)
+}
 </script>
+
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 
@@ -151,8 +149,7 @@ export default defineComponent({
       display: grid;
       grid-template-columns: 1fr 2fr;
       padding: 1rem;
-      justify-items: center;
-      align-items: center;
+      place-items: center center;
     }
 
     &--active {
@@ -160,11 +157,11 @@ export default defineComponent({
     }
   }
 
-  @media (min-width: 576px) {
+  @media (width >= 576px) {
     height: 330px;
   }
 
-  @media (min-width: 770px) {
+  @media (width >= 770px) {
     height: 400px;
   }
 }

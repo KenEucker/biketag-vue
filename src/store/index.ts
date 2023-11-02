@@ -1,28 +1,23 @@
-import { InjectionKey } from 'vue'
-import { createStore, Store } from 'vuex'
-import BikeTagClient from 'biketag'
-import { Game, Tag, Player } from 'biketag/lib/common/schema'
+import { BiketagFormSteps, State } from '@/common/types'
 import {
+  getApiUrl,
+  getBikeTagClientOpts,
+  getBikeTagHash,
   getDomainInfo,
   getImgurImageSized,
+  getMostRecentlyViewedBikeTagTagnumber,
   getProfileFromCookie,
-  getBikeTagClientOpts,
   getQueuedTagState,
   getSanityImageUrl,
-  getMostRecentlyViewedBikeTagTagnumber,
-  getApiUrl,
+  setNPAuthorization,
   setProfileCookie,
-  getBikeTagHash,
-  // setQueuedTagInCookie,
-  // getQueuedTagFromCookie,
 } from '@/common/utils'
-import { BiketagFormSteps, State } from '@/common/types'
-import { setNPAuthorization } from '@/common/utils'
+import BikeTagClient from 'biketag'
+import { Game, Player, Tag } from 'biketag/lib/common/schema'
+import { createPinia, defineStore } from 'pinia'
 import { debug } from '../common/utils'
+// import { inject } from 'vue'
 
-// define injection key
-/// TODO: move these initializers to a method for FE use only
-export const key: InjectionKey<Store<State>> = Symbol()
 const domain = getDomainInfo(window)
 const profile = getProfileFromCookie()
 const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
@@ -53,8 +48,9 @@ debug('init::store', {
 /// TODO: create a helper for the instantiation of the biketag client (use singleton?)
 let client = new BikeTagClient(options)
 
-export const store = createStore<State>({
-  state: {
+export const store = createPinia()
+export const useStore = defineStore('store', {
+  state: (): State => ({
     dataInitialized: false,
     gameName,
     game: {} as Game,
@@ -71,20 +67,25 @@ export const store = createStore<State>({
     profile,
     mostRecentlyViewedTagnumber,
     credentialsFetched: false,
-  },
+    regionPolyon: null,
+  }),
   actions: {
     // eslint-disable-next-line no-empty-pattern
-    async getRegionPolygon({}, region) {
+    async getRegionPolygon(region: any) {
       try {
-        console.log({ zip: region.zipcode })
+        if (this.regionPolyon) return this.regionPolyon
+        else if (!region) {
+          return
+        }
+
         const firstOfRegion = region.description.split(',')[0].toLowerCase()
         const results = (
           await client.plainRequest({
             method: 'GET',
-            url: 'https://nominatim.openstreetmap.org/search.php',
+            url: 'https://nominatim.openstreetmap.org/search',
             params: {
               q: region.description,
-              postalcode: region.zipcode,
+              // postalcode: region.zipcode,
               polygon_geojson: 1,
               format: 'json',
             },
@@ -93,9 +94,10 @@ export const store = createStore<State>({
         const filteredResults = results.filter(
           (v: any) =>
             v?.type == 'administrative' ||
+            v?.type == 'postcode' ||
             (v?.type == 'city' &&
               v?.geojson?.coordinates?.length &&
-              v?.geojson.coordinates[0].length > 1)
+              v?.geojson.coordinates[0].length > 1),
         )
         const sortedResults = filteredResults.sort((v1: any, v2: any) => {
           if (v2?.display_name.toLowerCase().indexOf(firstOfRegion) === 0) {
@@ -105,27 +107,28 @@ export const store = createStore<State>({
           }
           return 0
         })
-        console.log({ results, filteredResults, sortedResults })
+        this.SET_REGION_POLYGON(sortedResults[0])
         return sortedResults[0]
       } catch (e) {
         console.log('map cannot continue')
         console.error(e)
       }
     },
-    async fetchCredentials({ state }) {
-      if (!state.credentialsFetched) {
+    async fetchCredentials() {
+      if (!this.credentialsFetched) {
         const credentials = await client.fetchCredentials()
         await client.config(credentials, false, true)
-        state.credentialsFetched = true
-        // if (state.profile?.isBikeTagAmbassador) {
+        this.credentialsFetched = true
+        // if (this.profile?.isBikeTagAmbassador) {
+        //   const auth = inject('auth0')
         //   /// fetch auth token for admin purposes
         //   const checkAuth = () => {
-        //     if (this.$auth?.isAuthenticated) {
+        //     if (auth?.isAuthenticated) {
         //       if (!this.getProfile?.nonce?.length) {
-        //         this.$auth.getIdTokenClaims().then((claims) => {
+        //         auth.getIdTokenClaims().then((claims) => {
         //           if (claims) {
         //             const token = claims.__raw
-        //             this.$store.dispatch('setProfile', { ...this.$auth.user, token })
+        //             this.$store.dispatch('setProfile', { ...auth.user, token })
         //           } else {
         //             debug("what's this? no speaka da mda5hash, brah?")
         //           }
@@ -138,7 +141,7 @@ export const store = createStore<State>({
         // }
       }
     },
-    async setProfile({ commit }, profile) {
+    async setProfile(profile: any) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {
         const token = profile.token
@@ -154,88 +157,89 @@ export const store = createStore<State>({
         if (response.status == 200) {
           if (typeof response.data === 'string') {
             const biketagProfile = JSON.parse(response.data)
-            return commit('SET_PROFILE', biketagProfile)
+            return this.SET_PROFILE(biketagProfile)
           } else if (typeof response.data === 'object') {
-            return commit('SET_PROFILE', response.data)
+            return this.SET_PROFILE(response.data)
           }
         }
       }
 
-      return commit('SET_PROFILE', profile)
+      return this.SET_PROFILE(profile)
     },
-    async setGame({ commit, state }) {
-      if (!state.game?.mainhash) {
-        return client.game(state.gameName, gameOpts as any).then(async (d) => {
+    async setGame() {
+      if (!this.game?.mainhash) {
+        return client.game(this.gameName, gameOpts as any).then(async (d) => {
           if (d) {
             const game = d as Game
             options.imgur.hash = game.mainhash
             options.imgur.queuehash = game.queuehash
             client = new BikeTagClient(options)
 
-            await commit('SET_GAME', game)
+            this.SET_GAME(game)
             return game
           }
           return false
         })
       }
     },
-    setAllGames({ commit }) {
+    setAllGames() {
       const biketagClient = new BikeTagClient({ ...options, game: undefined })
       return biketagClient
         .getGame(
           { game: '' },
           {
             source: 'sanity',
-          }
+          },
         )
         .then((d) => {
           if (d.success) {
             const games = d.data as unknown as Game[]
             const supportedGames = games.filter(
               (g: Game) =>
-                g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length
+                g.mainhash?.length &&
+                g.archivehash?.length &&
+                g.queuehash?.length &&
+                g.logo?.length,
             )
-            console.log({ setAllGames: supportedGames, games })
-            return commit('SET_ALL_GAMES', supportedGames)
+            // console.log({ setAllGames: supportedGames, games })
+            return this.SET_ALL_GAMES(supportedGames)
           }
 
           return false
         })
     },
-    setCurrentBikeTag({ commit }, cached = true) {
-      return client.getTag(undefined, { cached }).then((r) => {
-        return commit('SET_CURRENT_TAG', r.data)
+    setCurrentBikeTag(cached = true) {
+      return client.getTag({ cached }).then((r) => {
+        return this.SET_CURRENT_TAG(r.data)
       })
     },
-    setTags({ commit }, cached = true) {
-      return client.tags(undefined, { cached }).then((d) => {
-        return commit('SET_TAGS', d)
-      })
+    setTags(cached = true) {
+      return client.tags({ cached }).then(this.SET_TAGS)
     },
-    setQueuedTags({ commit, state }, cached = true) {
-      if (state.currentBikeTag?.tagnumber > 0) {
-        return client.queue(undefined, { cached }).then((d) => {
+    setQueuedTags(cached = true) {
+      if (this.currentBikeTag?.tagnumber > 0) {
+        return client.queue({ cached }).then((d) => {
           if ((d as Tag[])?.length > 0) {
             const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
-              (t) => t.tagnumber >= state.currentBikeTag.tagnumber
+              (t) => t.tagnumber >= this.currentBikeTag.tagnumber,
             )
-            const queuedTag = currentBikeTagQueue.filter((t) => t.playerId === state.profile.sub)
+            const queuedTag = currentBikeTagQueue.filter((t) => t.playerId === this.profile.sub)
 
             if (queuedTag.length) {
               const fullyQueuedTag = queuedTag[0]
               const queuedMysteryTag = (d as Tag[]).filter(
-                (t) => t.mysteryPlayer === queuedTag[0].foundPlayer
+                (t) => t.mysteryPlayer === queuedTag[0].foundPlayer,
               )
               if (queuedMysteryTag.length) {
                 fullyQueuedTag.mysteryImage = queuedMysteryTag[0].mysteryImage
                 fullyQueuedTag.mysteryImageUrl = queuedMysteryTag[0].mysteryImageUrl
                 fullyQueuedTag.mysteryPlayer = queuedMysteryTag[0].mysteryPlayer
               }
-              commit('SET_QUEUED_TAG', fullyQueuedTag)
-              commit('SET_QUEUED_TAG_STATE', fullyQueuedTag)
+              this.SET_QUEUED_TAG(fullyQueuedTag)
+              this.SET_QUEUED_TAG_STATE(fullyQueuedTag)
             }
 
-            return commit('SET_QUEUED_TAGS', currentBikeTagQueue)
+            return this.SET_QUEUED_TAGS(currentBikeTagQueue)
           }
 
           return false
@@ -244,38 +248,34 @@ export const store = createStore<State>({
 
       return false
     },
-    setPlayers({ commit }, cached = true) {
-      return client.players(undefined, { cached }).then((d) => {
-        return commit('SET_PLAYERS', d)
-      })
+    setPlayers(cached = true) {
+      return client.players({ cached }).then(this.SET_PLAYERS)
     },
-    setLeaderboard({ commit }, cached = true) {
-      return client.players({ sort: 'top', limit: 10 }, { cached }).then((d) => {
-        return commit('SET_LEADERBOARD', d)
-      })
+    setLeaderboard(cached = true) {
+      return client.players({ sort: 'top', limit: 10, cached }).then(this.SET_LEADERBOARD)
     },
-    setQueuedTag({ commit }, d) {
-      return commit('SET_QUEUED_TAG', d)
+    setQueuedTag(d: any) {
+      return this.SET_QUEUED_TAG(d)
     },
-    setFormStepToJoin({ commit, state }, d) {
-      if (state.formStep === BiketagFormSteps.viewRound || d) {
-        return commit('SET_FORM_STEP_TO_JOIN', d)
+    setFormStepToJoin(d: any) {
+      if (this.formStep === BiketagFormSteps.viewRound || d) {
+        return this.SET_FORM_STEP_TO_JOIN(d)
       }
       return true
     },
-    setDataInitialized({ commit }) {
-      return commit('SET_DATA_INITIALIZED')
+    setDataInitialized() {
+      return this.SET_DATA_INITIALIZED()
     },
-    async approveTag({ state }, d) {
-      if (state.profile?.isBikeTagAmbassador) {
-        d.hash = state.game.queuehash
+    async approveTag(d: any) {
+      if (this.profile?.isBikeTagAmbassador) {
+        d.hash = this.game.queuehash
         const token = d.token
         d.token = undefined
         try {
           const approveTagResponse = await client.plainRequest({
             method: 'POST',
             url: getApiUrl('approve'),
-            data: { tag: d, ambassadorId: state.profile.sub },
+            data: { tag: d, ambassadorId: this.profile.sub },
             headers: {
               authorization: `Bearer ${token}`,
             },
@@ -293,9 +293,9 @@ export const store = createStore<State>({
 
       return 'incorrect permissions'
     },
-    async dequeueTag({ state }, d) {
-      if (state.profile?.isBikeTagAmbassador) {
-        d.hash = state.game.queuehash
+    async dequeueTag(d: any) {
+      if (this.profile?.isBikeTagAmbassador) {
+        d.hash = this.game.queuehash
         return client.deleteTag(d).then((t) => {
           if (t.success) {
             debug('store::tag dequeued', d)
@@ -308,7 +308,7 @@ export const store = createStore<State>({
       }
       return 'incorrect permissions'
     },
-    async assignName({ commit }, profile) {
+    async assignName(profile: any) {
       await client.plainRequest({
         method: 'PUT',
         url: getApiUrl('profile'),
@@ -318,11 +318,11 @@ export const store = createStore<State>({
         },
         data: { user_metadata: { name: profile.user_metadata.name } },
       })
-      return commit('SET_PROFILE', profile)
+      return this.SET_PROFILE(profile)
     },
-    async updateProfile({ commit, state }, profile) {
+    async updateProfile(profile: any) {
       // Update Auth0 Profile
-      profile.name = state.profile.name
+      profile.name = this.profile.name
       const user_metadata = profile.user_metadata
       const updatedProfileResponse = await client.plainRequest({
         method: 'PATCH',
@@ -334,10 +334,10 @@ export const store = createStore<State>({
         data: { user_metadata },
       })
 
-      return commit('SET_PROFILE', updatedProfileResponse.data)
+      return this.SET_PROFILE(updatedProfileResponse.data)
     },
     // eslint-disable-next-line no-empty-pattern
-    async checkPasscode({}, { name, passcode }) {
+    async checkPasscode({ name, passcode }: any) {
       return await client.plainRequest({
         method: 'GET',
         url: getApiUrl('profile'),
@@ -347,7 +347,7 @@ export const store = createStore<State>({
       })
     },
     // eslint-disable-next-line no-empty-pattern
-    async getUserSocial({}, name) {
+    async getUserSocial(name: any) {
       return await client.plainRequest({
         method: 'GET',
         url: getApiUrl('profile'),
@@ -356,15 +356,15 @@ export const store = createStore<State>({
         },
       })
     },
-    async dequeueFoundTag({ commit, state }) {
-      if (state.playerTag?.playerId === state.profile.sub) {
-        const queuedTag: any = state.playerTag
-        queuedTag.hash = state.game.queuehash
+    async dequeueFoundTag() {
+      if (this.playerTag?.playerId === this.profile.sub) {
+        const queuedTag: any = this.playerTag
+        queuedTag.hash = this.game.queuehash
         return client.deleteTag(queuedTag).then(async (t) => {
           if (t.success) {
-            debug('store::found tag dequeued', state.playerTag)
-            await commit('SET_QUEUED_TAG', {})
-            await commit('RESET_FORM_STEP_TO_FOUND')
+            debug('store::found tag dequeued', this.playerTag)
+            await this.SET_QUEUED_TAG({})
+            await this.RESET_FORM_STEP_TO_FOUND()
 
             return true
           } else {
@@ -375,20 +375,18 @@ export const store = createStore<State>({
 
       return false
     },
-    async dequeueMysteryTag({ commit, state }) {
-      if (state.playerTag?.playerId === state.profile.sub) {
-        const queuedFoundTag: any = BikeTagClient.getters.getOnlyFoundTagFromTagData(
-          state.playerTag
-        )
+    async dequeueMysteryTag() {
+      if (this.playerTag?.playerId === this.profile.sub) {
+        const queuedFoundTag: any = BikeTagClient.getters.getOnlyFoundTagFromTagData(this.playerTag)
         const queuedMysteryTag: any = BikeTagClient.getters.getOnlyMysteryTagFromTagData(
-          state.playerTag
+          this.playerTag,
         )
-        queuedMysteryTag.hash = state.game.queuehash
+        queuedMysteryTag.hash = this.game.queuehash
         return client.deleteTag(queuedMysteryTag).then(async (t) => {
           if (t.success) {
             debug('store::mystery tag dequeued')
-            await commit('SET_QUEUED_TAG', queuedFoundTag)
-            await commit('RESET_FORM_STEP_TO_MYSTERY')
+            await this.SET_QUEUED_TAG(queuedFoundTag)
+            await this.RESET_FORM_STEP_TO_MYSTERY()
 
             return true
           } else {
@@ -398,12 +396,12 @@ export const store = createStore<State>({
         })
       }
     },
-    async addFoundTag({ commit, state }, d) {
+    async addFoundTag(d: any) {
       if (d.foundImage && !d.foundImageUrl) {
-        d.playerId = state.profile.sub
+        d.playerId = this.profile.sub
         return client.queueTag(d).then((t) => {
           if (t.success) {
-            commit('SET_QUEUE_FOUND', t.data)
+            this.SET_QUEUE_FOUND(t.data)
           } else {
             debug('error::queue (Found) BikeTag failed', t)
             return t.error
@@ -411,15 +409,15 @@ export const store = createStore<State>({
           return t.success
         })
       }
-      return commit('SET_QUEUE_FOUND', d)
+      return this.SET_QUEUE_FOUND(d)
     },
-    async addMysteryTag({ commit, state }, d) {
+    async addMysteryTag(d: any) {
       if (d.mysteryImage && !d.mysteryImageUrl) {
-        d.playerId = state.profile.sub
+        d.playerId = this.profile.sub
 
         return client.queueTag(d).then((t) => {
           if (t.success) {
-            commit('SET_QUEUE_MYSTERY', t.data)
+            this.SET_QUEUE_MYSTERY(t.data)
           } else {
             debug('error::queue (Mystery) BikeTag failed', t)
             return t.error
@@ -427,14 +425,14 @@ export const store = createStore<State>({
           return t.success
         })
       }
-      return commit('SET_QUEUE_MYSTERY', d)
+      return this.SET_QUEUE_MYSTERY(d)
     },
-    async postNewBikeTag({ commit, state }, d) {
+    async postNewBikeTag(d: any) {
       if (d.mysteryImageUrl && d.foundImageUrl) {
-        d.playerId = state.profile.sub
+        d.playerId = this.profile.sub
         return client.queueTag(d).then((t) => {
           if (t.success) {
-            commit('SET_QUEUED_SUBMITTED', t.data)
+            this.SET_QUEUED_SUBMITTED(t.data)
           } else {
             debug('error::submit BikeTag failed', t)
             return t.error
@@ -444,48 +442,52 @@ export const store = createStore<State>({
       }
       return false
     },
-    // async resetFormStep({ commit }) {
-    //   return commit('RESET_FORM_STEP')
+    // async resetFormStep() {
+    //   return this.RESET_FORM_STEP()
     // },
-    async resetFormStepToFound({ commit }) {
-      await commit('SET_QUEUED_TAG')
-      return commit('RESET_FORM_STEP_TO_FOUND')
+    async resetFormStepToFound() {
+      await this.SET_QUEUED_TAG()
+      return this.RESET_FORM_STEP_TO_FOUND()
     },
-    async resetFormStepToMystery({ commit, state }) {
-      await commit('SET_QUEUED_TAG', {
-        foundImage: state.playerTag.foundImage,
-        foundImageUrl: state.playerTag.foundImageUrl,
-        foundLocation: state.playerTag.foundLocation,
-        foundPlayer: state.playerTag.foundPlayer,
-        playerId: state.playerTag.playerId,
+    async resetFormStepToMystery() {
+      await this.SET_QUEUED_TAG({
+        foundImage: this.playerTag.foundImage,
+        foundImageUrl: this.playerTag.foundImageUrl,
+        foundLocation: this.playerTag.foundLocation,
+        foundPlayer: this.playerTag.foundPlayer,
+        playerId: this.playerTag.playerId,
       })
-      return commit('RESET_FORM_STEP_TO_MYSTERY')
+      return this.RESET_FORM_STEP_TO_MYSTERY()
     },
-    async resetFormStepToPost({ commit, state }) {
-      await commit('SET_QUEUED_TAG', {
-        foundImage: state.playerTag.foundImage,
-        foundImageUrl: state.playerTag.foundImageUrl,
-        foundLocation: state.playerTag.foundLocation,
-        foundPlayer: state.playerTag.foundPlayer,
-        mysteryImage: state.playerTag.foundImage,
-        playerId: state.playerTag.playerId,
-        mysteryImageUrl: state.playerTag.foundImageUrl,
-        hint: state.playerTag.hint,
-        mysteryPlayer: state.playerTag.mysteryPlayer,
+    async resetFormStepToPost() {
+      await this.SET_QUEUED_TAG({
+        foundImage: this.playerTag.foundImage,
+        foundImageUrl: this.playerTag.foundImageUrl,
+        foundLocation: this.playerTag.foundLocation,
+        foundPlayer: this.playerTag.foundPlayer,
+        mysteryImage: this.playerTag.foundImage,
+        playerId: this.playerTag.playerId,
+        mysteryImageUrl: this.playerTag.foundImageUrl,
+        hint: this.playerTag.hint,
+        mysteryPlayer: this.playerTag.mysteryPlayer,
       })
-      return commit('RESET_FORM_STEP_TO_POST')
+      // return this.RESET_FORM_STEP_TO_POST()
+      return undefined
     },
-    async getAmbassadorPermission({ state }) {
-      return state.profile?.isBikeTagAmbassador
+    async getAmbassadorPermission() {
+      return this.profile?.isBikeTagAmbassador
     },
-  },
-  mutations: {
-    SET_DATA_INITIALIZED(state) {
-      state.dataInitialized = true
+
+    // ==================================================================
+    // ======= mutations ================================================
+    // ==================================================================
+
+    SET_DATA_INITIALIZED() {
+      this.dataInitialized = true
     },
-    SET_PROFILE(state, profile) {
-      const oldState = state.profile
-      state.profile = profile
+    SET_PROFILE(profile: any) {
+      const oldState = this.profile
+      this.profile = profile
       console.trace('stale::profile', profile)
       setProfileCookie(profile)
 
@@ -500,73 +502,73 @@ export const store = createStore<State>({
         debug('state::profile', profile)
       }
     },
-    SET_GAME(state, game) {
-      const oldState = state.game
-      state.game = game
+    SET_GAME(game: any) {
+      const oldState = this.game
+      this.game = game
 
       if (oldState?.name !== game?.name) {
         debug('store::game', { game })
       }
     },
-    SET_ALL_GAMES(state, allGames) {
-      const oldState = state.allGames
-      state.allGames = allGames
+    SET_ALL_GAMES(allGames: any) {
+      const oldState = this.allGames
+      this.allGames = allGames
 
       if (oldState?.length !== allGames?.length) {
         debug('store::allGames', { allGames })
       }
     },
-    SET_CURRENT_TAG(state, tag) {
-      const oldState = state.currentBikeTag
-      state.currentBikeTag = tag
+    SET_CURRENT_TAG(tag: any) {
+      const oldState = this.currentBikeTag
+      this.currentBikeTag = tag
 
       if (oldState?.tagnumber !== tag?.tagnumber) {
         debug('store::currentBikeTag', { tag })
       }
     },
-    SET_TAGS(state, tags) {
-      const oldState = state.tags
-      state.tags = tags
+    SET_TAGS(tags: any) {
+      const oldState = this.tags
+      this.tags = tags
 
       if (oldState?.length !== tags?.length) {
         debug('store::tags', { tags })
       }
     },
-    SET_LEADERBOARD(state, leaderboard) {
-      const oldState = state.leaderboard
-      state.leaderboard = leaderboard
+    SET_LEADERBOARD(leaderboard: any) {
+      const oldState = this.leaderboard
+      this.leaderboard = leaderboard
 
       if (oldState?.length !== leaderboard?.length) {
         debug('store::leaderboard', { leaderboard })
       }
     },
-    SET_PLAYERS(state, players) {
-      const oldState = state.players
-      state.players = players
+    SET_PLAYERS(players: any) {
+      const oldState = this.players
+      this.players = players
 
       if (oldState?.length !== players?.length) {
         debug('store::players', { players })
       }
     },
-    SET_QUEUED_TAGS(state, queuedTags) {
-      const oldState = state.tagsInRound
-      state.tagsInRound = queuedTags
+    SET_QUEUED_TAGS(queuedTags: any) {
+      const oldState = this.tagsInRound
+      this.tagsInRound = queuedTags
 
       if (oldState?.length !== queuedTags?.length || queuedTags.length === 0) {
         debug('store::queuedTags', { queuedTags })
       }
     },
-    SET_QUEUE_FOUND(state, data) {
-      const oldState = state.playerTag
-      state.playerTag = BikeTagClient.createTagObject(data, state.playerTag)
-      // setQueuedTagInCookie(state.queuedTag)
+    SET_QUEUE_FOUND(data: any) {
+      const oldState = this.playerTag
+      this.playerTag = BikeTagClient.createTagObject(data, this.playerTag)
+      // setQueuedTagInCookie(this.queuedTag)
 
-      // state.queuedTag.foundImageUrl = data.foundImageUrl
-      // state.queuedTag.foundImage = data.foundImage
-      // state.queuedTag.foundLocation = data.foundLocation
-      // state.queuedTag.foundPlayer = data.foundPlayer
-      // state.queuedTag.tagnumber = data.tagnumber
-      // state.queuedTag.playerId = data.playerId
+      // this.queuedTag.foundImageUrl = data.foundImageUrl
+      // this.queuedTag.foundImage = data.foundImage
+      // this.queuedTag.foundLocation = data.foundLocation
+      // this.queuedTag.foundPlayer = data.foundPlayer
+      // this.queuedTag.tagnumber = data.tagnumber
+      // this.queuedTag.playerId = data.playerId
 
       if (
         oldState?.foundImageUrl !== data?.foundImageUrl ||
@@ -577,26 +579,26 @@ export const store = createStore<State>({
         /// In case of a reset to this step
         oldState?.mysteryPlayer !== data?.foundPlayer
       ) {
-        debug('store::queuedFoundTag', state.playerTag)
+        debug('store::queuedFoundTag', this.playerTag)
         if (oldState?.mysteryPlayer !== data?.foundPlayer) {
-          state.formStep = BiketagFormSteps.roundJoined
+          this.formStep = BiketagFormSteps.roundJoined
         } else {
-          state.formStep = BiketagFormSteps.addFoundImage
+          this.formStep = BiketagFormSteps.addFoundImage
         }
       }
     },
-    SET_QUEUE_MYSTERY(state, data) {
-      const oldState = state.playerTag
-      state.playerTag = BikeTagClient.createTagObject(data, state.playerTag)
-      // setQueuedTagInCookie(state.queuedTag)
+    SET_QUEUE_MYSTERY(data: any) {
+      const oldState = this.playerTag
+      this.playerTag = BikeTagClient.createTagObject(data, this.playerTag)
+      // setQueuedTagInCookie(this.queuedTag)
 
-      // state.queuedTag.mysteryImageUrl = data.mysteryImageUrl
-      // state.queuedTag.mysteryImage = data.mysteryImage
-      // state.queuedTag.hint = data.hint
-      // state.queuedTag.mysteryPlayer = data.mysteryPlayer ?? state.queuedTag.foundPlayer
-      // state.queuedTag.tagnumber = data.tagnumber
-      // state.queuedTag.playerId = data.playerId
-      // state.queuedTag.game = data.game ?? state.game.name
+      // this.queuedTag.mysteryImageUrl = data.mysteryImageUrl
+      // this.queuedTag.mysteryImage = data.mysteryImage
+      // this.queuedTag.hint = data.hint
+      // this.queuedTag.mysteryPlayer = data.mysteryPlayer ?? this.queuedTag.foundPlayer
+      // this.queuedTag.tagnumber = data.tagnumber
+      // this.queuedTag.playerId = data.playerId
+      // this.queuedTag.game = data.game ?? this.game.name
 
       if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
@@ -607,35 +609,35 @@ export const store = createStore<State>({
         oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
-        debug('store::queuedMysteryTag', state.playerTag)
+        debug('store::queuedMysteryTag', this.playerTag)
         if (
           oldState?.discussionUrl !== data?.discussionUrl ||
           oldState?.mentionUrl !== data?.mentionUrl
         ) {
-          state.formStep = BiketagFormSteps.roundPosted
+          this.formStep = BiketagFormSteps.roundPosted
         } else {
-          state.formStep = BiketagFormSteps.addMysteryImage
+          this.formStep = BiketagFormSteps.addMysteryImage
         }
       }
     },
-    SET_QUEUED_SUBMITTED(state, data) {
-      const oldState = state.playerTag
-      state.playerTag.discussionUrl = data.discussionUrl
-      state.playerTag.mentionUrl = data.mentionUrl
-      // setQueuedTagInCookie(state.queuedTag)
+    SET_QUEUED_SUBMITTED(data: any) {
+      const oldState = this.playerTag
+      this.playerTag.discussionUrl = data.discussionUrl
+      this.playerTag.mentionUrl = data.mentionUrl
+      // setQueuedTagInCookie(this.queuedTag)
 
       if (
         oldState?.discussionUrl !== data?.discussionUrl ||
         oldState?.mentionUrl !== data?.mentionUrl
       ) {
-        debug('store::submittedTag', state.playerTag)
-        state.formStep = BiketagFormSteps.roundPosted
+        debug('store::submittedTag', this.playerTag)
+        this.formStep = BiketagFormSteps.roundPosted
       }
     },
-    SET_QUEUED_TAG(state, data?: any) {
-      const oldState = state.playerTag
-      state.playerTag = BikeTagClient.createTagObject(data, data ? state.playerTag : {})
-      // setQueuedTagInCookie(data ? state.queuedTag : undefined)
+    SET_QUEUED_TAG(data?: any) {
+      const oldState = this.playerTag
+      this.playerTag = BikeTagClient.createTagObject(data, data ? this.playerTag : {})
+      // setQueuedTagInCookie(data ? this.queuedTag : undefined)
 
       if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
@@ -650,37 +652,41 @@ export const store = createStore<State>({
         oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
-        debug('store::queuedTag', state.playerTag)
+        debug('store::queuedTag', this.playerTag)
       }
     },
-    SET_FORM_STEP_TO_JOIN(state, force) {
-      const setQueudState = state.formStep !== BiketagFormSteps.roundJoined || force
-      const oldState = state.formStep
-      if (setQueudState && state.playerTag) {
-        state.formStep = getQueuedTagState(state.playerTag)
+    SET_FORM_STEP_TO_JOIN(force: any) {
+      const setQueudState = this.formStep !== BiketagFormSteps.roundJoined || force
+      const oldState = this.formStep
+      if (setQueudState && this.playerTag) {
+        this.formStep = getQueuedTagState(this.playerTag)
       } else {
-        state.formStep = BiketagFormSteps.roundJoined
+        this.formStep = BiketagFormSteps.roundJoined
       }
 
-      if (oldState !== state.formStep) {
-        debug('state::queue', BiketagFormSteps[state.formStep])
+      if (oldState !== this.formStep) {
+        debug('state::queue', BiketagFormSteps[this.formStep])
       }
     },
-    SET_QUEUED_TAG_STATE(state, tag) {
-      state.formStep = getQueuedTagState(tag ?? this.queuedTag)
+    SET_QUEUED_TAG_STATE(tag: any) {
+      // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
+      this.formStep = getQueuedTagState(tag)
     },
-    // RESET_FORM_STEP(state) {
-    //   state.formStep =
-    //     state.queuedTags?.length > 0 ? BiketagFormSteps.viewRound : BiketagFormSteps.addFoundImage
-    //   debug('state::queue', BiketagFormSteps[state.formStep])
+    // RESET_FORM_STEP() {
+    //   this.formStep =
+    //     this.queuedTags?.length > 0 ? BiketagFormSteps.viewRound : BiketagFormSteps.addFoundImage
+    //   debug('state::queue', BiketagFormSteps[this.formStep])
     // },
-    RESET_FORM_STEP_TO_FOUND(state) {
-      state.formStep = BiketagFormSteps.addFoundImage
-      // debug('state::queue', BiketagFormSteps[state.formStep])
+    RESET_FORM_STEP_TO_FOUND() {
+      this.formStep = BiketagFormSteps.addFoundImage
+      // debug('state::queue', BiketagFormSteps[this.formStep])
     },
-    RESET_FORM_STEP_TO_MYSTERY(state) {
-      state.formStep = BiketagFormSteps.addMysteryImage
-      // debug('state::queue', BiketagFormSteps[state.formStep])
+    RESET_FORM_STEP_TO_MYSTERY() {
+      this.formStep = BiketagFormSteps.addMysteryImage
+      // debug('state::queue', BiketagFormSteps[this.formStep])
+    },
+    SET_REGION_POLYGON(regionPolygon: any) {
+      this.regionPolyon = regionPolygon
     },
   },
   getters: {
@@ -778,5 +784,4 @@ export const store = createStore<State>({
       return state.profile?.isBikeTagAmbassador
     },
   },
-  modules: {},
 })

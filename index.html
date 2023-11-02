@@ -7,6 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no,  user-scalable=yes" />
     <meta name="referrer" content="no-referrer" />
     <link rel="stylesheet" type="text/css" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" />
+    <script>
+      // Workaround stupid i18n console warning
+      Object.assign(window, {
+        __VUE_I18N_FULL_INSTALL__: true,
+        __INTLIFY_PROD_DEVTOOLS__: false,
+        __VUE_I18N_LEGACY_API__: true
+      });
+    </script>
   </head>
 
   <body>

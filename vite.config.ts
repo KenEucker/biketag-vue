@@ -1,11 +1,11 @@
-import { defineConfig } from 'vite'
-import path from 'path'
-import vue from '@vitejs/plugin-vue'
-import envCompatible from 'vite-plugin-env-compatible'
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
-import { VitePWA } from 'vite-plugin-pwa'
+import vue from '@vitejs/plugin-vue'
+import path from 'path'
+import { defineConfig } from 'vite'
+import envCompatible from 'vite-plugin-env-compatible'
 import EnvironmentPlugin from 'vite-plugin-environment'
-import { injectHtml } from 'vite-plugin-html'
+import { createHtmlPlugin } from 'vite-plugin-html'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -120,7 +120,7 @@ export default defineConfig({
     }),
     viteCommonjs(),
     envCompatible(),
-    injectHtml(),
+    createHtmlPlugin(),
   ],
   build: {
     rollupOptions: {
@@ -133,7 +133,7 @@ export default defineConfig({
   },
   // root: './public',
   server: {
-    host: 'prime.localhost',
+    host: 'seattle.localhost',
     port: 8080,
   },
   preview: {

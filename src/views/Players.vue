@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
     <b-pagination
@@ -10,7 +11,7 @@
     ></b-pagination>
     <div class="player-list">
       <div v-for="player in playersForList" :key="player.name" class="p-lg-3 p-md-2 mb-2">
-        <player size="md" :player="player" />
+        <player-bicon size="md" :player="player" />
       </div>
     </div>
     <b-form-group>
@@ -30,48 +31,45 @@
     ></b-pagination>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import Player from '@/components/PlayerBicon.vue'
 
-export default defineComponent({
-  name: 'PlayersView',
-  components: {
-    Player,
+<script setup name="PlayersView">
+import { ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useStore } from '@/store/index.ts'
+
+// components
+import PlayerBicon from '@/components/PlayerBicon.vue'
+
+// data
+const router = useRouter()
+const route = useRoute()
+const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
+const perPage = ref(10)
+const store = useStore()
+
+// computed
+const getPlayers = computed(() => store.getPlayers)
+const playersForList = computed(() =>
+  getPlayers.value.slice(
+    (currentPage.value - 1) * perPage.value,
+    currentPage.value * perPage.value,
+  ),
+)
+const totalCount = computed(() => getPlayers.value.length)
+
+// methods
+const resetCurrentPage = () => {
+  currentPage.value = 1
+}
+const changePage = (event, pageNumber) => {
+  router.push('/players/' + pageNumber)
+}
+
+//watch
+watch(
+  () => 'route.params.currentPage',
+  (val) => {
+    currentPage.value = Number(val)
   },
-  data() {
-    return {
-      currentPage: this.$route.params?.currentPage.length
-        ? parseInt(this.$route.params?.currentPage)
-        : 1,
-      perPage: 10,
-    }
-  },
-  computed: {
-    ...mapGetters(['getPlayers']),
-    playersForList() {
-      return this.getPlayers.slice(
-        (this.currentPage - 1) * this.perPage,
-        this.currentPage * this.perPage
-      )
-    },
-    totalCount() {
-      return this.getPlayers.length
-    },
-  },
-  watch: {
-    '$route.params.currentPage': function (val) {
-      this.currentPage = Number(val)
-    },
-  },
-  methods: {
-    resetCurrentPage() {
-      this.currentPage = 1
-    },
-    changePage(event, pageNumber) {
-      this.$router.push('/players/' + pageNumber)
-    },
-  },
-})
+)
 </script>

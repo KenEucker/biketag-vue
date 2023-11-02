@@ -7,6 +7,12 @@ module.exports = {
 
   // the ts-eslint recommended ruleset sets the parser so we need to set it back
   parser: 'vue-eslint-parser',
+  extends: [
+    'plugin:vue/vue3-recommended',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
+  ],
 
   parserOptions: {
     ecmaVersion: 2020,
@@ -20,21 +26,20 @@ module.exports = {
 
   plugins: ['@typescript-eslint'],
 
-  extends: [
-    'plugin:vue/vue3-recommended',
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
-  ],
-
   rules: {
+    'vue/script-setup-uses-vars': 'error',
+
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'vue/valid-next-tick': 'off',
+    '@typescript-eslint/ban-ts-comment': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    '@typescript-eslint/no-unused-vars': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     '@typescript-eslint/no-explicit-any': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+
     // this rule, if on, would require explicit return type on the `render` function
     '@typescript-eslint/explicit-function-return-type': 'off',
   },
+
+  ignorePatterns: ['public/**'],
 
   overrides: [
     {

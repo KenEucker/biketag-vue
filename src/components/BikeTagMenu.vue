@@ -1,7 +1,10 @@
 <template>
-  <header v-if="variant === 'top'" :class="`biketag-header ${!showHeader ? 'is-hidden' : ''}`">
+  <header
+    v-if="props.variant === 'top'"
+    :class="`biketag-header ${!showHeader ? 'is-hidden' : ''}`"
+  >
     <!-- The header logo and profile and hamburger buttons go here -->
-    <nav id="navmenu" class="biketag-header-nav navbar navbar-expand-xl">
+    <nav id="navmenu" class="navbar">
       <!-- Back Arrow -->
       <div v-if="isShow" class="back-arrow" @click="goBack">
         <img
@@ -22,19 +25,15 @@
       <!-- Hamburger Menu -->
       <button
         ref="buttonCollapse"
+        v-b-toggle.navbarSupportedContent
         class="navbar-toggler"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
       >
         <img class="hamburger-image" src="/images/Hamburger.svg" alt="Burge menu" />
       </button>
 
-      <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse">
-        <ul class="navbar-nav me-auto mb-lg-0">
-          <li v-if="$auth.isAuthenticated" class="nav-item">
+      <b-collapse id="navbarSupportedContent" ref="navList" class="navbar-collapse">
+        <ul class="m-auto navbar-nav mb-lg-0">
+          <li v-if="isAuthenticated" class="nav-item">
             <img
               class="profile-icon"
               :src="getProfileImageSrc"
@@ -95,8 +94,8 @@
           >
             {{ $t('menu.about') }}
           </li>
-          <template v-if="$auth.isAuthenticated">
-            <li class="nav-item" @click="logout">
+          <template v-if="isAuthenticated">
+            <li class="nav-item" @click="logoutFunction">
               {{ $t('menu.logout') }}
             </li>
           </template>
@@ -111,10 +110,10 @@
             </li>
           </template>
         </ul>
-      </div>
+      </b-collapse>
     </nav>
   </header>
-  <footer v-if="variant === 'bottom'" class="container pb-5 mt-5 footer">
+  <footer v-if="props.variant === 'bottom'" class="container pb-5 mt-5 footer">
     <!-- Fixed Footer -->
     <div class="footer-fixed__wrapper">
       <!-- Leaderboard -->
@@ -145,144 +144,150 @@
     </div>
   </footer>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import BikeTagButton from '@/components/BikeTagButton'
-import { debug } from '@/common/utils'
 
-export default defineComponent({
-  name: 'BikeTagMenu',
-  components: {
-    BikeTagButton,
+<script setup name="BikeTagMenu">
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useStore } from '@/store/index.ts'
+import { debug } from '@/common/utils'
+import { useAuth0 } from '@auth0/auth0-vue'
+import { useI18n } from 'vue-i18n'
+
+// components
+import BikeTagButton from '@/components/BikeTagButton'
+
+// props
+const props = defineProps({
+  logo: {
+    type: String,
+    default: null,
   },
-  props: {
-    logo: {
-      type: String,
-      default: null,
-    },
-    variant: {
-      type: String,
-      default: 'top',
-    },
-  },
-  data() {
-    return {
-      showLogin: process.env.CONTEXT === 'dev',
-      showHeader: true,
-      lastScrollPosition: 0,
-      scrollOffset: 40,
-    }
-  },
-  computed: {
-    ...mapGetters([
-      'getGameTitle',
-      'getLogoUrl',
-      'getCurrentBikeTag',
-      'isDataInitialized',
-      'isBikeTagAmbassador',
-      'getQueuedTags',
-      'getProfile',
-    ]),
-    isShow() {
-      if (this.$route.name) {
-        debug('view::loaded', this.$route.name)
-      }
-      return this.$route.name !== 'Home'
-    },
-    currentRoute() {
-      return this.$route.name
-    },
-    getProfileImageSrc() {
-      return this.isBikeTagAmbassador
-        ? '/images/biketag-ambassador.svg'
-        : '/images/biketag-player.svg'
-    },
-  },
-  mounted() {
-    this.lastScrollPosition = window.pageYOffset
-    window.addEventListener('scroll', this.onScroll)
-  },
-  beforeUnmount() {
-    window.removeEventListener('scroll', this.onScroll)
-  },
-  methods: {
-    // Toggle if navigation is shown or hidden
-    onScroll() {
-      if (window.pageYOffset < 0) {
-        return
-      }
-      if (Math.abs(window.pageYOffset - this.lastScrollPosition) < this.scrollOffset) {
-        return
-      }
-      this.showHeader = window.pageYOffset < this.lastScrollPosition
-      this.lastScrollPosition = window.pageYOffset
-    },
-    async clearTagCache() {
-      await this.$store.dispatch('setGame', true)
-      await this.$store.dispatch('setTags', true)
-      await this.$store.dispatch('setQueuedTags', true)
-    },
-    login() {
-      this.closeCollapsible()
-      this.$router.push('/login')
-    },
-    logout() {
-      this.$store.dispatch('setProfile')
-      this.$auth.logout({
-        returnTo: window.location.origin,
-      })
-    },
-    closeCollapsible() {
-      this.$refs.buttonCollapse.setAttribute('aria-expanded', false)
-      this.$refs.navList.classList.remove('show')
-    },
-    goWorldwide() {
-      window.location = 'http://biketag.org/'
-      // this.$router.push('/worldwide')
-    },
-    goApprovePage: function () {
-      this.closeCollapsible()
-      this.$router.push('/approve')
-    },
-    goBikeTagsPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/biketags')
-    },
-    goPlayPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/play')
-    },
-    goProfile: function () {
-      this.closeCollapsible()
-      this.$router.push('/profile')
-    },
-    goAboutPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/about')
-    },
-    goLeaderboardPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/leaderboard')
-    },
-    goPlayersPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/players')
-    },
-    goHowPage: function () {
-      this.closeCollapsible()
-      this.$router.push('/howtoplay')
-    },
-    goHomePage: function () {
-      this.closeCollapsible()
-      this.$router.push('/')
-    },
-    goBack: function () {
-      this.$router.back()
-    },
+  variant: {
+    type: String,
+    default: 'top',
   },
 })
+
+// data
+/// Now showing the login menu option, always
+const showLogin = ref(true) //process.env.CONTEXT === 'dev')
+const showHeader = ref(true)
+const lastScrollPosition = ref(0)
+const scrollOffset = ref(40)
+const buttonCollapse = ref(null)
+const navList = ref(null)
+const store = useStore()
+const router = useRouter()
+const route = useRoute()
+const { logout, isAuthenticated } = useAuth0()
+const { t } = useI18n()
+
+// computed
+const getGameTitle = computed(() => store.getGameTitle)
+const getLogoUrl = computed(() => store.getLogoUrl)
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const getQueuedTags = computed(() => store.getQueuedTags)
+const isShow = computed(() => {
+  if (route.name) {
+    debug('view::loaded', route.name)
+  }
+  return route.name !== 'Home'
+})
+const currentRoute = computed(() => {
+  return route.name
+})
+const getProfileImageSrc = computed(() => {
+  return isBikeTagAmbassador.value ? '/images/biketag-ambassador.svg' : '/images/biketag-player.svg'
+})
+
+// methods
+// Toggle if navigation is shown or hidden
+function onScroll() {
+  if (window.pageYOffset < 0) {
+    return
+  }
+  if (Math.abs(window.pageYOffset - lastScrollPosition.value) < scrollOffset.value) {
+    return
+  }
+  showHeader.value = window.pageYOffset < lastScrollPosition.value
+  lastScrollPosition.value = window.pageYOffset
+}
+async function clearTagCache() {
+  await store.setGame(true)
+  await store.setTags(true)
+  await store.setQueuedTags(true)
+}
+function login() {
+  closeCollapsible()
+  router.push('/login')
+}
+function logoutFunction() {
+  store.setProfile()
+  logout({
+    returnTo: window.location.origin,
+  })
+}
+function closeCollapsible() {
+  // console.log(buttonCollapse.value)
+  buttonCollapse.value.click()
+  // navList.value.classList.remove('show')
+}
+function goWorldwide() {
+  window.location = 'http://biketag.org/'
+  // router.push('/worldwide')
+}
+function goApprovePage() {
+  closeCollapsible()
+  router.push('/approve')
+}
+function goBikeTagsPage() {
+  closeCollapsible()
+  router.push('/biketags')
+}
+function goPlayPage() {
+  closeCollapsible()
+  router.push('/play')
+}
+function goProfile() {
+  closeCollapsible()
+  router.push('/profile')
+}
+function goAboutPage() {
+  closeCollapsible()
+  router.push('/about')
+}
+function goLeaderboardPage() {
+  closeCollapsible()
+  router.push('/leaderboard')
+}
+function goPlayersPage() {
+  closeCollapsible()
+  router.push('/players')
+}
+function goHowPage() {
+  closeCollapsible()
+  router.push('/howtoplay')
+}
+function goHomePage() {
+  closeCollapsible()
+  router.push('/')
+}
+function goBack() {
+  router.back()
+}
+
+// mounted
+onMounted(() => {
+  lastScrollPosition.value = window.pageYOffset
+  window.addEventListener('scroll', onScroll)
+})
+
+// beforeUnmount
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
+})
 </script>
+
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 
@@ -297,7 +302,9 @@ header {
   top: 0;
   left: 0;
   z-index: 999;
-  box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
+  box-shadow:
+    0 3px 6px rgb(0 0 0 / 16%),
+    0 3px 6px rgb(0 0 0 / 23%);
   transition: transform 0.5s ease-out;
 
   nav {
@@ -317,7 +324,7 @@ header {
       max-width: 25vw;
       height: auto;
     }
-    @media (min-width: 990px) {
+    @media (width >= 990px) {
       .profile-icon {
         max-width: 10vh;
       }
@@ -339,7 +346,7 @@ header {
       }
 
       ul > li {
-        @media (min-width: 992px) {
+        @media (width >= 992px) {
           margin: 1rem;
         }
       }
@@ -364,7 +371,7 @@ header {
       color: black;
       font-family: $default-secondary-font-family;
 
-      @media (max-width: 990px) {
+      @media (width <= 990px) {
         display: none;
       }
     }
@@ -375,8 +382,10 @@ header {
       font-size: 2rem;
       cursor: pointer;
 
-      @media (max-width: 990px) {
-        box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+      @media (width <= 990px) {
+        box-shadow:
+          0 1px 3px rgb(0 0 0 / 12%),
+          0 1px 2px rgb(0 0 0 / 24%);
         border-bottom: 1px solid black;
         padding: 1rem 0;
       }
@@ -398,7 +407,7 @@ header {
 .navbar-nav {
   align-items: center;
 
-  @media (max-width: 990px) {
+  @media (width <= 990px) {
     align-items: unset;
     height: 100vh;
   }
@@ -420,7 +429,7 @@ header {
 
   border-bottom: 3px solid black;
 
-  @media (max-width: 990px) {
+  @media (width <= 990px) {
     border-bottom: none;
     background-color: black;
     color: white;
@@ -485,7 +494,9 @@ footer {
 
   .footer-fixed {
     &__wrapper {
-      box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
+      box-shadow:
+        0 3px 6px rgb(0 0 0 / 16%),
+        0 3px 6px rgb(0 0 0 / 23%);
       z-index: 100;
       width: 100%;
       background-color: #e5e5e5;

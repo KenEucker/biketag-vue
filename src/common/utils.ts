@@ -1,11 +1,12 @@
 import { DeviceUUID } from '@/common/uuid'
+import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
 import { Tag } from 'biketag/lib/common/schema'
-import { useCookies } from 'vue3-cookies'
-import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
 import CryptoJS from 'crypto-js'
-import md5 from 'md5'
 import domtoimage from 'dom-to-image'
 import log from 'loglevel'
+import md5 from 'md5'
+import { useCookies } from 'vue3-cookies'
+import { BikeTagProfile, BiketagFormSteps } from '../../src/common/types'
 
 export type DomainInfo = {
   host: string
@@ -128,7 +129,7 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
     try {
       const existingProfileDecodedString = CryptoJS.AES.decrypt(
         existingProfileString,
-        process.env.HOST_KEY ?? 'BikeTag'
+        process.env.HOST_KEY ?? 'BikeTag',
       )
       const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
       return existingProfile
@@ -169,7 +170,7 @@ export const setQueuedTagInCookie = (queuedTag?: Tag, biketagCookieKey = 'biketa
 
 export const setProfileCookie = (
   profile?: BikeTagProfile,
-  profileCookieKey = 'profile'
+  profileCookieKey = 'profile',
 ): boolean => {
   try {
     const { cookies } = useCookies()
@@ -177,7 +178,7 @@ export const setProfileCookie = (
     if (profile) {
       const encryptedProfileString = CryptoJS.AES.encrypt(
         JSON.stringify(profile),
-        process.env.HOST_KEY ?? 'BikeTag'
+        process.env.HOST_KEY ?? 'BikeTag',
       ).toString()
       cookies.set(profileCookieKey, encryptedProfileString)
     } else {
@@ -197,7 +198,7 @@ export const setNPAuthorization = (basic: string): string => {
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
   currentTagnumber: number,
-  mostRecentCookieKey = 'mostRecentlyViewedTagnumber'
+  mostRecentCookieKey = 'mostRecentlyViewedTagnumber',
 ): number => {
   const { cookies } = useCookies()
   const existingMostRecent = cookies.get(mostRecentCookieKey)
@@ -230,7 +231,7 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
 export const sendNetlifyError = function (
   message: any,
   then?: (value: Response) => Response | PromiseLike<Response>,
-  action = 'post-tag-error'
+  action = 'post-tag-error',
 ) {
   const body = new URLSearchParams({
     message,
@@ -255,7 +256,7 @@ export const sendNetlifyForm = function (
   action: string,
   body: any,
   then: (value: Response) => Response | PromiseLike<Response>,
-  error = sendNetlifyError
+  error = sendNetlifyError,
 ) {
   return fetch(action, {
     method: 'POST',
@@ -305,7 +306,7 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
 export const getSanityImageUrl = (
   logo: string,
   size = '',
-  sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/'
+  sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/',
 ) => {
   switch (size) {
     case 'l':
@@ -364,4 +365,27 @@ export const exportHtmlToDownload = (filename: string, node?: any, selector?: st
 export const debug = (message: string, context?: any) => {
   console.log(message, { context })
   log.debug(message, { context })
+}
+
+export const feetToKm = (feets: number) => feets * 0.0003048
+
+export const isPointInPolygon = (
+  geojson: any,
+  gps: { lng: number; lat: number },
+  distanceOffInFeet: number,
+) => {
+  const distanceOffInKilometers = feetToKm(distanceOffInFeet)
+
+  // Create turf.js point and polygon
+  const turfPoint = point([gps.lng, gps.lat])
+  const turfPolygon =
+    geojson.type === 'MultiPolygon'
+      ? multiPolygon(geojson.coordinates)
+      : polygon(geojson.coordinates)
+
+  // Buffer the polygon by the error amount
+  const bufferedPolygon = buffer(turfPolygon, distanceOffInKilometers, { units: 'kilometers' })
+
+  // Check if the point is inside the buffered polygon
+  return booleanPointInPolygon(turfPoint, bufferedPolygon)
 }

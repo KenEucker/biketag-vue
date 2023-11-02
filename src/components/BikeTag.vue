@@ -8,28 +8,44 @@
             class="image img-fluid"
             :source="getFoundImageSrc"
             :full-source="_foundImageUrl"
-            :alt="foundDescription"
+            :alt="props.foundDescription"
             @loaded="tagImageLoaded('found')"
           ></expandable-image>
         </div>
         <div class="card-bottom">
-          <div v-if="foundDescription?.length" class="description">
-            <span>{{ foundDescription }}</span>
+          <div v-if="props.foundDescription?.length" class="description">
+            <span>{{ props.foundDescription }}</span>
           </div>
           <div v-else class="description">
             <span>#{{ _foundTagnumber }}</span>
-            <span class="found-at">[{{ $t('components.biketag.found_at') }}]</span>
-            <span>{{
-              tag.foundLocation?.length ? tag.foundLocation : $t('components.biketag.unknown')
-            }}</span>
+            <span class="found-at">[{{ t('components.biketag.found_at') }}]</span>
+            <span>
+              {{
+                props.tag.foundLocation?.length
+                  ? props.tag.foundLocation
+                  : $t('components.biketag.unknown')
+              }}
+            </span>
           </div>
           <div class="info-wrapper">
-            <span v-if="showPlayer" class="tag-player" @click="goPlayerPage(tag.foundPlayer)">{{
-              tag.foundPlayer
-            }}</span>
-            <span v-if="showPostedDate" class="tag-date">{{ getPostedDate(tag.foundTime) }}</span>
-            <span v-if="showFoundPostedDateTime" class="tag-date">{{
-              getPostedDate(tag.foundTime, true)
+            <span
+              v-if="props.showPlayer"
+              class="tag-player"
+              @click="goPlayerPage(props.tag.foundPlayer)"
+            >
+              {{ props.tag.foundPlayer }}
+            </span>
+            <span
+              v-if="showInBoundary"
+              :class="`${props.tag.inBoundary ? 'tag-inBoundary' : 'tag-outBoundary'}`"
+            >
+              {{ tagInBoundary }}
+            </span>
+            <span v-if="props.showPostedDate" class="tag-date">
+              {{ getPostedDate(props.tag.foundTime) }}
+            </span>
+            <span v-if="props.showFoundPostedDateTime" class="tag-date">{{
+              getPostedDate(props.tag.foundTime, true)
             }}</span>
           </div>
         </div>
@@ -38,7 +54,7 @@
     <b-col v-show="_mysteryImageUrl" :md="_foundImageUrl ? 6 : 12" class="mb-3 max-w">
       <b-card class="polaroid mystery-tag">
         <bike-tag-button
-          v-if="tagnumber"
+          v-if="props.tagnumber"
           v-b-popover.click.left="_getHint"
           class="btn-hint btn-circle"
           text="?"
@@ -59,198 +75,216 @@
             <span>{{ _mysteryDescription }}</span>
           </div>
           <div class="info-wrapper">
-            <span v-if="showPlayer" class="tag-player" @click="goPlayerPage(tag.mysteryPlayer)">{{
-              tag.mysteryPlayer
-            }}</span>
-            <span v-if="showPostedDate" class="tag-date">{{ getPostedDate(tag.mysteryTime) }}</span>
-            <span v-if="showMysteryPostedDateTime" class="tag-date">{{
-              getPostedDate(tag.mysteryTime, true)
-            }}</span>
+            <span
+              v-if="props.showPlayer"
+              class="tag-player"
+              @click="goPlayerPage(props.tag.mysteryPlayer)"
+            >
+              {{ props.tag.mysteryPlayer }}
+            </span>
+            <span v-if="props.showPostedDate" class="tag-date">
+              {{ getPostedDate(props.tag.mysteryTime) }}
+            </span>
+            <span v-if="props.showMysteryPostedDateTime" class="tag-date">
+              {{ getPostedDate(props.tag.mysteryTime, true) }}
+            </span>
           </div>
         </div>
       </b-card>
     </b-col>
   </b-row>
 </template>
-<script>
-import { defineComponent } from 'vue'
+
+<script setup name="BikeTag">
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from '@/store/index.ts'
+import { useI18n } from 'vue-i18n'
+
+// componets
 import ExpandableImage from '@/components/ExpandableImage.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import { mapGetters } from 'vuex'
 
-export default defineComponent({
-  name: 'BikeTag',
-  components: {
-    ExpandableImage,
-    BikeTagButton,
-  },
-  props: {
-    tag: {
-      type: Object,
-      default: () => {
-        return {}
-      },
-    },
-    size: {
-      type: String,
-      default: 'm',
-    },
-    showHint: {
-      type: Boolean,
-      default: false,
-    },
-    showPostedDate: {
-      type: Boolean,
-      default: true,
-    },
-    showMysteryPostedDateTime: {
-      type: Boolean,
-      default: true,
-    },
-    showFoundPostedDateTime: {
-      type: Boolean,
-      default: true,
-    },
-    sizedMysteryImage: {
-      type: Boolean,
-      default: true,
-    },
-    sizedFoundImage: {
-      type: Boolean,
-      default: true,
-    },
-    imageSize: {
-      type: String,
-      default: null,
-    },
-    tagnumber: {
-      type: Number,
-      default: 0,
-    },
-    foundTagnumber: {
-      type: Number,
-      default: 0,
-    },
-    foundImageUrl: {
-      type: String,
-      default: null,
-    },
-    mysteryImageUrl: {
-      type: String,
-      default: null,
-    },
-    showPlayer: {
-      type: Boolean,
-      default: true,
-    },
-    foundDescription: {
-      type: String,
-      default: null,
-    },
-    mysteryDescription: {
-      type: String,
-      default: null,
-    },
-    reverse: {
-      type: Boolean,
-      default: false,
+// props
+const props = defineProps({
+  tag: {
+    type: Object,
+    default: () => {
+      return {}
     },
   },
-  emits: ['load'],
-  data() {
-    return {
-      mysteryImageLoaded: false,
-      foundImageLoaded: false,
-      noTagnumberLink: false,
-    }
+  size: {
+    type: String,
+    default: 'm',
   },
-  computed: {
-    ...mapGetters(['getImgurImageSized']),
-    _tagnumber() {
-      return this.tagnumber ? this.tagnumber : this.tag?.tagnumber
-    },
-    _getHint() {
-      return this.tag?.hint ? this.tag.hint : this.$t('pages.play.nohint')
-    },
-    _foundTagnumber() {
-      return this.foundTagnumber ? this.foundTagnumber : this.tag?.tagnumber
-    },
-    _foundImageUrl() {
-      return this.foundImageUrl
-        ? this.foundImageUrl.length === 0
-          ? null
-          : this.foundImageUrl
-        : this.tag?.foundImageUrl
-    },
-    _mysteryImageUrl() {
-      return this.mysteryImageUrl
-        ? this.mysteryImageUrl.length === 0
-          ? null
-          : this.mysteryImageUrl
-        : this.tag?.mysteryImageUrl
-    },
-    getFoundImageSrc() {
-      return this.imageSize
-        ? this.getImgurImageSized(this._foundImageUrl, this.imageSize)
-        : this.sizedFoundImage
-        ? this.getImgurImageSized(this._foundImageUrl)
-        : this._foundImageUrl
-    },
-    getMysteryImageSrc() {
-      return this.imageSize
-        ? this.getImgurImageSized(this._mysteryImageUrl, this.imageSize)
-        : this.sizedMysteryImage
-        ? this.getImgurImageSized(this._mysteryImageUrl, this._foundImageUrl ? 'm' : 'l')
-        : this._mysteryImageUrl
-    },
-    _mysteryDescription() {
-      return this.mysteryDescription
-        ? this.mysteryDescription
-        : `#${this._tagnumber} ${this.tag?.hint?.length > 0 ? `"${this.tag.hint}"` : ''}`
-    },
+  showHint: {
+    type: Boolean,
+    default: false,
   },
-  mounted() {
-    const viewportMeta = document.createElement('meta')
-    viewportMeta.name = 'viewport'
-    viewportMeta.content = 'width=device-width, initial-scale=1'
-    document.head.appendChild(viewportMeta)
+  showPostedDate: {
+    type: Boolean,
+    default: true,
   },
-  methods: {
-    getPostedDate(timestamp, timeOnly = false) {
-      if (!timestamp) {
-        return ''
-      }
-      const datetime = timeOnly
-        ? new Date(timestamp * 1000).toLocaleTimeString()
-        : new Date(timestamp * 1000).toLocaleDateString()
-
-      return `${timeOnly ? ' @ ' : this.$t('components.biketag.posted_on')} ${datetime}`
-    },
-    tagImageLoaded(type) {
-      if (type === 'mystery') {
-        this.mysteryImageLoaded = true
-      } else if (type === 'found') {
-        this._foundImageLoaded = true
-      }
-
-      if (
-        this.mysteryImageLoaded &&
-        (!!this._foundImageUrl || this.foundImageLoaded || !this._foundImageUrl)
-      ) {
-        this.$emit('load')
-      }
-    },
-    goTagPage: function () {
-      if (!this.noTagnumberLink) {
-        this.$router.push('/' + encodeURIComponent(this._tagnumber))
-      }
-    },
-    goPlayerPage(player) {
-      this.$router.push('/player/' + encodeURIComponent(player))
-    },
+  showMysteryPostedDateTime: {
+    type: Boolean,
+    default: true,
+  },
+  showFoundPostedDateTime: {
+    type: Boolean,
+    default: true,
+  },
+  sizedMysteryImage: {
+    type: Boolean,
+    default: true,
+  },
+  sizedFoundImage: {
+    type: Boolean,
+    default: true,
+  },
+  imageSize: {
+    type: String,
+    default: null,
+  },
+  tagnumber: {
+    type: Number,
+    default: 0,
+  },
+  foundTagnumber: {
+    type: Number,
+    default: 0,
+  },
+  foundImageUrl: {
+    type: String,
+    default: null,
+  },
+  mysteryImageUrl: {
+    type: String,
+    default: null,
+  },
+  showPlayer: {
+    type: Boolean,
+    default: true,
+  },
+  foundDescription: {
+    type: String,
+    default: null,
+  },
+  mysteryDescription: {
+    type: String,
+    default: null,
+  },
+  reverse: {
+    type: Boolean,
+    default: false,
+  },
+  showInBoundary: {
+    type: Boolean,
+    default: false,
   },
 })
+
+// data
+const emit = defineEmits(['load'])
+const mysteryImageLoaded = ref(false)
+const foundImageLoaded = ref(false)
+const noTagnumberLink = ref(false)
+const store = useStore()
+const router = useRouter()
+const { t } = useI18n()
+
+// computed
+const getImgurImageSized = computed(() => store.getImgurImageSized)
+const _tagnumber = computed(() => (props.tagnumber ? props.tagnumber : props.tag?.tagnumber))
+const _getHint = computed(() => (props.tag?.hint ? props.tag.hint : t('pages.play.nohint')))
+const _foundTagnumber = computed(() =>
+  props.foundTagnumber ? props.foundTagnumber : props.tag?.tagnumber,
+)
+const _foundImageUrl = computed(() => {
+  return props.foundImageUrl
+    ? props.foundImageUrl.length === 0
+      ? null
+      : props.foundImageUrl
+    : props.tag?.foundImageUrl
+})
+const _mysteryImageUrl = computed(() => {
+  return props.mysteryImageUrl
+    ? props.mysteryImageUrl.length === 0
+      ? null
+      : props.mysteryImageUrl
+    : props.tag?.mysteryImageUrl
+})
+const getFoundImageSrc = computed(() => {
+  return props.imageSize
+    ? getImgurImageSized.value(_foundImageUrl.value, props.imageSize)
+    : props.sizedFoundImage
+    ? getImgurImageSized.value(_foundImageUrl.value)
+    : _foundImageUrl.value
+})
+const getMysteryImageSrc = computed(() => {
+  return props.imageSize
+    ? getImgurImageSized.value(_mysteryImageUrl.value, props.imageSize)
+    : props.sizedMysteryImage
+    ? getImgurImageSized.value(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
+    : _mysteryImageUrl.value
+})
+const _mysteryDescription = computed(() => {
+  return props.mysteryDescription
+    ? props.mysteryDescription
+    : `#${_tagnumber.value} ${props.tag?.hint?.length > 0 ? `"${props.tag.hint}"` : ''}`
+})
+const tagInBoundary = computed(() => {
+  if (props.tag.inBoundary === undefined) {
+    return ''
+  } else if (!props.tag.inBoundary) {
+    return 'Outside boundaries'
+  }
+
+  return 'Inside boudaries'
+})
+
+// methods
+const getPostedDate = (timestamp, timeOnly = false) => {
+  if (!timestamp) {
+    return ''
+  }
+  const datetime = timeOnly
+    ? new Date(timestamp * 1000).toLocaleTimeString()
+    : new Date(timestamp * 1000).toLocaleDateString()
+
+  return `${timeOnly ? ' @ ' : t('components.biketag.posted_on')} ${datetime}`
+}
+const tagImageLoaded = (type) => {
+  if (type === 'mystery') {
+    mysteryImageLoaded.value = true
+  } else if (type === 'found') {
+    foundImageLoaded.value = true
+  }
+
+  if (
+    mysteryImageLoaded.value &&
+    (!!_foundImageUrl.value || foundImageLoaded.value || !_foundImageUrl.value)
+  ) {
+    emit('load')
+  }
+}
+const goTagPage = () => {
+  if (!noTagnumberLink.value) {
+    router.push('/' + encodeURIComponent(_tagnumber.value))
+  }
+}
+const goPlayerPage = (player) => {
+  router.push('/player/' + encodeURIComponent(player))
+}
+
+// mounted
+onMounted(() => {
+  const viewportMeta = document.createElement('meta')
+  viewportMeta.name = 'viewport'
+  viewportMeta.content = 'width=device-width, initial-scale=1'
+  document.head.appendChild(viewportMeta)
+})
 </script>
+
 <style lang="scss">
 .btn-hint {
   .biketag-text__inner {
@@ -260,6 +294,14 @@ export default defineComponent({
 }
 </style>
 <style lang="scss" scoped>
+.tag-inBoundary {
+  color: green;
+}
+
+.tag-outBoundary {
+  color: red;
+}
+
 .reversed {
   flex-flow: row-reverse wrap;
 }
@@ -291,7 +333,9 @@ export default defineComponent({
 
 .polaroid {
   background-color: white;
-  box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
+  box-shadow:
+    0 4px 8px 0 rgb(0 0 0 / 20%),
+    0 6px 20px 0 rgb(0 0 0 / 19%);
   margin-bottom: 25px;
   width: 100%;
 }
@@ -302,7 +346,7 @@ export default defineComponent({
 
 .tag-number {
   position: absolute;
-  top: -1em;
+  top: -0.75em;
   left: 50%;
   transform: translateX(-50%);
   z-index: 99;

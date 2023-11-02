@@ -55,189 +55,182 @@
     <div ref="backgroundRef" class="transition background-image"></div>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
+
+<script setup name="BikeTagCamera">
+import { ref, onMounted } from 'vue'
 import { exportHtmlToDownload } from '@/common/utils'
 
-export default defineComponent({
-  name: 'BikeTagCamera',
-  props: {
-    title: {
-      type: String,
-      default: '',
-    },
-    subtitle: {
-      type: String,
-      default: '',
-    },
-    tag: {
-      type: Object,
-      default: () => {
-        return {}
-      },
-    },
+const props = defineProps({
+  title: {
+    type: String,
+    default: '',
   },
-  data() {
-    return {
-      animationDuration: 400,
-      enableCSSFilters: true,
-      hasDownloadedMystery: false,
-      hasDownloadedFound: false,
-
-      state: {
-        currentAngle: 0,
-        backgroundOpacity: 1,
-        backgroundColor: '#fff',
-        isFlashing: false,
-        backgroundFilters: {
-          brightness: 100,
-          contrast: 100,
-          blur: 0,
-        },
-      },
-    }
+  subtitle: {
+    type: String,
+    default: '',
   },
-  mounted() {
-    // Lock background on mobile
-    if (/Mobi/.test(navigator.userAgent)) {
-      this.$refs.backgroundRef.style.backgroundSize = 'cover'
-    }
-    document.addEventListener('mouseup', this.onTouchTimerStop)
-    document.addEventListener('mouseup', this.onTouchShutterStop)
-  },
-  methods: {
-    async downloadTag() {
-      this.downloadingTag = true
-      const downloadPrefix = `BikeTag-${this.tag.game}-${this.tag.tagnumber}--`
-      if (!this.hasDownloadedMystery) {
-        const mysteryImageDataUrl = await exportHtmlToDownload(
-          `${downloadPrefix}mystery`,
-          undefined,
-          '#the-tag .mystery-tag'
-        )
-        this.hasDownloadedMystery = !!mysteryImageDataUrl
-      } else if (!this.hasDownloadedFound) {
-        const foundImageDataUrl = await exportHtmlToDownload(
-          `${downloadPrefix}found`,
-          undefined,
-          '#the-tag .found-tag'
-        )
-        this.hasDownloadedFound = !!foundImageDataUrl
-      }
-      this.downloadingTag = false
-    },
-
-    /* Film Door */
-    onClickFilmDoor() {
-      const resetTransform = this.$refs.tagToggleRef.style.transform
-
-      if (resetTransform) {
-        this.$refs.tagToggleRef.style.transform = ''
-      } else {
-        this.$refs.tagToggleRef.style.transform = 'translate(-80px)'
-      }
-    },
-
-    /* Lighten/Darken */
-    formatBackgroundFilters() {
-      const units = {
-        brightness: '%',
-        contrast: '%',
-        blur: 'px',
-      }
-
-      return Object.keys(this.state.backgroundFilters)
-        .map((filter) => `${filter}(${this.state.backgroundFilters[filter]}${units[filter]})`)
-        .join(' ')
-    },
-
-    sizeToggleClick() {
-      const resetTransform = this.$refs.sizeToggleRef.style.transform
-
-      if (resetTransform) {
-        this.$refs.sizeToggleRef.style.transform = ''
-        this.state.backgroundOpacity = 1
-        if (this.enableCSSFilters) {
-          this.state.backgroundFilters.brightness = 100
-          this.state.backgroundFilters.contrast = 100
-        }
-      } else if (this.$refs.sizeToggleRef.classList.contains('lighten')) {
-        this.$refs.sizeToggleRef.style.transform = 'translateX(15px)'
-        this.$refs.sizeToggleRef.classList.remove('lighten')
-        if (this.enableCSSFilters) {
-          this.state.backgroundFilters.brightness = 110
-          this.state.backgroundFilters.contrast = 90
-        } else {
-          this.state.backgroundOpacity = 0.9
-          this.state.backgroundColor = '#fff'
-        }
-      } else {
-        this.$refs.sizeToggleRef.style.transform = 'translate(-15px)'
-        this.$refs.sizeToggleRef.classList.add('lighten')
-        if (this.enableCSSFilters) {
-          this.state.backgroundFilters.brightness = 90
-          this.state.backgroundFilters.contrast = 110
-        } else {
-          this.state.backgroundOpacity = 0.9
-          this.state.backgroundColor = '#000'
-        }
-      }
-
-      if (this.enableCSSFilters) {
-        this.$refs.backgroundRef.style.filter = this.formatBackgroundFilters()
-      } else {
-        this.$refs.backgroundRef.style.opacity = this.state.backgroundOpacity
-        this.$refs.backroundContainerRef.style.backgroundColor = this.state.backgroundColor
-      }
-    },
-
-    /* Shutter */
-    onTouchShutterStart() {
-      if (!this.state.isFlashing) {
-        this.state.isFlashing = true
-        this.$refs.backroundContainerRef.style.backgroundColor = '#fff'
-        this.$refs.flashOverlayRef.style.opacity = 1
-        this.$refs.backgroundRef.style.opacity = 0.75
-
-        setTimeout(() => {
-          this.$refs.flashOverlayRef.style.transition = `opacity ${
-            this.animationDuration * 2
-          }ms ease-out`
-          this.$refs.backgroundRef.style.transition = `opacity ${
-            this.animationDuration * 2
-          }ms ease-out`
-          this.$refs.flashOverlayRef.style.opacity = 0
-          this.$refs.backgroundRef.style.opacity = 1
-        }, 0)
-
-        setTimeout(() => {
-          this.state.isFlashing = false
-          this.$refs.flashOverlayRef.style.transition = ''
-          this.$refs.backgroundRef.style.transition = ''
-          this.$refs.backroundContainerRef.style.backgroundColor = this.state.backgroundColor
-        }, this.animationDuration * 2)
-
-        this.downloadTag()
-      }
-    },
-
-    onTouchShutterStop() {
-      this.$refs.shutterRef.classList.remove('shutter-clicked')
-    },
-
-    /* Timer */
-    onTouchTimerStart() {
-      this.$refs.timerRef.classList.add('timer-clicked')
-    },
-
-    onTouchTimerStop() {
-      this.$refs.timerRef.classList.remove('timer-clicked')
+  tag: {
+    type: Object,
+    default: () => {
+      return {}
     },
   },
 })
 
-/* Drag lens */
+// data
+const animationDuration = ref(400)
+const enableCSSFilters = ref(true)
+const hasDownloadedMystery = ref(false)
+const hasDownloadedFound = ref(false)
+const tagToggleRef = ref(null)
+const sizeToggleRef = ref(null)
+const backgroundRef = ref(null)
+const backroundContainerRef = ref(null)
+const flashOverlayRef = ref(null)
+const shutterRef = ref(null)
+const timerRef = ref(null)
+const downloadingTag = ref(false)
+const state = ref({
+  currentAngle: 0,
+  backgroundOpacity: 1,
+  backgroundColor: '#fff',
+  isFlashing: false,
+  backgroundFilters: {
+    brightness: 100,
+    contrast: 100,
+    blur: 0,
+  },
+})
+
+// methods
+async function downloadTag() {
+  downloadingTag.value = true
+  const downloadPrefix = `BikeTag-${props.tag.game}-${props.tag.tagnumber}--`
+  if (!hasDownloadedMystery.value) {
+    const mysteryImageDataUrl = await exportHtmlToDownload(
+      `${downloadPrefix}mystery`,
+      undefined,
+      '#the-tag .mystery-tag',
+    )
+    hasDownloadedMystery.value = !!mysteryImageDataUrl
+  } else if (!hasDownloadedFound.value) {
+    const foundImageDataUrl = await exportHtmlToDownload(
+      `${downloadPrefix}found`,
+      undefined,
+      '#the-tag .found-tag',
+    )
+    hasDownloadedFound.value = !!foundImageDataUrl
+  }
+  downloadingTag.value = false
+}
+/* Film Door */
+function onClickFilmDoor() {
+  const resetTransform = tagToggleRef.value.style.transform
+
+  if (resetTransform) {
+    tagToggleRef.value.style.transform = ''
+  } else {
+    tagToggleRef.value.style.transform = 'translate(-80px)'
+  }
+}
+/* Lighten/Darken */
+function formatBackgroundFilters() {
+  const units = {
+    brightness: '%',
+    contrast: '%',
+    blur: 'px',
+  }
+
+  return Object.keys(state.value.backgroundFilters)
+    .map((filter) => `${filter}(${state.value.backgroundFilters[filter]}${units[filter]})`)
+    .join(' ')
+}
+function sizeToggleClick() {
+  const resetTransform = sizeToggleRef.value.style.transform
+
+  if (resetTransform) {
+    sizeToggleRef.value.style.transform = ''
+    state.value.backgroundOpacity = 1
+    if (enableCSSFilters.value) {
+      state.value.backgroundFilters.brightness = 100
+      state.value.backgroundFilters.contrast = 100
+    }
+  } else if (sizeToggleRef.value.classList.contains('lighten')) {
+    sizeToggleRef.value.style.transform = 'translateX(15px)'
+    sizeToggleRef.value.classList.remove('lighten')
+    if (enableCSSFilters.value) {
+      state.value.backgroundFilters.brightness = 110
+      state.value.backgroundFilters.contrast = 90
+    } else {
+      state.value.backgroundOpacity = 0.9
+      state.value.backgroundColor = '#fff'
+    }
+  } else {
+    sizeToggleRef.value.style.transform = 'translate(-15px)'
+    sizeToggleRef.value.classList.add('lighten')
+    if (enableCSSFilters.value) {
+      state.value.backgroundFilters.brightness = 90
+      state.value.backgroundFilters.contrast = 110
+    } else {
+      state.value.backgroundOpacity = 0.9
+      state.value.backgroundColor = '#000'
+    }
+  }
+
+  if (enableCSSFilters.value) {
+    backgroundRef.value.style.filter = formatBackgroundFilters()
+  } else {
+    backgroundRef.value.style.opacity = state.value.backgroundOpacity
+    backroundContainerRef.value.style.backgroundColor = state.value.backgroundColor
+  }
+}
+/* Shutter */
+function onTouchShutterStart() {
+  if (!state.value.isFlashing) {
+    state.value.isFlashing = true
+    backroundContainerRef.value.style.backgroundColor = '#fff'
+    flashOverlayRef.value.style.opacity = 1
+    backgroundRef.value.style.opacity = 0.75
+
+    setTimeout(() => {
+      flashOverlayRef.value.style.transition = `opacity ${animationDuration.value * 2}ms ease-out`
+      backgroundRef.value.style.transition = `opacity ${animationDuration.value * 2}ms ease-out`
+      flashOverlayRef.value.style.opacity = 0
+      backgroundRef.value.style.opacity = 1
+    }, 0)
+
+    setTimeout(() => {
+      state.value.isFlashing = false
+      flashOverlayRef.value.style.transition = ''
+      backgroundRef.value.style.transition = ''
+      backroundContainerRef.value.style.backgroundColor = state.value.backgroundColor
+    }, animationDuration.value * 2)
+
+    downloadTag()
+  }
+}
+function onTouchShutterStop() {
+  shutterRef.value.classList.remove('shutter-clicked')
+}
+/* Timer */
+function onTouchTimerStart() {
+  timerRef.value.classList.add('timer-clicked')
+}
+function onTouchTimerStop() {
+  timerRef.value.classList.remove('timer-clicked')
+}
+
+// mounted
+onMounted(function () {
+  // Lock background on mobile
+  if (/Mobi/.test(navigator.userAgent)) {
+    backgroundRef.value.style.backgroundSize = 'cover'
+  }
+  document.addEventListener('mouseup', onTouchTimerStop)
+  document.addEventListener('mouseup', onTouchShutterStop)
+})
 </script>
+
 <style lang="scss" scoped>
 .camera {
   display: block;
@@ -261,9 +254,22 @@ export default defineComponent({
       linear-gradient(90deg, #eae8eb, #e1dfe2),
       linear-gradient(90deg, #85817e, rgb(47 43 43 / 0%) 5% 95%, #696461),
       linear-gradient(#4e4a49, #100c0d), linear-gradient(#312f32, #2a2a27, #363233);
-    background-size: 50px 60px, 50px 60px, 185px 30px, 185px 30px, 100% 100%, 100% 20px, 100% 100%;
+    background-size:
+      50px 60px,
+      50px 60px,
+      185px 30px,
+      185px 30px,
+      100% 100%,
+      100% 20px,
+      100% 100%;
     background-repeat: no-repeat;
-    background-position: 160px -26px, 360px -26px, top right, top left, top left, bottom left,
+    background-position:
+      160px -26px,
+      360px -26px,
+      top right,
+      top left,
+      top left,
+      bottom left,
       bottom left;
     box-shadow: -1px 3px 2px 0 rgb(249 247 248 / 65%) inset;
 
@@ -279,9 +285,14 @@ export default defineComponent({
       background-image: linear-gradient(90deg, #474548 90%, #343233 90%),
         linear-gradient(90deg, #0e090d 10%, #4a4849 10%),
         linear-gradient(#4c4a4d 4%, #161214 9% 20%, #484445 30% 55%, #1a1617 80% 93%, #b0afad 99%);
-      background-size: 8px 100%, 8px 100%, 100% 100%;
+      background-size:
+        8px 100%,
+        8px 100%,
+        100% 100%;
       background-repeat: no-repeat;
-      background-position: top left, top right;
+      background-position:
+        top left,
+        top right;
     }
 
     &__labels {
@@ -330,9 +341,15 @@ export default defineComponent({
       background-image: radial-gradient(#353334, #4c4849 40%, transparent 70%),
         radial-gradient(#29272a, #464445 40%, transparent 70%),
         linear-gradient(#8b8786 10%, #5e5a5b 20% 65%, #969291);
-      background-size: 70px 70px, 70px 70px, 100% 100%;
+      background-size:
+        70px 70px,
+        70px 70px,
+        100% 100%;
       background-repeat: no-repeat;
-      background-position: top -25px left -40px, top -15px right -35px, top right;
+      background-position:
+        top -25px left -40px,
+        top -15px right -35px,
+        top right;
 
       .toggle {
         position: absolute;
@@ -381,7 +398,10 @@ export default defineComponent({
         rgb(243 243 243 / 75%)
       ),
       linear-gradient(#fefefe, #f9f7f8), linear-gradient(#ddd9da, #e2dedf, #eae8eb, #f3f1f4);
-    background-size: 100%, 100% 3px, 100%;
+    background-size:
+      100%,
+      100% 3px,
+      100%;
     background-repeat: no-repeat;
     box-shadow: -1px 1px 2px 3px rgb(249 247 248 / 85%) inset;
 
@@ -432,8 +452,14 @@ export default defineComponent({
           /* shadow */ #3c3a3d 59% 60%,
           /* highlight */ #241e1e 60% /* outer */
         );
-      background-size: 350px 350px, 350px 350px, 100%;
-      background-position: bottom -100px left, top -120px right 10px, center center;
+      background-size:
+        350px 350px,
+        350px 350px,
+        100%;
+      background-position:
+        bottom -100px left,
+        top -120px right 10px,
+        center center;
       background-repeat: no-repeat;
       box-shadow: 15px 55px 60px 5px #767072;
 
@@ -449,7 +475,8 @@ export default defineComponent({
         right: 0;
         top: 70px;
         z-index: 100;
-        background-image: radial-gradient(rgb(119 109 80 / 85%), transparent 40%),
+        background-image:
+          radial-gradient(rgb(119 109 80 / 85%), transparent 40%),
           radial-gradient(
             rgb(51 180 105 / 25%) 13%,
             rgb(119 159 59 / 20%) 53% 70%,
@@ -480,9 +507,17 @@ export default defineComponent({
               #241921 55%,
               #080609 70%
             );
-        background-size: 100%, 190% 100%, 190% 100%, 100%;
+        background-size:
+          100%,
+          190% 100%,
+          190% 100%,
+          100%;
         background-repeat: no-repeat;
-        background-position: center -10px, -30px -48px, -30px 55px, center;
+        background-position:
+          center -10px,
+          -30px -48px,
+          -30px 55px,
+          center;
       }
     }
 
@@ -499,8 +534,11 @@ export default defineComponent({
       background-repeat: no-repeat;
       background-position: bottom -10px center;
       border: 1px solid #520000;
-      box-shadow: 1px 1px 1px rgb(255 255 255 / 20%) inset, 0 0 2px 6px #dfdad7,
-        1px 6px 10px #66514d, -1px -7.5px 1px white;
+      box-shadow:
+        1px 1px 1px rgb(255 255 255 / 20%) inset,
+        0 0 2px 6px #dfdad7,
+        1px 6px 10px #66514d,
+        -1px -7.5px 1px white;
     }
 
     &__flash {
@@ -510,8 +548,13 @@ export default defineComponent({
       border-radius: 15px;
       left: 25px;
       top: 25px;
-      box-shadow: -1px -1px 1px #bdb8b5, -1.5px -2.1px 0.5px #24201d, -4px 4px 3px 3px #f4f0ef,
-        -5px 8px 8px #aba6aa, 0.25px 1px 1px 5px #3e3a38 inset, 0 -6px 1px 1px #f6f6f8 inset;
+      box-shadow:
+        -1px -1px 1px #bdb8b5,
+        -1.5px -2.1px 0.5px #24201d,
+        -4px 4px 3px 3px #f4f0ef,
+        -5px 8px 8px #aba6aa,
+        0.25px 1px 1px 5px #3e3a38 inset,
+        0 -6px 1px 1px #f6f6f8 inset;
       background-image: linear-gradient(#edecea, #f6f6f8),
         linear-gradient(
           90deg,
@@ -583,9 +626,23 @@ export default defineComponent({
           #fffefa 98%
         ),
         linear-gradient(#34332f, #3e3a38);
-      background-size: 42px 20px, 42px 100%, 3px 100%, 3px 100%, 100% 3px, 100%, 100%;
+      background-size:
+        42px 20px,
+        42px 100%,
+        3px 100%,
+        3px 100%,
+        100% 3px,
+        100%,
+        100%;
       background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, no-repeat;
-      background-position: 24px top, 25px top, 22px top, 64px top, center, center, center;
+      background-position:
+        24px top,
+        25px top,
+        22px top,
+        64px top,
+        center,
+        center,
+        center;
     }
 
     .viewfinder {
@@ -596,8 +653,12 @@ export default defineComponent({
       border-radius: 20px;
       right: 20px;
       top: 20px;
-      box-shadow: 0.5px 0.5px 1px 1.5px #f1edee, 1.5px 1px 1px 1px #3b3535 inset,
-        2px 2px 1px 1px #9f9e9c inset, -0.5px -2px 1.5px #9b9a98 inset, 1px 1.5px 0.5px 1px #fbf7f8;
+      box-shadow:
+        0.5px 0.5px 1px 1.5px #f1edee,
+        1.5px 1px 1px 1px #3b3535 inset,
+        2px 2px 1px 1px #9f9e9c inset,
+        -0.5px -2px 1.5px #9b9a98 inset,
+        1px 1.5px 0.5px 1px #fbf7f8;
 
       .glass {
         position: absolute;
@@ -610,11 +671,22 @@ export default defineComponent({
         background-image: radial-gradient(rgb(236 234 237 / 30%) 50%, transparent 60%),
           radial-gradient(rgb(193 189 186 / 30%) 50%, transparent 60%),
           radial-gradient(#5b5758 45%, #302c2d, #131112);
-        background-size: 106% 32%, 106% 25%, 100%;
+        background-size:
+          106% 32%,
+          106% 25%,
+          100%;
         background-repeat: no-repeat;
-        background-position: -3px -7px, bottom -8px left -3px, center;
-        box-shadow: 0 0 1px 0 #010000 inset, 0 0 1px 1px #393836 inset, 0 0 2px 2px #010000 inset,
-          0 0 2px 4px #393836 inset, 0 0 1.5px 4.5px #010000 inset, -0.5px -1px 1px #5f5e5c,
+        background-position:
+          -3px -7px,
+          bottom -8px left -3px,
+          center;
+        box-shadow:
+          0 0 1px 0 #010000 inset,
+          0 0 1px 1px #393836 inset,
+          0 0 2px 2px #010000 inset,
+          0 0 2px 4px #393836 inset,
+          0 0 1.5px 4.5px #010000 inset,
+          -0.5px -1px 1px #5f5e5c,
           0.25px 2px 2px #464543;
 
         .back {
@@ -625,8 +697,12 @@ export default defineComponent({
           left: 18px;
           top: 19px;
           border-radius: 10px;
-          box-shadow: 0.5px 2px 2px 0 #5e5b56, 0 1px 3px 0 #cac4c5, -4px 0 5px 0 rgb(9 7 5 / 75%),
-            1px 1px 1px 1px #f1ecf0 inset, 1.5px 1.5px 1px 1px #d1d0ce inset;
+          box-shadow:
+            0.5px 2px 2px 0 #5e5b56,
+            0 1px 3px 0 #cac4c5,
+            -4px 0 5px 0 rgb(9 7 5 / 75%),
+            1px 1px 1px 1px #f1ecf0 inset,
+            1.5px 1.5px 1px 1px #d1d0ce inset;
           border: 0.5px solid rgb(9 7 5 / 75%);
         }
       }
@@ -640,7 +716,9 @@ export default defineComponent({
       left: 135px;
       top: 35px;
       background-image: radial-gradient(#e8e4e5, #dedad9);
-      box-shadow: 0 0.5px 1px 0.5px #605c5b, 1px 1px 1px #fffbfc inset;
+      box-shadow:
+        0 0.5px 1px 0.5px #605c5b,
+        1px 1px 1px #fffbfc inset;
     }
 
     .sensor {
@@ -653,9 +731,13 @@ export default defineComponent({
       background-image: radial-gradient(#080607, transparent 50%),
         radial-gradient(#0b090a, #211f20, #131112, #383637, #100e0f, #383637, #100e0f);
       background-size: 60%, 100%;
-      background-position: -6px -3px, center;
+      background-position:
+        -6px -3px,
+        center;
       background-repeat: no-repeat;
-      box-shadow: 0 0.5px 1px 0.75px #fffbfc, 0 -1px 1px #635f5e;
+      box-shadow:
+        0 0.5px 1px 0.75px #fffbfc,
+        0 -1px 1px #635f5e;
     }
 
     .power {
@@ -666,7 +748,9 @@ export default defineComponent({
       right: 150px;
       top: 195px;
       background-image: radial-gradient(#000 30%, #252525, #171717, #020001, #242223, #383637);
-      box-shadow: 0 0.5px 1px 0.75px #c6c1c0, 0 -0.5px 0.5px 0.25px #1a1819,
+      box-shadow:
+        0 0.5px 1px 0.75px #c6c1c0,
+        0 -0.5px 0.5px 0.25px #1a1819,
         -5px -8px 8px 1px rgb(86 82 82 / 40%);
     }
 
@@ -678,7 +762,9 @@ export default defineComponent({
       right: 50px;
       top: 145px;
       background-image: linear-gradient(#cc7b00 10%, #b26701);
-      box-shadow: 0.2px 0.2px 0.5px 0.5px #935723 inset, 0.5px 1px 0.75px 0.25px #fce9d8;
+      box-shadow:
+        0.2px 0.2px 0.5px 0.5px #935723 inset,
+        0.5px 1px 0.75px 0.25px #fce9d8;
 
       .toggle {
         position: absolute;
@@ -691,7 +777,9 @@ export default defineComponent({
         margin-right: auto;
         top: 1px;
         background-image: radial-gradient(#fbc00a, #ffdb09);
-        box-shadow: 0.5px 1px 0.75px 0.25px #ffed71 inset, 0 -0.5px 0.5px 0.5px #e6a11f inset,
+        box-shadow:
+          0.5px 1px 0.75px 0.25px #ffed71 inset,
+          0 -0.5px 0.5px 0.5px #e6a11f inset,
           -1px 0.5px 4px 1px #964900;
       }
     }
@@ -737,13 +825,19 @@ export default defineComponent({
   }
 
   .transition {
-    transition: transform 400ms ease-out, background-size 400ms ease-out;
+    transition:
+      transform 400ms ease-out,
+      background-size 400ms ease-out;
   }
 
   .shutter-clicked {
     background-image: radial-gradient(#da1107 51%, #c10f06 53.5%) !important;
-    box-shadow: 1px 1px 1px rgb(255 255 255 / 20%) inset, 0 4px 4px rgb(0 0 0 / 40%) inset,
-      0 0 2px 6px #dfdad7, 1px 6px 10px #66514d, -1px -7.5px 1px white !important;
+    box-shadow:
+      1px 1px 1px rgb(255 255 255 / 20%) inset,
+      0 4px 4px rgb(0 0 0 / 40%) inset,
+      0 0 2px 6px #dfdad7,
+      1px 6px 10px #66514d,
+      -1px -7.5px 1px white !important;
   }
 
   .flash-overlay {
@@ -760,7 +854,9 @@ export default defineComponent({
   }
 
   .timer-clicked {
-    box-shadow: 0 0 1px #605c5b, 0 1.5px 1.5px rgb(0 0 0 / 40%) inset,
+    box-shadow:
+      0 0 1px #605c5b,
+      0 1.5px 1.5px rgb(0 0 0 / 40%) inset,
       0 -1px 0.5px rgb(0 0 0 / 40%) inset !important;
   }
 

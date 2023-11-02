@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
@@ -42,7 +43,7 @@
               (key) =>
                 profile?.user_metadata[key] != null &&
                 profile?.user_metadata[key].length > 0 &&
-                key != 'passcode'
+                key != 'passcode',
             )"
             :key="`${i}_label`"
             class="player-name mt-4"
@@ -105,10 +106,10 @@
               :text="`${firstToUperCase(credential)} Configuration`"
               @click.prevent="() => toggleShowFields(credential)"
             />
-            <div :ref="credential" class="input-block mt-3 hide">
+            <div :ref="credentialsRef[credential]" class="input-block mt-3 hide">
               <bike-tag-input
                 v-for="(inputField, j) in Object.keys(
-                  profile.user_metadata.credentials[credential]
+                  profile.user_metadata.credentials[credential],
                 )"
                 :key="`${j}_config_ipnuts`"
                 v-model="profile.user_metadata.credentials[credential][inputField]"
@@ -140,139 +141,141 @@
   </div>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import BikeTagButton from '@/components/BikeTagButton.vue'
-import BikeTagInput from '@/components/BikeTagInput.vue'
-import Loading from 'vue-loading-overlay'
+<script setup name="ProfileView">
+import { ref, inject, computed, onMounted, nextTick } from 'vue'
+import { useStore } from '@/store/index.ts'
+import { useAuth0 } from '@auth0/auth0-vue'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import Reddit from '@/assets/images/Reddit.svg'
 import Instagram from '@/assets/images/Instagram.svg'
 import Twitter from '@/assets/images/Twitter.svg'
 import Imgur from '@/assets/images/Imgur.svg'
 import Discord from '@/assets/images/Discord.svg'
-import Player from '@/components/PlayerBicon.vue'
 import StyledHr from '@/assets/images/hr.svg'
 
-export default defineComponent({
-  name: 'ProfileView',
-  components: {
-    Loading,
-    BikeTagButton,
-    BikeTagInput,
-    Player,
-  },
-  data() {
-    return {
-      profile: this.getProfile,
-      socialNetworkIcons: [
-        ['reddit', Reddit],
-        ['instagram', Instagram],
-        ['twitter', Twitter],
-        ['imgur', Imgur],
-        ['discord', Discord],
-      ],
-      showModal: false,
-      styledHr: StyledHr,
-    }
-  },
-  computed: {
-    ...mapGetters(['getPlayers', 'getProfile', 'isBikeTagAmbassador']),
-    player() {
-      const playerList = this.getPlayers?.filter((player) => {
-        return this.$auth.user.name === decodeURIComponent(encodeURIComponent(player.name))
-      })
-      if (playerList && playerList.length > 0) {
-        return playerList[0]
-      }
+// components
+// import Player from '@/components/PlayerBicon.vue'
+import Loading from 'vue-loading-overlay'
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagInput from '@/components/BikeTagInput.vue'
+import { useI18n } from 'vue-i18n'
 
-      return {}
-    },
-  },
-  mounted() {
-    this.$nextTick(() => {
-      this.profile = this.getProfile
-      this.profile.user_metadata = this.profile.user_metadata ?? { social: {} }
-      this.profile.user_metadata.options = this.profile.user_metadata.options ?? {
-        skipSteps: false,
-      }
-      this.showModal =
-        this.profile?.user_metadata?.name != null && !this.profile?.user_metadata?.name.length
-      switch (this.profile.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
-        case 'reddit':
-          if (!this.profile.user_metadata.social?.reddit) {
-            this.profile.user_metadata.social.reddit = this.profile.name
-          }
-          break
-        case 'imgur':
-          if (!this.profile.user_metadata.social?.imgur) {
-            this.profile.user_metadata.social.imgur = this.profile.name
-          }
-          break
-        case 'twitter':
-          if (!this.profile.user_metadata.social?.twitter) {
-            this.profile.user_metadata.social.twitter = this.profile.name
-          }
-          break
-      }
-    })
-  },
-  methods: {
-    hideModal() {
-      this.showModal = false
-    },
-    firstToUperCase(str) {
-      return str[0].charAt(0).toUpperCase() + str.slice(1)
-    },
-    splitCamelCase(str) {
-      return this.firstToUperCase(str).replace(/([a-z])([A-Z])/g, '$1 $2')
-    },
-    toggleShowFields(name) {
-      this.$refs[name][0].classList.toggle('hide')
-    },
-    async onSubmitName() {
-      if (this.profile.user_metadata.name.length > 0) {
-        this.profile['token'] = (await this.$auth.getIdTokenClaims()).__raw
-        try {
-          await this.$store.dispatch('assignName', this.profile)
-          this.profile = this.getProfile
-          this.$toast.open({
-            message: 'Success',
-            type: 'success',
-            position: 'top',
-          })
-        } catch (e) {
-          this.$toast.open({
-            message: e.response?.data ?? e.message,
-            type: 'error',
-            position: 'top',
-          })
+// data
+const profile = ref(null)
+const socialNetworkIcons = ref([
+  ['reddit', Reddit],
+  ['instagram', Instagram],
+  ['twitter', Twitter],
+  ['imgur', Imgur],
+  ['discord', Discord],
+])
+const showModal = ref(false)
+const styledHr = StyledHr
+const store = useStore()
+const { idTokenClaims, user } = useAuth0()
+const toast = inject('toast')
+const credentialsRefs = ref({})
+const { t } = useI18n()
+
+// computed
+const getPlayers = computed(() => store.getPlayers)
+const getProfile = computed(() => store.getProfile)
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const player = computed(() => {
+  const playerList = getPlayers.value?.filter((player) => {
+    return user.value.name === decodeURIComponent(encodeURIComponent(player.name))
+  })
+  if (playerList && playerList.length > 0) {
+    return playerList[0]
+  }
+
+  return {}
+})
+
+// methods
+function hideModal() {
+  showModal.value = false
+}
+function firstToUperCase(str) {
+  return str[0].charAt(0).toUpperCase() + str.slice(1)
+}
+function splitCamelCase(str) {
+  return firstToUperCase(str).replace(/([a-z])([A-Z])/g, '$1 $2')
+}
+function toggleShowFields(name) {
+  credentialsRefs.value[name][0].classList.toggle('hide')
+}
+async function onSubmitName() {
+  if (profile.value.user_metadata.name.length > 0) {
+    profile.value['token'] = idTokenClaims.value.__raw
+    try {
+      await store.assignName(profile.value)
+      profile.value = getProfile.value
+      toast.open({
+        message: 'Success',
+        type: 'success',
+        position: 'top',
+      })
+    } catch (e) {
+      toast.open({
+        message: e.response?.data ?? e.message,
+        type: 'error',
+        position: 'top',
+      })
+    }
+    showModal.value = false
+  }
+}
+async function onSubmit() {
+  if (idTokenClaims.value) {
+    profile.value['token'] = idTokenClaims.value.__raw
+    try {
+      await store.updateProfile(profile.value)
+      toast.open({
+        message: 'Success',
+        type: 'success',
+        position: 'top',
+      })
+    } catch (e) {
+      toast.open({
+        message: e.response?.data ?? e.message,
+        type: 'error',
+        position: 'top',
+      })
+    }
+  }
+}
+
+// mounted
+onMounted(() => {
+  profile.value = getProfile.value
+
+  nextTick(() => {
+    profile.value = getProfile.value
+    profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
+    profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
+      skipSteps: false,
+    }
+    showModal.value =
+      profile.value?.user_metadata?.name != null && !profile.value?.user_metadata?.name.length
+    switch (profile.value.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
+      case 'reddit':
+        if (!profile.value.user_metadata.social?.reddit) {
+          profile.value.user_metadata.social.reddit = profile.value.name
         }
-        this.showModal = false
-      }
-    },
-    async onSubmit() {
-      const claims = await this.$auth.getIdTokenClaims()
-      if (claims) {
-        this.profile['token'] = claims.__raw
-        try {
-          await this.$store.dispatch('updateProfile', this.profile)
-          this.$toast.open({
-            message: 'Success',
-            type: 'success',
-            position: 'top',
-          })
-        } catch (e) {
-          this.$toast.open({
-            message: e.response?.data ?? e.message,
-            type: 'error',
-            position: 'top',
-          })
+        break
+      case 'imgur':
+        if (!profile.value.user_metadata.social?.imgur) {
+          profile.value.user_metadata.social.imgur = profile.value.name
         }
-      }
-    },
-  },
+        break
+      case 'twitter':
+        if (!profile.value.user_metadata.social?.twitter) {
+          profile.value.user_metadata.social.twitter = profile.value.name
+        }
+        break
+    }
+  })
 })
 </script>
 <style lang="scss">
@@ -339,7 +342,7 @@ hr {
   max-width: 800px;
   margin: auto;
 
-  @media (min-width: 600px) {
+  @media (width >= 600px) {
     flex-flow: row nowrap;
 
     .player-name {

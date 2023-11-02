@@ -39,67 +39,62 @@
   </loading>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import BikeTag from '@/components/BikeTag.vue'
-import Loading from 'vue-loading-overlay'
+<script setup name="BikeTagsView">
+import { ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useStore } from '@/store/index.ts'
 import 'vue-loading-overlay/dist/vue-loading.css'
 
-export default defineComponent({
-  name: 'BikeTagsView',
-  components: {
-    BikeTag,
-    Loading,
+// components
+import BikeTag from '@/components/BikeTag.vue'
+import Loading from 'vue-loading-overlay'
+
+// data
+const router = useRouter()
+const route = useRoute()
+const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
+const perPage = ref(10)
+const tagsAreLoading = ref(true)
+const tagsLoaded = ref([])
+const store = useStore()
+
+// computed
+const getTags = computed(() => store.getTags)
+const tagsList = computed(() =>
+  getTags.value.slice(
+    (currentPage.value - 1) * perPage.value + (currentPage.value === 1 ? 1 : 0), // exclude current mystery tag
+    currentPage.value * perPage.value, // exclude current mystery tag
+  ),
+)
+const totalCount = computed(() => getTags.value.length)
+
+// methods
+function resetCurrentPage() {
+  startLoading()
+  currentPage.value = 1
+}
+function changePage(event, pageNumber) {
+  startLoading()
+  router.push('/biketags/' + pageNumber)
+}
+function startLoading() {
+  tagsLoaded.value = []
+  tagsAreLoading.value = true
+  if (perPage.value <= 10) {
+    setTimeout(() => {
+      tagsAreLoading.value = false
+    }, 500)
+  }
+}
+
+// created
+startLoading()
+
+// watch
+watch(
+  () => 'route.params.currentPage',
+  (val) => {
+    currentPage.value = Number(val)
   },
-  data() {
-    return {
-      currentPage: this.$route.params?.currentPage.length
-        ? parseInt(this.$route.params?.currentPage)
-        : 1,
-      perPage: 10,
-      tagsAreLoading: true,
-      tagsLoaded: [],
-    }
-  },
-  computed: {
-    ...mapGetters(['getTags']),
-    tagsList() {
-      return this.getTags.slice(
-        (this.currentPage - 1) * this.perPage + (this.currentPage === 1 ? 1 : 0), // exclude current mystery tag
-        this.currentPage * this.perPage // exclude current mystery tag
-      )
-    },
-    totalCount() {
-      return this.getTags.length
-    },
-  },
-  watch: {
-    '$route.params.currentPage': function (val) {
-      this.currentPage = Number(val)
-    },
-  },
-  created() {
-    this.startLoading()
-  },
-  methods: {
-    resetCurrentPage() {
-      this.startLoading()
-      this.currentPage = 1
-    },
-    changePage(event, pageNumber) {
-      this.startLoading()
-      this.$router.push('/biketags/' + pageNumber)
-    },
-    startLoading() {
-      this.tagsLoaded = []
-      this.tagsAreLoading = true
-      if (this.perPage <= 10) {
-        setTimeout(() => {
-          this.tagsAreLoading = false
-        }, 500)
-      }
-    },
-  },
-})
+)
 </script>

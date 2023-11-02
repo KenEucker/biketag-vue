@@ -6,7 +6,7 @@
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
       <div style="margin-top: 2rem">
-        <p>{{ $t('pages.round.player_name_reserved') }}</p>
+        <p>{{ t('pages.round.player_name_reserved') }}</p>
         <bike-tag-input id="passcode" v-model="passcode" name="passcode" placeholder="passcode" />
         <bike-tag-button class="modal-sub-btn" variant="medium" text="Submit" />
       </div>
@@ -15,7 +15,7 @@
   <div :class="`add-found-tag ${uploadInProgress ? 'hidden' : ''}`">
     <div class="title-container">
       <bike-tag-button variant="medium" @click="$refs.file.click()">
-        <h3 class="queue-title">{{ $t('pages.round.found_title') }}</h3>
+        <h3 class="queue-title">{{ t('pages.round.found_title') }}</h3>
       </bike-tag-button>
     </div>
     <div class="preview-container">
@@ -38,7 +38,7 @@
       </bike-tag-button>
     </div>
     <form
-      ref="foundTag"
+      ref="foundTagRef"
       name="add-found-tag"
       action="add-found-tag"
       method="POST"
@@ -58,14 +58,14 @@
         required
         @change="setImage"
       />
-      <p class="queue-text">{{ $t('pages.round.found_text') }}</p>
+      <p class="queue-text">{{ t('pages.round.found_text') }}</p>
       <div class="mt-3 mb-3 input-container">
         <bike-tag-input
           id="found"
           :disabled="locationDisabled"
           name="found"
           required
-          :placeholder="$t('pages.round.location_placeholder')"
+          :placeholder="t('pages.round.location_placeholder')"
         >
           <img :src="pinIcon" />
           <GMapAutocomplete
@@ -88,7 +88,7 @@
         </bike-tag-input>
         <b-popover target="found" :show="showPopover" triggers="click" placement="top">
           <template #title> Location: {{ getLocation }} </template>
-          <p v-if="locationDisabled">{{ $t('pages.round.image_first') }}</p>
+          <p v-if="locationDisabled">{{ t('pages.round.image_first') }}</p>
           <bike-tag-map
             v-if="isGps"
             variant="play/input"
@@ -103,291 +103,327 @@
           name="player"
           required
           :readonly="isAuthenticated"
-          :placeholder="$t('pages.round.name_placeholder')"
+          :placeholder="t('pages.round.name_placeholder')"
         />
+        <b-modal
+          v-model="confirmInBoundary"
+          class="confirm-modal"
+          :title="t('pages.round.missing_gps_alert.title')"
+          @ok="confirmedBoundary = true"
+        >
+          <p>{{ t('pages.round.missing_gps_alert.body') }}</p>
+        </b-modal>
       </div>
       <div class="sub-container">
         <bike-tag-button
           variant="medium"
           type="submit"
-          :text="$t('pages.round.queue_found_tag')"
+          :text="t('pages.round.queue_found_tag')"
           @click="onSubmit"
         />
       </div>
     </form>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+
+<script setup name="QueueFoundTag">
+import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { useStore } from '@/store/index.ts'
+import { useAuth0 } from '@auth0/auth0-vue'
+import { debug, isPointInPolygon } from '@/common/utils'
+import { useI18n } from 'vue-i18n'
+import exifr from 'exifr'
+import Pin from '@/assets/images/pin.svg'
+
+// components
+import Loading from 'vue-loading-overlay'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
-import exifr from 'exifr'
-import { debug } from '@/common/utils'
 
-export default defineComponent({
-  name: 'QueueFoundTag',
-  components: {
-    BikeTagButton,
-    BikeTagInput,
-    BikeTagMap,
-  },
-  props: {
-    tag: {
-      type: Object,
-      default: () => {
-        return {}
-      },
+// props
+const props = defineProps({
+  tag: {
+    type: Object,
+    default: () => {
+      return {}
     },
   },
-  emits: ['submit'],
-  data: function () {
-    return {
-      preview: null,
-      image: this.tag?.foundImage ?? '',
-      location: '',
-      player: '',
-      foundImageUrl: null,
-      tagNumber: 0,
-      locationDisabled: true,
-      center: { lat: 0, lng: 0 },
-      gps: { lat: null, lng: null },
-      isGpsDefault: true,
-      showPopover: false,
-      inputDOM: null,
-      passcode: Date.now().toString(), // don't let them just get away with it
-      showModal: false,
-      uploadInProgress: false,
-    }
-  },
-  computed: {
-    ...mapGetters([
-      'getGameName',
-      'getQueue',
-      'getPlayerTag',
-      'getPlayerId',
-      'getCurrentBikeTag',
-      'getProfile',
-      'getGame',
-    ]),
-    getName() {
-      return this.getProfile?.user_metadata?.name ?? this.tag?.foundPlayer ?? ''
-    },
-    isGps() {
-      return this.gps.lat && this.gps.lng
-    },
-    getLocation() {
-      if (this.location.length > 0) {
-        return this.location
-      } else if (this.isGps) {
-        return `${this.gps.lat}, ${this.gps.lng}`
-      }
+})
 
-      return this.location
-    },
-    isAuthenticated() {
-      return this.$auth.isAuthenticated
-    },
-  },
-  created() {
-    this.$nextTick(() => (this.showPopover = true))
-  },
-  mounted() {
-    this.$nextTick(() => {
-      setTimeout(() => this.$nextTick(() => (this.showPopover = false)), 100)
-      // this.showPopover = false
-      this.player = this.getName
-      this.uploadInProgress = false
+// data
+const pinIcon = Pin
+const emit = defineEmits(['submit'])
+const preview = ref(null)
+const image = ref(props.tag?.foundImage ?? '')
+const foundImageUrl = ref(null)
+const locationDisabled = ref(true)
+const center = ref({ lat: 0, lng: 0 })
+const gps = ref({ lat: null, lng: null })
+const isGpsDefault = ref(true)
+const showPopover = ref(false)
+const inputDOM = ref(null)
+const showModal = ref(false)
+const uploadInProgress = ref(false)
+const location = ref('')
+const player = ref('')
+const passcode = ref(Date.now().toString()) // don't let them just get away with it
+const foundTagRef = ref(null)
+const store = useStore()
+const { isAuthenticated } = useAuth0()
+const toast = inject('toast')
+const { t } = useI18n()
+const boundary = ref({})
+const isInBoundary = ref(false)
+const confirmInBoundary = ref(false)
+const confirmedBoundary = ref(false)
+
+// computed
+const getGameName = computed(() => store.getGameName)
+const getPlayerId = computed(() => store.getPlayerId)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getProfile = computed(() => store.getProfile)
+const getGame = computed(() => store.getGame)
+const getName = computed(
+  () => getProfile.value?.user_metadata?.name ?? props.tag?.foundPlayer ?? '',
+)
+const isGps = computed(() => gps.value.lat && gps.value.lng)
+const getLocation = computed(() => {
+  if (location.value.length > 0) {
+    return location.value
+  } else if (isGps.value) {
+    return `${gps.value.lat}, ${gps.value.lng}`
+  }
+
+  return location.value
+})
+
+// methods
+const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
+const hideModal = () => (showModal.value = false)
+const onSubmit = async (e) => {
+  e.preventDefault()
+  uploadInProgress.value = true
+  if (!location.value?.length) {
+    toast.open({
+      message: 'Please add your Found Location',
+      type: 'error',
+      position: 'top',
     })
-  },
-  beforeUnmount() {
-    document.querySelector('.popover')?.remove()
-  },
-  methods: {
-    sleep(time) {
-      return new Promise((resolve) => setTimeout(resolve, time))
-    },
-    hideModal() {
-      this.showModal = false
-    },
-    async onSubmit(e) {
-      e.preventDefault()
-      this.uploadInProgress = true
-      if (!this.location?.length) {
-        this.$toast.open({
-          message: 'Please add your Found Location',
-          type: 'error',
-          position: 'top',
-        })
-        this.uploadInProgress = false
-        return
-      }
-      if (!this.player) {
-        this.$toast.open({
-          message: 'Please enter a name',
-          type: 'error',
-          position: 'top',
-        })
-        this.uploadInProgress = false
-        return
-      }
-      if (!this.$auth?.isAuthenticated) {
-        try {
-          await this.$store.dispatch('checkPasscode', {
-            name: this.player,
-            passcode: this.passcode,
-          })
-          this.showModal = false
-          await this.sleep(100)
-        } catch {
-          if (this.showModal) {
-            this.$toast.open({
-              message: 'Incorrect passcode',
-              type: 'error',
-              position: 'top',
-            })
-          }
-          this.$nextTick(() => (this.showModal = !this.showModal))
-          this.passcode = ''
-          this.uploadInProgress = false
-          return
-        }
-      }
-      if (!this.image) {
-        this.$toast.open({
-          message: 'Invalid image, add a new one.',
-          type: 'error',
-          position: 'top',
-        })
-        this.uploadInProgress = false
-        return
-      }
-      if (this.location?.length == 0) {
-        if (this.gps.lat == null) {
-          debug('location must be set')
-          this.uploadInProgress = false
-          return
-        }
-      }
-      if (this.player.length == 0) {
-        if (this.getName.length == 0) {
-          debug('player name must set')
-          this.uploadInProgress = false
-          return
-        } else {
-          this.player = this.getName
-        }
-      }
-      document.querySelector('.popover')?.remove()
-      console.log(this.$refs)
-      console.log(this.$refs.foundTag)
-      const formAction = this.$refs.foundTag.getAttribute('action')
-      const formData = new FormData(this.$refs.foundTag)
-      const foundTag = {
-        foundImage: this.image,
-        foundPlayer: this.player,
-        foundLocation: this.location,
-        tagnumber: this.getCurrentBikeTag?.tagnumber ?? 0,
-        game: this.getGameName,
-        gps: {
-          lat: this.gps.lat,
-          long: this.gps.lng,
-          alt: this.gps.alt,
-        },
-      }
-      this.uploadInProgress = false
+    uploadInProgress.value = false
+    return
+  }
 
-      this.$emit('submit', {
-        formAction,
-        formData,
-        tag: foundTag,
-        storeAction: 'addFoundTag',
+  if (calculateInBoundary()) {
+    toast.open({
+      message: 'That location is outside of the game boundaries.',
+      type: 'error',
+      position: 'top',
+    })
+    uploadInProgress.value = false
+    return
+  }
+  if (!player.value) {
+    toast.open({
+      message: 'Please enter a name',
+      type: 'error',
+      position: 'top',
+    })
+    uploadInProgress.value = false
+    return
+  }
+  if (!isAuthenticated) {
+    try {
+      await store.checkPasscode({
+        name: player.value,
+        passcode: passcode.value,
       })
-    },
-    changeLocation(e) {
-      this.location = e.target.value
-      if (this.inputDOM == null) {
-        this.inputDOM = e.target
+      showModal.value = false
+      await sleep(100)
+    } catch {
+      if (showModal.value) {
+        toast.open({
+          message: 'Incorrect passcode',
+          type: 'error',
+          position: 'top',
+        })
       }
+      nextTick(() => (showModal.value = !showModal.value))
+      passcode.value = ''
+      uploadInProgress.value = false
+      return
+    }
+  }
+  if (!image.value) {
+    toast.open({
+      message: 'Invalid image, add a new one.',
+      type: 'error',
+      position: 'top',
+    })
+    uploadInProgress.value = false
+    return
+  }
+  if (location.value?.length == 0) {
+    if (gps.value.lat == null) {
+      debug('location must be set')
+      uploadInProgress.value = false
+      return
+    }
+  }
+  if (player.value.length == 0) {
+    if (getName.value.length == 0) {
+      debug('player name must set')
+      uploadInProgress.value = false
+      return
+    } else {
+      player.value = getName.value
+    }
+  }
+  document.querySelector('.popover')?.remove()
+  const formAction = foundTagRef.value.getAttribute('action')
+  const formData = new FormData(foundTagRef.value)
+  const foundTag = {
+    foundImage: image.value,
+    foundPlayer: player.value,
+    foundLocation: location.value,
+    tagnumber: getCurrentBikeTag.value?.tagnumber ?? 0,
+    game: getGameName.value,
+    gps: {
+      lat: gps.value.lat,
+      long: gps.value.lng,
+      alt: gps.value.alt,
     },
-    setPlace(e) {
-      this.gps['lat'] = this.round(e.geometry.location.lat())
-      this.gps['lng'] = this.round(e.geometry.location.lng())
-      this.center = { ...this.gps }
-      this.location = this.inputDOM.value.split(',')[0]
-      if (this.isGpsDefault) {
-        this.isGpsDefault = false
+    inBoundary: isInBoundary.value,
+  }
+  uploadInProgress.value = false
+
+  emit('submit', {
+    formAction,
+    formData,
+    tag: foundTag,
+    storeAction: 'addFoundTag',
+  })
+}
+const changeLocation = (e) => {
+  location.value = e.target.value
+  if (inputDOM.value == null) {
+    inputDOM.value = e.target
+  }
+}
+const setPlace = (e) => {
+  gps.value['lat'] = round(e.geometry.location.lat())
+  gps.value['lng'] = round(e.geometry.location.lng())
+  center.value = { ...gps.value }
+  location.value = inputDOM.value.value.split(',')[0]
+  if (isGpsDefault.value) {
+    isGpsDefault.value = false
+  }
+}
+const updateMarker = (e) => {
+  gps.value['lat'] = round(e.latLng.lat())
+  gps.value['lng'] = round(e.latLng.lng())
+  if (isGpsDefault.value) {
+    isGpsDefault.value = false
+  }
+}
+const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
+const setImage = (event) => {
+  store.fetchCredentials()
+  const input = event.target
+  if (input.files) {
+    locationDisabled.value = false
+    try {
+      const previewReader = new FileReader()
+      previewReader.onload = (e) => {
+        preview.value = e.target.result
       }
-    },
-    updateMarker(e) {
-      this.gps['lat'] = this.round(e.latLng.lat())
-      this.gps['lng'] = this.round(e.latLng.lng())
-      if (this.isGpsDefault) {
-        this.isGpsDefault = false
-      }
-    },
-    round(number) {
-      return Number(Math.round(number + 'e4') + 'e-4')
-    },
-    setImage(event) {
-      this.$store.dispatch('fetchCredentials')
-      const input = event.target
-      if (input.files) {
-        this.locationDisabled = false
-        try {
-          const previewReader = new FileReader()
-          previewReader.onload = (e) => {
-            this.preview = e.target.result
-          }
-          previewReader.readAsDataURL(input.files[0])
-          if (input.files[0].size / Math.pow(1024, 2) > 15) {
-            this.$toast.open({
-              message: 'Image exceds 15mb',
+      previewReader.readAsDataURL(input.files[0])
+      if (input.files[0].size / Math.pow(1024, 2) > 15) {
+        toast.open({
+          message: 'Image exceds 15mb',
+          type: 'error',
+          position: 'top',
+        })
+      } else {
+        input.files[0].arrayBuffer().then(async (value) => {
+          const results = await exifr.parse(value)
+          const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
+
+          if (createDate < getCurrentBikeTag.value.mysteryTime) {
+            toast.open({
+              message: 'Timestamp Error',
               type: 'error',
               position: 'top',
             })
           } else {
-            input.files[0].arrayBuffer().then(async (value) => {
-              const results = await exifr.parse(value)
-              const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
-
-              if (createDate < this.getCurrentBikeTag.mysteryTime) {
-                this.$toast.open({
-                  message: 'Timestamp Error',
-                  type: 'error',
-                  position: 'top',
-                })
-              } else {
-                this.image = input.files[0]
-              }
-
-              const GPSData = await exifr.gps(value)
-
-              if (GPSData) {
-                if (GPSData.latitude != null && GPSData.longitude != null) {
-                  this.gps = {
-                    lat: this.round(GPSData.latitude),
-                    lng: this.round(GPSData.longitude),
-                  }
-                  this.isGpsDefault = false
-                }
-              } else {
-                this.gps = this.getGame?.boundary
-                this.isGpsDefault = true
-              }
-              this.center = { ...this.gps }
-              this.location = ''
-            })
+            image.value = input.files[0]
           }
-        } catch (e) {
-          console.error(e)
-        }
+
+          const GPSData = await exifr.gps(value)
+
+          if (GPSData) {
+            if (GPSData.latitude != null && GPSData.longitude != null) {
+              gps.value = {
+                lat: round(GPSData.latitude),
+                lng: round(GPSData.longitude),
+              }
+              isGpsDefault.value = false
+            }
+          } else {
+            gps.value = getGame.value?.boundary
+            isGpsDefault.value = true
+          }
+          center.value = { ...gps.value }
+          location.value = ''
+        })
       }
-    },
-  },
+    } catch (e) {
+      console.error(e)
+    }
+  }
+}
+
+const calculateInBoundary = () => {
+  // If the boundary is set
+  if (boundary.value.type) {
+    isInBoundary.value = isPointInPolygon(boundary.value, gps.value, 100)
+
+    if (!isInBoundary.value) {
+      confirmInBoundary.value = true
+    }
+  } else {
+    console.log('boundary not set', boundary.value)
+    isInBoundary.value = true
+    confirmedBoundary.value = true
+    confirmInBoundary.value = false
+  }
+
+  return !isInBoundary.value && !confirmedBoundary.value
+}
+
+nextTick(() => (showPopover.value = true))
+
+// mounted
+onMounted(function () {
+  nextTick(async () => {
+    const regionData = await store.getRegionPolygon(getGame.value.region)
+    if (regionData) {
+      boundary.value = regionData.geojson
+    }
+
+    setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
+    // showPopover = false
+    player.value = getName.value
+    uploadInProgress.value = false
+  })
+})
+
+// beforeUnmount
+onBeforeUnmount(() => {
+  document.querySelector('.popover')?.remove()
 })
 </script>
+
 <style lang="scss">
 input#found {
   margin-left: 3.5rem;
@@ -421,7 +457,7 @@ input#found {
   .vue-map {
     height: 400px;
   }
-  @media (min-width: 600px) {
+  @media (width >= 600px) {
     max-width: 420px;
     width: 420px;
 
@@ -429,7 +465,7 @@ input#found {
       width: 400px;
     }
   }
-  @media (min-width: 800px) {
+  @media (width >= 800px) {
     width: 620px;
     max-width: 620px;
   }

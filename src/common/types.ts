@@ -1,4 +1,4 @@
-import { Game, Tag, Player } from 'biketag/lib/common/schema'
+import { Game, Player, Tag } from 'biketag/lib/common/schema'
 
 export type DomainInfo = {
   host: string
@@ -103,6 +103,7 @@ export interface State {
   playerTag: Tag
   credentialsFetched: boolean
   mostRecentlyViewedTagnumber: BiketagFormSteps
+  regionPolyon: any
 }
 
 export enum BiketagFormSteps {

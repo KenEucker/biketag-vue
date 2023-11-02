@@ -1,6 +1,7 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <header class="biketag-header">
-    <nav class="biketag-header-nav navbar navbar-expand-lg">
+    <nav class="navbar">
       <div class="navbar-brand" @click="toSection('mg-top')">
         <img src="@/assets/images/biketag-logo.svg" class="logo" />
       </div>
@@ -24,7 +25,7 @@
         class="collapse navbar-collapse"
         @click="closeMenu"
       >
-        <ul class="navbar-nav me-auto mb-lg-0">
+        <ul class="m-auto navbar-nav mb-lg-0">
           <li class="nav-item" @click="toSection('What is BikeTag?')">What is BikeTag?</li>
           <li class="nav-item" @click="toSection('BikeTag Ambassador program')">
             {{ $t('BikeTag Ambassadors') }}
@@ -56,13 +57,23 @@
         created in 2018 as a tool for the game in Portland, Oregon.
       </p>
       <br />
-      <p>When using biketag.org, you agree to our Terms Of Service. You can read those here.</p>
+      <p>
+        When using biketag.org, you agree to our Terms Of Service.
+        <a
+          href="https://biketag.bike/2021/12/31/biketag-terms-of-service/"
+          rel="noopener"
+          style="text-decoration: none; color: #851fe5"
+          target="_blank"
+          title="Terms Of Service"
+          >You can read those here.</a
+        >
+      </p>
     </bike-tag-blurb>
     <bike-tag-blurb
       title="A worldwide game of tag"
       subtitle="Is there a BikeTag Game in your city?"
     >
-      <bike-tag-map variant="worldwide" class="worldwide__map mb-5" />
+      <bike-tag-map variant="worldwide" class="mb-5 worldwide__map" />
       <bike-tag-games :show-heading="false" />
     </bike-tag-blurb>
     <bike-tag-blurb
@@ -147,41 +158,35 @@
     <p><i>© 2022 The BikeTag Project. All Rights Reserved. </i></p>
   </footer>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import BikeTagBlurb from '@/components/BikeTagBlurb'
+
+<script setup name="LandingView">
 import BikeTagAmbassadorSvg from '@/assets/images/biketag-ambassador.svg'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
+import { ref } from 'vue'
+
+// components
+import BikeTagBlurb from '@/components/BikeTagBlurb'
 import BikeTagGames from '@/components/BikeTagGames.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
+import { useI18n } from 'vue-i18n'
 
-export default defineComponent({
-  name: 'LandingView',
-  components: {
-    BikeTagBlurb,
-    BikeTagGames,
-    BikeTagMap,
-  },
-  data() {
-    return {
-      BikeTagAmbassadorSvg,
-      BikeTagSvg,
-    }
-  },
-  methods: {
-    toSection(id) {
-      const section = document.getElementById(id.toLowerCase().replaceAll(' ', '-'))
+// data
+const navList = ref(null)
+const { t } = useI18n()
 
-      window.scrollTo({ top: section.offsetTop - 125, behavior: 'smooth' })
-    },
-    closeMenu() {
-      if (this.$refs['navList'].classList.contains('show')) {
-        this.$refs['navList'].classList.remove('show')
-      }
-    },
-  },
-})
+// methods
+function toSection(id) {
+  const section = document.getElementById(id.toLowerCase().replaceAll(' ', '-'))
+
+  window.scrollTo({ top: section.offsetTop - 125, behavior: 'smooth' })
+}
+function closeMenu() {
+  if (navList.value.classList.contains('show')) {
+    navList.value.classList.remove('show')
+  }
+}
 </script>
+
 <style lang="scss">
 main {
   section {
@@ -219,7 +224,9 @@ footer {
 }
 
 header {
-  box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%);
+  box-shadow:
+    0 3px 6px rgb(0 0 0 / 16%),
+    0 3px 6px rgb(0 0 0 / 23%);
   position: fixed;
   background-color: #e5e5e5;
   width: 100%;
@@ -252,14 +259,16 @@ header {
         background-color: #e5e5e5;
         font-family: $default-secondary-font-family;
         text-transform: uppercase;
-        box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+        box-shadow:
+          0 1px 3px rgb(0 0 0 / 12%),
+          0 1px 2px rgb(0 0 0 / 24%);
         border-bottom: 1px solid black;
         padding: 1rem 0;
         font-size: 2rem;
         cursor: pointer;
       }
     }
-    @media (min-width: 992px) {
+    @media (width >= 992px) {
       width: 90%;
 
       .navbar-brand,
@@ -349,7 +358,7 @@ footer {
     }
   }
 
-  @media (min-width: 780px) {
+  @media (width >= 780px) {
     display: flex;
     flex-flow: row-reverse nowrap;
 
@@ -376,7 +385,7 @@ footer {
     }
   }
 }
-@media (min-width: 780px) {
+@media (width >= 780px) {
   main {
     margin-bottom: calc(-220px - 1rem);
   }

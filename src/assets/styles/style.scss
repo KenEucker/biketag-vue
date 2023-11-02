@@ -223,10 +223,7 @@ body {
     .swiper {
       .swiper-button-prev {
         color: $btn-swiper-color;
-        bottom: 0 !important;
-        top: 25%;
-        left: -0.5rem;
-        right: auto;
+        inset: 25% auto 0 -0.5rem !important;
 
         // z-index: 99;
 
@@ -239,10 +236,7 @@ body {
 
       .swiper-button-next {
         color: $btn-swiper-color;
-        bottom: 0 !important;
-        top: 25%;
-        left: auto;
-        right: -0.5rem;
+        inset: 25% -0.5rem 0 auto !important;
 
         // z-index: 99;
 
@@ -402,7 +396,7 @@ body {
         z-index: 0;
         position: absolute;
         object-fit: contain;
-        @media (min-width: 400px){
+        @media (width >= 400px){
           width: 98%;
         }
       }

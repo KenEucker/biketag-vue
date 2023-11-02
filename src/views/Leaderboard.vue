@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
     <div class="player-list">
@@ -7,27 +8,23 @@
     </div>
   </div>
 </template>
-<script>
-import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+
+<script setup name="LeaderboardView">
+import { computed } from 'vue'
+import { useStore } from '@/store/index.ts'
+
+// components
 import Player from '@/components/PlayerBicon.vue'
 
-export default defineComponent({
-  name: 'LeaderboardView',
-  components: {
-    Player,
-  },
-  computed: {
-    ...mapGetters(['getLeaderboard']),
-    playersList() {
-      return this.getLeaderboard
-    },
-  },
-})
+// data
+const store = useStore()
+
+// computed
+const playersList = computed(() => store.getLeaderboard)
 </script>
 <style lang="scss" scoped>
 .player-list {
-  @media (min-width: 1200px) {
+  @media (width >= 1200px) {
     margin-top: 13em;
   }
 }
