@@ -32,7 +32,7 @@
 
 `yarn install`
 
-then 
+then
 
 `yarn run dev`
 
@@ -87,17 +87,13 @@ Support the BikeTag Project on [GitHub][github], [Patreon][patreon], or directly
   ## Vendors
 
 
-[twitter]: https://developer.twitter.com/en/docs/twitter-api
 [github]: https://github.com/sponsors/KenEucker
 [patreon]: https://patreon.com/BikeTag
 [biketag-api]: https://github.com/keneucker/biketag-api
 [sanity]: https://www.sanity.io/docs/api-versioning
 [imgur]: https://www.npmjs.com/package/imgur/v/next
-[reddit]: https://www.npmjs.com/package/snoowrap
 [netlify]: https://www.netlify.com
 [netlify-opensource]: https://www.netlify.com/legal/open-source-policy
-
-
 
 
   Images powered by imgur.com
@@ -108,19 +104,9 @@ Support the BikeTag Project on [GitHub][github], [Patreon][patreon], or directly
 
   [![sanity.io][sanity-image]](https://www.sanity.io/docs/http-api)
 
-  Discussions powered by reddit.com
-
-  [![reddit.com][reddit-image]](https://www.reddit.com/dev/api/)
-
-  Mentions powered by twitter.com
-
-  [![twitter.com][twitter-image]](https://developer.twitter.com/en/docs)
-
   [biketag-logo]: https://raw.githubusercontent.com/keneucker/biketag-website/production/public/img/biketag-api-logo.jpg
   [imgur-image]: https://raw.githubusercontent.com/keneucker/biketag-website/production/public/img/imgur-logo.png
   [sanity-image]: https://raw.githubusercontent.com/keneucker/biketag-website/production/public/img/sanity-logo.png
-  [reddit-image]: https://raw.githubusercontent.com/keneucker/biketag-website/production/public/img/reddit-logo.png
-  [twitter-image]: https://raw.githubusercontent.com/keneucker/biketag-website/production/public/img/twitter-logo.png
 
   ## Deployed on Netlify servers
   <a href="https://www.netlify.com">
