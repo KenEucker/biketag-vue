@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <header class="biketag-header">
-    <nav class="biketag-header-nav navbar navbar-expand-lg">
+    <nav class="navbar">
       <div class="navbar-brand" @click="toSection('mg-top')">
         <img src="@/assets/images/biketag-logo.svg" class="logo" />
       </div>
@@ -25,7 +25,7 @@
         class="collapse navbar-collapse"
         @click="closeMenu"
       >
-        <ul class="navbar-nav me-auto mb-lg-0">
+        <ul class="m-auto navbar-nav mb-lg-0">
           <li class="nav-item" @click="toSection('What is BikeTag?')">What is BikeTag?</li>
           <li class="nav-item" @click="toSection('BikeTag Ambassador program')">
             {{ $t('BikeTag Ambassadors') }}
@@ -73,7 +73,7 @@
       title="A worldwide game of tag"
       subtitle="Is there a BikeTag Game in your city?"
     >
-      <bike-tag-map variant="worldwide" class="worldwide__map mb-5" />
+      <bike-tag-map variant="worldwide" class="mb-5 worldwide__map" />
       <bike-tag-games :show-heading="false" />
     </bike-tag-blurb>
     <bike-tag-blurb

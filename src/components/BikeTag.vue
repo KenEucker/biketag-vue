@@ -346,7 +346,7 @@ onMounted(() => {
 
 .tag-number {
   position: absolute;
-  top: -1em;
+  top: -0.75em;
   left: 50%;
   transform: translateX(-50%);
   z-index: 99;

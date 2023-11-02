@@ -4,7 +4,7 @@
     :class="`biketag-header ${!showHeader ? 'is-hidden' : ''}`"
   >
     <!-- The header logo and profile and hamburger buttons go here -->
-    <nav id="navmenu" class="biketag-header-nav navbar navbar-expand-xl">
+    <nav id="navmenu" class="navbar">
       <!-- Back Arrow -->
       <div v-if="isShow" class="back-arrow" @click="goBack">
         <img
@@ -25,18 +25,14 @@
       <!-- Hamburger Menu -->
       <button
         ref="buttonCollapse"
+        v-b-toggle.navbarSupportedContent
         class="navbar-toggler"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
       >
         <img class="hamburger-image" src="/images/Hamburger.svg" alt="Burge menu" />
       </button>
 
-      <div id="navbarSupportedContent" ref="navList" class="collapse navbar-collapse">
-        <ul class="navbar-nav me-auto mb-lg-0">
+      <b-collapse id="navbarSupportedContent" ref="navList" class="navbar-collapse">
+        <ul class="m-auto navbar-nav mb-lg-0">
           <li v-if="isAuthenticated" class="nav-item">
             <img
               class="profile-icon"
@@ -114,7 +110,7 @@
             </li>
           </template>
         </ul>
-      </div>
+      </b-collapse>
     </nav>
   </header>
   <footer v-if="props.variant === 'bottom'" class="container pb-5 mt-5 footer">
@@ -232,8 +228,9 @@ function logoutFunction() {
   })
 }
 function closeCollapsible() {
-  buttonCollapse.value.setAttribute('aria-expanded', false)
-  navList.value.classList.remove('show')
+  // console.log(buttonCollapse.value)
+  buttonCollapse.value.click()
+  // navList.value.classList.remove('show')
 }
 function goWorldwide() {
   window.location = 'http://biketag.org/'

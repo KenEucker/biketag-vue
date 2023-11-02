@@ -44,9 +44,9 @@
           class="tag-screen-download__button"
           variant="bold"
           :text="t('menu.download')"
-          @click="showCamera = true"
-        />
-        <b-modal
+          @click="downloadTag"
+          />
+          <!-- <b-modal
           v-model="showCamera"
           class="camera-modal"
           title="BikeTag Camera"
@@ -54,7 +54,7 @@
           hide-header
         >
           <bike-tag-camera :tag="props.tag" />
-        </b-modal>
+        </b-modal> -->
         <!-- Right Button -->
         <bike-tag-button class="button-group__right" :text="t('menu.next')" @click="emit('next')" />
       </div>
@@ -96,10 +96,11 @@ import { useStore } from '@/store/index.ts'
 import HintIcon from '@/assets/images/hint-icon.svg'
 import CloseRounded from '@/assets/images/close-rounded.svg'
 import { useI18n } from 'vue-i18n'
+import { exportHtmlToDownload } from '@/common/utils'
 
 // componets
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import BikeTagCamera from '@/components/BikeTagCamera.vue'
+// import BikeTagCamera from '@/components/BikeTagCamera.vue'
 
 // props
 const props = defineProps({
@@ -116,7 +117,7 @@ const props = defineProps({
 // data
 const emit = defineEmits(['next', 'previous'])
 const root = ref(null)
-const showCamera = ref(false)
+// const showCamera = ref(false)
 const characters = [
   'a',
   'b',
@@ -163,6 +164,9 @@ const hint = ref(null)
 const store = useStore()
 const router = useRouter()
 const { t } = useI18n()
+const downloadingTag = ref(false)
+const hasDownloadedMystery = ref(false)
+const hasDownloadedFound = ref(false)
 
 // computed
 const getCurrentHint = computed(() => store.getCurrentHint)
@@ -230,6 +234,30 @@ const closePopover = () => {
   hint.value.click()
   // console.log(hint.value)
   // hint.value.click()
+}
+const downloadTag = async () => {
+  if (downloadingTag.value !== true) {
+    downloadingTag.value = true
+    const downloadPrefix = `BikeTag-${props.tag.game}-${props.tag.tagnumber}--`
+    if (!hasDownloadedMystery.value) {
+      const mysteryImageDataUrl = await exportHtmlToDownload(
+        `${downloadPrefix}mystery`,
+        undefined,
+        '#the-tag .mystery-tag',
+      )
+      hasDownloadedMystery.value = !!mysteryImageDataUrl
+    }
+
+    if (!hasDownloadedFound.value) {
+      const foundImageDataUrl = await exportHtmlToDownload(
+        `${downloadPrefix}found`,
+        undefined,
+        '#the-tag .found-tag',
+      )
+      hasDownloadedFound.value = !!foundImageDataUrl
+    }
+    downloadingTag.value = false
+  }
 }
 
 // before UnMount
