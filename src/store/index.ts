@@ -74,6 +74,9 @@ export const useStore = defineStore('store', {
     async getRegionPolygon(region: any) {
       try {
         if (this.regionPolyon) return this.regionPolyon
+        else if (!region) {
+          return
+        }
 
         const firstOfRegion = region.description.split(',')[0].toLowerCase()
         const results = (
@@ -104,7 +107,6 @@ export const useStore = defineStore('store', {
           }
           return 0
         })
-        // console.log({ region, firstOfRegion, results, filteredResults, sortedResults })
         this.SET_REGION_POLYGON(sortedResults[0])
         return sortedResults[0]
       } catch (e) {

@@ -3,6 +3,9 @@
   <div class="container">
     <img v-if="isBikeTagAmbassador" :src="bikeTag" />
     <p class="mt-5 mb-5 description">
+      {{ $t('pages.login.description') }}
+    </p>
+    <p class="mt-5 mb-5 welcome">
       {{ isBikeTagAmbassador ? $t('pages.login.ambassador') : $t('pages.login.player') }}
     </p>
     <bike-tag-button variant="bold" :text="$t('menu.login')" @click="login" />
@@ -46,6 +49,8 @@ async function login() {
 </script>
 
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 .container {
   img {
     height: 100%;
@@ -54,6 +59,12 @@ async function login() {
 
   .description {
     background-color: transparent !important;
+    font-family: $default-font-family;
+    text-transform: uppercase;
+  }
+
+  .welcome {
+    font-family: $default-font-family;
   }
 }
 </style>

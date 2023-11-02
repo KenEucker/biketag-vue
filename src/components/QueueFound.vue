@@ -130,11 +130,10 @@
 import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { useAuth0 } from '@auth0/auth0-vue'
-import { debug } from '@/common/utils'
+import { debug, isPointInPolygon } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
 import exifr from 'exifr'
 import Pin from '@/assets/images/pin.svg'
-import { point, polygon, buffer, booleanPointInPolygon } from '@turf/turf'
 
 // components
 import Loading from 'vue-loading-overlay'
@@ -384,39 +383,16 @@ const setImage = (event) => {
   }
 }
 
-const feetToKm = (feets) => feets * 0.0003048
-
-const isPointInPolygon = (polygon_array, gps, distanceOffInFeet) => {
-  const distanceOffInKilometers = feetToKm(distanceOffInFeet)
-  // polygon_array = closePolygonIfNeeded(polygon_array)
-
-  // Create turf.js point and polygon
-  const turfPoint = point([gps.lng, gps.lat])
-  const turfPolygon = polygon(polygon_array.coordinates)
-
-  // Buffer the polygon by the error amount
-  const bufferedPolygon = buffer(turfPolygon, distanceOffInKilometers, { units: 'kilometers' })
-
-  // Check if the point is inside the buffered polygon
-  return booleanPointInPolygon(turfPoint, bufferedPolygon)
-}
-
 const calculateInBoundary = () => {
   // If the boundary is set
   if (boundary.value.type) {
     isInBoundary.value = isPointInPolygon(boundary.value, gps.value, 100)
 
-    console.log({
-      isInBoundary: isInBoundary.value,
-      boundary: boundary.value,
-      bounds: boundary.value.paths,
-      gps: gps.value,
-    })
     if (!isInBoundary.value) {
       confirmInBoundary.value = true
     }
   } else {
-    console.log('boundary not set')
+    console.log('boundary not set', boundary.value)
     isInBoundary.value = true
     confirmedBoundary.value = true
     confirmInBoundary.value = false
@@ -426,17 +402,15 @@ const calculateInBoundary = () => {
 }
 
 nextTick(() => (showPopover.value = true))
-const created = async () => {
-  const regionData = await store.getRegionPolygon(getGame.value.region)
-  if (regionData) {
-    boundary.value = regionData?.geojson
-  }
-}
-created()
 
 // mounted
 onMounted(function () {
-  nextTick(() => {
+  nextTick(async () => {
+    const regionData = await store.getRegionPolygon(getGame.value.region)
+    if (regionData) {
+      boundary.value = regionData.geojson
+    }
+
     setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
     // showPopover = false
     player.value = getName.value

@@ -173,7 +173,8 @@ const props = defineProps({
 })
 
 // data
-const showLogin = ref(process.env.CONTEXT === 'dev')
+/// Now showing the login menu option, always
+const showLogin = ref(true) //process.env.CONTEXT === 'dev')
 const showHeader = ref(true)
 const lastScrollPosition = ref(0)
 const scrollOffset = ref(40)

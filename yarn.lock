@@ -5199,15 +5199,6 @@ axios-cache-adapter@^2.7.3:
     cache-control-esm "1.0.0"
     md5 "^2.2.1"
 
-axios-cache-interceptor@^1.3.2:
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/axios-cache-interceptor/-/axios-cache-interceptor-1.3.2.tgz#62a499365865317ba6bcef18c2e543b00ce4b47d"
-  integrity sha512-FNy4/IKvFYVswpPS09j3H9OUzcXSuxQ93wYxCKnogHbjCRE9nDQ/lukgjyuJqMIk3Yao51qQI/zPbMRNQu4JJw==
-  dependencies:
-    cache-parser "^1.2.4"
-    fast-defer "^1.1.7"
-    object-code "^1.3.0"
-
 axios@^0.21.1:
   version "0.21.4"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
@@ -5323,10 +5314,10 @@ big-integer@^1.6.44:
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.51.tgz#0df92a5d9880560d3ff2d5fd20245c889d130686"
   integrity sha512-GPEid2Y9QU1Exl1rpO9B2IPJGHPSupF5GnVIP0blYvNOMer2bTvSWs1jGOUg04hTmu67nmLsQ9TBo1puaotBHg==
 
-biketag@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-3.0.1.tgz#7b93b2b201e9a563093b440dcbe8e6c3d0e88842"
-  integrity sha512-JY6V7UNqm6N4yotOkYO6yt2VKW1qqrD/VkwwctYLI+cRz8LqGzWOqbF06uhH9b52KsXFX3EzMw3TqIDWZxb4ew==
+biketag@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-3.1.0.tgz#e5627250ec5c29d151f3cb11399522cbeddddad2"
+  integrity sha512-MWq5uda5PmA90h4pCy11+nGfPYEQ1g1MehBcxq2boTjcRQdzwgtu+Jl5BwZ++IC73H3f55AIvo8Tt8qUWIP+aA==
   dependencies:
     "@sanity/client" "^2.23.2"
     axios "^0.21.1"
@@ -5557,11 +5548,6 @@ cache-control-esm@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/cache-control-esm/-/cache-control-esm-1.0.0.tgz#417647ecf1837a5e74155f55d5a4ae32a84e2581"
   integrity sha512-Fa3UV4+eIk4EOih8FTV6EEsVKO0W5XWtNs6FC3InTfVz+EjurjPfDXY5wZDo/lxjDxg5RjNcurLyxEJBcEUx9g==
-
-cache-parser@^1.2.4:
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/cache-parser/-/cache-parser-1.2.4.tgz#60975135ef2330e6a1d60895279d7237a2a9b398"
-  integrity sha512-O0KwuHuJnbHUrghHi2kGp0SxnWSIBXTYt7M8WVhW0kbPRUNUKoE/Of6e1rRD6AAxmfxFunKnt90yEK09D+sc5g==
 
 cacheable-lookup@^7.0.0:
   version "7.0.0"
@@ -7633,11 +7619,6 @@ fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
   integrity sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==
-
-fast-defer@^1.1.7:
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/fast-defer/-/fast-defer-1.1.7.tgz#943bc3c7a876d437360318ab1e1f269a29f31ba4"
-  integrity sha512-tJ01ulDWT2WhqxMKS20nXX6wyX2iInBYpbN3GO7yjKwXMY4qvkdBRxak9IFwBLlFDESox+SwSvqMCZDfe1tqeg==
 
 fast-diff@^1.1.2, fast-diff@^1.2.0:
   version "1.3.0"
@@ -10739,11 +10720,6 @@ object-assign@*, object-assign@^4.1.0, object-assign@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
   integrity sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==
-
-object-code@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/object-code/-/object-code-1.3.0.tgz#59b52213c5a7a450071dab201e36ae2492b983d8"
-  integrity sha512-PLplgvzuFhSPBuTX/mtaXEnU3c6g7qKflVVQbV9VWEnV/34iKeAX1jeDNCKq1OgGlsnkA/NjldCzTbHxa7Wj4A==
 
 object-copy@^0.1.0:
   version "0.1.0"

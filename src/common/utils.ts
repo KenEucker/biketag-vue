@@ -1,11 +1,12 @@
 import { DeviceUUID } from '@/common/uuid'
+import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
 import { Tag } from 'biketag/lib/common/schema'
-import { useCookies } from 'vue3-cookies'
-import { BiketagFormSteps, BikeTagProfile } from '../../src/common/types'
 import CryptoJS from 'crypto-js'
-import md5 from 'md5'
 import domtoimage from 'dom-to-image'
 import log from 'loglevel'
+import md5 from 'md5'
+import { useCookies } from 'vue3-cookies'
+import { BikeTagProfile, BiketagFormSteps } from '../../src/common/types'
 
 export type DomainInfo = {
   host: string
@@ -364,4 +365,27 @@ export const exportHtmlToDownload = (filename: string, node?: any, selector?: st
 export const debug = (message: string, context?: any) => {
   console.log(message, { context })
   log.debug(message, { context })
+}
+
+export const feetToKm = (feets: number) => feets * 0.0003048
+
+export const isPointInPolygon = (
+  geojson: any,
+  gps: { lng: number; lat: number },
+  distanceOffInFeet: number,
+) => {
+  const distanceOffInKilometers = feetToKm(distanceOffInFeet)
+
+  // Create turf.js point and polygon
+  const turfPoint = point([gps.lng, gps.lat])
+  const turfPolygon =
+    geojson.type === 'MultiPolygon'
+      ? multiPolygon(geojson.coordinates)
+      : polygon(geojson.coordinates)
+
+  // Buffer the polygon by the error amount
+  const bufferedPolygon = buffer(turfPolygon, distanceOffInKilometers, { units: 'kilometers' })
+
+  // Check if the point is inside the buffered polygon
+  return booleanPointInPolygon(turfPoint, bufferedPolygon)
 }

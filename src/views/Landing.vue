@@ -57,7 +57,17 @@
         created in 2018 as a tool for the game in Portland, Oregon.
       </p>
       <br />
-      <p>When using biketag.org, you agree to our Terms Of Service. You can read those here.</p>
+      <p>
+        When using biketag.org, you agree to our Terms Of Service.
+        <a
+          href="https://biketag.bike/2021/12/31/biketag-terms-of-service/"
+          rel="noopener"
+          style="text-decoration: none; color: #851fe5"
+          target="_blank"
+          title="Terms Of Service"
+          >You can read those here.</a
+        >
+      </p>
     </bike-tag-blurb>
     <bike-tag-blurb
       title="A worldwide game of tag"
