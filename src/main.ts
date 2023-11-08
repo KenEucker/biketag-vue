@@ -52,7 +52,7 @@ class BikeTagApp {
   }
   authentication() {
     if (process.env.A_DOMAIN?.length) {
-      debug('init::authentication')
+      debug('init::authentication', process.env.A_DOMAIN)
       const auth = createAuth0({
         domain: process.env.A_DOMAIN as string,
         clientId: process.env.A_CID as string,

@@ -62,9 +62,9 @@ async function created() {
       const existingManifest = await fetch(manifestLinkEl.href)
       const applicationManifest = {
         ...(await existingManifest.json()),
-        name: getGameTitle.value,
+        name: getGameTitle.value.toLowerCase(),
         id: `${getGameSlug.value}.biketag`,
-        description: `The game of BikeTag in ${getGameTitle.value}`,
+        description: `The game of BikeTag in ${getGameSlug.value}`,
         start_url: window.location.origin,
         scope: window.location.origin,
         icons: [
@@ -78,12 +78,6 @@ async function created() {
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
-          },
-          {
-            src: await getLogoUrl.value('l'),
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable'
           }
         ],
       }
