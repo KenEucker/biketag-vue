@@ -16,7 +16,7 @@
         <b-popover hide-header target="hint" triggers="click" placement="top">
           <img :src="hintIcon" class="popover__hint-icon" alt="Hint" />
           <p ref="mysteryHint" class="popover__hint-text"></p>
-          <img :src="closeRounded" class="popover__close" @click="closePopover" alt="close" />
+          <img :src="closeRounded" class="popover__close" alt="close" @click="closePopover" />
         </b-popover>
         <!-- Right Button -->
         <bike-tag-button
@@ -45,8 +45,8 @@
           variant="bold"
           :text="t('menu.download')"
           @click="downloadTag"
-          />
-          <!-- <b-modal
+        />
+        <!-- <b-modal
           v-model="showCamera"
           class="camera-modal"
           title="BikeTag Camera"
@@ -62,11 +62,7 @@
     <!-- World -->
     <div class="button-reset-container">
       <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
-        <img
-          class="footer-fixed_image"
-          src="@/assets/images/npworld.png"
-          alt="BikeTag World Wide"
-        />
+        <img class="footer-image" src="@/assets/images/npworld.png" alt="BikeTag World Wide" />
       </bike-tag-button>
     </div>
     <div class="mt-5 mb-5 foss-container">
@@ -334,6 +330,10 @@ onBeforeUnmount(() => {
     padding: 2em;
     max-width: 500px;
   }
+}
+
+.footer-image {
+  height: 40px;
 }
 
 .button-group {

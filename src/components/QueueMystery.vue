@@ -28,15 +28,15 @@
         v-else
         class="img-bck click-me"
         src="@/assets/images/blank_img.svg"
-        @click="$refs.file.click()"
         alt="image back"
+        @click="$refs.file.click()"
       />
       <bike-tag-button
         :class="`click-me icn ${preview ? 'icn--top' : ''}`"
         variant="circle"
         @click="$refs.file.click()"
       >
-        <img src="@/assets/images/camera.svg" alt="camera"/>
+        <img src="@/assets/images/camera.svg" alt="camera" />
       </bike-tag-button>
     </div>
     <div class="container biketag-tagit-form">

@@ -27,15 +27,15 @@
         v-else
         class="img-bck click-me"
         src="@/assets/images/blank_img.svg"
-        @click="$refs.file.click()"
         alt="image-back"
+        @click="$refs.file.click()"
       />
       <bike-tag-button
         :class="`click-me icn ${preview ? 'icn--top' : ''}`"
         variant="circle"
         @click="$refs.file.click()"
       >
-        <img src="@/assets/images/camera.svg" alt="camera"/>
+        <img src="@/assets/images/camera.svg" alt="camera" />
       </bike-tag-button>
     </div>
     <form
@@ -68,7 +68,7 @@
           required
           :placeholder="t('pages.round.location_placeholder')"
         >
-          <img :src="pinIcon" alt="pin"/>
+          <img :src="pinIcon" alt="pin" />
           <GMapAutocomplete
             v-if="isGpsDefault"
             id="google-input"

@@ -77,8 +77,8 @@ async function created() {
             src: await getLogoUrl.value('l', undefined, true),
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any'
-          }
+            purpose: 'any',
+          },
         ],
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })

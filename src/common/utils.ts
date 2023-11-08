@@ -307,7 +307,7 @@ export const getSanityImageUrl = (
   logo: string,
   size = '',
   sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/',
-  squared = false
+  squared = false,
 ) => {
   switch (size) {
     case 'l':
@@ -400,5 +400,7 @@ export const isOnline = async (checkExternally = false) => {
     return false
   }
 
-  return await fetch('/favicon.ico?d='+Date.now()).then(response => response.ok).catch(() => false);
+  return await fetch('/favicon.ico?d=' + Date.now())
+    .then((response) => response.ok)
+    .catch(() => false)
 }

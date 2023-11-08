@@ -6,7 +6,7 @@
       <div class="m-auto games__list">
         <div v-for="(game, index) in getAllGames" :key="index" class="games__list__biketag">
           <a :href="`https://${game.slug}.biketag.org`">
-            <img :src="getLogoUrl('s', game.logo)" alt="BikeTag Logo"/> </a
+            <img :src="getLogoUrl('s', game.logo)" alt="BikeTag Logo" /> </a
           ><br />
         </div>
       </div>

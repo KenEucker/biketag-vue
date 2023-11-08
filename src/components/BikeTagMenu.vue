@@ -15,7 +15,7 @@
       <!-- Region Image -->
       <div class="navbar-brand">
         <a href="/" @click.prevent.stop="resetBikeTagApp">
-          <img :src="getLogoUrl('m')" class="logo" alt="BikeTag Logo"/>
+          <img :src="getLogoUrl('m')" class="logo" alt="BikeTag Logo" />
         </a>
         <div>
           <span class="game-title">{{ getGameTitle }}</span>
@@ -23,11 +23,7 @@
       </div>
 
       <!-- Hamburger Menu -->
-      <button
-        ref="buttonCollapse"
-        v-b-toggle.navbarSupportedContent
-        class="navbar-toggler"
-      >
+      <button ref="buttonCollapse" v-b-toggle.navbarSupportedContent class="navbar-toggler">
         <img class="hamburger-image" src="/images/Hamburger.svg" alt="menu" />
       </button>
 
@@ -127,11 +123,7 @@
       <!-- World -->
       <div class="button-reset-container">
         <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
-          <img
-            class="footer-fixed_image"
-            src="@/assets/images/npworld.png"
-            alt="BikeTag World Wide"
-          />
+          <img class="footer-image" src="@/assets/images/npworld.png" alt="BikeTag World Wide" />
         </bike-tag-button>
       </div>
       <!-- Players -->
@@ -423,6 +415,10 @@ header {
     min-height: auto;
 
     // margin: auto;
+  }
+
+  .footer-image {
+    height: 40px;
   }
 }
 

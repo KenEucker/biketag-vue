@@ -10,7 +10,7 @@
     hide-footer
     hide-header
   >
-    <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" alt="close" />
+    <img class="close-btn" src="@/assets/images/close.svg" alt="close" @click="hideModal" />
     <form @submit.prevent="onSubmitName">
       <div class="mt-3">
         <bike-tag-input
