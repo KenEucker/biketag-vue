@@ -99,6 +99,7 @@ export default defineConfig({
       workbox: {
         sourcemap: process.env.CONTEXT === 'dev',
       },
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.png'],
       manifest: {
         name: 'BikeTag',
         short_name: 'BikeTag',

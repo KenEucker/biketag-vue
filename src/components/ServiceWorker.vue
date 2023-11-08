@@ -63,7 +63,8 @@ async function created() {
       const applicationManifest = {
         ...(await existingManifest.json()),
         name: getGameTitle.value,
-        id: getGameSlug.value,
+        id: `${getGameSlug.value}.biketag`,
+        start_url: window.location.origin,
         icons: [
           {
             src: await getLogoUrl.value('s'),
