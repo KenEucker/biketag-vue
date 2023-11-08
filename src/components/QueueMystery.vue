@@ -21,21 +21,22 @@
     </div>
     <div class="preview-container">
       <template v-if="preview">
-        <img :src="preview" class="prev-img img-fluid" />
-        <img class="img-bck" src="@/assets/images/transparent_img.svg" />
+        <img :src="preview" class="prev-img img-fluid" alt="preview" />
+        <img class="img-bck" src="@/assets/images/transparent_img.svg" alt="background" />
       </template>
       <img
         v-else
         class="img-bck click-me"
         src="@/assets/images/blank_img.svg"
         @click="$refs.file.click()"
+        alt="image back"
       />
       <bike-tag-button
         :class="`click-me icn ${preview ? 'icn--top' : ''}`"
         variant="circle"
         @click="$refs.file.click()"
       >
-        <img src="@/assets/images/camera.svg" />
+        <img src="@/assets/images/camera.svg" alt="camera"/>
       </bike-tag-button>
     </div>
     <div class="container biketag-tagit-form">

@@ -8,7 +8,7 @@
         :style="`z-index : -${1 + i}`"
         @click="() => cardClick(i, `card-${i}`)"
       >
-        <img class="deck__card--front" :src="tag.foundImageUrl" />
+        <img class="deck__card--front" :src="tag.foundImageUrl" :alt="tag.foundImageUrl" />
         <div class="deck__card--back">
           <p># {{ tag.tagnumber }}</p>
           <p>{{ new Date(tag.foundTime * 1000).toDateString() }}</p>

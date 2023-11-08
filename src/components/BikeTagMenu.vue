@@ -15,7 +15,7 @@
       <!-- Region Image -->
       <div class="navbar-brand">
         <a @click="resetBikeTagApp">
-          <img :src="getLogoUrl('m')" class="logo" />
+          <img :src="getLogoUrl('m')" class="logo" alt="BikeTag Logo"/>
         </a>
         <div>
           <span class="game-title">{{ getGameTitle }}</span>
@@ -28,7 +28,7 @@
         v-b-toggle.navbarSupportedContent
         class="navbar-toggler"
       >
-        <img class="hamburger-image" src="/images/Hamburger.svg" alt="Burge menu" />
+        <img class="hamburger-image" src="/images/Hamburger.svg" alt="menu" />
       </button>
 
       <b-collapse id="navbarSupportedContent" ref="navList" class="navbar-collapse">

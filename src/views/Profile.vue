@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
-    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
   <b-modal
     v-if="profile?.user_metadata && profile.user_metadata?.name?.length > 0"
@@ -10,7 +10,7 @@
     hide-footer
     hide-header
   >
-    <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
+    <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" alt="close" />
     <form @submit.prevent="onSubmitName">
       <div class="mt-3">
         <bike-tag-input
@@ -92,7 +92,7 @@
             "
           >
             <div class="icon-container">
-              <img :id="social[0]" class="icon" :src="social[1]" />
+              <img :id="social[0]" class="icon" :src="social[1]" :alt="social[1]" />
             </div>
           </bike-tag-input>
         </div>

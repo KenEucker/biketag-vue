@@ -14,9 +14,9 @@
           @click="showHint"
         />
         <b-popover hide-header target="hint" triggers="click" placement="top">
-          <img :src="hintIcon" class="popover__hint-icon" />
+          <img :src="hintIcon" class="popover__hint-icon" alt="Hint" />
           <p ref="mysteryHint" class="popover__hint-text"></p>
-          <img :src="closeRounded" class="popover__close" @click="closePopover" />
+          <img :src="closeRounded" class="popover__close" @click="closePopover" alt="close" />
         </b-popover>
         <!-- Right Button -->
         <bike-tag-button

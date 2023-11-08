@@ -13,7 +13,7 @@
         <slot />
       </article>
       <article class="img-container">
-        <img v-if="props.imgSrc" :src="props.imgSrc" />
+        <img v-if="props.imgSrc" :src="props.imgSrc" alt="BikeTag" />
         <bike-tag-button v-if="props.link" :text="_linkText()" @click="buttonClick" />
       </article>
     </div>

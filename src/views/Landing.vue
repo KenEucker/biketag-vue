@@ -3,7 +3,7 @@
   <header class="biketag-header">
     <nav class="navbar">
       <div class="navbar-brand" @click="toSection('mg-top')">
-        <img src="@/assets/images/biketag-logo.svg" class="logo" />
+        <img src="@/assets/images/biketag-logo.svg" class="logo" alt="BikeTag Logo"/>
       </div>
 
       <!-- Hamburger Menu -->
@@ -16,7 +16,7 @@
         aria-expanded="false"
         aria-label="Toggle navigation"
       >
-        <img class="hamburger-image" src="/images/Hamburger.svg" alt="Burge menu" />
+        <img class="hamburger-image" src="/images/Hamburger.svg" alt="Menu" />
       </button>
 
       <div
@@ -152,7 +152,7 @@
     </div>
     <div class="img-container">
       <a href=" https://biketag.bike/">
-        <img :src="bikeTag" />
+        <img :src="bikeTag" alt="BikeTag"/>
       </a>
     </div>
     <p><i>© 2022 The BikeTag Project. All Rights Reserved. </i></p>

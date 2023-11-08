@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
-    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..."/>
   </loading>
   <b-modal v-model="modal" title="BikeDex" hide-footer hide-header modal-class="trans-bck">
     <div v-if="player" class="container mt-5">
@@ -23,7 +23,7 @@
           :key="i"
           :href="`${socialLinks[social]}${playerSocial[social]}`"
         >
-          <img :id="social" class="social__icon" :src="socialNetworkIcons[social]" />
+          <img :id="social" class="social__icon" :src="socialNetworkIcons[social]" :alt="socialNetworkIcons[social]"/>
         </a>
       </div>
     </div>

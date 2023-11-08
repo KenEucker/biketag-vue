@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
-    <img v-if="isBikeTagAmbassador" :src="bikeTag" />
+    <img v-if="isBikeTagAmbassador" :src="bikeTag" alt="BikeTag Ambassador" />
     <p class="mt-5 mb-5 description">
       {{ $t('pages.login.description') }}
     </p>
