@@ -14,7 +14,7 @@
       </div>
       <!-- Region Image -->
       <div class="navbar-brand">
-        <a @click="resetBikeTagApp">
+        <a href="/" @click="resetBikeTagApp">
           <img :src="getLogoUrl('m')" class="logo" alt="BikeTag Logo"/>
         </a>
         <div>
@@ -221,6 +221,8 @@ async function resetBikeTagApp() {
   } else {
     router.push('/')
   }
+
+  return false
 }
 function login() {
   closeCollapsible()

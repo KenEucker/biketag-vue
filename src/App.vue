@@ -1,6 +1,8 @@
 <template>
   <Head>
     <title>{{ title }}</title>
+    <meta name="description" :content="description" />
+
     <!-- Social -->
     <meta property="og:title" :content="title" />
     <meta property="og:description" :content="description" />

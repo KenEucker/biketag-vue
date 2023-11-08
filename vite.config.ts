@@ -97,7 +97,7 @@ export default defineConfig({
       strategies: 'injectManifest',
       registerType: 'autoUpdate',
       workbox: {
-        sourcemap: process.env.CONTEXT === 'dev',
+        sourcemap: true,
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.png'],
       manifest: {
