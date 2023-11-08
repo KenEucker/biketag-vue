@@ -69,12 +69,12 @@ async function created() {
         scope: window.location.origin,
         icons: [
           {
-            src: await getLogoUrl.value('s'),
+            src: await getLogoUrl.value('', undefined, '0,0,192,192'),
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: await getLogoUrl.value('l'),
+            src: await getLogoUrl.value('', undefined, '0,0,512,512'),
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
