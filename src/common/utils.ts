@@ -307,26 +307,28 @@ export const getSanityImageUrl = (
   logo: string,
   size = '',
   sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/',
-  rect = '',
+  squared = false
 ) => {
   switch (size) {
     case 'l':
-      size = 'h=512'
+      size = '512'
       break
     case 'm':
-      size = 'h=256'
+      size = '256'
       break
     case 's':
-      size = 'h=192'
+      size = '192'
       break
     default:
-      size = 'h=45'
+      size = '45'
       break
   }
+  size = `h=${size}${squared ? `&w=${size}` : ''}`
+
   return `${sanityBaseCDNUrl}${logo
     .replace('image-', '')
     .replace('-png', '.png')
-    .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}${rect.length ? `?rect=${rect}` : ''}`
+    .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
 }
 
 export const getApiUrl = (path = '') => {

@@ -735,7 +735,7 @@ export const useStore = defineStore('store', {
       return state.gameName
     },
     getLogoUrl(state) {
-      return (size = '', logo?: string, rect = '') => {
+      return (size = '', logo?: string, squared = false) => {
         logo = logo ? logo : state.game?.logo?.length ? state.game?.logo : undefined
 
         if (!logo) {
@@ -744,7 +744,7 @@ export const useStore = defineStore('store', {
 
         return logo.indexOf('imgur.com') !== -1
           ? logo
-          : getSanityImageUrl(logo, size, sanityBaseCDNUrl, rect)
+          : getSanityImageUrl(logo, size, sanityBaseCDNUrl, squared)
       }
     },
     getCurrentHint(state) {
