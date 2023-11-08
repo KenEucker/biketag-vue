@@ -5,11 +5,6 @@
     <meta property="og:title" :content="title" />
     <meta property="og:description" :content="description" />
     <meta property="og:image" :content="logo" />
-
-    <!-- Twitter -->
-    <meta name="twitter:title" :content="title" />
-    <meta name="twitter:description" :content="description" />
-    <meta name="twitter:image" :content="logo" />
   </Head>
   <div :class="isWhiteBackground">
     <template v-if="isNotLanding">
