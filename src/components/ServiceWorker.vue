@@ -64,7 +64,9 @@ async function created() {
         ...(await existingManifest.json()),
         name: getGameTitle.value,
         id: `${getGameSlug.value}.biketag`,
+        description: `The game of BikeTag in ${getGameTitle.value}`,
         start_url: window.location.origin,
+        scope: window.location.origin,
         icons: [
           {
             src: await getLogoUrl.value('s'),
@@ -75,7 +77,14 @@ async function created() {
             src: await getLogoUrl.value('l'),
             sizes: '512x512',
             type: 'image/png',
+            purpose: 'any'
           },
+          {
+            src: await getLogoUrl.value('l'),
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          }
         ],
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
