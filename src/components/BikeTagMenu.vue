@@ -14,7 +14,7 @@
       </div>
       <!-- Region Image -->
       <div class="navbar-brand">
-        <a href="/" @click="resetBikeTagApp">
+        <a href="/" @click.prevent.stop="resetBikeTagApp">
           <img :src="getLogoUrl('m')" class="logo" alt="BikeTag Logo"/>
         </a>
         <div>
@@ -214,15 +214,11 @@ function onScroll() {
 }
 async function resetBikeTagApp() {
   if (await isOnline()) {
-    await store.setGame(true)
-    await store.setTags(true)
-    await store.setQueuedTags(true)
-    router.go(0)
+    store.resetBikeTagCache()
+    router.push({ path: '/' }).then(router.go)
   } else {
     router.push('/')
   }
-
-  return false
 }
 function login() {
   closeCollapsible()

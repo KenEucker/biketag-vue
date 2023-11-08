@@ -182,6 +182,12 @@ export const useStore = defineStore('store', {
         })
       }
     },
+    async resetBikeTagCache() {
+      /// TODO: add a check for stale cache before unnecessarily resetting
+      await this.setGame()
+      await this.setTags(true)
+      await this.setQueuedTags(true)
+    },
     setAllGames() {
       const biketagClient = new BikeTagClient({ ...options, game: undefined })
       return biketagClient
