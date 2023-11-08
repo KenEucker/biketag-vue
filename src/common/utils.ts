@@ -389,3 +389,13 @@ export const isPointInPolygon = (
   // Check if the point is inside the buffered polygon
   return booleanPointInPolygon(turfPoint, bufferedPolygon)
 }
+
+export const isOnline = async (checkExternally = false) => {
+  if (navigator.onLine && !checkExternally) {
+    return true
+  } else if (!navigator.onLine && !checkExternally) {
+    return false
+  }
+
+  return await fetch('/favicon.ico?d='+Date.now()).then(response => response.ok).catch(() => false);
+}

@@ -14,7 +14,7 @@
       </div>
       <!-- Region Image -->
       <div class="navbar-brand">
-        <a href="./" @click="clearTagCache">
+        <a @click="resetBikeTagApp">
           <img :src="getLogoUrl('m')" class="logo" />
         </a>
         <div>
@@ -149,7 +149,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
-import { debug } from '@/common/utils'
+import { debug, isOnline } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { useI18n } from 'vue-i18n'
 
@@ -212,10 +212,15 @@ function onScroll() {
   showHeader.value = window.pageYOffset < lastScrollPosition.value
   lastScrollPosition.value = window.pageYOffset
 }
-async function clearTagCache() {
-  await store.setGame(true)
-  await store.setTags(true)
-  await store.setQueuedTags(true)
+async function resetBikeTagApp() {
+  if (await isOnline()) {
+    await store.setGame(true)
+    await store.setTags(true)
+    await store.setQueuedTags(true)
+    router.go(0)
+  } else {
+    router.push('/')
+  }
 }
 function login() {
   closeCollapsible()
