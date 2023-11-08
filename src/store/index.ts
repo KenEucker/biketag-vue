@@ -735,7 +735,7 @@ export const useStore = defineStore('store', {
       return state.gameName
     },
     getLogoUrl(state) {
-      return (size = '', logo?: string, fit = 'max') => {
+      return (size = '', logo?: string, fit = '') => {
         logo = logo ? logo : state.game?.logo?.length ? state.game?.logo : undefined
 
         if (!logo) {
