@@ -61,6 +61,9 @@ async function created() {
     if (manifestLinkEl) {
       const existingManifest = await fetch(manifestLinkEl.href)
       const slugIsSet = !!getGameSlug.value?.length
+      const smallLogo = await getLogoUrl.value('s', undefined, true)
+      const bigLogo =await getLogoUrl.value('l', undefined, true)
+
       const applicationManifest = {
         ...(await existingManifest.json()),
         name: getGameTitle.value.toLowerCase(),
@@ -70,13 +73,13 @@ async function created() {
         scope: window.location.origin,
         icons: [
           {
-            src: await getLogoUrl.value('s', undefined, true),
-            sizes: '192x192',
+            src: smallLogo,
+            sizes: smallLogo[0] === '/' ? '321x638' : '192x192',
             type: 'image/webp',
           },
           {
-            src: await getLogoUrl.value('l', undefined, true),
-            sizes: '512x512',
+            src: bigLogo,
+            sizes: bigLogo[0] === '/' ? '321x638' : '512x512',
             type: 'image/webp',
             purpose: 'any',
           },

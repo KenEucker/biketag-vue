@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="container">
-    <img v-if="isBikeTagAmbassador" :src="bikeTag" alt="BikeTag Ambassador" />
+    <img v-if="isBikeTagAmbassador" :src="BikeTagSvg" alt="BikeTag Ambassador" />
     <p class="mt-5 mb-5 description">
       {{ $t('pages.login.description') }}
     </p>
@@ -16,14 +16,13 @@
 import { inject, computed } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { useAuth0 } from '@auth0/auth0-vue'
-import BikeTag from '@/assets/images/BikeTag.svg'
+import BikeTagSvg from '@/assets/images/BikeTag.svg'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import { useI18n } from 'vue-i18n'
 
 // data
-const bikeTag = BikeTag
 const store = useStore()
 const { isAuthenticated, loginWithRedirect, idTokenClaims, user } = useAuth0()
 const toast = inject('toast')
