@@ -81,7 +81,7 @@ async function created() {
             purpose: 'any',
           },
           {
-            src: '/maskable_icon_x512.webp',
+            src: '/maskable_icon_x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',

@@ -104,13 +104,8 @@ export default defineConfig({
         theme_color: '#000000',
         icons: [
           {
-            src: '/android-chrome-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
             src: '/android-chrome-512x512.png',
-            sizes: '512x512',
+            sizes: '321x638',
             type: 'image/png',
             purpose: 'any',
           },
@@ -124,13 +119,13 @@ export default defineConfig({
         screenshots: [
           {
             src: "/images/biketag-screen-desktop-1.png",
-            sizes: "640x320",
+            sizes: "389x366",
             type: "image/png",
             form_factor: "wide",
             label: "BikeTag"
           },
           {
-            src: "/images/biketag-screen-modile-1.png",
+            src: "/images/biketag-screen-mobile-1.png",
             sizes: "320x640",
             type: "image/png",
             form_factor: "narrow",
