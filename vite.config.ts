@@ -118,16 +118,16 @@ export default defineConfig({
         ],
         screenshots: [
           {
-            src: "/images/biketag-screen-desktop-1.png",
+            src: "/images/biketag-screen-desktop-1.webp",
             sizes: "389x366",
-            type: "image/png",
+            type: "image/webp",
             form_factor: "wide",
             label: "BikeTag"
           },
           {
-            src: "/images/biketag-screen-mobile-1.png",
+            src: "/images/biketag-screen-mobile-1.webp",
             sizes: "321x609",
-            type: "image/png",
+            type: "image/webp",
             form_factor: "narrow",
             label: "BikeTag"
           }

@@ -72,12 +72,12 @@ async function created() {
           {
             src: await getLogoUrl.value('s', undefined, true),
             sizes: '192x192',
-            type: 'image/png',
+            type: 'image/webp',
           },
           {
             src: await getLogoUrl.value('l', undefined, true),
             sizes: '512x512',
-            type: 'image/png',
+            type: 'image/webp',
             purpose: 'any',
           },
           {

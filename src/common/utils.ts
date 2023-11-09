@@ -65,6 +65,7 @@ export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
     .replace('.jpg', `${size}.jpg`)
     .replace('.gif', `${size}.gif`)
     .replace('.png', `${size}.png`)
+    .replace('.webp', `${size}.webp`)
     .replace('.mp4', `${size}.mp4`)
 
 export const getDomainInfo = (req: any): DomainInfo => {
