@@ -60,11 +60,12 @@ async function created() {
 
     if (manifestLinkEl) {
       const existingManifest = await fetch(manifestLinkEl.href)
+      const slugIsSet = !!getGameSlug.value?.length
       const applicationManifest = {
         ...(await existingManifest.json()),
         name: getGameTitle.value.toLowerCase(),
-        id: `${getGameSlug.value}.biketag`,
-        description: `The game of BikeTag in ${getGameSlug.value}`,
+        id: `${slugIsSet ? `${getGameSlug.value}.` : ''}biketag`,
+        description: `The game of BikeTag ${slugIsSet ? `in ${getGameSlug.value}` : ''}`,
         start_url: window.location.origin,
         scope: window.location.origin,
         icons: [

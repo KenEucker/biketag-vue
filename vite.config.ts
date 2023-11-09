@@ -96,9 +96,6 @@ export default defineConfig({
       filename: 'worker.ts',
       strategies: 'injectManifest',
       registerType: 'autoUpdate',
-      workbox: {
-        sourcemap: true,
-      },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.png'],
       manifest: {
         name: 'BikeTag',
@@ -131,6 +128,7 @@ export default defineConfig({
     createHtmlPlugin(),
   ],
   build: {
+    sourcemap: true,
     rollupOptions: {
       output: {
         entryFileNames: `assets/biketag.js`,
