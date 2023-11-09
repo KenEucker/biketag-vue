@@ -320,7 +320,7 @@ export const getSanityImageResizedSize = (
       const sanitySizeRequestedWidth = parseInt(sanitySizeRequestedMatches?.find(m => m?.length && m.includes('w='))?.split('=')[1] ?? '')
       const factorOfResize = sanitySizeRequestedWidth / actualSizeWidth
 
-      return `${factorOfResize * actualSizeWidth}x${factorOfResize * actualSizeHeight}`
+      return `${Math.round(factorOfResize * actualSizeWidth)}x${Math.round(factorOfResize * actualSizeHeight)}`
     }
 
 export const getSanityImageUrl = (
