@@ -100,7 +100,7 @@ export default defineConfig({
       manifest: {
         name: 'BikeTag',
         short_name: 'BikeTag',
-        description: 'The BikeTag Game',
+        description: 'BikeTag is a photo mystery tag game played on bicycles. No login required.',
         theme_color: '#000000',
         icons: [
           {
@@ -121,6 +121,22 @@ export default defineConfig({
             purpose: 'maskable',
           }
         ],
+        screenshots: [
+          {
+            src: "/images/biketag-screen-desktop-1.png",
+            sizes: "640x320",
+            type: "image/png",
+            form_factor: "wide",
+            label: "BikeTag"
+          },
+          {
+            src: "/images/biketag-screen-modile-1.png",
+            sizes: "320x640",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "BikeTag"
+          }
+        ]
       },
     }),
     viteCommonjs(),

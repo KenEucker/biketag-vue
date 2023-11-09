@@ -48,6 +48,9 @@
       variant="left"
     >
       <p>
+        <img src="/images/biketag-example-1.png" alt="BikeTag Logo" class="mb-3" />
+      </p>
+      <p>
         BikeTag is a mystery photo tag game played on bicycles. BikeTag.Org is a place for people to
         see the most recent Bike Tags in their city and participate in the game in an easy and
         simple way, without needing to login to anything. The origins of the game of BikeTag, as far

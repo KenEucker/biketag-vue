@@ -65,7 +65,7 @@ async function created() {
         ...(await existingManifest.json()),
         name: getGameTitle.value.toLowerCase(),
         id: `${slugIsSet ? `${getGameSlug.value}.` : ''}biketag`,
-        description: `The game of BikeTag ${slugIsSet ? `in ${getGameSlug.value}` : ''}`,
+        description: `The game of BikeTag ${slugIsSet ? `in ${getGameSlug.value}` : ''} - BikeTag is a photo mystery tag game played on bicycles. No login required.`,
         start_url: window.location.origin,
         scope: window.location.origin,
         icons: [
