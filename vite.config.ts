@@ -105,7 +105,7 @@ export default defineConfig({
         icons: [
           {
             src: '/android-chrome-512x512.png',
-            sizes: '321x638',
+            sizes: '512x512',
             type: 'image/png',
             purpose: 'any',
           },
@@ -126,7 +126,7 @@ export default defineConfig({
           },
           {
             src: "/images/biketag-screen-mobile-1.png",
-            sizes: "320x640",
+            sizes: "321x609",
             type: "image/png",
             form_factor: "narrow",
             label: "BikeTag"
