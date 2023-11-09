@@ -48,7 +48,7 @@
       variant="left"
     >
       <p>
-        <img src="/images/biketag-example-1.png" alt="BikeTag Logo" class="mb-3" />
+        <img src="/images/biketag-example-1.webp" alt="BikeTag Logo" class="mb-3" />
       </p>
       <p>
         BikeTag is a mystery photo tag game played on bicycles. BikeTag.Org is a place for people to
@@ -110,7 +110,7 @@
     <bike-tag-blurb
       title="Open Source"
       subtitle="BikeTag is an Open-Source Project Deployed on Netlify "
-      img-src="/images/github-netlify.png"
+      img-src="/images/github-netlify.webp"
       link-text="Contribute to BikeTag"
       link="https://github.com/KenEucker/biketag-vue/discussions/78"
       variant="left"

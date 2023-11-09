@@ -62,14 +62,14 @@
     <!-- World -->
     <div class="button-reset-container">
       <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
-        <img class="footer-image" src="@/assets/images/npworld.png" alt="BikeTag World Wide" />
+        <img class="footer-image" src="@/assets/images/npworld.webp" alt="BikeTag World Wide" />
       </bike-tag-button>
     </div>
     <div class="mt-5 mb-5 foss-container">
       <div class="row">
         <a href="https://github.com/KenEucker/biketag-vue">
-          <img src="@/assets/images/github-logo.png" alt="GitHub" />
-          <img src="@/assets/images/github-mark.png" alt="GitHub Mark" />
+          <img src="@/assets/images/github-logo.webp" alt="GitHub" />
+          <img src="@/assets/images/github-mark.webp" alt="GitHub Mark" />
         </a>
         <a href="https://www.netlify.com/">
           <img src="@/assets/images/netlify-logo-dark.svg" alt="Netlify" />

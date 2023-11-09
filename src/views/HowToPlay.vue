@@ -35,18 +35,18 @@
         <p>{{ $t('pages.howto.swiper2.text1') }}</p>
         <p>{{ $t('pages.howto.swiper2.text2') }}</p>
         <div>
-          <img class="img-fluid w-75" src="@/assets/images/bike1.png" alt="how to biketag #1" />
+          <img class="img-fluid w-75" src="@/assets/images/bike1.webp" alt="how to biketag #1" />
         </div>
       </swiper-slide>
       <swiper-slide>
         <p>{{ $t('pages.howto.swiper3.text1') }}</p>
         <div class="mb-2">
-          <img class="img-fluid w-50" src="@/assets/images/bike1.png" alt="how to biketag #1" />
+          <img class="img-fluid w-50" src="@/assets/images/bike1.webp" alt="how to biketag #1" />
         </div>
         <div>
           <img
             class="img-fluid w-50 mb-5"
-            src="@/assets/images/bike2.png"
+            src="@/assets/images/bike2.webp"
             alt="how to biketag #2"
           />
         </div>
@@ -54,7 +54,7 @@
       <swiper-slide>
         <p>{{ $t('pages.howto.swiper4.text1') }}</p>
         <div class="mb-3">
-          <img class="img-fluid w-75" src="@/assets/images/bike3.png" alt="how to biketag #3" />
+          <img class="img-fluid w-75" src="@/assets/images/bike3.webp" alt="how to biketag #3" />
         </div>
         <p>{{ $t('pages.howto.swiper4.text2') }}</p>
       </swiper-slide>
@@ -63,7 +63,7 @@
         <div class="mb-3">
           <img
             class="img-fluid w-75"
-            src="@/assets/images/good-examples.png"
+            src="@/assets/images/good-examples.webp"
             alt="how to biketag - good examples"
           />
         </div>
@@ -74,7 +74,7 @@
         <div class="mb-3">
           <img
             class="img-fluid w-75"
-            src="@/assets/images/not-so-good-examples.png"
+            src="@/assets/images/not-so-good-examples.webp"
             alt="how to biketag - not so good examples"
           />
         </div>
@@ -85,7 +85,7 @@
         <div class="mb-3">
           <img
             class="img-fluid w-50"
-            src="@/assets/images/queue-tag.png"
+            src="@/assets/images/queue-tag.webp"
             alt="how to queue a biketag"
           />
         </div>
@@ -96,7 +96,7 @@
         <div class="mb-3">
           <img
             class="img-fluid w-50"
-            src="@/assets/images/submit-tag.png"
+            src="@/assets/images/submit-tag.webp"
             alt="how to submite a biketag"
           />
         </div>

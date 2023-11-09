@@ -123,7 +123,7 @@
       <!-- World -->
       <div class="button-reset-container">
         <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
-          <img class="footer-image" src="@/assets/images/npworld.png" alt="BikeTag World Wide" />
+          <img class="footer-image" src="@/assets/images/npworld.webp" alt="BikeTag World Wide" />
         </bike-tag-button>
       </div>
       <!-- Players -->

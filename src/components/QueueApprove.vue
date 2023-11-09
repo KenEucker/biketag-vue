@@ -45,7 +45,7 @@
           size="l"
           :show-posted-date="false"
           :sized-mystery-image="false"
-          mystery-image-url="/images/no_image.png"
+          mystery-image-url="/images/no_image.webp"
           mystery-description="Mystery image not yet uploaded"
           :found-tagnumber="tag.mysteryImageUrl ? tag.tagnumber - 1 : tag.tagnumber"
           :found-description="stringifyNumber(index + 1)"
@@ -68,7 +68,7 @@
           <input type="hidden" name="ambassadorId" value="" />
           <span>APPROVE</span>
           <bike-tag-button class="circle-button" variant="circle" type="submit" label="Approve">
-            <img src="/images/green-circle-check.png" alt="Approve This Tag" />
+            <img src="/images/green-circle-check.webp" alt="Approve This Tag" />
           </bike-tag-button>
         </form>
         <form
@@ -83,7 +83,7 @@
           <input type="hidden" name="form-name" value="dequeue-queued-tag" />
           <input type="hidden" name="ambassadorId" value="" />
           <bike-tag-button class="circle-button" variant="circle" type="submit" label="Remove">
-            <img src="/images/red-circle-x.png" alt="Delete This Tag" />
+            <img src="/images/red-circle-x.webp" alt="Delete This Tag" />
           </bike-tag-button>
           <span>REMOVE</span>
         </form>
