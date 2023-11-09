@@ -44,7 +44,6 @@ const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
 // computed
 const getGameSlug = computed(() => store.getGameSlug)
 const getGameTitle = computed(() => store.getGameTitle)
-const getLogoUrl = computed(() => store.getLogoUrl)
 
 // methods
 async function close() {
@@ -61,8 +60,8 @@ async function created() {
     if (manifestLinkEl) {
       const existingManifest = await fetch(manifestLinkEl.href)
       const slugIsSet = !!getGameSlug.value?.length
-      const smallLogo = await getLogoUrl.value('s', undefined, true)
-      const bigLogo =await getLogoUrl.value('l', undefined, true)
+      const smallLogo = await store.getLogoUrl('s', undefined, true)
+      const bigLogo =await store.getLogoUrl('l', undefined, true)
 
       const applicationManifest = {
         ...(await existingManifest.json()),
@@ -74,12 +73,12 @@ async function created() {
         icons: [
           {
             src: smallLogo,
-            sizes: smallLogo[0] === '/' ? '321x638' : '192x192',
+            sizes: smallLogo[0] === '/' ? getSanityImageActualSize(smallLogo) : '192x192',
             type: 'image/webp',
           },
           {
             src: bigLogo,
-            sizes: bigLogo[0] === '/' ? '321x638' : '512x512',
+            sizes: bigLogo[0] === '/' ? getSanityImageActualSize(bigLogo) : '512x512',
             type: 'image/webp',
             purpose: 'any',
           },

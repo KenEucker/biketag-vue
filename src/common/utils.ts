@@ -304,6 +304,10 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
   return queuedTagState
 }
 
+export const getSanityImageActualSize = (
+  logo: string,
+  ) => logo?.split('.')[0]?.split('-')[1]
+
 export const getSanityImageUrl = (
   logo: string,
   size = '',
