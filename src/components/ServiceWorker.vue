@@ -13,6 +13,7 @@
 import { computed } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { getSanityImageActualSize } from '@/common/utils'
 import { debug } from '@/common/utils'
 
 // props
@@ -73,12 +74,12 @@ async function created() {
         icons: [
           {
             src: smallLogo,
-            sizes: smallLogo[0] === '/' ? '321x638' : getSanityImageActualSize(smallLogo) ,
+            sizes: smallLogo[0] === '/' ? '321x638' : getSanityImageActualSize(smallLogo),
             type: 'image/webp',
           },
           {
             src: bigLogo,
-            sizes: bigLogo[0] === '/' ? '321x638' : getSanityImageActualSize(bigLogo) ,
+            sizes: bigLogo[0] === '/' ? '321x638' : getSanityImageActualSize(bigLogo),
             type: 'image/webp',
             purpose: 'any',
           },
