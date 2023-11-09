@@ -79,6 +79,12 @@ async function created() {
             type: 'image/png',
             purpose: 'any',
           },
+          {
+            src: '/images/android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          }
         ],
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })

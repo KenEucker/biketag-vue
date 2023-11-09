@@ -152,7 +152,7 @@
     </div>
     <div class="img-container">
       <a href=" https://biketag.bike/">
-        <img :src="bikeTag" alt="BikeTag" />
+        <img :src="BikeTagSvg" alt="BikeTag" />
       </a>
     </div>
     <p><i>© 2022 The BikeTag Project. All Rights Reserved. </i></p>
