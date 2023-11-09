@@ -5,7 +5,7 @@
   >
     <div class="header">
       <h1>{{ props.title }}</h1>
-      <h5>{{ props.subtitle }}</h5>
+      <h2>{{ props.subtitle }}</h2>
     </div>
     <hr :style="`background-image: url(${styledHr})`" />
     <div class="container">
@@ -87,7 +87,7 @@ hr {
 }
 
 .header {
-  h5 {
+  h2 {
     height: 100%;
     align-self: center;
   }
@@ -173,7 +173,7 @@ hr {
   }
 
   .header {
-    h5 {
+    h2 {
       margin-left: 0.5rem;
     }
   }

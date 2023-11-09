@@ -204,6 +204,17 @@ main {
   }
 }
 
+
+#app footer .container ul li{
+  list-style: none;
+  color: #ffffff;
+
+  a {
+    text-decoration: none;
+    color: #ffffff;
+  }
+}
+
 footer {
   form {
     .biketag__button {

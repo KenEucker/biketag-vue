@@ -101,7 +101,7 @@ hr {
   }
 
   .header {
-    h5 {
+    h2 {
       margin-left: 0.5rem;
     }
   }

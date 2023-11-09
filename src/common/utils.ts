@@ -319,7 +319,6 @@ export const getSanityImageResizedSize = (
       // const sanitySizeRequestedHeight = parseInt(sanitySizeRequestedMatches?.find(m => m?.length && m.includes('h='))?.split('=')[1] ?? '')
       const sanitySizeRequestedWidth = parseInt(sanitySizeRequestedMatches?.find(m => m?.length && m.includes('w='))?.split('=')[1] ?? '')
       const factorOfResize = sanitySizeRequestedWidth / actualSizeWidth
-      console.log({actualSize, actualSizeWidth, actualSizeHeight, sanitySizeRequestedMatches, sanitySizeRequestedWidth, factorOfResize})
 
       return `${factorOfResize * actualSizeWidth}x${factorOfResize * actualSizeHeight}`
     }
