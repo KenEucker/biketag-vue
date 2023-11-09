@@ -329,6 +329,8 @@ export const getSanityImageUrl = (
   return `${sanityBaseCDNUrl}${logo
     .replace('image-', '')
     .replace('-png', '.png')
+    .replace('-webp', '.webp')
+    .replace('-gif', '.gif')
     .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
 }
 
