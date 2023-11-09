@@ -73,12 +73,12 @@ async function created() {
         icons: [
           {
             src: smallLogo,
-            sizes: smallLogo[0] === '/' ? getSanityImageActualSize(smallLogo) : '192x192',
+            sizes: smallLogo[0] === '/' ? '321x638' : getSanityImageActualSize(smallLogo) ,
             type: 'image/webp',
           },
           {
             src: bigLogo,
-            sizes: bigLogo[0] === '/' ? getSanityImageActualSize(bigLogo) : '512x512',
+            sizes: bigLogo[0] === '/' ? '321x638' : getSanityImageActualSize(bigLogo) ,
             type: 'image/webp',
             purpose: 'any',
           },
