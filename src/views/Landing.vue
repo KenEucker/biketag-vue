@@ -158,7 +158,7 @@
         <img :src="BikeTagSvg" alt="BikeTag" />
       </a>
     </div>
-    <p><i>© 2022 The BikeTag Project. All Rights Reserved. </i></p>
+    <p><i>© 2023 The BikeTag Project. All Rights Reserved. </i></p>
   </footer>
 </template>
 
@@ -205,13 +205,19 @@ main {
 }
 
 
-#app footer .container ul li{
-  list-style: none;
-  color: #ffffff;
-
-  a {
-    text-decoration: none;
+#app footer {
+  i {
     color: #ffffff;
+  }
+
+  .container ul li{
+    list-style: none;
+    color: #ffffff;
+
+    a {
+      text-decoration: none;
+      color: #ffffff;
+    }
   }
 }
 

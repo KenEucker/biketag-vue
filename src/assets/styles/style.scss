@@ -18,7 +18,7 @@ body {
   min-height: 100vh;
   color: $app-color;
   background: $app-bg;
-  
+
   .align-center {
     display: flex;
     justify-content: center;
@@ -319,7 +319,7 @@ body {
       justify-content: center;
       align-items: center;
     }
-  
+
   .add-found-tag, .add-mystery-tag {
     max-width: 600px;
     margin: auto;

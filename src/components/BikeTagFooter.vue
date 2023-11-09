@@ -329,13 +329,13 @@ onBeforeUnmount(() => {
     margin: auto;
     padding: 2em;
     max-width: 500px;
+    color: white;
   }
 }
 
 .footer-image {
   height: 40px;
 }
-
 .button-group {
   display: flex;
   justify-content: center;
