@@ -318,10 +318,10 @@ export const getSanityImageResizedSize = (
       const sanitySizeRequestedMatches = logo.match(regexForHW)
       const sanitySizeRequestedHeight = parseInt(sanitySizeRequestedMatches?.find(m => m?.length && m.includes('h='))?.split('=')[1] ?? '')
       const sanitySizeRequestedWidth = parseInt(sanitySizeRequestedMatches?.find(m => m?.length && m.includes('w='))?.split('=')[1] ?? '')
-      const factorOfResizeH = sanitySizeRequestedHeight / actualSizeHeight
+      const factorOfResize = sanitySizeRequestedHeight / actualSizeHeight
       const factorOfResizeW = sanitySizeRequestedWidth / actualSizeWidth
 
-      return `${Math.round(factorOfResizeH * actualSizeWidth)}x${Math.round(factorOfResizeW * actualSizeHeight)}`
+      return `${Math.round(factorOfResize * actualSizeWidth)}x${Math.round(factorOfResize * actualSizeHeight)}`
     }
 
 export const getSanityImageUrl = (

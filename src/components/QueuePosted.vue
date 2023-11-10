@@ -68,13 +68,13 @@ onMounted(() => {
       postToInstagram: postToInstagram.value,
     }
     debug('autosubmitting tag with default share settings', defaultShareSettings)
-    submitTag(defaultShareSettings)
+    setTimeout(() => submitTag(defaultShareSettings), 1000)
   }
 })
 </script>
 
 <template>
-  <b-container class="queue-posted">
+  <div class="container queue-posted">
     <h3 class="queue-title">{{ $t('pages.round.posted_title') }}</h3>
     <p class="queue-text">{{ $t('pages.round.posted_text') }}</p>
     <div class="mt-3">
@@ -128,5 +128,5 @@ onMounted(() => {
         />
       </div> -->
     </form>
-  </b-container>
+  </div>
 </template>

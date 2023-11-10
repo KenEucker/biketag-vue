@@ -1,5 +1,5 @@
 <template>
-  <b-container class="queue-posted-share">
+  <div class="container queue-posted-share">
     <h3 class="queue-title">{{ $t('pages.round.posted_title') }}</h3>
     <p class="queue-text">{{ $t('pages.round.posted_text') }}</p>
     <div>
@@ -115,7 +115,7 @@
         @click="goViewRound"
       />
     </div>
-  </b-container>
+  </div>
 </template>
 
 <script setup name="QueueSubmit">
