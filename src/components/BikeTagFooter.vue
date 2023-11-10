@@ -336,6 +336,7 @@ onBeforeUnmount(() => {
 .footer-image {
   height: 40px;
 }
+
 .button-group {
   display: flex;
   justify-content: center;

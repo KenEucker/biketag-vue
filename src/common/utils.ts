@@ -304,25 +304,27 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
   return queuedTagState
 }
 
-export const getSanityImageActualSize = (
-  logo: string,
-  ) => logo?.split('.')[2]?.split('-')[1]
+export const getSanityImageActualSize = (logo: string) => logo?.split('.')[2]?.split('-')[1]
 
-export const getSanityImageResizedSize = (
-    logo: string,
-    ) => {
-      const actualSize = getSanityImageActualSize(logo).split('x')
-      const actualSizeWidth = parseInt(actualSize[0])
-      const actualSizeHeight = parseInt(actualSize[1])
-      const regexForHW = new RegExp(/(?:.*\?)&?(\h\=\d+)?&?(\w\=\d+)?&?(\h\=\d+)?/g)
-      const sanitySizeRequestedMatches = logo.match(regexForHW)
-      const sanitySizeRequestedHeight = parseInt(sanitySizeRequestedMatches?.find(m => m?.length && m.includes('h='))?.split('=')[1] ?? '')
-      const sanitySizeRequestedWidth = parseInt(sanitySizeRequestedMatches?.find(m => m?.length && m.includes('w='))?.split('=')[1] ?? '')
-      const factorOfResize = sanitySizeRequestedHeight / actualSizeHeight
-      const factorOfResizeW = sanitySizeRequestedWidth / actualSizeWidth
+export const getSanityImageResizedSize = (logo: string) => {
+  const actualSize = getSanityImageActualSize(logo).split('x')
+  const actualSizeWidth = parseInt(actualSize[0])
+  const actualSizeHeight = parseInt(actualSize[1])
+  const regexForHW = new RegExp(/(?:.*\?)&?(h=\d+)?&?(\w=\d+)?&?(h=\d+)?/g)
+  const sanitySizeRequestedMatches = logo.match(regexForHW)
+  const sanitySizeRequestedHeight = parseInt(
+    sanitySizeRequestedMatches?.find((m) => m?.length && m.includes('h='))?.split('=')[1] ?? '',
+  )
+  const sanitySizeRequestedWidth = parseInt(
+    sanitySizeRequestedMatches?.find((m) => m?.length && m.includes('w='))?.split('=')[1] ?? '',
+  )
+  const factorOfResize = sanitySizeRequestedHeight / actualSizeHeight
+  const factorOfResizeW = sanitySizeRequestedWidth / actualSizeWidth
 
-      return `${Math.round(factorOfResize * actualSizeWidth)}x${Math.round(factorOfResize * actualSizeHeight)}`
-    }
+  return `${Math.round(factorOfResize * actualSizeWidth)}x${Math.round(
+    factorOfResize * actualSizeHeight,
+  )}`
+}
 
 export const getSanityImageUrl = (
   logo: string,

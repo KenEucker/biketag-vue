@@ -35,7 +35,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
   const gamesResponse = await nonAdminBiketag.getGame(undefined, {
     source: 'sanity',
   })
-  let results = []
+  let results:any = []
   let errors = false
 
   if (gamesResponse.success) {
