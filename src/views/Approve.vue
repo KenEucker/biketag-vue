@@ -1,11 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <loading
-    v-show="uploadInProgress"
-    v-model:active="uploadInProgress"
-    :is-full-page="true"
-    class="realign-spinner"
-  >
+  <loading v-show="uploadInProgress" v-model:active="uploadInProgress" :is-full-page="true" class="realign-spinner">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
   <div class="queue-page">
@@ -13,15 +8,8 @@
     <div v-else class="loading-message">
       <p>The next BikeTag Round is loading!</p>
     </div>
-    <form
-      ref="queueError"
-      name="approve-tag-error"
-      action="approve-tag-error"
-      method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="bot-field"
-      hidden
-    >
+    <form ref="queueError" name="approve-tag-error" action="approve-tag-error" method="POST" data-netlify="true"
+      data-netlify-honeypot="bot-field" hidden>
       <input type="hidden" name="form-name" value="post-tag-error" />
       <input type="hidden" name="submission" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
@@ -34,7 +22,7 @@
 <script setup name="ApproveBikeTagView">
 import { ref, inject, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { useAuth0 } from '@auth0/auth0-vue'
+import { isAuthenticationEnabled, useAuth0 } from '@/auth'
 // import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 import { debug } from '@/common/utils'
@@ -58,7 +46,6 @@ time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 const uploadInProgress = ref(false)
 const queueError = ref(null)
 const store = useStore()
-const { isAuthenticated, idTokenClaims, user } = useAuth0()
 const toast = inject('toast')
 const { t } = useI18n()
 
@@ -69,16 +56,20 @@ const getAmbassadorId = computed(() => store.getAmbassadorId)
 
 // methods
 function checkAuth() {
-  if (isAuthenticated.value) {
-    if (!store.getProfile?.nonce?.length) {
-      if (idTokenClaims.value) {
-        store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
-      } else {
-        debug("what's this? no speaka da mda5hash, brah?")
-        return false
+  if (isAuthenticationEnabled()) {
+    const { isAuthenticated, idTokenClaims, user } = useAuth0()
+    if (isAuthenticated.value) {
+
+      if (!store.getProfile?.nonce?.length) {
+        if (idTokenClaims.value) {
+          store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
+        } else {
+          debug("what's this? no speaka da mda5hash, brah?")
+          return false
+        }
       }
+      return true
     }
-    return true
   }
   return false
 }

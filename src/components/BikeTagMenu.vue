@@ -29,7 +29,7 @@
 
       <b-collapse id="navbarSupportedContent" ref="navList" class="navbar-collapse">
         <ul class="m-auto navbar-nav mb-lg-0">
-          <li v-if="isAuthenticated" class="nav-item">
+          <li v-if="isAuthenticatedRef" class="nav-item">
             <img
               class="profile-icon"
               :src="getProfileImageSrc"
@@ -90,7 +90,7 @@
           >
             {{ $t('menu.about') }}
           </li>
-          <template v-if="isAuthenticated">
+          <template v-if="isAuthenticatedRef">
             <li class="nav-item" @click="logoutFunction">
               {{ $t('menu.logout') }}
             </li>
@@ -142,7 +142,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { debug, isOnline } from '@/common/utils'
-import { useAuth0 } from '@auth0/auth0-vue'
+import { isAuthenticationEnabled, useAuth0 } from '@/auth'
 import { useI18n } from 'vue-i18n'
 
 // components
@@ -162,16 +162,16 @@ const props = defineProps({
 
 // data
 /// Now showing the login menu option, always
-const showLogin = ref(true) //process.env.CONTEXT === 'dev')
+const showLogin = ref(isAuthenticationEnabled())
 const showHeader = ref(true)
 const lastScrollPosition = ref(0)
 const scrollOffset = ref(40)
 const buttonCollapse = ref(null)
+const isAuthenticatedRef = ref(false)
 const navList = ref(null)
 const store = useStore()
 const router = useRouter()
 const route = useRoute()
-const { logout, isAuthenticated } = useAuth0()
 const { t } = useI18n()
 
 // computed
@@ -191,6 +191,12 @@ const currentRoute = computed(() => {
 const getProfileImageSrc = computed(() => {
   return isBikeTagAmbassador.value ? '/images/biketag-ambassador.svg' : '/images/biketag-player.svg'
 })
+
+if (isAuthenticationEnabled()) {
+  const { isAuthenticated } = useAuth0()
+  isAuthenticatedRef = isAuthenticated
+}
+
 
 // methods
 // Toggle if navigation is shown or hidden
@@ -218,6 +224,7 @@ function login() {
 }
 function logoutFunction() {
   store.setProfile()
+  const { logout } = useAuth0()
   logout({
     returnTo: window.location.origin,
   })

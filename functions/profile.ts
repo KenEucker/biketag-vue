@@ -2,12 +2,12 @@ import { Handler } from '@netlify/functions'
 import axios from 'axios'
 import { ErrorMessage, HttpStatusCode, InfoMessage } from './common/constants'
 import {
-  isValidJson,
-  getProfileAuthorization,
   acceptCorsHeaders,
+  auth0Headers,
   constructAmbassadorProfile,
   constructPlayerProfile,
-  auth0Headers
+  getProfileAuthorization,
+  isValidJson
 } from './common/methods'
 
 const profileHandler: Handler = async (event) => {
@@ -34,7 +34,7 @@ const profileHandler: Handler = async (event) => {
       /// Create new profile fields (role, name)
       case 'PUT':
         try {
-          const data = JSON.parse(event.body)
+          const data = JSON.parse(event.body!)
           if (isValidJson(data, 'profile.role')) {
             const roles = (
               await axios.request({
@@ -107,7 +107,7 @@ const profileHandler: Handler = async (event) => {
         break
       case 'PATCH':
         try {
-          const data = JSON.parse(event.body)
+          const data = JSON.parse(event.body!)
           delete data.user_metadata.name
           const validator = profile.isBikeTagAmbassador
             ? 'profile.patch.ambassador'

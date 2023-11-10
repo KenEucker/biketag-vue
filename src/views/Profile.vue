@@ -25,9 +25,9 @@
       </div>
     </form>
   </b-modal>
-  <div v-if="profile?.user_metadata" class="container mb-5 mt-5">
+  <div v-if="profile?.user_metadata" class="container mt-5 mb-5">
     <div class="center-container">
-      <div v-if="player.tags" class="d-flex justify-content-center mt-5 mb-5">
+      <div v-if="player.tags" class="mt-5 mb-5 d-flex justify-content-center">
         <player size="lg" :player="player" :no-link="true" />
       </div>
       <div v-else class="profile-picture">
@@ -36,7 +36,7 @@
           <bike-tag-button variant="circle-clean"> </bike-tag-button>
         </div>
       </div>
-      <div class="flx-columns mt-5">
+      <div class="mt-5 flx-columns">
         <div>
           <span
             v-for="(social, i) in Object.keys(profile?.user_metadata).filter(
@@ -46,7 +46,7 @@
                 key != 'passcode',
             )"
             :key="`${i}_label`"
-            class="player-name mt-4"
+            class="mt-4 player-name"
             style="font-size: 2.5rem"
           >
             {{ profile?.user_metadata[social] }}
@@ -106,7 +106,7 @@
               :text="`${firstToUperCase(credential)} Configuration`"
               @click.prevent="() => toggleShowFields(credential)"
             />
-            <div :ref="credentialsRef[credential]" class="input-block mt-3 hide">
+            <div :ref="credentialsRef[credential]" class="mt-3 input-block hide">
               <bike-tag-input
                 v-for="(inputField, j) in Object.keys(
                   profile.user_metadata.credentials[credential],
@@ -144,7 +144,7 @@
 <script setup name="ProfileView">
 import { ref, inject, computed, onMounted, nextTick } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { useAuth0 } from '@auth0/auth0-vue'
+import { isAuthenticationEnabled, useAuth0 } from '@/auth'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import Reddit from '@/assets/images/Reddit.svg'
 import Instagram from '@/assets/images/Instagram.svg'

@@ -26,6 +26,7 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 import { debug } from './common/utils'
 
 import { createAuth0 } from '@auth0/auth0-vue'
+import { isAuthenticationEnabled } from './auth'
 class BikeTagApp {
   protected emitter
   protected app
@@ -51,7 +52,7 @@ class BikeTagApp {
     this.app.use(router).use(store)
   }
   authentication() {
-    if (process.env.A_DOMAIN?.length) {
+    if (isAuthenticationEnabled()) {
       debug('init::authentication', process.env.A_DOMAIN)
       const auth = createAuth0({
         domain: process.env.A_DOMAIN as string,
@@ -61,6 +62,8 @@ class BikeTagApp {
         },
       })
       this.app.use(auth)
+    } else {
+      debug('init::authentication', 'authentication disabled')
     }
   }
   components() {

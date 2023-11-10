@@ -26,7 +26,7 @@
 import { ref, inject, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
-import { useAuth0 } from '@auth0/auth0-vue'
+import { isAuthenticationEnabled, useAuth0 } from '@/auth'
 import { debug } from './common/utils'
 
 // componets
@@ -41,7 +41,7 @@ const store = useStore()
 const router = useRouter()
 const { t } = useI18n()
 const toast = inject('toast')
-const { isAuthenticated, idTokenClaims, user } = useAuth0()
+let isAuthenticated = ref(false)
 
 // computed
 const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name != 'Landing')
@@ -81,11 +81,15 @@ async function created() {
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
     gameIsSet.value = true
 
-    if (isAuthenticated.value) {
-      if (!store.getProfile?.nonce?.length) {
-        if (idTokenClaims.value)
-          store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
-        else debug("what's this? no speaka da mda5hash, brah?")
+
+  if (isAuthenticationEnabled()) {
+      const { isAuthenticated, idTokenClaims, user } = useAuth0()
+      if (isAuthenticated.value) {
+        if (!store.getProfile?.nonce?.length) {
+          if (idTokenClaims.value)
+            store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
+          else debug("what's this? no speaka da mda5hash, brah?")
+        }
       }
     }
 

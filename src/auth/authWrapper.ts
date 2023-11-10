@@ -1,5 +1,5 @@
+import { createAuth0Client } from '@auth0/auth0-spa-js'
 import { createApp } from 'vue'
-import createAuth0Client from '@auth0/auth0-spa-js'
 
 const DEFAULT_REDIRECT_CALLBACK = (state: any) =>
   window.history.replaceState(state, document.title, window.location.pathname)
@@ -7,6 +7,7 @@ const DEFAULT_REDIRECT_CALLBACK = (state: any) =>
 let instance: any
 
 export const getInstance = () => instance
+export const isAuthenticationEnabled = () => process.env.A_DOMAIN?.length
 
 export const useAuth0 = ({
   onRedirectCallback = DEFAULT_REDIRECT_CALLBACK,
@@ -105,3 +106,4 @@ export const Auth0Plugin = {
     app.config.globalProperties.$auth = useAuth0(options)
   },
 }
+
