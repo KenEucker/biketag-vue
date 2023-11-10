@@ -5314,10 +5314,10 @@ big-integer@^1.6.44:
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.51.tgz#0df92a5d9880560d3ff2d5fd20245c889d130686"
   integrity sha512-GPEid2Y9QU1Exl1rpO9B2IPJGHPSupF5GnVIP0blYvNOMer2bTvSWs1jGOUg04hTmu67nmLsQ9TBo1puaotBHg==
 
-biketag@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/biketag/-/biketag-3.1.1.tgz#7c05ecdcd70660594b5be1b861ba2494480dffd8"
-  integrity sha512-Kf9nj60/uu8kTtaglnPI4e2XWrrbLVkbaR/4sR3M9AaTc+b1TqajtgAlSLNVd/YodVoKtnT7mhkKw6OfRAGY0Q==
+biketag@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/biketag/-/biketag-3.1.2.tgz#b01c79575d5df2e7a79b2f03fa654e450cfeee68"
+  integrity sha512-MuIPftk14jZEAD00GxKDwD5Bq38oEb8liPD9TslEY/jCLVZ1fUCxfdQmh5LlZEBxdEP4+QRV2cvebSWoLQfy6A==
   dependencies:
     "@sanity/client" "^2.23.2"
     axios "^0.21.1"
