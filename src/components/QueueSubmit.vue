@@ -105,7 +105,7 @@
         />
       </form>
     </div>
-  </dev>
+  </div>
 </template>
 
 <script setup name="QueueSubmit">
