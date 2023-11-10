@@ -204,24 +204,7 @@ main {
   }
 }
 
-
 #app footer {
-  i {
-    color: #ffffff;
-  }
-
-  .container ul li{
-    list-style: none;
-    color: #ffffff;
-
-    a {
-      text-decoration: none;
-      color: #ffffff;
-    }
-  }
-}
-
-footer {
   form {
     .biketag__button {
       height: 3rem;
@@ -232,6 +215,20 @@ footer {
           line-height: 1;
         }
       }
+    }
+  }
+
+  i {
+    color: #fff;
+  }
+
+  .container ul li {
+    list-style: none;
+    color: #fff;
+
+    a {
+      text-decoration: none;
+      color: #fff;
     }
   }
 }

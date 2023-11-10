@@ -62,13 +62,15 @@ async function created() {
       const existingManifest = await fetch(manifestLinkEl.href)
       const slugIsSet = !!getGameSlug.value?.length
       const smallLogo = await store.getLogoUrl('s', undefined, true)
-      const bigLogo =await store.getLogoUrl('l', undefined, true)
+      const bigLogo = await store.getLogoUrl('l', undefined, true)
 
       const applicationManifest = {
         ...(await existingManifest.json()),
         name: getGameTitle.value.toLowerCase(),
         id: `${slugIsSet ? `${getGameSlug.value}.` : ''}biketag`,
-        description: `The game of BikeTag ${slugIsSet ? `in ${getGameSlug.value}` : ''} - BikeTag is a photo mystery tag game played on bicycles. No login required.`,
+        description: `The game of BikeTag ${
+          slugIsSet ? `in ${getGameSlug.value}` : ''
+        } - BikeTag is a photo mystery tag game played on bicycles. No login required.`,
         start_url: window.location.origin,
         scope: window.location.origin,
         icons: [
@@ -88,7 +90,7 @@ async function created() {
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
-          }
+          },
         ],
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })

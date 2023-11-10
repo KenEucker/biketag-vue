@@ -340,7 +340,7 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
   const bearer = 'Bearer '
   const client = 'Client-ID '
 
-  const authorizationType: string =
+  const authorizationType: string | null =
     authorizationString?.indexOf(basic) === 0
       ? 'basic'
       : authorizationString?.indexOf(client) === 0
@@ -354,7 +354,7 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
     // console.log('basic', { authorizationString })
     const namePasscodeString = CryptoJS.AES.decrypt(
       authorizationString,
-      process.env.HOST_KEY
+      process.env.HOST_KEY ?? ''
     ).toString(CryptoJS.enc.Utf8)
     const namePasscodeSplit = namePasscodeString.split('::')
     return {
@@ -562,7 +562,7 @@ export const getEncodedExpiry = (data = {}, days = 2) => {
       new Date().getTime() + 1000 * 60 * 60 * 24 * days
     ),
   }
-  return encodeURIComponent(encrypt(expiryData))
+  return encodeURIComponent(!encrypt(expiryData))
 }
 
 export const sendEmailsToAmbassadors = async (
@@ -628,9 +628,9 @@ export const getSanityImageUrl = (
 
 export const archiveAndClearQueue = async (
   queuedTags: Tag[],
-  game?: Game
+  game?: Game | null
 ): Promise<BackgroundProcessResults> => {
-  const results = []
+  const results:any = []
   let errors = false
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
@@ -764,7 +764,7 @@ export const getActiveQueueForGame = async (
 export const setNewBikeTagPost = async (
   winningBikeTagPost: Tag,
   game: Game,
-  currentBikeTag?: Tag
+  currentBikeTag: Tag
 ): Promise<BackgroundProcessResults> => {
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
@@ -776,33 +776,8 @@ export const setNewBikeTagPost = async (
   const biketag = new BikeTagClient(biketagOpts)
   currentBikeTag = currentBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
-  const results = []
+  const results:any = []
 
-  try {
-    if (winningBikeTagPost.discussionUrl) {
-      const discussionUrlObject = JSON.parse(winningBikeTagPost.discussionUrl)
-      if (discussionUrlObject && typeof discussionUrlObject.postToReddit !== 'undefined') {
-        /// TODO: post to Reddit and save the URL here
-        winningBikeTagPost.discussionUrl = ''
-      }
-    }
-    if (winningBikeTagPost.mentionUrl) {
-      const mentionUrlObject = JSON.parse(winningBikeTagPost.mentionUrl)
-      if (mentionUrlObject && typeof mentionUrlObject.postToTwitter === 'undefined') {
-        /// TODO: post to Reddit and save the URL here
-        winningBikeTagPost.mentionUrl = ''
-      }
-    }
-  } catch (e) {
-    winningBikeTagPost.discussionUrl =
-      winningBikeTagPost.discussionUrl?.indexOf('postToReddit') > 0
-        ? ''
-        : winningBikeTagPost.discussionUrl
-    winningBikeTagPost.mentionUrl =
-      winningBikeTagPost.mentionUrl?.indexOf('postToTwitter') > 0
-        ? ''
-        : winningBikeTagPost.mentionUrl
-  }
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost) // the new "current" mystery tag
   try {
     /************** UPDATE CURRENT BIKETAG WITH FOUND IMAGE *****************/
@@ -867,16 +842,6 @@ export const setNewBikeTagPost = async (
           })
           errors = true
         }
-      } else {
-        /// TODO: REMOVE LEGACY HACK
-        axios
-          .get(
-            `https://${game.name.toLowerCase()}.biketag.org?flushCache=true&resendNotification=true`
-          )
-          .catch((e) => {
-            /// Unimportant
-          })
-        ////
       }
 
       const ambassadors = (await biketag.ambassadors(undefined, {
@@ -893,7 +858,8 @@ export const setNewBikeTagPost = async (
           : getSanityImageUrl(game.logo)
         : `${host}${defaultLogo}`
 
-      if (false) {
+      const sendDiscordNotification = game.settings['notifications::discord']
+      if (sendDiscordNotification) {
         // https://discord.com/developers/docs/resources/webhook
         const currentPostedBikeTag = currentBikeTagUpdateResult.data as unknown as Tag
         const currentNumber = currentBikeTag.tagnumber
@@ -923,7 +889,7 @@ export const setNewBikeTagPost = async (
 
         axios({
           method: 'post',
-          url: 'https://discord.com/api/webhooks/foo/bar', //TODO: read config value
+          url: sendDiscordNotification,
           headers: {
             'Content-Type': 'application/json',
           },
@@ -1008,7 +974,7 @@ export const setNewBikeTagPost = async (
   }
 }
 
-export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag: Tag): Tag => {
+export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag: Tag): Tag | undefined => {
   if (timedOutTags.length) {
     const orderedTimedOutTags = timedOutTags.sort((t1, t2) => t1.mysteryTime - t2.mysteryTime)
     const winnerWinnerChickenDinner = orderedTimedOutTags[0] // the "first" completed tag in the queue
@@ -1017,8 +983,7 @@ export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag
       return winnerWinnerChickenDinner
     }
   }
-
-  return undefined
+  return undefined;
 }
 
 const getAuthManagementToken = async () => {

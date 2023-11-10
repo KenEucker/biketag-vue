@@ -27,7 +27,7 @@ export const handler = async (event) => {
     const gameName = payload.data?.game ?? tag.game ?? null
     let successfulEmailsSent: any = []
     let rejectedEmails: any = []
-    let thisGamesAmbassadors = []
+    let thisGamesAmbassadors: Ambassador[] = []
     let currentMysteryTag
     let emailSent
     let game
