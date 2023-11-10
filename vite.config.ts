@@ -7,6 +7,7 @@ import EnvironmentPlugin from 'vite-plugin-environment'
 import { createHtmlPlugin } from 'vite-plugin-html'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const host = process.env.HOST ?? 'biketag.org'
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
@@ -57,7 +58,7 @@ export default defineConfig({
       /* BikeTag Configuration */
       GAME_NAME: process.env.GAME_NAME ?? 'null',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,
-      HOST: process.env.HOST ?? 'biketag.org',
+      HOST: host,
       HOST_KEY: process.env.HOST_KEY ?? 'ItsABikeTagGame',
       /* Imgur Admin Configuration */
       IA_CID: process.env.IA_CID ?? null,
@@ -104,13 +105,13 @@ export default defineConfig({
         theme_color: '#000000',
         icons: [
           {
-            src: '/android-chrome-512x512.png',
+            src: `${host}/android-chrome-512x512.png`,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/maskable_icon_x512.png',
+            src: `${host}/maskable_icon_x512.png`,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
@@ -118,14 +119,14 @@ export default defineConfig({
         ],
         screenshots: [
           {
-            src: "/images/biketag-screen-desktop-1.webp",
+            src: `${host}/images/biketag-screen-desktop-1.webp`,
             sizes: "389x366",
             type: "image/webp",
             form_factor: "wide",
             label: "BikeTag"
           },
           {
-            src: "/images/biketag-screen-mobile-1.webp",
+            src: `${host}/images/biketag-screen-mobile-1.webp`,
             sizes: "321x609",
             type: "image/webp",
             form_factor: "narrow",
