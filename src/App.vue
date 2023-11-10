@@ -1,15 +1,12 @@
 <template>
   <Head>
     <title>{{ title }}</title>
+    <meta name="description" :content="description" />
+
     <!-- Social -->
     <meta property="og:title" :content="title" />
     <meta property="og:description" :content="description" />
     <meta property="og:image" :content="logo" />
-
-    <!-- Twitter -->
-    <meta name="twitter:title" :content="title" />
-    <meta name="twitter:description" :content="description" />
-    <meta name="twitter:image" :content="logo" />
   </Head>
   <div :class="isWhiteBackground">
     <template v-if="isNotLanding">
@@ -78,7 +75,7 @@ async function created() {
   /// Set it first thing
   store.SET_DATA_INITIALIZED()
   const game = await store.setGame()
-  initResults.push(await store.setAllGames())
+  initResults.push(store.setAllGames())
   const _gameIsSet = game?.name?.length !== 0
 
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
@@ -107,7 +104,7 @@ async function created() {
   } else if (!_gameIsSet) {
     router.push('/landing')
   }
-  debug(`view::data-init`)
+  debug(`view::data-init`, 'created')
 }
 created()
 </script>

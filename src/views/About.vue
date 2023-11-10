@@ -4,7 +4,9 @@
     <div class="about d-flex justify-content-center">
       <!-- <h2>{{ $t('pages.about.title') }}</h2> -->
       <div class="about__block">
-        <h3>{{ $t('pages.about.article1.title') }} <img class="about__icon" :src="pin" /></h3>
+        <h3>
+          {{ $t('pages.about.article1.title') }} <img class="about__icon" :src="pin" alt="about" />
+        </h3>
         <hr class="about__hr" :style="`background-image: url(${styledHr})`" />
         <html-content filename="about-game.html" />
         <p>

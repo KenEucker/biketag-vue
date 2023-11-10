@@ -182,6 +182,12 @@ export const useStore = defineStore('store', {
         })
       }
     },
+    async resetBikeTagCache() {
+      /// TODO: add a check for stale cache before unnecessarily resetting
+      await this.setGame()
+      await this.setTags(true)
+      await this.setQueuedTags(true)
+    },
     setAllGames() {
       const biketagClient = new BikeTagClient({ ...options, game: undefined })
       return biketagClient
@@ -735,7 +741,7 @@ export const useStore = defineStore('store', {
       return state.gameName
     },
     getLogoUrl(state) {
-      return (size = '', logo?: string) => {
+      return (size = '', logo?: string, squared = false) => {
         logo = logo ? logo : state.game?.logo?.length ? state.game?.logo : undefined
 
         if (!logo) {
@@ -744,7 +750,7 @@ export const useStore = defineStore('store', {
 
         return logo.indexOf('imgur.com') !== -1
           ? logo
-          : getSanityImageUrl(logo, size, sanityBaseCDNUrl)
+          : getSanityImageUrl(logo, size, sanityBaseCDNUrl, squared)
       }
     },
     getCurrentHint(state) {

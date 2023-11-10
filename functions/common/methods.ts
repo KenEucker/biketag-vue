@@ -1,22 +1,22 @@
-import request from 'request'
-import { getDomainInfo } from '../../src/common/utils'
-import md5 from 'md5'
-import qs from 'qs'
+import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
+import Ajv from 'ajv'
+import axios from 'axios'
+import BikeTagClient from 'biketag'
+import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
 import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
-import nodemailer from 'nodemailer'
-import { Liquid } from 'liquidjs'
-import { join, extname } from 'path'
 import { readFileSync } from 'fs'
-import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
-import { activeQueue, BackgroundProcessResults } from './types'
-import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
-import BikeTagClient from 'biketag'
-import axios from 'axios'
-import Ajv from 'ajv'
 import * as jose from 'jose'
-import { BikeTagProfile } from '../../src/common/types'
+import { Liquid } from 'liquidjs'
 import lzutf8 from 'lzutf8'
+import md5 from 'md5'
+import nodemailer from 'nodemailer'
+import { extname, join } from 'path'
+import qs from 'qs'
+import request from 'request'
+import { BikeTagProfile } from '../../src/common/types'
+import { getDomainInfo } from '../../src/common/utils'
+import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
 export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
@@ -475,7 +475,7 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
       biketag_image: (url = '', size = '') => {
         const ext = extname(url)
         /// Make sure the image type is supported
-        if (['.jpg', '.jpeg', '.png', '.bmp'].indexOf(ext) === -1) return url
+        if (['.jpg', '.jpeg', '.png', '.bmp', '.webp'].indexOf(ext) === -1) return url
 
         switch (size) {
           default:
@@ -622,7 +622,7 @@ export const getSanityImageUrl = (
   size = '',
   sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/'
 ) => {
-  const properFilePath = logo.replace('image-', '').replace('-png', '.png').replace('-jpg', '.jpg')
+  const properFilePath = logo.replace('image-', '').replace('-png', '.png').replace('-jpg', '.jpg').replace('-webp', '.webp')
   return `${sanityBaseCDNUrl}${properFilePath}${size.length ? `?${size}` : ''}`
 }
 

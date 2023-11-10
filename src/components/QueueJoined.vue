@@ -1,5 +1,5 @@
 <template>
-  <b-container class="queue-joined col-md-8 col-lg-8">
+  <div class="container queue-joined col-md-8 col-lg-8">
     <div class="mt-3">
       <bike-tag-button @click="goMysteryQueue">
         {{ $t('pages.round.mystery_button') }}
@@ -12,7 +12,7 @@
         {{ $t('pages.round.joined_button') }} {{ getCurrentBikeTag?.tagnumber }}
       </bike-tag-button>
     </div>
-  </b-container>
+  </div>
 </template>
 
 <script setup name="QueueJoined">

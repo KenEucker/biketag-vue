@@ -7,6 +7,7 @@ import EnvironmentPlugin from 'vite-plugin-environment'
 import { createHtmlPlugin } from 'vite-plugin-html'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const host = process.env.HOST ?? 'biketag.org'
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
@@ -57,7 +58,7 @@ export default defineConfig({
       /* BikeTag Configuration */
       GAME_NAME: process.env.GAME_NAME ?? 'null',
       GAME_SOURCE: process.env.GAME_SOURCE ?? null,
-      HOST: process.env.HOST ?? 'biketag.org',
+      HOST: host,
       HOST_KEY: process.env.HOST_KEY ?? 'ItsABikeTagGame',
       /* Imgur Admin Configuration */
       IA_CID: process.env.IA_CID ?? null,
@@ -96,26 +97,48 @@ export default defineConfig({
       filename: 'worker.ts',
       strategies: 'injectManifest',
       registerType: 'autoUpdate',
-      workbox: {
-        sourcemap: process.env.CONTEXT === 'dev',
-      },
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.png'],
       manifest: {
         name: 'BikeTag',
         short_name: 'BikeTag',
-        description: 'The BikeTag Game',
+        description: 'BikeTag is a photo mystery tag game played on bicycles. No login required.',
         theme_color: '#000000',
         icons: [
           {
-            src: '/android-chrome-192x192.png',
+            src: `https://${host}/android-chrome-192x192.png`,
             sizes: '192x192',
             type: 'image/png',
+            purpose: 'any',
           },
           {
-            src: '/android-chrome-512x512.png',
+            src: `https://${host}/android-chrome-512x512.png`,
             sizes: '512x512',
             type: 'image/png',
+            purpose: 'any',
           },
+          {
+            src: `https://${host}/maskable_icon_x512.png`,
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          }
         ],
+        screenshots: [
+          {
+            src: `https://${host}/images/biketag-screen-desktop-1.webp`,
+            sizes: "389x366",
+            type: "image/webp",
+            form_factor: "wide",
+            label: "BikeTag"
+          },
+          {
+            src: `https://${host}/images/biketag-screen-mobile-1.webp`,
+            sizes: "321x609",
+            type: "image/webp",
+            form_factor: "narrow",
+            label: "BikeTag"
+          }
+        ]
       },
     }),
     viteCommonjs(),
@@ -123,6 +146,7 @@ export default defineConfig({
     createHtmlPlugin(),
   ],
   build: {
+    sourcemap: true,
     rollupOptions: {
       output: {
         entryFileNames: `assets/biketag.js`,

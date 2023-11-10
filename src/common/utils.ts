@@ -65,6 +65,7 @@ export const getImgurImageSized = (imgurUrl = '', size = 'm') =>
     .replace('.jpg', `${size}.jpg`)
     .replace('.gif', `${size}.gif`)
     .replace('.png', `${size}.png`)
+    .replace('.webp', `${size}.webp`)
     .replace('.mp4', `${size}.mp4`)
 
 export const getDomainInfo = (req: any): DomainInfo => {
@@ -303,28 +304,53 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
   return queuedTagState
 }
 
+export const getSanityImageActualSize = (
+  logo: string,
+  ) => logo?.split('.')[2]?.split('-')[1]
+
+export const getSanityImageResizedSize = (
+    logo: string,
+    ) => {
+      const actualSize = getSanityImageActualSize(logo).split('x')
+      const actualSizeWidth = parseInt(actualSize[0])
+      const actualSizeHeight = parseInt(actualSize[1])
+      const regexForHW = new RegExp(/(?:.*\?)&?(\h\=\d+)?&?(\w\=\d+)?&?(\h\=\d+)?/g)
+      const sanitySizeRequestedMatches = logo.match(regexForHW)
+      const sanitySizeRequestedHeight = parseInt(sanitySizeRequestedMatches?.find(m => m?.length && m.includes('h='))?.split('=')[1] ?? '')
+      const sanitySizeRequestedWidth = parseInt(sanitySizeRequestedMatches?.find(m => m?.length && m.includes('w='))?.split('=')[1] ?? '')
+      const factorOfResize = sanitySizeRequestedHeight / actualSizeHeight
+      const factorOfResizeW = sanitySizeRequestedWidth / actualSizeWidth
+
+      return `${Math.round(factorOfResize * actualSizeWidth)}x${Math.round(factorOfResize * actualSizeHeight)}`
+    }
+
 export const getSanityImageUrl = (
   logo: string,
   size = '',
   sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/',
+  squared = false,
 ) => {
   switch (size) {
     case 'l':
-      size = 'h=512'
+      size = '512'
       break
     case 'm':
-      size = 'h=256'
+      size = '256'
       break
     case 's':
-      size = 'h=192'
+      size = '192'
       break
     default:
-      size = 'h=45'
+      size = '45'
       break
   }
+  size = `h=${size}${squared ? `&w=${size}` : ''}`
+
   return `${sanityBaseCDNUrl}${logo
     .replace('image-', '')
     .replace('-png', '.png')
+    .replace('-webp', '.webp')
+    .replace('-gif', '.gif')
     .replace('-jpg', '.jpg')}${size.length ? `?${size}` : ''}`
 }
 
@@ -388,4 +414,16 @@ export const isPointInPolygon = (
 
   // Check if the point is inside the buffered polygon
   return booleanPointInPolygon(turfPoint, bufferedPolygon)
+}
+
+export const isOnline = async (checkExternally = false) => {
+  if (navigator.onLine && !checkExternally) {
+    return true
+  } else if (!navigator.onLine && !checkExternally) {
+    return false
+  }
+
+  return await fetch('/favicon.ico?d=' + Date.now())
+    .then((response) => response.ok)
+    .catch(() => false)
 }

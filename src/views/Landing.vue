@@ -3,7 +3,7 @@
   <header class="biketag-header">
     <nav class="navbar">
       <div class="navbar-brand" @click="toSection('mg-top')">
-        <img src="@/assets/images/biketag-logo.svg" class="logo" />
+        <img src="@/assets/images/biketag-logo.svg" class="logo" alt="BikeTag Logo" />
       </div>
 
       <!-- Hamburger Menu -->
@@ -16,7 +16,7 @@
         aria-expanded="false"
         aria-label="Toggle navigation"
       >
-        <img class="hamburger-image" src="/images/Hamburger.svg" alt="Burge menu" />
+        <img class="hamburger-image" src="/images/Hamburger.svg" alt="Menu" />
       </button>
 
       <div
@@ -47,6 +47,9 @@
       link="https://patreon.com/biketag"
       variant="left"
     >
+      <p>
+        <img src="/images/biketag-example-1.webp" alt="BikeTag Logo" class="mb-3" />
+      </p>
       <p>
         BikeTag is a mystery photo tag game played on bicycles. BikeTag.Org is a place for people to
         see the most recent Bike Tags in their city and participate in the game in an easy and
@@ -107,7 +110,7 @@
     <bike-tag-blurb
       title="Open Source"
       subtitle="BikeTag is an Open-Source Project Deployed on Netlify "
-      img-src="/images/github-netlify.png"
+      img-src="/images/github-netlify.webp"
       link-text="Contribute to BikeTag"
       link="https://github.com/KenEucker/biketag-vue/discussions/78"
       variant="left"
@@ -152,10 +155,10 @@
     </div>
     <div class="img-container">
       <a href=" https://biketag.bike/">
-        <img :src="bikeTag" />
+        <img :src="BikeTagSvg" alt="BikeTag" />
       </a>
     </div>
-    <p><i>© 2022 The BikeTag Project. All Rights Reserved. </i></p>
+    <p><i>© 2023 The BikeTag Project. All Rights Reserved. </i></p>
   </footer>
 </template>
 
@@ -197,6 +200,23 @@ main {
     .img-container img {
       width: 80% !important;
       max-width: 280px;
+    }
+  }
+}
+
+
+#app footer {
+  i {
+    color: #ffffff;
+  }
+
+  .container ul li{
+    list-style: none;
+    color: #ffffff;
+
+    a {
+      text-decoration: none;
+      color: #ffffff;
     }
   }
 }
@@ -325,6 +345,7 @@ footer {
 
       a {
         text-decoration: none;
+        color: $white;
       }
     }
 

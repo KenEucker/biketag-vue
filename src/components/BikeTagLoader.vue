@@ -5,7 +5,7 @@
     :is-full-page="props.isFullPage"
     :class="`realign-spinner ${props.customClass}`"
   >
-    <img class="spinner" src="" />
+    <img class="spinner" src="" alt="Loading..." />
   </loading>
 </template>
 

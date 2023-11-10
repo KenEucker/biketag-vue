@@ -6,7 +6,7 @@
     :is-full-page="true"
     class="realign-spinner"
   >
-    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
   <div class="queue-page">
     <div v-if="props.usingTimer && isViewingQueue()" class="mt-2 clock-div">
@@ -29,13 +29,23 @@
         :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'"
         text="1"
       />
-      <img v-if="BiketagFormSteps[getFormStep] == 1.5" class="step__arrow" :src="arrowSvg" />
+      <img
+        v-if="BiketagFormSteps[getFormStep] == 1.5"
+        class="step__arrow"
+        :src="arrowSvg"
+        alt="next"
+      />
       <span v-else class="step__line" :style="`background-image: url(${lineSvg})`" />
       <bike-tag-button
         :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'"
         text="2"
       />
-      <img v-if="BiketagFormSteps[getFormStep] == 2.5" class="step__arrow" :src="arrowSvg" />
+      <img
+        v-if="BiketagFormSteps[getFormStep] == 2.5"
+        class="step__arrow"
+        :src="arrowSvg"
+        alt="next"
+      />
       <span class="step__line" :style="`background-image: url(${lineSvg})`" />
       <bike-tag-button
         :variant="

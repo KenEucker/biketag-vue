@@ -14,9 +14,9 @@
           @click="showHint"
         />
         <b-popover hide-header target="hint" triggers="click" placement="top">
-          <img :src="hintIcon" class="popover__hint-icon" />
+          <img :src="hintIcon" class="popover__hint-icon" alt="Hint" />
           <p ref="mysteryHint" class="popover__hint-text"></p>
-          <img :src="closeRounded" class="popover__close" @click="closePopover" />
+          <img :src="closeRounded" class="popover__close" alt="close" @click="closePopover" />
         </b-popover>
         <!-- Right Button -->
         <bike-tag-button
@@ -45,8 +45,8 @@
           variant="bold"
           :text="t('menu.download')"
           @click="downloadTag"
-          />
-          <!-- <b-modal
+        />
+        <!-- <b-modal
           v-model="showCamera"
           class="camera-modal"
           title="BikeTag Camera"
@@ -62,18 +62,14 @@
     <!-- World -->
     <div class="button-reset-container">
       <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
-        <img
-          class="footer-fixed_image"
-          src="@/assets/images/npworld.png"
-          alt="BikeTag World Wide"
-        />
+        <img class="footer-image" src="@/assets/images/npworld.webp" alt="BikeTag World Wide" />
       </bike-tag-button>
     </div>
     <div class="mt-5 mb-5 foss-container">
       <div class="row">
         <a href="https://github.com/KenEucker/biketag-vue">
-          <img src="@/assets/images/github-logo.png" alt="GitHub" />
-          <img src="@/assets/images/github-mark.png" alt="GitHub Mark" />
+          <img src="@/assets/images/github-logo.webp" alt="GitHub" />
+          <img src="@/assets/images/github-mark.webp" alt="GitHub Mark" />
         </a>
         <a href="https://www.netlify.com/">
           <img src="@/assets/images/netlify-logo-dark.svg" alt="Netlify" />
@@ -333,9 +329,13 @@ onBeforeUnmount(() => {
     margin: auto;
     padding: 2em;
     max-width: 500px;
+    color: white;
   }
 }
 
+.footer-image {
+  height: 40px;
+}
 .button-group {
   display: flex;
   justify-content: center;

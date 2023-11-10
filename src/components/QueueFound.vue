@@ -20,13 +20,14 @@
     </div>
     <div class="preview-container">
       <template v-if="preview">
-        <img :src="preview" class="prev-img" />
-        <img class="img-bck" src="@/assets/images/transparent_img.svg" />
+        <img :src="preview" class="prev-img" alt="preview" />
+        <img class="img-bck" src="@/assets/images/transparent_img.svg" alt="background" />
       </template>
       <img
         v-else
         class="img-bck click-me"
         src="@/assets/images/blank_img.svg"
+        alt="image-back"
         @click="$refs.file.click()"
       />
       <bike-tag-button
@@ -34,7 +35,7 @@
         variant="circle"
         @click="$refs.file.click()"
       >
-        <img src="@/assets/images/camera.svg" />
+        <img src="@/assets/images/camera.svg" alt="camera" />
       </bike-tag-button>
     </div>
     <form
@@ -67,7 +68,7 @@
           required
           :placeholder="t('pages.round.location_placeholder')"
         >
-          <img :src="pinIcon" />
+          <img :src="pinIcon" alt="pin" />
           <GMapAutocomplete
             v-if="isGpsDefault"
             id="google-input"

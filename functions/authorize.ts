@@ -31,9 +31,7 @@ const authorizeHandler: Handler = async (event) => {
       const isValidAccessToken =
         config.biketag.accessToken === accessToken ||
         config.imgur?.refreshToken === accessToken ||
-        config.sanity?.token === accessToken ||
-        config.reddit?.refreshToken === accessToken ||
-        config.twitter?.bearer_token === accessToken
+        config.sanity?.token === accessToken
 
       if (isValidAccessToken) {
         switch (grantType) {

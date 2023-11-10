@@ -8,11 +8,18 @@
     @click="expandClick"
   >
     <Loading v-if="loading" v-model:active="loading" :is-full-page="true">
-      <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
+      <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="loading..." />
     </Loading>
-    <img v-show="!loading" :src="imgSrc" class="img-fluid" v-bind="$attrs" @load="loaded" />
+    <img
+      v-show="!loading"
+      :src="imgSrc"
+      class="img-fluid"
+      v-bind="$attrs"
+      :alt="imgSrc"
+      @load="loaded"
+    />
     <i v-show="expanded" class="close-button">
-      <img src="@/assets/images/close.svg" />
+      <img src="@/assets/images/close.svg" alt="close" />
     </i>
   </div>
 </template>

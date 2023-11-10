@@ -1,5 +1,5 @@
 <template>
-  <b-container class="queue-submit">
+  <div class="container queue-submit">
     <div>
       <h3 class="queue-title">{{ $t('pages.round.submit_title') }}</h3>
     </div>
@@ -105,7 +105,7 @@
         />
       </form>
     </div>
-  </b-container>
+  </div>
 </template>
 
 <script setup name="QueueSubmit">

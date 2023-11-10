@@ -13,6 +13,7 @@
 import { computed } from 'vue'
 import { useStore } from '@/store/index.ts'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { getSanityImageResizedSize } from '@/common/utils'
 import { debug } from '@/common/utils'
 
 // props
@@ -44,7 +45,6 @@ const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
 // computed
 const getGameSlug = computed(() => store.getGameSlug)
 const getGameTitle = computed(() => store.getGameTitle)
-const getLogoUrl = computed(() => store.getLogoUrl)
 
 // methods
 async function close() {
@@ -60,21 +60,35 @@ async function created() {
 
     if (manifestLinkEl) {
       const existingManifest = await fetch(manifestLinkEl.href)
+      const slugIsSet = !!getGameSlug.value?.length
+      const smallLogo = await store.getLogoUrl('s', undefined, true)
+      const bigLogo =await store.getLogoUrl('l', undefined, true)
+
       const applicationManifest = {
         ...(await existingManifest.json()),
-        name: getGameTitle.value,
-        id: getGameSlug.value,
+        name: getGameTitle.value.toLowerCase(),
+        id: `${slugIsSet ? `${getGameSlug.value}.` : ''}biketag`,
+        description: `The game of BikeTag ${slugIsSet ? `in ${getGameSlug.value}` : ''} - BikeTag is a photo mystery tag game played on bicycles. No login required.`,
+        start_url: window.location.origin,
+        scope: window.location.origin,
         icons: [
           {
-            src: await getLogoUrl.value('s'),
-            sizes: '192x192',
-            type: 'image/png',
+            src: smallLogo[0] === '/' ? `${window.location.origin}${smallLogo}` : smallLogo,
+            sizes: smallLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(smallLogo),
+            type: 'image/webp',
           },
           {
-            src: await getLogoUrl.value('l'),
+            src: bigLogo[0] === '/' ? `${window.location.origin}${bigLogo}` : bigLogo,
+            sizes: bigLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(bigLogo),
+            type: 'image/webp',
+            purpose: 'any',
+          },
+          {
+            src: `${window.location.origin}/maskable_icon_x512.png`,
             sizes: '512x512',
             type: 'image/png',
-          },
+            purpose: 'maskable',
+          }
         ],
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })

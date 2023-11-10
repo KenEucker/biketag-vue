@@ -5,7 +5,7 @@
   >
     <div class="header">
       <h1>{{ props.title }}</h1>
-      <h5>{{ props.subtitle }}</h5>
+      <h2>{{ props.subtitle }}</h2>
     </div>
     <hr :style="`background-image: url(${styledHr})`" />
     <div class="container">
@@ -13,7 +13,7 @@
         <slot />
       </article>
       <article class="img-container">
-        <img v-if="props.imgSrc" :src="props.imgSrc" />
+        <img v-if="props.imgSrc" :src="props.imgSrc" alt="BikeTag" />
         <bike-tag-button v-if="props.link" :text="_linkText()" @click="buttonClick" />
       </article>
     </div>
@@ -87,7 +87,7 @@ hr {
 }
 
 .header {
-  h5 {
+  h2 {
     height: 100%;
     align-self: center;
   }
@@ -173,7 +173,7 @@ hr {
   }
 
   .header {
-    h5 {
+    h2 {
       margin-left: 0.5rem;
     }
   }

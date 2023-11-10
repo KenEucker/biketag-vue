@@ -1,18 +1,25 @@
 import { Handler } from '@netlify/functions'
-import {
-  getBikeTagClientOpts,
-  getActiveQueueForGame,
-  getWinningTagForCurrentRound,
-  setNewBikeTagPost,
-  archiveAndClearQueue,
-} from './common/methods'
-import request from 'request'
-import { BackgroundProcessResults } from './common/types'
 import BikeTagClient from 'biketag'
 import { Game } from 'biketag/lib/common/schema'
+import request from 'request'
 import { HttpStatusCode } from './common/constants'
+import {
+  archiveAndClearQueue,
+  getActiveQueueForGame,
+  getBikeTagClientOpts,
+  getWinningTagForCurrentRound,
+  setNewBikeTagPost,
+} from './common/methods'
+import { BackgroundProcessResults } from './common/types'
 
 export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> => {
+  if (process.env.SKIP_AUTOPOST_FUNCTION) {
+    return Promise.resolve({
+      results: ["function skipped"],
+      errors: false
+    })
+  }
+
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,

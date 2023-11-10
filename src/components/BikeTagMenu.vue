@@ -14,8 +14,8 @@
       </div>
       <!-- Region Image -->
       <div class="navbar-brand">
-        <a href="./" @click="clearTagCache">
-          <img :src="getLogoUrl('m')" class="logo" />
+        <a href="/" @click.prevent.stop="resetBikeTagApp">
+          <img :src="getLogoUrl('m')" class="logo" alt="BikeTag Logo" />
         </a>
         <div>
           <span class="game-title">{{ getGameTitle }}</span>
@@ -23,12 +23,8 @@
       </div>
 
       <!-- Hamburger Menu -->
-      <button
-        ref="buttonCollapse"
-        v-b-toggle.navbarSupportedContent
-        class="navbar-toggler"
-      >
-        <img class="hamburger-image" src="/images/Hamburger.svg" alt="Burge menu" />
+      <button ref="buttonCollapse" v-b-toggle.navbarSupportedContent class="navbar-toggler">
+        <img class="hamburger-image" src="/images/Hamburger.svg" alt="menu" />
       </button>
 
       <b-collapse id="navbarSupportedContent" ref="navList" class="navbar-collapse">
@@ -127,11 +123,7 @@
       <!-- World -->
       <div class="button-reset-container">
         <bike-tag-button class="button-reset" variant="circle" @click="goWorldwide">
-          <img
-            class="footer-fixed_image"
-            src="@/assets/images/npworld.png"
-            alt="BikeTag World Wide"
-          />
+          <img class="footer-image" src="@/assets/images/npworld.webp" alt="BikeTag World Wide" />
         </bike-tag-button>
       </div>
       <!-- Players -->
@@ -149,7 +141,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
-import { debug } from '@/common/utils'
+import { debug, isOnline } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { useI18n } from 'vue-i18n'
 
@@ -212,10 +204,13 @@ function onScroll() {
   showHeader.value = window.pageYOffset < lastScrollPosition.value
   lastScrollPosition.value = window.pageYOffset
 }
-async function clearTagCache() {
-  await store.setGame(true)
-  await store.setTags(true)
-  await store.setQueuedTags(true)
+async function resetBikeTagApp() {
+  if (await isOnline()) {
+    store.resetBikeTagCache()
+    router.push({ path: '/' }).then(router.go)
+  } else {
+    router.push('/')
+  }
 }
 function login() {
   closeCollapsible()
@@ -420,6 +415,10 @@ header {
     min-height: auto;
 
     // margin: auto;
+  }
+
+  .footer-image {
+    height: 40px;
   }
 }
 
