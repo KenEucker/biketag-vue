@@ -73,18 +73,18 @@ async function created() {
         scope: window.location.origin,
         icons: [
           {
-            src: smallLogo,
+            src: smallLogo[0] === '/' ? `${window.location.origin}${smallLogo}` : smallLogo,
             sizes: smallLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(smallLogo),
             type: 'image/webp',
           },
           {
-            src: bigLogo,
+            src: bigLogo[0] === '/' ? `${window.location.origin}${bigLogo}` : bigLogo,
             sizes: bigLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(bigLogo),
             type: 'image/webp',
             purpose: 'any',
           },
           {
-            src: '/maskable_icon_x512.png',
+            src: `${window.location.origin}/maskable_icon_x512.png`,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
