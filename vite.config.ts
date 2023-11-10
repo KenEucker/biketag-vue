@@ -105,13 +105,13 @@ export default defineConfig({
         theme_color: '#000000',
         icons: [
           {
-            src: `${host}/android-chrome-512x512.png`,
+            src: `https://${host}/android-chrome-512x512.png`,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: `${host}/maskable_icon_x512.png`,
+            src: `https://${host}/maskable_icon_x512.png`,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
@@ -119,14 +119,14 @@ export default defineConfig({
         ],
         screenshots: [
           {
-            src: `${host}/images/biketag-screen-desktop-1.webp`,
+            src: `https://${host}/images/biketag-screen-desktop-1.webp`,
             sizes: "389x366",
             type: "image/webp",
             form_factor: "wide",
             label: "BikeTag"
           },
           {
-            src: `${host}/images/biketag-screen-mobile-1.webp`,
+            src: `https://${host}/images/biketag-screen-mobile-1.webp`,
             sizes: "321x609",
             type: "image/webp",
             form_factor: "narrow",
