@@ -183,6 +183,7 @@ export const useStore = defineStore('store', {
       }
     },
     async resetBikeTagCache() {
+      console.log('resetBikeTagCache')
       /// TODO: add a check for stale cache before unnecessarily resetting
       await this.setGame()
       await this.setTags(false)
@@ -586,6 +587,7 @@ export const useStore = defineStore('store', {
         oldState?.mysteryPlayer !== data?.foundPlayer
       ) {
         debug('store::queuedFoundTag', this.playerTag)
+        this.resetBikeTagCache()
         if (oldState?.mysteryPlayer !== data?.foundPlayer) {
           this.formStep = BiketagFormSteps.roundJoined
         } else {
@@ -616,6 +618,7 @@ export const useStore = defineStore('store', {
         oldState?.tagnumber !== data?.tagnumber
       ) {
         debug('store::queuedMysteryTag', this.playerTag)
+        this.resetBikeTagCache()
         if (
           oldState?.discussionUrl !== data?.discussionUrl ||
           oldState?.mentionUrl !== data?.mentionUrl
@@ -637,6 +640,7 @@ export const useStore = defineStore('store', {
         oldState?.mentionUrl !== data?.mentionUrl
       ) {
         debug('store::submittedTag', this.playerTag)
+        this.resetBikeTagCache()
         this.formStep = BiketagFormSteps.roundPosted
       }
     },
