@@ -142,7 +142,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { debug, isOnline } from '@/common/utils'
-import { isAuthenticationEnabled} from '@/auth'
+import { isAuthenticationEnabled } from '@/auth'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { useI18n } from 'vue-i18n'
 
@@ -168,13 +168,13 @@ const showHeader = ref(true)
 const lastScrollPosition = ref(0)
 const scrollOffset = ref(40)
 const buttonCollapse = ref(null)
-let isAuthenticatedRef = ref(false)
 const navList = ref(null)
 const store = useStore()
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
-const logoutFunction = ref(null)
+const auth0 = useAuth0()
+let isAuthenticatedRef = ref(null)
 
 // computed
 const getGameTitle = computed(() => store.getGameTitle)
@@ -193,14 +193,10 @@ const currentRoute = computed(() => {
 const getProfileImageSrc = computed(() => {
   return isBikeTagAmbassador.value ? '/images/biketag-ambassador.svg' : '/images/biketag-player.svg'
 })
-const callLogoutFunction = logoutFunction
 
 if (isAuthenticationEnabled()) {
-  const { isAuthenticated, logout } = useAuth0()
-  isAuthenticatedRef = isAuthenticated
-  logoutFunction.value = logout
+  isAuthenticatedRef = auth0.isAuthenticated
 }
-
 
 // methods
 // Toggle if navigation is shown or hidden
@@ -227,10 +223,10 @@ function login() {
   router.push('/login')
 }
 function logoutClick() {
-  store.setProfile()
-  callLogoutFunction.value({
-    returnTo: window.location.origin,
-  })
+  if (isAuthenticationEnabled()) {
+    store.setProfile()
+    auth0.logout()
+  }
 }
 function closeCollapsible() {
   // console.log(buttonCollapse.value)

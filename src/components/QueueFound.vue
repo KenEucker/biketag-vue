@@ -103,7 +103,7 @@
           v-model="player"
           name="player"
           required
-          :readonly="isAuthenticatedRef"
+          :readonly="isAuthenticated"
           :placeholder="t('pages.round.name_placeholder')"
         />
         <b-modal
@@ -130,7 +130,6 @@
 <script setup name="QueueFoundTag">
 import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { isAuthenticationEnabled} from '@/auth'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { debug, isPointInPolygon } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
@@ -178,7 +177,7 @@ const boundary = ref({})
 const isInBoundary = ref(false)
 const confirmInBoundary = ref(false)
 const confirmedBoundary = ref(false)
-let isAuthenticatedRef = ref(false)
+const { isAuthenticated } = useAuth0()
 
 // computed
 const getGameName = computed(() => store.getGameName)
@@ -199,11 +198,6 @@ const getLocation = computed(() => {
 
   return location.value
 })
-
-if (isAuthenticationEnabled()) {
-  const { isAuthenticated } = useAuth0()
-  isAuthenticatedRef = isAuthenticated
-}
 
 // methods
 const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
@@ -239,7 +233,8 @@ const onSubmit = async (e) => {
     uploadInProgress.value = false
     return
   }
-  if (!isAuthenticatedRef.value) {
+  /// TODO: watch this?
+  if (!isAuthenticated.value) {
     try {
       await store.checkPasscode({
         name: player.value,

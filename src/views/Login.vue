@@ -1,7 +1,8 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup name="LoginView">
 import { inject, computed } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { isAuthenticationEnabled} from '@/auth'
+import { isAuthenticationEnabled } from '@/auth'
 import { useAuth0 } from '@auth0/auth0-vue'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
 
@@ -9,10 +10,11 @@ import BikeTagSvg from '@/assets/images/BikeTag.svg'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import { useI18n } from 'vue-i18n'
 
-  // data
+// data
 const store = useStore()
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 const toast = inject('toast')
+const { isAuthenticated, loginWithRedirect, idTokenClaims, user } = useAuth0()
 
 // computed
 const { t } = useI18n()
@@ -28,12 +30,12 @@ async function login() {
     return
   }
 
-  const { isAuthenticated, loginWithRedirect, idTokenClaims, user } = useAuth0()
   if (!isAuthenticated.value) {
-    await loginWithRedirect()
-    if (isAuthenticated.value && idTokenClaims.value) {
-      store.setProfile({ ...user.value, token: idTokenClaims.value._raw })
-    }
+    await loginWithRedirect().then(() => {
+      if (isAuthenticated.value && idTokenClaims.value) {
+        store.setProfile({ ...user.value, token: idTokenClaims.value._raw })
+      }
+    })
   }
 }
 </script>
@@ -49,13 +51,12 @@ async function login() {
     </p>
     <bike-tag-button variant="bold" :text="$t('menu.login')" @click="login" />
   </div>
-  <div class="container" v-else>
+  <div v-else class="container">
     <p class="mt-5 mb-5 description">
       {{ $t('pages.login.disabled') }}
     </p>
   </div>
 </template>
-
 
 <style lang="scss" scoped>
 @import '../assets/styles/style';

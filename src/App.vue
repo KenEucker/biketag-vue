@@ -23,7 +23,7 @@
 </template>
 
 <script setup name="App">
-import { ref, inject, computed, onMounted } from 'vue'
+import { ref, inject, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { isAuthenticationEnabled } from '@/auth'
@@ -54,20 +54,17 @@ const title = computed(function () {
 })
 const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
-onMounted(() => {
-  console.log('isAuthenticationEnabled', isAuthenticationEnabled())
+onMounted(async () => {
   if (isAuthenticationEnabled()) {
-    const { isAuthenticated, idTokenClaims, user } = useAuth0()
-    console.log('isAuthenticated', isAuthenticated.value)
-    if (isAuthenticated.value) {
-      console.log('isAuthenticated', store.getProfile)
-      if (!store.getProfile?.nonce?.length) {
-        console.log({idTokenClaims})
-        if (idTokenClaims.value)
-          store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
-        else debug("what's this? no speaka da mda5hash, brah?")
-      }
-    }
+    const auth0 = useAuth0()
+    // watch(auth0.isAuthenticated, async () => {
+      watch(auth0.idTokenClaims, async () => {
+          if (!store.getProfile?.nonce?.length) {
+            const token = auth0.idTokenClaims.value.__raw
+            store.setProfile({ ...auth0.user.value, token })
+          }
+        })
+      // })
   }
 })
 

@@ -54,13 +54,17 @@ class BikeTagApp {
   authentication() {
     if (isAuthenticationEnabled()) {
       debug('init::authentication', process.env.A_DOMAIN)
-      this.app.use(createAuth0({
-        domain: process.env.A_DOMAIN as string,
-        clientId: process.env.A_CID as string,
-        authorizationParams: {
-          redirect_uri: window.location.origin,
-        },
-      }))
+      this.app.use(
+        createAuth0({
+          domain: process.env.A_DOMAIN as string,
+          clientId: process.env.A_CID as string,
+          authorizationParams: {
+            redirect_uri: `${window.location.origin}/#/callback`,
+          },
+          useRefreshTokens: true,
+          cacheLocation: 'localstorage',
+        }),
+      )
     } else {
       debug('init::authentication', 'authentication disabled')
     }
