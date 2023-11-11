@@ -2,7 +2,7 @@
 <script setup name="LoginView">
 import { inject, computed } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { isAuthenticationEnabled } from '@/auth'
+import { isAuthenticationEnabled } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
 

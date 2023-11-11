@@ -18,15 +18,14 @@ import VueIframe from 'vue-iframes'
 
 import '@/assets/styles/flashy.scss'
 import '@/assets/styles/style.scss'
+import { createAuth0 } from '@auth0/auth0-vue'
 import { createHead } from '@vueuse/head'
 import 'bootstrap-vue-next/dist/bootstrap-vue-next.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'highlight.js/styles/monokai.css'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { debug } from './common/utils'
+import { debug, isAuthenticationEnabled } from './common/utils'
 
-import { isAuthenticationEnabled } from '@/auth'
-import { createAuth0 } from '@auth0/auth0-vue'
 class BikeTagApp {
   protected emitter
   protected app

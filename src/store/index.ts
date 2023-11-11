@@ -494,9 +494,8 @@ export const useStore = defineStore('store', {
     SET_PROFILE(profile: any) {
       const oldState = this.profile
 
-      if (!profile) {
-        // setQueuedTagInCookie()
-      } else if (
+      console.log('SET_PROFILE', profile)
+      if (profile &&
         profile?.name !== oldState?.name ||
         profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
       ) {

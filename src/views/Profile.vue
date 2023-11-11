@@ -156,6 +156,7 @@ import Loading from 'vue-loading-overlay'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 // data
 const profile = ref(null)
@@ -173,6 +174,7 @@ const { idTokenClaims, user } = useAuth0()
 const toast = inject('toast')
 const credentialsRefs = ref({})
 const { t } = useI18n()
+const router = useRouter()
 
 // computed
 const getPlayers = computed(() => store.getPlayers)
@@ -246,6 +248,9 @@ async function onSubmit() {
 
 // mounted
 onMounted(() => {
+  if (!getProfile.value) router.push('/')
+  console.log('getProfile.value', getProfile.value)
+
   profile.value = getProfile.value
   profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
   profile.value.user_metadata.options = profile.value.user_metadata.options ?? {

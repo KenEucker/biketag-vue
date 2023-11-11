@@ -141,8 +141,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
-import { debug, isOnline } from '@/common/utils'
-import { isAuthenticationEnabled } from '@/auth'
+import { debug, isOnline, isAuthenticationEnabled } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { useI18n } from 'vue-i18n'
 
@@ -195,7 +194,8 @@ const getProfileImageSrc = computed(() => {
 })
 
 if (isAuthenticationEnabled()) {
-  isAuthenticatedRef.value = auth0.isAuthenticated
+  console.log('isAuthenticated', auth0.isAuthenticated.value)
+  isAuthenticatedRef = auth0.isAuthenticated
 }
 
 // methods

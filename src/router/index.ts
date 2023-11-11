@@ -1,7 +1,6 @@
-import { isAuthenticationEnabled } from '@/auth'
-import { authGuard } from '@/auth/authGuard'
+import { authGuard } from '@auth0/auth0-vue'
 import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
-import { debug } from '../common/utils'
+import { debug, isAuthenticationEnabled } from '../common/utils'
 
 const routes: Array<RouteRecordRaw> = [
   {

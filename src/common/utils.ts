@@ -429,3 +429,5 @@ export const isOnline = async (checkExternally = false) => {
     .then((response) => response.ok)
     .catch(() => false)
 }
+
+export const isAuthenticationEnabled = () => !!process.env.A_DOMAIN?.length

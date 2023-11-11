@@ -26,9 +26,8 @@
 import { ref, inject, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
-import { isAuthenticationEnabled } from '@/auth'
 import { useAuth0 } from '@auth0/auth0-vue'
-import { debug } from './common/utils'
+import { debug, isAuthenticationEnabled } from './common/utils'
 
 // componets
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
