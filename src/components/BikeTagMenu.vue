@@ -225,7 +225,11 @@ function login() {
 async function logoutClick() {
   if (isAuthenticationEnabled()) {
     await store.setProfile()
-    await auth0.logout()
+    const returnTo = `${window.location.origin}/#/logout`
+    console.log({returnTo})
+    await auth0.logout({
+      returnTo
+    })
   }
 }
 function closeCollapsible() {
