@@ -28,6 +28,7 @@ const profileHandler: Handler = async (event) => {
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile && profile.sub) {
     let options = {}
+    console.log('profileHandler', profile)
     const authorizationHeaders = await auth0Headers()
 
     switch (event.httpMethod) {

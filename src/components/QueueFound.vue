@@ -130,7 +130,8 @@
 <script setup name="QueueFoundTag">
 import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { isAuthenticationEnabled, useAuth0 } from '@/auth'
+import { isAuthenticationEnabled} from '@/auth'
+import { useAuth0 } from '@auth0/auth0-vue'
 import { debug, isPointInPolygon } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
 import exifr from 'exifr'
@@ -177,7 +178,7 @@ const boundary = ref({})
 const isInBoundary = ref(false)
 const confirmInBoundary = ref(false)
 const confirmedBoundary = ref(false)
-const isAuthenticatedRef = ref(false)
+let isAuthenticatedRef = ref(false)
 
 // computed
 const getGameName = computed(() => store.getGameName)

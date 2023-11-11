@@ -1,8 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
-    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
-  </loading>
   <b-modal
     v-if="profile?.user_metadata && profile.user_metadata?.name?.length > 0"
     v-model="showModal"
@@ -144,7 +141,7 @@
 <script setup name="ProfileView">
 import { ref, inject, computed, onMounted, nextTick } from 'vue'
 import { useStore } from '@/store/index.ts'
-import { isAuthenticationEnabled, useAuth0 } from '@/auth'
+import { useAuth0 } from '@auth0/auth0-vue'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import Reddit from '@/assets/images/Reddit.svg'
 import Instagram from '@/assets/images/Instagram.svg'

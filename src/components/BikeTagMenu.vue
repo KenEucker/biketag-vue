@@ -91,7 +91,7 @@
             {{ $t('menu.about') }}
           </li>
           <template v-if="isAuthenticatedRef">
-            <li class="nav-item" @click="logoutFunction">
+            <li class="nav-item" @click="logoutClick">
               {{ $t('menu.logout') }}
             </li>
           </template>
@@ -142,7 +142,8 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index.ts'
 import { debug, isOnline } from '@/common/utils'
-import { isAuthenticationEnabled, useAuth0 } from '@/auth'
+import { isAuthenticationEnabled} from '@/auth'
+import { useAuth0 } from '@auth0/auth0-vue'
 import { useI18n } from 'vue-i18n'
 
 // components
@@ -167,12 +168,13 @@ const showHeader = ref(true)
 const lastScrollPosition = ref(0)
 const scrollOffset = ref(40)
 const buttonCollapse = ref(null)
-const isAuthenticatedRef = ref(false)
+let isAuthenticatedRef = ref(false)
 const navList = ref(null)
 const store = useStore()
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
+const logoutFunction = ref(null)
 
 // computed
 const getGameTitle = computed(() => store.getGameTitle)
@@ -191,10 +193,12 @@ const currentRoute = computed(() => {
 const getProfileImageSrc = computed(() => {
   return isBikeTagAmbassador.value ? '/images/biketag-ambassador.svg' : '/images/biketag-player.svg'
 })
+const callLogoutFunction = logoutFunction
 
 if (isAuthenticationEnabled()) {
-  const { isAuthenticated } = useAuth0()
+  const { isAuthenticated, logout } = useAuth0()
   isAuthenticatedRef = isAuthenticated
+  logoutFunction.value = logout
 }
 
 
@@ -222,10 +226,9 @@ function login() {
   closeCollapsible()
   router.push('/login')
 }
-function logoutFunction() {
+function logoutClick() {
   store.setProfile()
-  const { logout } = useAuth0()
-  logout({
+  callLogoutFunction.value({
     returnTo: window.location.origin,
   })
 }

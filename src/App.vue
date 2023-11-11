@@ -23,10 +23,11 @@
 </template>
 
 <script setup name="App">
-import { ref, inject, computed } from 'vue'
+import { ref, inject, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index.ts'
-import { isAuthenticationEnabled, useAuth0 } from '@/auth'
+import { isAuthenticationEnabled } from '@/auth'
+import { useAuth0 } from '@auth0/auth0-vue'
 import { debug } from './common/utils'
 
 // componets
@@ -41,7 +42,6 @@ const store = useStore()
 const router = useRouter()
 const { t } = useI18n()
 const toast = inject('toast')
-let isAuthenticated = ref(false)
 
 // computed
 const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name != 'Landing')
@@ -53,6 +53,23 @@ const title = computed(function () {
   return `${isNotLanding.value ? store.getGameName : t('app.gameof')} BikeTag!`
 })
 const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
+
+onMounted(() => {
+  console.log('isAuthenticationEnabled', isAuthenticationEnabled())
+  if (isAuthenticationEnabled()) {
+    const { isAuthenticated, idTokenClaims, user } = useAuth0()
+    console.log('isAuthenticated', isAuthenticated.value)
+    if (isAuthenticated.value) {
+      console.log('isAuthenticated', store.getProfile)
+      if (!store.getProfile?.nonce?.length) {
+        console.log({idTokenClaims})
+        if (idTokenClaims.value)
+          store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
+        else debug("what's this? no speaka da mda5hash, brah?")
+      }
+    }
+  }
+})
 
 // methods
 function checkForNewBikeTagPost() {
@@ -80,18 +97,6 @@ async function created() {
 
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
     gameIsSet.value = true
-
-
-  if (isAuthenticationEnabled()) {
-      const { isAuthenticated, idTokenClaims, user } = useAuth0()
-      if (isAuthenticated.value) {
-        if (!store.getProfile?.nonce?.length) {
-          if (idTokenClaims.value)
-            store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
-          else debug("what's this? no speaka da mda5hash, brah?")
-        }
-      }
-    }
 
     if (!game) {
       router.push('/landing')
@@ -133,9 +138,11 @@ created()
 
 .spacer-top {
   height: 85px;
-  @media (width >= 990px) {
+
+  @media (width >=990px) {
     height: 105px;
   }
+
   @media (min-width: $breakpoint-desktop) {
     height: 130px;
   }

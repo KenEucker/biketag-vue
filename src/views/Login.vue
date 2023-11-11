@@ -1,3 +1,42 @@
+<script setup name="LoginView">
+import { inject, computed } from 'vue'
+import { useStore } from '@/store/index.ts'
+import { isAuthenticationEnabled} from '@/auth'
+import { useAuth0 } from '@auth0/auth0-vue'
+import BikeTagSvg from '@/assets/images/BikeTag.svg'
+
+// components
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useI18n } from 'vue-i18n'
+
+  // data
+const store = useStore()
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const toast = inject('toast')
+
+// computed
+const { t } = useI18n()
+
+// methods
+async function login() {
+  if (!isAuthenticationEnabled()) {
+    toast.open({
+      message: 'cannot login because authentication is not configured',
+      type: 'error',
+      position: 'top',
+    })
+    return
+  }
+
+  const { isAuthenticated, loginWithRedirect, idTokenClaims, user } = useAuth0()
+  if (!isAuthenticated.value) {
+    await loginWithRedirect()
+    if (isAuthenticated.value && idTokenClaims.value) {
+      store.setProfile({ ...user.value, token: idTokenClaims.value._raw })
+    }
+  }
+}
+</script>
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div v-if="isAuthenticationEnabled()" class="container">
@@ -17,49 +56,6 @@
   </div>
 </template>
 
-<script setup name="LoginView">
-import { inject, computed } from 'vue'
-import { useStore } from '@/store/index.ts'
-import { isAuthenticationEnabled, useAuth0 } from '@/auth'
-import BikeTagSvg from '@/assets/images/BikeTag.svg'
-
-// components
-import BikeTagButton from '@/components/BikeTagButton.vue'
-import { useI18n } from 'vue-i18n'
-
-  // data
-const store = useStore()
-const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
-const toast = inject('toast')
-
-  // computed
-  const { t } = useI18n()
-
-if (isAuthenticationEnabled()) {
-  const { isAuthenticated, loginWithRedirect, idTokenClaims, user } = useAuth0()
-
-
-  // methods
-  async function login() {
-    console.log("process.env.A_DOMAIN", process.env.A_DOMAIN)
-    if (!isAuthenticationEnabled()) {
-      toast.open({
-        message: 'cannot login because authentication is not configured',
-        type: 'error',
-        position: 'top',
-      })
-      return
-    }
-
-    if (!isAuthenticated.value) {
-      await loginWithRedirect()
-      if (isAuthenticated.value && idTokenClaims.value) {
-        store.setProfile({ ...user.value, token: idTokenClaims.value._raw })
-      }
-    }
-  }
-}
-</script>
 
 <style lang="scss" scoped>
 @import '../assets/styles/style';

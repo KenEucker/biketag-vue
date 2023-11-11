@@ -493,6 +493,7 @@ export const useStore = defineStore('store', {
       this.dataInitialized = true
     },
     SET_PROFILE(profile: any) {
+      console.log('SET_PROFILE', profile)
       const oldState = this.profile
       this.profile = profile
       console.trace('stale::profile', profile)
@@ -702,7 +703,7 @@ export const useStore = defineStore('store', {
   getters: {
     getAmbassadorId(state) {
       if (state.profile?.isBikeTagAmbassador) {
-        return state.profile.sub
+        return state.profile?.sub
       }
       return null
     },
@@ -720,7 +721,7 @@ export const useStore = defineStore('store', {
       return state.game?.slug
     },
     getPlayerId(state) {
-      return state.profile.sub
+      return state.profile?.sub
     },
     getGameBoundary(state) {
       return state.game?.boundary

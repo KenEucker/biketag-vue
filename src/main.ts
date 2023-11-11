@@ -25,8 +25,8 @@ import 'highlight.js/styles/monokai.css'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { debug } from './common/utils'
 
+import { isAuthenticationEnabled } from '@/auth'
 import { createAuth0 } from '@auth0/auth0-vue'
-import { isAuthenticationEnabled } from './auth'
 class BikeTagApp {
   protected emitter
   protected app
@@ -54,14 +54,13 @@ class BikeTagApp {
   authentication() {
     if (isAuthenticationEnabled()) {
       debug('init::authentication', process.env.A_DOMAIN)
-      const auth = createAuth0({
+      this.app.use(createAuth0({
         domain: process.env.A_DOMAIN as string,
         clientId: process.env.A_CID as string,
         authorizationParams: {
           redirect_uri: window.location.origin,
         },
-      })
-      this.app.use(auth)
+      }))
     } else {
       debug('init::authentication', 'authentication disabled')
     }
