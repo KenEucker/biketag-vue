@@ -195,7 +195,7 @@ const getProfileImageSrc = computed(() => {
 })
 
 if (isAuthenticationEnabled()) {
-  isAuthenticatedRef = auth0.isAuthenticated
+  isAuthenticatedRef.value = auth0.isAuthenticated
 }
 
 // methods
@@ -222,10 +222,10 @@ function login() {
   closeCollapsible()
   router.push('/login')
 }
-function logoutClick() {
+async function logoutClick() {
   if (isAuthenticationEnabled()) {
-    store.setProfile()
-    auth0.logout()
+    await store.setProfile()
+    await auth0.logout()
   }
 }
 function closeCollapsible() {

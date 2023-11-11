@@ -7,7 +7,7 @@ import {
   constructAmbassadorProfile,
   constructPlayerProfile,
   getProfileAuthorization,
-  isValidJson
+  isValidJson,
 } from './common/methods'
 
 const profileHandler: Handler = async (event) => {
@@ -25,7 +25,6 @@ const profileHandler: Handler = async (event) => {
   /// Retrieves the authorization and profile data, if present
   const profile = await getProfileAuthorization(event)
 
-  console.log('profileHandler', {profile})
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile && profile.sub) {
     let options = {}
@@ -145,11 +144,9 @@ const profileHandler: Handler = async (event) => {
     }
 
     if (statusCode == HttpStatusCode.Unauthorized) {
-      console.log('requesting', options)
       await axios
         .request(options)
         .then(function (response) {
-          console.log({response1: response})
           if (typeof response.data === 'string') {
             body = response.data
           } else {
@@ -161,8 +158,7 @@ const profileHandler: Handler = async (event) => {
           statusCode = HttpStatusCode.Ok
         })
         .catch(function (error) {
-          // console.error(error.message)
-          console.log('error 7', error)
+          console.error(error.message)
           statusCode = HttpStatusCode.InternalServerError
           body = error.message
         })
@@ -170,45 +166,40 @@ const profileHandler: Handler = async (event) => {
   } else if (event.httpMethod === 'GET' && profile?.name) {
     /// Check in Auth0 that the credentials are valid
     const authorizationHeaders = await auth0Headers()
-    try {
-      const existsRequest =
-        await axios.request({
-          method: 'GET',
-          url: `https://${process.env.A_DOMAIN}/api/v2/users`,
-          params: {
-            page: 0,
-            per_page: 1,
-            include_totals: false,
-            fields: 'sub,user_metadata.name,user_metadata.passcode',
-            q: `user_metadata.name:"${profile.name}"`,
-            search_engine: 'v3',
-          },
-          headers: authorizationHeaders,
-        })
-        .catch(function (error) {
-          console.log('error 5')
-          statusCode = HttpStatusCode.InternalServerError
-          body = error.message
-        })
-      const exists = existsRequest?.data
-      if (exists.length) {
-        const user_metadata = exists[0].user_metadata
-        /// If the passcode isn't set then it defaults to an empty string
-        user_metadata.passcode = user_metadata.passcode ?? ''
+    const existsRequest = await axios
+      .request({
+        method: 'GET',
+        url: `https://${process.env.A_DOMAIN}/api/v2/users`,
+        params: {
+          page: 0,
+          per_page: 1,
+          include_totals: false,
+          fields: 'sub,user_metadata.name,user_metadata.passcode',
+          q: `user_metadata.name:"${profile.name}"`,
+          search_engine: 'v3',
+        },
+        headers: authorizationHeaders,
+      })
+      .catch(function (error) {
+        statusCode = HttpStatusCode.InternalServerError
+        body = error.message
+      })
+    const exists = existsRequest?.data
+    if (exists.length) {
+      const user_metadata = exists[0].user_metadata
+      /// If the passcode isn't set then it defaults to an empty string
+      user_metadata.passcode = user_metadata.passcode ?? ''
 
-        if (user_metadata.passcode == profile.passcode) {
-          body = exists[0].sub
-          statusCode = HttpStatusCode.Ok
-        } else {
-          body = 'unauthorized'
-          statusCode = HttpStatusCode.Unauthorized
-        }
-      } else {
-        body = 'name not found'
+      if (user_metadata.passcode == profile.passcode) {
+        body = exists[0].sub
         statusCode = HttpStatusCode.Ok
+      } else {
+        body = 'unauthorized'
+        statusCode = HttpStatusCode.Unauthorized
       }
-    } catch (e) {
-          console.log('error 2')
+    } else {
+      body = 'name not found'
+      statusCode = HttpStatusCode.Ok
     }
   } else if (event.httpMethod === 'GET' && !profile) {
     if (event.queryStringParameters?.name) {
@@ -236,7 +227,6 @@ const profileHandler: Handler = async (event) => {
           statusCode = HttpStatusCode.Ok
         })
         .catch(function (error) {
-          console.log('error 3')
           statusCode = HttpStatusCode.InternalServerError
           body = error.message
         })
@@ -247,7 +237,7 @@ const profileHandler: Handler = async (event) => {
   }
 
   if (statusCode !== HttpStatusCode.Ok) {
-    console.log('error 4')
+    console.log('profile retrieval error', body)
   }
 
   return {

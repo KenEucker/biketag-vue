@@ -988,7 +988,7 @@ export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag
 
 const getAuthManagementToken = async () => {
   try {
-    return await axios({
+    const getManagementTokenRequest = await axios({
       method: "POST",
       url: `https://${process.env.A_DOMAIN}/oauth/token`,
       headers: {
@@ -1001,15 +1001,16 @@ const getAuthManagementToken = async () => {
         'audience': process.env.A_AUDIENCE
       })
     })
+    return getManagementTokenRequest?.data?.access_token
   } catch (e) {
-    console.log(e)
+    console.log('getAuthManagementToken error', e.message)
   }
 }
 
 export const auth0Headers = async () => {
-  const { data } = (await getAuthManagementToken()) as any
-  if (data?.access_token?.length) {
-    return { 'Authorization': `Bearer ${data.access_token}}` }
+  const accessToken = await getAuthManagementToken()
+  if (accessToken) {
+    return { 'Authorization': `Bearer ${accessToken}` }
   }
 
   return {}

@@ -183,7 +183,6 @@ export const useStore = defineStore('store', {
       }
     },
     async resetBikeTagCache() {
-      console.log('resetBikeTagCache')
       /// TODO: add a check for stale cache before unnecessarily resetting
       await this.setGame()
       await this.setTags(false)
@@ -493,21 +492,17 @@ export const useStore = defineStore('store', {
       this.dataInitialized = true
     },
     SET_PROFILE(profile: any) {
-      console.log('SET_PROFILE', profile)
       const oldState = this.profile
-      this.profile = profile
-      console.trace('stale::profile', profile)
-      setProfileCookie(profile)
 
       if (!profile) {
         // setQueuedTagInCookie()
-      }
-
-      if (
+      } else if (
         profile?.name !== oldState?.name ||
         profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
       ) {
-        debug('state::profile', profile)
+        this.profile = profile
+        setProfileCookie(profile)
+        debug('store::profile', profile)
       }
     },
     SET_GAME(game: any) {

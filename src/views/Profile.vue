@@ -93,7 +93,7 @@
             </div>
           </bike-tag-input>
         </div>
-        <template v-if="isBikeTagAmbassador">
+        <!-- <template v-if="isBikeTagAmbassador">
           <template
             v-for="(credential, i) in Object.keys(profile.user_metadata.credentials)"
             :key="`${i}_config`"
@@ -116,7 +116,7 @@
               />
             </div>
           </template>
-        </template>
+        </template> -->
         <div class="m-2">
           <h2 style="text-align: left">Options</h2>
           <hr :style="`background-image: url(${styledHr})`" />
@@ -177,6 +177,7 @@ const { t } = useI18n()
 // computed
 const getPlayers = computed(() => store.getPlayers)
 const getProfile = computed(() => store.getProfile)
+
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 const player = computed(() => {
   const playerList = getPlayers.value?.filter((player) => {
@@ -246,33 +247,29 @@ async function onSubmit() {
 // mounted
 onMounted(() => {
   profile.value = getProfile.value
-
-  nextTick(() => {
-    profile.value = getProfile.value
-    profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
-    profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
-      skipSteps: false,
-    }
-    showModal.value =
-      profile.value?.user_metadata?.name != null && !profile.value?.user_metadata?.name.length
-    switch (profile.value.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
-      case 'reddit':
-        if (!profile.value.user_metadata.social?.reddit) {
-          profile.value.user_metadata.social.reddit = profile.value.name
-        }
-        break
-      case 'imgur':
-        if (!profile.value.user_metadata.social?.imgur) {
-          profile.value.user_metadata.social.imgur = profile.value.name
-        }
-        break
-      case 'twitter':
-        if (!profile.value.user_metadata.social?.twitter) {
-          profile.value.user_metadata.social.twitter = profile.value.name
-        }
-        break
-    }
-  })
+  profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
+  profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
+    skipSteps: false,
+  }
+  showModal.value =
+    profile.value?.user_metadata?.name != null && !profile.value?.user_metadata?.name.length
+  switch (profile.value.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
+    case 'reddit':
+      if (!profile.value.user_metadata.social?.reddit) {
+        profile.value.user_metadata.social.reddit = profile.value.name
+      }
+      break
+    case 'imgur':
+      if (!profile.value.user_metadata.social?.imgur) {
+        profile.value.user_metadata.social.imgur = profile.value.name
+      }
+      break
+    case 'twitter':
+      if (!profile.value.user_metadata.social?.twitter) {
+        profile.value.user_metadata.social.twitter = profile.value.name
+      }
+      break
+  }
 })
 </script>
 <style lang="scss">

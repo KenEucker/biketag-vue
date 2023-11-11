@@ -58,13 +58,13 @@ onMounted(async () => {
   if (isAuthenticationEnabled()) {
     const auth0 = useAuth0()
     // watch(auth0.isAuthenticated, async () => {
-      watch(auth0.idTokenClaims, async () => {
-          if (!store.getProfile?.nonce?.length) {
-            const token = auth0.idTokenClaims.value.__raw
-            store.setProfile({ ...auth0.user.value, token })
-          }
-        })
-      // })
+    watch(auth0.idTokenClaims, async () => {
+      if (!store.getProfile?.nonce?.length) {
+        const token = auth0.idTokenClaims.value.__raw
+        await store.setProfile({ ...auth0.user.value, token })
+      }
+    })
+    // })
   }
 })
 

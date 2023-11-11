@@ -31,9 +31,9 @@ async function login() {
   }
 
   if (!isAuthenticated.value) {
-    await loginWithRedirect().then(() => {
+    await loginWithRedirect().then(async () => {
       if (isAuthenticated.value && idTokenClaims.value) {
-        store.setProfile({ ...user.value, token: idTokenClaims.value._raw })
+        await store.setProfile({ ...user.value, token: idTokenClaims.value._raw })
       }
     })
   }
