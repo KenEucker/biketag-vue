@@ -323,8 +323,9 @@ export const getProfileAuthorization = async (event: any): Promise<any> => {
     const biketag = new BikeTagClient(biketagOpts)
     const thisGamesAmbassadors = (await getThisGamesAmbassadors(biketag)) as Ambassador[]
     const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
+    const isABikeTagAmbassador = profileAmbassadorMatch.length ? true : profile.email === process.env.ADMIN_EMAIL
 
-    if (profileAmbassadorMatch.length) {
+    if (isABikeTagAmbassador) {
       profile.isBikeTagAmbassador = true
       profile = { ...profile, ...profileAmbassadorMatch[0] }
     }
@@ -570,7 +571,7 @@ export const sendEmailsToAmbassadors = async (
   emailSubject: string,
   ambassadors: Ambassador[],
   getEmailData: (a?: Ambassador) => any,
-  sendToSuperAdmin = true
+  sendToAdmin = true
 ): Promise<{ accepted: any[]; rejected: any[] }> => {
   let emailSent
   let accepted = []
@@ -582,7 +583,7 @@ export const sendEmailsToAmbassadors = async (
 
   for (const ambassador of ambassadors) {
     if (ambassador.email) {
-      console.log(`sending ${emailName} ambassador email to: ${ambassador.email}`)
+      console.log(`sending ${emailName} email to BikeTag Ambassador: ${ambassador.email}`)
       emailSent = await sendEmail(
         ambassador.email,
         emailSubject,
@@ -596,16 +597,16 @@ export const sendEmailsToAmbassadors = async (
       rejected = rejected.concat(emailSent.rejected)
     }
   }
-  if (sendToSuperAdmin) {
-    const superAdmin = process.env.ADMIN ?? ''
-    if (superAdmin?.length) {
-      console.log(`sending ${emailName} superAdmin email to: ${superAdmin}`)
+  if (sendToAdmin) {
+    const biketagAdmin = process.env.ADMIN_EMAIL ?? ''
+    if (biketagAdmin?.length) {
+      console.log(`sending ${emailName} email to BikeTag Administrator: ${biketagAdmin}`)
       emailSent = await sendEmail(
-        superAdmin,
+        biketagAdmin,
         emailSubject,
         {
           ...defaultEmailData,
-          ...getEmailData({ id: superAdmin } as unknown as Ambassador),
+          ...getEmailData({ id: biketagAdmin } as unknown as Ambassador),
         },
         emailName
       )
