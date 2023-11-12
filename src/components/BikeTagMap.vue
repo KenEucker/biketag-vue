@@ -65,7 +65,7 @@
 
 <script setup name="BikeTagMap">
 import { ref, computed, onMounted } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import Pin from '@/assets/images/pin.svg'
 
 // components

@@ -121,7 +121,7 @@
 <script setup name="QueueSubmit">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { Settings } from '@/common/types'
 
 // components

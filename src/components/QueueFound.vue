@@ -129,7 +129,7 @@
 
 <script setup name="QueueFoundTag">
 import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { debug, isPointInPolygon } from '@/common/utils'
 import { useI18n } from 'vue-i18n'

@@ -97,7 +97,7 @@
 <script setup name="QueueMysteryTag">
 import { ref, inject, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { ordinalSuffixOf } from '@/common/utils'
 import exifr from 'exifr'
 import { useI18n } from 'vue-i18n'

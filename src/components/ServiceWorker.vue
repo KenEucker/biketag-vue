@@ -11,7 +11,7 @@
 
 <script setup name="ServiceWorker">
 import { computed } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { getSanityImageResizedSize } from '@/common/utils'
 import { debug } from '@/common/utils'
@@ -83,14 +83,14 @@ async function created() {
             src: bigLogo[0] === '/' ? `${window.location.origin}${bigLogo}` : bigLogo,
             sizes: bigLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(bigLogo),
             type: 'image/webp',
-            purpose: 'any',
+            purpose: 'maskable any',
           },
-          {
-            src: `${window.location.origin}/maskable_icon_x512.png`,
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
+          // {
+          //   src: `${window.location.origin}/maskable_icon_x512.png`,
+          //   sizes: '512x512',
+          //   type: 'image/png',
+          //   purpose: 'maskable',
+          // },
         ],
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })

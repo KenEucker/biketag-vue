@@ -494,8 +494,8 @@ export const useStore = defineStore('store', {
     SET_PROFILE(profile: any) {
       const oldState = this.profile
 
-      if (profile &&
-        profile?.name !== oldState?.name ||
+      if (
+        (profile && profile?.name !== oldState?.name) ||
         profile?.user_metadata?.name !== oldState?.user_metadata?.name ||
         profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
       ) {

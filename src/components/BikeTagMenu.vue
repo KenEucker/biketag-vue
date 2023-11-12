@@ -140,7 +140,7 @@
 <script setup name="BikeTagMenu">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { debug, isOnline, isAuthenticationEnabled } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { useI18n } from 'vue-i18n'
@@ -194,7 +194,7 @@ const getProfileImageSrc = computed(() => {
 })
 
 if (isAuthenticationEnabled()) {
-  isAuthenticatedRef = auth0.isAuthenticated
+  isAuthenticatedRef.value = auth0.isAuthenticated
 }
 
 // methods
@@ -225,9 +225,9 @@ async function logoutClick() {
   if (isAuthenticationEnabled()) {
     await store.setProfile()
     const returnTo = `${window.location.origin}/#/logout`
-    console.log({returnTo})
+    console.log({ returnTo })
     await auth0.logout({
-      returnTo
+      returnTo,
     })
   }
 }

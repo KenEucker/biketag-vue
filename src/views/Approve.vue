@@ -33,14 +33,14 @@
 
 <script setup name="ApproveBikeTagView">
 import { ref, inject, computed, onMounted } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 // import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
+import { useAuth0 } from '@auth0/auth0-vue'
 
 // components
 import QueueApprove from '@/components/QueueApprove.vue'
 import { useI18n } from 'vue-i18n'
-import { useAuth0 } from '@auth0/auth0-vue'
 
 // props
 const props = defineProps({
@@ -55,7 +55,7 @@ const time = new Date()
 time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 // const timer = ref(useTimer(time))
 const uploadInProgress = ref(false)
-const idTokenClaimsRef = ref(null)
+const { idTokenClaims } = useAuth0()
 const queueError = ref(null)
 const store = useStore()
 const toast = inject('toast')
@@ -84,7 +84,7 @@ async function onApproveSubmit(newTagSubmission) {
   })
   const errorAction = queueError.value.getAttribute('action')
 
-  const claims = idTokenClaimsRef.value
+  const claims = idTokenClaims.value
   if (claims) {
     /// If no token, the request will be rejected
     tag.token = claims.__raw

@@ -28,7 +28,7 @@
 <script setup name="PlayerBicon">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 
 // props
 const props = defineProps({

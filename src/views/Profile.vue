@@ -140,7 +140,7 @@
 
 <script setup name="ProfileView">
 import { ref, inject, computed, onMounted, nextTick } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import Reddit from '@/assets/images/Reddit.svg'
@@ -218,7 +218,7 @@ async function onSubmitName() {
         position: 'top',
       })
     } catch (e) {
-      profile.value.user_metadata.name = ""
+      profile.value.user_metadata.name = ''
       toast.open({
         message: e.response?.data ?? e.message,
         type: 'error',

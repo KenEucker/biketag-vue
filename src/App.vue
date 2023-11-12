@@ -25,7 +25,7 @@
 <script setup name="App">
 import { ref, inject, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { debug, isAuthenticationEnabled } from './common/utils'
 

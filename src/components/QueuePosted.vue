@@ -1,7 +1,7 @@
 <script setup name="QueuePosted">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { debug } from '@/common/utils'
 
 // components

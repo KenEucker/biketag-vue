@@ -63,7 +63,7 @@
 <script setup name="HomeView">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import 'vue-loading-overlay/dist/vue-loading.css'
 // import useSWRV from 'swrv'
 

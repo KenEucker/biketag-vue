@@ -42,7 +42,7 @@
 <script setup name="BikeTagsView">
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import 'vue-loading-overlay/dist/vue-loading.css'
 
 // components

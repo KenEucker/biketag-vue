@@ -15,7 +15,7 @@ import { extname, join } from 'path'
 import qs from 'qs'
 import request from 'request'
 import { BikeTagProfile } from '../../src/common/types'
-import { getDomainInfo } from '../../src/common/utils'
+import { getDomainInfo, getTagDate } from '../../src/common/utils'
 import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
@@ -457,7 +457,7 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
     return jsonObject || decrypted
   } catch (e) {
     /// swallow exception
-    console.log(e)
+    // console.log(e)
     return null
   }
 }
@@ -465,46 +465,56 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
 export const compress = lzutf8.compress
 export const decompress = lzutf8.decompress
 
+let liquidInstance
+export const liquidOpts = {
+  dynamicPartials: true,
+  strict_filters: true,
+  extname: '.liquid',
+  // root: [join('functions', 'emails')],
+  customFilters: {
+    biketag_image: (url = '', size = '') => {
+      const ext = extname(url)
+      /// Make sure the image type is supported
+      if (['.jpg', '.jpeg', '.png', '.bmp', '.webp'].indexOf(ext) === -1) return url
+
+      switch (size) {
+        default:
+        case 'original':
+        case '':
+          break
+
+        case 's':
+        case 'm':
+        case 'small':
+        case 'medium':
+          size = 's'
+          break
+
+        case 'l':
+        case 'large':
+          size = 'l'
+          break
+      }
+
+      return url.replace(ext, `${size}${ext}`)
+    },
+  },
+}
+
+const getLiquidInstance = () => {
+  if (liquidInstance) return liquidInstance
+
+  liquidInstance = new Liquid(liquidOpts)
+
+  return liquidInstance
+}
+
 export const sendEmail = async (to: string, subject: string, locals: any, template?: string) => {
   template = template ?? subject
-  const liquidOpts = {
-    dynamicPartials: true,
-    strict_filters: true,
-    extname: '.liquid',
-    // root: [join('functions', 'emails')],
-    customFilters: {
-      biketag_image: (url = '', size = '') => {
-        const ext = extname(url)
-        /// Make sure the image type is supported
-        if (['.jpg', '.jpeg', '.png', '.bmp', '.webp'].indexOf(ext) === -1) return url
-
-        switch (size) {
-          default:
-          case 'original':
-          case '':
-            break
-
-          case 's':
-          case 'm':
-          case 'small':
-          case 'medium':
-            size = 's'
-            break
-
-          case 'l':
-          case 'large':
-            size = 'l'
-            break
-        }
-
-        return url.replace(ext, `${size}${ext}`)
-      },
-    },
-  }
   let html = ''
   let text = ''
 
-  const liquid = new Liquid(liquidOpts)
+  const liquid = getLiquidInstance()
 
   Object.keys(liquidOpts.customFilters).forEach((filter) => {
     const filterMethod = liquidOpts.customFilters[filter]
@@ -571,7 +581,7 @@ export const sendEmailsToAmbassadors = async (
   emailSubject: string,
   ambassadors: Ambassador[],
   getEmailData: (a?: Ambassador) => any,
-  sendToAdmin = true
+  sendToAdmin = false
 ): Promise<{ accepted: any[]; rejected: any[] }> => {
   let emailSent
   let accepted = []
@@ -667,7 +677,7 @@ export const archiveAndClearQueue = async (
           tag: nonWinningTag,
         })
       } else {
-        console.log({ archiveTagResult })
+        // console.log({ archiveTagResult })
         results.push({
           message: 'error archiving non-winning found image',
           game: gameName,
@@ -684,7 +694,7 @@ export const archiveAndClearQueue = async (
           tag: nonWinningTag,
         })
       } else {
-        console.log({ deleteArchivedTagFromQueueResult })
+        // console.log({ deleteArchivedTagFromQueueResult })
         results.push({
           message: 'error deleting non-winning tag from the queue',
           game: gameName,
@@ -770,27 +780,24 @@ export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, 
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
       data = JSON.stringify({
-        content: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.foundPlayer}\r\nHint:${tag.hint}`,
-        image: {
-          url: tag.mysteryImageUrl,
-        },
+        content: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.mysteryPlayer} \r\n\n[View previous round](${host}/#/${currentNumber})`,
         embeds: [
           {
-            timestamp: new Date(tag.foundTime).toISOString(),
+            timestamp: getTagDate(tag.foundTime).toISOString(),
             fields: [
               {
-                name: `#${currentNumber}`,
-                value: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}`,
+                name: `Tag #${winningTagnumber}`,
+                value: `previous location found at ${tag.foundLocation} by ${tag.foundPlayer}`,
                 inline: true,
               },
               {
                 name: '', // purposely left blank
-                value: `[View previous round](${host}/#/${currentNumber})`,
+                value: ``,
                 inline: true,
               },
             ],
             image: {
-              url: tag.foundImageUrl,
+              url: tag.mysteryImageUrl,
             },
           },
         ],
@@ -805,12 +812,12 @@ export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, 
             block_id: "mysteryTag",
             text: {
               type: "mrkdwn",
-              text: `[View previous round](${host}/#/${currentNumber})`
+              text: `tag #${winningTagnumber}`
             },
             accessory: {
               type: "image",
               image_url: tag.mysteryImageUrl,
-              alt_text: "Haunted hotel image"
+              alt_text: `tag #${winningTagnumber} by ${tag.mysteryPlayer}`
             }
           },
           {
@@ -818,12 +825,12 @@ export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, 
             block_id: "foundTag",
             text: {
               type: "mrkdwn",
-              text: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}`
+              text: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}\r\n\n<${host}/#/${currentNumber}|View previous round>`
             },
             accessory: {
               type: "image",
               image_url: tag.foundImageUrl,
-              alt_text: "Haunted hotel image"
+              alt_text: `tag #${currentNumber} found by ${tag.foundPlayer}`
             }
           }
         ],
@@ -833,7 +840,7 @@ export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, 
       return
   }
 
-  axios({
+  return axios({
     method: 'post',
     url: webhook,
     headers: {
@@ -867,7 +874,7 @@ export const setNewBikeTagPost = async (
     currentBikeTag.foundTime = winningBikeTagPost.foundTime
     currentBikeTag.foundLocation = winningBikeTagPost.foundLocation
     currentBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
-    console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
+    // console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
     const currentBikeTagUpdateResult = await biketag.updateTag(currentBikeTag)
     // console.log({ currentBikeTagUpdateResult })
     if (currentBikeTagUpdateResult.success) {
@@ -946,12 +953,12 @@ export const setNewBikeTagPost = async (
       const sendSlackNotification = game.settings['notifications::slack']
       if (sendSlackNotification) sendBikeTagPostNotificationToWebhook(currentPostedBikeTag, sendSlackNotification, 'slack', host)
 
-      await sendEmailsToAmbassadors(
+      sendEmailsToAmbassadors(
         'biketag-auto-posted',
         `New BikeTag Round (#${winningTagnumber}) Auto-Posted for [${game.name}]`,
         thisGamesAmbassadors,
         (a) => {
-          console.log({ a })
+          // console.log({ a })
           return {
             currentBikeTag: currentBikeTagUpdateResult.data,
             newBikeTagPost: newBikeTagUpdateResult.data,
@@ -987,7 +994,7 @@ export const setNewBikeTagPost = async (
       nonAdminBikeTagOpts.game = game.name.toLocaleLowerCase()
       nonAdminBikeTagOpts.imgur.hash = game.queuehash
       const nonAdminBikeTag = new BikeTagClient(nonAdminBikeTagOpts)
-      console.log({ config: nonAdminBikeTag.config() })
+      // console.log({ config: nonAdminBikeTag.config() })
 
       const deleteWinningTagFromQueueResult = await nonAdminBikeTag.deleteTag(winningBikeTagPost)
       if (deleteWinningTagFromQueueResult.success) {
@@ -997,7 +1004,7 @@ export const setNewBikeTagPost = async (
           tag: winningBikeTagPost,
         })
       } else {
-        console.log({ deleteQueuedTagResult: deleteWinningTagFromQueueResult })
+        // console.log({ deleteQueuedTagResult: deleteWinningTagFromQueueResult })
         results.push({
           message: 'error deleting winning tag from queue',
           game: game.name,

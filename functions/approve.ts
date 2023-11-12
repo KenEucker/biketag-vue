@@ -1,4 +1,8 @@
 import { Handler } from '@netlify/functions'
+import { BikeTagClient } from 'biketag'
+import { Game } from 'biketag/lib/common/schema'
+import request from 'request'
+import { HttpStatusCode } from './common/constants'
 import {
   acceptCorsHeaders,
   getActiveQueueForGame,
@@ -7,14 +11,10 @@ import {
   getProfileAuthorization,
   setNewBikeTagPost,
 } from './common/methods'
-import { BikeTagClient } from 'biketag'
-import request from 'request'
-import { Game } from 'biketag/lib/common/schema'
-import { HttpStatusCode } from './common/constants'
 
 const approveHandler: Handler = async (event) => {
   /// Bailout on OPTIONS requests
-  const headers = acceptCorsHeaders(false)
+  const headers = acceptCorsHeaders()
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: HttpStatusCode.NoContent,
@@ -33,8 +33,8 @@ const approveHandler: Handler = async (event) => {
   /// Retrieves the authorization and profile data, if present
   const profile = await getProfileAuthorization(event)
   const approvePayload = getPayloadOpts(event)
-  let results = []
-  let errors = []
+  let results:any[] = []
+  let errors:any[] = []
 
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile && profile.sub === approvePayload.ambassadorId) {
@@ -42,6 +42,7 @@ const approveHandler: Handler = async (event) => {
     const biketag = new BikeTagClient(biketagOpts)
     const { playerId, tagnumber } = approvePayload.tag
     const game = (await biketag.game(undefined, { source: 'sanity' })) as Game
+    const currentBikeTag = (await biketag.getTag()).data
 
     if (game) {
       const activeQueue = await getActiveQueueForGame(game, undefined, approvePayload.ambassadorId)
@@ -52,9 +53,9 @@ const approveHandler: Handler = async (event) => {
       if (approvedTagList.length) {
         const approvedTag = approvedTagList[0]
         approvedTag.game = approvedTag.game.length ? approvedTag.game : game.name
-        console.log({ approvedTag, approvedTagList })
+        // console.log({ approvedTag, approvedTagList })
 
-        const newBikeTagPostedResults = await setNewBikeTagPost(approvedTag, game)
+        const newBikeTagPostedResults = await setNewBikeTagPost(approvedTag, game, currentBikeTag)
         results.push({
           message: `Approving BikeTag Ambassador: ${profile.name}`,
           ambassador: profile.email,
@@ -78,14 +79,14 @@ const approveHandler: Handler = async (event) => {
   }
 
   if (results.length) {
-    console.log({ results })
+    // console.log({ results })
     return {
       headers,
       statusCode: errors[0] ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted,
       body: JSON.stringify(results),
     }
   } else {
-    console.log({ results, errors })
+    // console.log({ results, errors })
     return {
       headers,
       statusCode: errors.length ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,

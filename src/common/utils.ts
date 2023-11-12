@@ -106,6 +106,8 @@ export const getDomainInfo = (req: any): DomainInfo => {
   }
 }
 
+export const getTagDate = (time: number): Date => new Date(time * 1000)
+
 export const getBikeTagClientOpts = (win?: Window) => {
   const domainInfo = getDomainInfo(win)
   return {
