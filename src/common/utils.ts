@@ -216,11 +216,11 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
       (existingMostRecentNumber > 0 && currentTagnumber > existingMostRecentNumber) ||
       existingMostRecentNumber === 0
     if (currentTagnumberIsNewer) {
-      console.log('setting most recently viewed tag', {
-        existingMostRecent,
-        currentTagnumberIsNewer,
-        currentTagnumber,
-      })
+      // console.log('setting most recently viewed tag', {
+      //   existingMostRecent,
+      //   currentTagnumberIsNewer,
+      //   currentTagnumber,
+      // })
       cookies.set(mostRecentCookieKey, currentTagnumber.toString())
     }
 

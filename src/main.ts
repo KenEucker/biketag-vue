@@ -58,7 +58,7 @@ class BikeTagApp {
           domain: process.env.A_DOMAIN as string,
           clientId: process.env.A_CID as string,
           authorizationParams: {
-            redirect_uri: `${window.location.origin}/#/callback`,
+            redirect_uri: window.location.origin,
           },
           useRefreshTokens: true,
           cacheLocation: 'localstorage',
