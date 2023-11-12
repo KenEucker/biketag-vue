@@ -194,7 +194,6 @@ const getProfileImageSrc = computed(() => {
 })
 
 if (isAuthenticationEnabled()) {
-  console.log('isAuthenticated', auth0.isAuthenticated.value)
   isAuthenticatedRef = auth0.isAuthenticated
 }
 

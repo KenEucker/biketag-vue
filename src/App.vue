@@ -58,7 +58,7 @@ onMounted(async () => {
     const checkAuth = async () => {
       if (auth0.isAuthenticated) {
         if (auth0.idTokenClaims.value) {
-          if (!store.getProfile?.nonce?.length) {
+          if (!store.getProfile?.sub !== auth0.user.value.sub) {
             const token = auth0.idTokenClaims?.value?.__raw
             await store.setProfile({ ...auth0.user.value, token })
           } else {
@@ -67,7 +67,6 @@ onMounted(async () => {
         }
       }
     }
-    console.log('Authentication is Enabled')
     const auth0 = useAuth0()
     watch(auth0.isAuthenticated, checkAuth)
     watch(auth0.idTokenClaims, checkAuth)
