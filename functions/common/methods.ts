@@ -762,6 +762,87 @@ export const getActiveQueueForGame = async (
   }
 }
 
+export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, type: string, host: string) => {
+  const currentNumber = tag.tagnumber
+  const winningTagnumber = currentNumber + 1
+  let data = {}
+  switch(type) {
+    case 'discord':
+      // https://discord.com/developers/docs/resources/webhook
+      data = JSON.stringify({
+        content: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.foundPlayer}\r\nHint:${tag.hint}`,
+        image: {
+          url: tag.mysteryImageUrl,
+        },
+        embeds: [
+          {
+            timestamp: new Date(tag.foundTime).toISOString(),
+            fields: [
+              {
+                name: `#${currentNumber}`,
+                value: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}`,
+                inline: true,
+              },
+              {
+                name: '', // purposely left blank
+                value: `[View previous round](${host}/#/${currentNumber})`,
+                inline: true,
+              },
+            ],
+            image: {
+              url: tag.foundImageUrl,
+            },
+          },
+        ],
+      })
+    break
+    case 'slack':
+      data = JSON.stringify({
+        text: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.foundPlayer}\r\nHint:${tag.hint}`,
+        blocks: [
+          {
+            type: "section",
+            block_id: "mysteryTag",
+            text: {
+              type: "mrkdwn",
+              text: `[View previous round](${host}/#/${currentNumber})`
+            },
+            accessory: {
+              type: "image",
+              image_url: tag.mysteryImageUrl,
+              alt_text: "Haunted hotel image"
+            }
+          },
+          {
+            type: "section",
+            block_id: "foundTag",
+            text: {
+              type: "mrkdwn",
+              text: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}`
+            },
+            accessory: {
+              type: "image",
+              image_url: tag.foundImageUrl,
+              alt_text: "Haunted hotel image"
+            }
+          }
+        ],
+      })
+    break
+    default:
+      return
+  }
+
+  axios({
+    method: 'post',
+    url: webhook,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data,
+  })
+}
+
 export const setNewBikeTagPost = async (
   winningBikeTagPost: Tag,
   game: Game,
@@ -859,44 +940,11 @@ export const setNewBikeTagPost = async (
           : getSanityImageUrl(game.logo)
         : `${host}${defaultLogo}`
 
+      const currentPostedBikeTag = currentBikeTagUpdateResult.data as unknown as Tag
       const sendDiscordNotification = game.settings['notifications::discord']
-      if (sendDiscordNotification) {
-        // https://discord.com/developers/docs/resources/webhook
-        const currentPostedBikeTag = currentBikeTagUpdateResult.data as unknown as Tag
-        const currentNumber = currentBikeTag.tagnumber
-        const data = JSON.stringify({
-          content: `#${currentNumber} found at ${currentPostedBikeTag.foundLocation} by ${currentPostedBikeTag.foundPlayer}`,
-          embeds: [
-            {
-              timestamp: new Date(newPostedBikeTag.foundTime).toISOString(),
-              fields: [
-                {
-                  name: `#${winningTagnumber}`,
-                  value: `||${newPostedBikeTag.hint}||`,
-                  inline: true,
-                },
-                {
-                  name: '', // purposely left blank
-                  value: `[View previous round](${host}/#/${currentNumber})`,
-                  inline: true,
-                },
-              ],
-              image: {
-                url: newPostedBikeTag.foundImageUrl,
-              },
-            },
-          ],
-        })
-
-        axios({
-          method: 'post',
-          url: sendDiscordNotification,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          data,
-        })
-      }
+      if (sendDiscordNotification) sendBikeTagPostNotificationToWebhook(currentPostedBikeTag, sendDiscordNotification, 'discord', host)
+      const sendSlackNotification = game.settings['notifications::slack']
+      if (sendSlackNotification) sendBikeTagPostNotificationToWebhook(currentPostedBikeTag, sendSlackNotification, 'slack', host)
 
       await sendEmailsToAmbassadors(
         'biketag-auto-posted',
