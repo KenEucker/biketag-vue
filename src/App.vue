@@ -55,20 +55,22 @@ const description = computed(() => `The BikeTag game in ${store.getGame?.region?
 
 onMounted(async () => {
   if (isAuthenticationEnabled()) {
+    const checkAuth = async () => {
+      if (auth0.isAuthenticated) {
+        if (auth0.idTokenClaims.value) {
+          if (!store.getProfile?.nonce?.length) {
+            const token = auth0.idTokenClaims?.value?.__raw
+            await store.setProfile({ ...auth0.user.value, token })
+          } else {
+            console.log('profile already in store', store.getProfile)
+          }
+        }
+      }
+    }
     console.log('Authentication is Enabled')
     const auth0 = useAuth0()
-    watch(auth0.isAuthenticated, async () => {
-      console.log('isAuthenticated',auth0.isAuthenticated)
-      watch(auth0.idTokenClaims, async () => {
-        console.log('idTokenClaims', auth0.idTokenClaims)
-        if (!store.getProfile?.nonce?.length) {
-          const token = auth0.idTokenClaims.value.__raw
-          await store.setProfile({ ...auth0.user.value, token })
-        } else {
-          console.log('profile already in store', store.getProfile)
-        }
-      })
-    })
+    watch(auth0.isAuthenticated, checkAuth)
+    watch(auth0.idTokenClaims, checkAuth)
   }
 })
 

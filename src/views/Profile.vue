@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <b-modal
-    v-if="profile?.user_metadata && profile.user_metadata?.name?.length > 0"
+    v-if="profile && !profile?.user_metadata?.name?.length"
     v-model="showModal"
     title="User Name"
     hide-footer
@@ -11,8 +11,8 @@
     <form @submit.prevent="onSubmitName">
       <div class="mt-3">
         <bike-tag-input
-          v-model="profile.user_metadata.name"
-          :placeholder="profile.user_metadata.name || $t('pages.profile.set_name_placeholder')"
+          v-model="requestedName"
+          :placeholder="$t('pages.profile.set_name_placeholder')"
         />
         <bike-tag-button
           class="modal-header"
@@ -59,17 +59,17 @@
         method="POST"
         @submit.prevent="onSubmit"
       >
-        <div v-if="profile.user_metadata" class="mt-3">
+        <div class="mt-3">
           <bike-tag-input
             v-model="profile.user_metadata.name"
             :label="$t('pages.profile.name')"
             readonly
           />
         </div>
-        <div v-if="profile" class="mt-3">
+        <div class="mt-3">
           <bike-tag-input v-model="profile.email" :label="$t('pages.profile.email')" readonly />
         </div>
-        <div v-if="profile.user_metadata" class="mt-3">
+        <div class="mt-3">
           <bike-tag-input
             id="passcode"
             v-model="profile.user_metadata.passcode"
@@ -168,6 +168,7 @@ const socialNetworkIcons = ref([
   ['discord', Discord],
 ])
 const showModal = ref(false)
+const requestedName = ref()
 const styledHr = StyledHr
 const store = useStore()
 const { idTokenClaims, user } = useAuth0()
@@ -206,24 +207,26 @@ function toggleShowFields(name) {
   credentialsRefs.value[name][0].classList.toggle('hide')
 }
 async function onSubmitName() {
-  if (profile.value.user_metadata.name.length > 0) {
+  if (requestedName.value.length > 0) {
+    profile.value.user_metadata.name = requestedName.value
     profile.value['token'] = idTokenClaims.value.__raw
     try {
       await store.assignName(profile.value)
-      profile.value = getProfile.value
       toast.open({
         message: 'Success',
         type: 'success',
         position: 'top',
       })
     } catch (e) {
+      profile.value.user_metadata.name = ""
       toast.open({
         message: e.response?.data ?? e.message,
         type: 'error',
         position: 'top',
       })
+    } finally {
+      showModal.value = false
     }
-    showModal.value = false
   }
 }
 async function onSubmit() {
@@ -249,8 +252,6 @@ async function onSubmit() {
 // mounted
 onMounted(() => {
   if (!getProfile.value) router.push('/')
-  console.log('getProfile.value', getProfile.value)
-
   profile.value = getProfile.value
   profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
   profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
