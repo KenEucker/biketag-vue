@@ -50,7 +50,7 @@ const profileHandler: Handler = async (event) => {
                 headers: authorizationHeaders,
               })
             ).data
-            if (!roles.length && !user_data.user_metadata.name) {
+            if (!roles.length && !user_data.user_metadata?.name) {
               console.log(InfoMessage.ProfileInit, profile.sub)
               const exists = (
                 await axios.request({
@@ -108,7 +108,7 @@ const profileHandler: Handler = async (event) => {
       case 'PATCH':
         try {
           const data = JSON.parse(event.body!)
-          delete data.user_metadata.name
+          delete data.user_metadata?.name
           const validator = profile.isBikeTagAmbassador
             ? 'profile.patch.ambassador'
             : 'profile.patch'
