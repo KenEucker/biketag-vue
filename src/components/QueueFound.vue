@@ -103,7 +103,7 @@
           v-model="player"
           name="player"
           required
-          :readonly="isAuthenticated"
+          :readonly="isAuthenticatedRef"
           :placeholder="t('pages.round.name_placeholder')"
         />
         <b-modal
@@ -131,7 +131,7 @@
 import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
-import { debug, isPointInPolygon } from '@/common/utils'
+import { debug, isPointInPolygon, isAuthenticationEnabled } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
 import exifr from 'exifr'
 import Pin from '@/assets/images/pin.svg'
@@ -177,7 +177,12 @@ const boundary = ref({})
 const isInBoundary = ref(false)
 const confirmInBoundary = ref(false)
 const confirmedBoundary = ref(false)
-const { isAuthenticated } = useAuth0()
+const auth0 = useAuth0()
+let isAuthenticatedRef = ref(false)
+
+if (isAuthenticationEnabled()) {
+ isAuthenticatedRef = auth0.isAuthenticated
+}
 
 // computed
 const getGameName = computed(() => store.getGameName)
@@ -234,7 +239,7 @@ const onSubmit = async (e) => {
     return
   }
   /// TODO: watch this?
-  if (!isAuthenticated.value) {
+  if (!isAuthenticatedRef.value) {
     try {
       await store.checkPasscode({
         name: player.value,
