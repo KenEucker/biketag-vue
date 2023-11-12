@@ -173,7 +173,7 @@ const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
 const auth0 = useAuth0()
-let isAuthenticatedRef = ref(null)
+let isAuthenticatedRef = ref(false)
 
 // computed
 const getGameTitle = computed(() => store.getGameTitle)
@@ -194,7 +194,7 @@ const getProfileImageSrc = computed(() => {
 })
 
 if (isAuthenticationEnabled()) {
-  isAuthenticatedRef.value = auth0.isAuthenticated
+  isAuthenticatedRef = auth0.isAuthenticated
 }
 
 // methods
