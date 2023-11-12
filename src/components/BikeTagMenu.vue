@@ -174,6 +174,7 @@ const route = useRoute()
 const { t } = useI18n()
 const auth0 = useAuth0()
 let isAuthenticatedRef = ref(false)
+/// Do apostrophe's break Netlify deploys? let's find out.
 
 // computed
 const getGameTitle = computed(() => store.getGameTitle)
