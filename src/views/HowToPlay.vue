@@ -119,7 +119,7 @@ import SwiperCore, { Autoplay, Navigation, Pagination } from 'swiper'
 // Import Swiper styles
 import 'swiper/css/bundle'
 import { ref, computed } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { debug } from '@/common/utils'
 
 // components

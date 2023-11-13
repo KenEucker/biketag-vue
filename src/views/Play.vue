@@ -100,7 +100,7 @@
 
 <script setup name="QueueBikeTagView">
 import { ref, inject, computed, watchEffect, onMounted } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'

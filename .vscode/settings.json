@@ -5,5 +5,11 @@
       "source.fixAll.eslint": true,
       "source.sortImports": true
   },
-  "i18n-ally.localesPaths": ["src/i18n", "src/i18n/locales"]
+  "i18n-ally.localesPaths": [
+    "src/i18n",
+    "src/i18n/locales"
+  ],
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar"
+  }
 }

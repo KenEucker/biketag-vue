@@ -1,10 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
-    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
-  </loading>
   <b-modal
-    v-if="profile?.user_metadata && profile.user_metadata?.name?.length > 0"
+    v-if="profile && !profile?.user_metadata?.name?.length"
     v-model="showModal"
     title="User Name"
     hide-footer
@@ -14,8 +11,8 @@
     <form @submit.prevent="onSubmitName">
       <div class="mt-3">
         <bike-tag-input
-          v-model="profile.user_metadata.name"
-          :placeholder="profile.user_metadata.name || $t('pages.profile.set_name_placeholder')"
+          v-model="requestedName"
+          :placeholder="$t('pages.profile.set_name_placeholder')"
         />
         <bike-tag-button
           class="modal-header"
@@ -25,9 +22,9 @@
       </div>
     </form>
   </b-modal>
-  <div v-if="profile?.user_metadata" class="container mb-5 mt-5">
+  <div v-if="profile?.user_metadata" class="container mt-5 mb-5">
     <div class="center-container">
-      <div v-if="player.tags" class="d-flex justify-content-center mt-5 mb-5">
+      <div v-if="player.tags" class="mt-5 mb-5 d-flex justify-content-center">
         <player size="lg" :player="player" :no-link="true" />
       </div>
       <div v-else class="profile-picture">
@@ -36,7 +33,7 @@
           <bike-tag-button variant="circle-clean"> </bike-tag-button>
         </div>
       </div>
-      <div class="flx-columns mt-5">
+      <div class="mt-5 flx-columns">
         <div>
           <span
             v-for="(social, i) in Object.keys(profile?.user_metadata).filter(
@@ -46,7 +43,7 @@
                 key != 'passcode',
             )"
             :key="`${i}_label`"
-            class="player-name mt-4"
+            class="mt-4 player-name"
             style="font-size: 2.5rem"
           >
             {{ profile?.user_metadata[social] }}
@@ -62,17 +59,17 @@
         method="POST"
         @submit.prevent="onSubmit"
       >
-        <div v-if="profile.user_metadata" class="mt-3">
+        <div class="mt-3">
           <bike-tag-input
             v-model="profile.user_metadata.name"
             :label="$t('pages.profile.name')"
             readonly
           />
         </div>
-        <div v-if="profile" class="mt-3">
+        <div class="mt-3">
           <bike-tag-input v-model="profile.email" :label="$t('pages.profile.email')" readonly />
         </div>
-        <div v-if="profile.user_metadata" class="mt-3">
+        <div class="mt-3">
           <bike-tag-input
             id="passcode"
             v-model="profile.user_metadata.passcode"
@@ -96,7 +93,7 @@
             </div>
           </bike-tag-input>
         </div>
-        <template v-if="isBikeTagAmbassador">
+        <!-- <template v-if="isBikeTagAmbassador">
           <template
             v-for="(credential, i) in Object.keys(profile.user_metadata.credentials)"
             :key="`${i}_config`"
@@ -106,7 +103,7 @@
               :text="`${firstToUperCase(credential)} Configuration`"
               @click.prevent="() => toggleShowFields(credential)"
             />
-            <div :ref="credentialsRef[credential]" class="input-block mt-3 hide">
+            <div :ref="credentialsRef[credential]" class="mt-3 input-block hide">
               <bike-tag-input
                 v-for="(inputField, j) in Object.keys(
                   profile.user_metadata.credentials[credential],
@@ -119,7 +116,7 @@
               />
             </div>
           </template>
-        </template>
+        </template> -->
         <div class="m-2">
           <h2 style="text-align: left">Options</h2>
           <hr :style="`background-image: url(${styledHr})`" />
@@ -143,7 +140,7 @@
 
 <script setup name="ProfileView">
 import { ref, inject, computed, onMounted, nextTick } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import Reddit from '@/assets/images/Reddit.svg'
@@ -159,6 +156,7 @@ import Loading from 'vue-loading-overlay'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 // data
 const profile = ref(null)
@@ -170,16 +168,19 @@ const socialNetworkIcons = ref([
   ['discord', Discord],
 ])
 const showModal = ref(false)
+const requestedName = ref()
 const styledHr = StyledHr
 const store = useStore()
 const { idTokenClaims, user } = useAuth0()
 const toast = inject('toast')
 const credentialsRefs = ref({})
 const { t } = useI18n()
+const router = useRouter()
 
 // computed
 const getPlayers = computed(() => store.getPlayers)
 const getProfile = computed(() => store.getProfile)
+
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 const player = computed(() => {
   const playerList = getPlayers.value?.filter((player) => {
@@ -206,24 +207,26 @@ function toggleShowFields(name) {
   credentialsRefs.value[name][0].classList.toggle('hide')
 }
 async function onSubmitName() {
-  if (profile.value.user_metadata.name.length > 0) {
+  if (requestedName.value.length > 0) {
+    profile.value.user_metadata.name = requestedName.value
     profile.value['token'] = idTokenClaims.value.__raw
     try {
       await store.assignName(profile.value)
-      profile.value = getProfile.value
       toast.open({
         message: 'Success',
         type: 'success',
         position: 'top',
       })
     } catch (e) {
+      profile.value.user_metadata.name = ''
       toast.open({
         message: e.response?.data ?? e.message,
         type: 'error',
         position: 'top',
       })
+    } finally {
+      showModal.value = false
     }
-    showModal.value = false
   }
 }
 async function onSubmit() {
@@ -248,34 +251,31 @@ async function onSubmit() {
 
 // mounted
 onMounted(() => {
+  if (!getProfile.value) router.push('/')
   profile.value = getProfile.value
-
-  nextTick(() => {
-    profile.value = getProfile.value
-    profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
-    profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
-      skipSteps: false,
-    }
-    showModal.value =
-      profile.value?.user_metadata?.name != null && !profile.value?.user_metadata?.name.length
-    switch (profile.value.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
-      case 'reddit':
-        if (!profile.value.user_metadata.social?.reddit) {
-          profile.value.user_metadata.social.reddit = profile.value.name
-        }
-        break
-      case 'imgur':
-        if (!profile.value.user_metadata.social?.imgur) {
-          profile.value.user_metadata.social.imgur = profile.value.name
-        }
-        break
-      case 'twitter':
-        if (!profile.value.user_metadata.social?.twitter) {
-          profile.value.user_metadata.social.twitter = profile.value.name
-        }
-        break
-    }
-  })
+  profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
+  profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
+    skipSteps: false,
+  }
+  showModal.value =
+    profile.value?.user_metadata?.name != null && !profile.value?.user_metadata?.name.length
+  switch (profile.value.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
+    case 'reddit':
+      if (!profile.value.user_metadata.social?.reddit) {
+        profile.value.user_metadata.social.reddit = profile.value.name
+      }
+      break
+    case 'imgur':
+      if (!profile.value.user_metadata.social?.imgur) {
+        profile.value.user_metadata.social.imgur = profile.value.name
+      }
+      break
+    case 'twitter':
+      if (!profile.value.user_metadata.social?.twitter) {
+        profile.value.user_metadata.social.twitter = profile.value.name
+      }
+      break
+  }
 })
 </script>
 <style lang="scss">

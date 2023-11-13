@@ -16,7 +16,7 @@ const authorizeHandler: Handler = async (event) => {
   let body = 'missing client key and token information'
   let statusCode = HttpStatusCode.Unauthorized
 
-  console.log({ clientKey, clientToken, accessToken, grantType, controlCheck, self })
+  // console.log({ clientKey, clientToken, accessToken, grantType, controlCheck, self })
   if (clientKey?.length > 0 && clientToken?.length > 0 && accessToken?.length > 0) {
     if (getBikeTagHash(clientKey) === clientToken && clientToken === controlCheck) {
       const biketagOpts = getBikeTagClientOpts(

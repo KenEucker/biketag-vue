@@ -98,7 +98,8 @@
 <script setup name="BikeTag">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
+import { getTagDate } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
 
 // componets
@@ -247,9 +248,8 @@ const getPostedDate = (timestamp, timeOnly = false) => {
   if (!timestamp) {
     return ''
   }
-  const datetime = timeOnly
-    ? new Date(timestamp * 1000).toLocaleTimeString()
-    : new Date(timestamp * 1000).toLocaleDateString()
+  const date = getTagDate(timestamp)
+  const datetime = timeOnly ? date.toLocaleTimeString() : date.toLocaleDateString()
 
   return `${timeOnly ? ' @ ' : t('components.biketag.posted_on')} ${datetime}`
 }

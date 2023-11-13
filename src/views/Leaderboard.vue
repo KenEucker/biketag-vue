@@ -11,7 +11,7 @@
 
 <script setup name="LeaderboardView">
 import { computed } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 
 // components
 import Player from '@/components/PlayerBicon.vue'

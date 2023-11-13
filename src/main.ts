@@ -18,14 +18,14 @@ import VueIframe from 'vue-iframes'
 
 import '@/assets/styles/flashy.scss'
 import '@/assets/styles/style.scss'
+import { createAuth0 } from '@auth0/auth0-vue'
 import { createHead } from '@vueuse/head'
 import 'bootstrap-vue-next/dist/bootstrap-vue-next.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'highlight.js/styles/monokai.css'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { debug } from './common/utils'
+import { debug, isAuthenticationEnabled } from './common/utils'
 
-import { createAuth0 } from '@auth0/auth0-vue'
 class BikeTagApp {
   protected emitter
   protected app
@@ -51,16 +51,21 @@ class BikeTagApp {
     this.app.use(router).use(store)
   }
   authentication() {
-    if (process.env.A_DOMAIN?.length) {
+    if (isAuthenticationEnabled()) {
       debug('init::authentication', process.env.A_DOMAIN)
-      const auth = createAuth0({
-        domain: process.env.A_DOMAIN as string,
-        clientId: process.env.A_CID as string,
-        authorizationParams: {
-          redirect_uri: window.location.origin,
-        },
-      })
-      this.app.use(auth)
+      this.app.use(
+        createAuth0({
+          domain: process.env.A_DOMAIN as string,
+          clientId: process.env.A_CID as string,
+          authorizationParams: {
+            redirect_uri: window.location.origin,
+          },
+          useRefreshTokens: true,
+          cacheLocation: 'localstorage',
+        }),
+      )
+    } else {
+      debug('init::authentication', 'authentication disabled')
     }
   }
   components() {

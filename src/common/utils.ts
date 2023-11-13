@@ -106,6 +106,8 @@ export const getDomainInfo = (req: any): DomainInfo => {
   }
 }
 
+export const getTagDate = (time: number): Date => new Date(time * 1000)
+
 export const getBikeTagClientOpts = (win?: Window) => {
   const domainInfo = getDomainInfo(win)
   return {
@@ -214,11 +216,11 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
       (existingMostRecentNumber > 0 && currentTagnumber > existingMostRecentNumber) ||
       existingMostRecentNumber === 0
     if (currentTagnumberIsNewer) {
-      console.log('setting most recently viewed tag', {
-        existingMostRecent,
-        currentTagnumberIsNewer,
-        currentTagnumber,
-      })
+      // console.log('setting most recently viewed tag', {
+      //   existingMostRecent,
+      //   currentTagnumberIsNewer,
+      //   currentTagnumber,
+      // })
       cookies.set(mostRecentCookieKey, currentTagnumber.toString())
     }
 
@@ -429,3 +431,5 @@ export const isOnline = async (checkExternally = false) => {
     .then((response) => response.ok)
     .catch(() => false)
 }
+
+export const isAuthenticationEnabled = () => !!process.env.A_DOMAIN?.length

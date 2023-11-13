@@ -15,7 +15,7 @@
 <script setup name="MapView">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 // import StyledHr from '@/assets/images/hr.svg'
 // import Pin from '@/assets/images/pin.svg'
 

@@ -2,12 +2,12 @@ import { Handler } from '@netlify/functions'
 import axios from 'axios'
 import { ErrorMessage, HttpStatusCode, InfoMessage } from './common/constants'
 import {
-  isValidJson,
-  getProfileAuthorization,
   acceptCorsHeaders,
+  auth0Headers,
   constructAmbassadorProfile,
   constructPlayerProfile,
-  auth0Headers
+  getProfileAuthorization,
+  isValidJson,
 } from './common/methods'
 
 const profileHandler: Handler = async (event) => {
@@ -34,7 +34,7 @@ const profileHandler: Handler = async (event) => {
       /// Create new profile fields (role, name)
       case 'PUT':
         try {
-          const data = JSON.parse(event.body)
+          const data = JSON.parse(event.body!)
           if (isValidJson(data, 'profile.role')) {
             const roles = (
               await axios.request({
@@ -50,7 +50,7 @@ const profileHandler: Handler = async (event) => {
                 headers: authorizationHeaders,
               })
             ).data
-            if (!roles.length && !user_data.user_metadata.name) {
+            if (!roles.length && !user_data.user_metadata?.name) {
               console.log(InfoMessage.ProfileInit, profile.sub)
               const exists = (
                 await axios.request({
@@ -107,8 +107,8 @@ const profileHandler: Handler = async (event) => {
         break
       case 'PATCH':
         try {
-          const data = JSON.parse(event.body)
-          delete data.user_metadata.name
+          const data = JSON.parse(event.body!)
+          delete data.user_metadata?.name
           const validator = profile.isBikeTagAmbassador
             ? 'profile.patch.ambassador'
             : 'profile.patch'
@@ -158,7 +158,7 @@ const profileHandler: Handler = async (event) => {
           statusCode = HttpStatusCode.Ok
         })
         .catch(function (error) {
-          console.error(error)
+          console.error(error.message)
           statusCode = HttpStatusCode.InternalServerError
           body = error.message
         })
@@ -166,40 +166,40 @@ const profileHandler: Handler = async (event) => {
   } else if (event.httpMethod === 'GET' && profile?.name) {
     /// Check in Auth0 that the credentials are valid
     const authorizationHeaders = await auth0Headers()
-    try {
-      const exists = (
-        await axios.request({
-          method: 'GET',
-          url: `https://${process.env.A_DOMAIN}/api/v2/users`,
-          params: {
-            page: 0,
-            per_page: 1,
-            include_totals: false,
-            fields: 'sub,user_metadata.name,user_metadata.passcode',
-            q: `user_metadata.name:"${profile.name}"`,
-            search_engine: 'v3',
-          },
-          headers: authorizationHeaders,
-        })
-      ).data
-      if (exists.length) {
-        const user_metadata = exists[0].user_metadata
-        /// If the passcode isn't set then it defaults to an empty string
-        user_metadata.passcode = user_metadata.passcode ?? ''
+    const existsRequest = await axios
+      .request({
+        method: 'GET',
+        url: `https://${process.env.A_DOMAIN}/api/v2/users`,
+        params: {
+          page: 0,
+          per_page: 1,
+          include_totals: false,
+          fields: 'sub,user_metadata.name,user_metadata.passcode',
+          q: `user_metadata.name:"${profile.name}"`,
+          search_engine: 'v3',
+        },
+        headers: authorizationHeaders,
+      })
+      .catch(function (error) {
+        statusCode = HttpStatusCode.InternalServerError
+        body = error.message
+      })
+    const exists = existsRequest?.data
+    if (exists.length) {
+      const user_metadata = exists[0].user_metadata
+      /// If the passcode isn't set then it defaults to an empty string
+      user_metadata.passcode = user_metadata.passcode ?? ''
 
-        if (user_metadata.passcode == profile.passcode) {
-          body = exists[0].sub
-          statusCode = HttpStatusCode.Ok
-        } else {
-          body = 'unauthorized'
-          statusCode = HttpStatusCode.Unauthorized
-        }
-      } else {
-        body = 'name not found'
+      if (user_metadata.passcode == profile.passcode) {
+        body = exists[0].sub
         statusCode = HttpStatusCode.Ok
+      } else {
+        body = 'unauthorized'
+        statusCode = HttpStatusCode.Unauthorized
       }
-    } catch (e) {
-      console.error(e)
+    } else {
+      body = 'name not found'
+      statusCode = HttpStatusCode.Ok
     }
   } else if (event.httpMethod === 'GET' && !profile) {
     if (event.queryStringParameters?.name) {
@@ -227,7 +227,6 @@ const profileHandler: Handler = async (event) => {
           statusCode = HttpStatusCode.Ok
         })
         .catch(function (error) {
-          console.error(error)
           statusCode = HttpStatusCode.InternalServerError
           body = error.message
         })
@@ -238,7 +237,7 @@ const profileHandler: Handler = async (event) => {
   }
 
   if (statusCode !== HttpStatusCode.Ok) {
-    console.error(body)
+    console.log('profile retrieval error', body)
   }
 
   return {

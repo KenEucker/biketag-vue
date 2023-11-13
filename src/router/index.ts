@@ -1,6 +1,6 @@
+import { authGuard } from '@auth0/auth0-vue'
 import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
-import { authGuard } from '@/auth/authGuard'
-import { debug } from '../common/utils'
+import { debug, isAuthenticationEnabled } from '../common/utils'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -72,7 +72,7 @@ const routes: Array<RouteRecordRaw> = [
 
 let protectedRoutes: Array<RouteRecordRaw> = []
 
-if (process.env.A_DOMAIN?.length) {
+if (isAuthenticationEnabled()) {
   protectedRoutes = [
     {
       path: '/profile',

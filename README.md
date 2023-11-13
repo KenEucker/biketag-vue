@@ -82,7 +82,7 @@ Many thanks to those who have donated to the BikeTag Project.
 
 Thank you to [Netlify][netlify] for providing a [free open source plan][netlify-opensource] for hosting.
 
-Support the BikeTag Project on [GitHub][github], [Patreon][patreon], or directly by going out and playing a round of [BikeTag in your city](https://client.org)!
+Support the BikeTag Project on [GitHub][github], [Patreon][patreon], or directly by going out and playing a round of [BikeTag in your city](https://biketag.org)!
 
   ## Vendors
 
