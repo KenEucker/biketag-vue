@@ -204,7 +204,7 @@ const showHint = () => {
       popover.classList.add('popover__wrapper')
       const hint = getCurrentHint.value
       mysteryHint.value.innerText = ''
-      window.scrollBy({ top: 1 })
+      // window.scrollBy({ top: 1 })
       for (let i of hint) {
         let j = 0
         if (document.querySelector('.popover__wrapper')) {
