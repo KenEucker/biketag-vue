@@ -177,11 +177,11 @@ const boundary = ref({})
 const isInBoundary = ref(false)
 const confirmInBoundary = ref(false)
 const confirmedBoundary = ref(false)
-const auth0 = useAuth0()
 let isAuthenticatedRef = ref(false)
 
 if (isAuthenticationEnabled()) {
- isAuthenticatedRef = auth0.isAuthenticated
+  const auth0 = useAuth0()
+  isAuthenticatedRef = auth0.value.isAuthenticated
 }
 
 // computed
@@ -240,6 +240,7 @@ const onSubmit = async (e) => {
   }
   /// TODO: watch this?
   if (!isAuthenticatedRef.value) {
+    console.log('player', player.value)
     try {
       await store.checkPasscode({
         name: player.value,

@@ -185,7 +185,7 @@ const profileHandler: Handler = async (event) => {
         body = error.message
       })
     const exists = existsRequest?.data
-    if (exists.length) {
+    if (exists?.length) {
       const user_metadata = exists[0].user_metadata
       /// If the passcode isn't set then it defaults to an empty string
       user_metadata.passcode = user_metadata.passcode ?? ''
