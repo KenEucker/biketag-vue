@@ -101,7 +101,7 @@ import { useStore } from '@/store/index'
 import { ordinalSuffixOf } from '@/common/utils'
 import exifr from 'exifr'
 import { useI18n } from 'vue-i18n'
-import heic2any from 'heic2any';
+// import heic2any from 'heic2any';
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
@@ -203,27 +203,28 @@ const setImage = async (event) => {
           position: 'top',
         })
       } else {
-        const imageFile = input.files[0];
+        // const imageFile = input.files[0];
+        image.value = input.files[0];
 
-        // Check if the file type is HEIC
-        if (imageFile.type === 'image/heic' || imageFile.name.toLowerCase().endsWith('.heic')) {
-          try {
-            const pngBlob = await heic2any({ blob: imageFile });
-            const pngFile = new File([pngBlob], 'converted.png', { type: 'image/png' });
-            image.value = pngFile;
-          } catch (conversionError) {
-            console.error('Error converting HEIC to PNG:', conversionError);
-            toast.open({
-              message: 'Error converting HEIC to PNG',
-              type: 'error',
-              position: 'top',
-            });
-            return;
-          }
-        } else {
-          // For non-HEIC files, proceed with the original image
-          image.value = imageFile;
-        }
+        // // Check if the file type is HEIC
+        // if (imageFile.type === 'image/heic' || imageFile.name.toLowerCase().endsWith('.heic')) {
+        //   try {
+        //     const pngBlob = await heic2any({ blob: imageFile });
+        //     const pngFile = new File([pngBlob], 'converted.png', { type: 'image/png' });
+        //     image.value = pngFile;
+        //   } catch (conversionError) {
+        //     console.error('Error converting HEIC to PNG:', conversionError);
+        //     toast.open({
+        //       message: 'Error converting HEIC to PNG',
+        //       type: 'error',
+        //       position: 'top',
+        //     });
+        //     return;
+        //   }
+        // } else {
+        //   // For non-HEIC files, proceed with the original image
+        //   image.value = imageFile;
+        // }
         const results = await exifr.parse(await input.files[0].arrayBuffer());
         const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now();
 
