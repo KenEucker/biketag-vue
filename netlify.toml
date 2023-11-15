@@ -12,6 +12,9 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+  from = "/*"
+  to = "/"
+  status = 200
 
 [[headers]]
   for = "/worker.js"
