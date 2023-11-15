@@ -182,7 +182,7 @@ let isAuthenticatedRef = ref(false)
 
 if (isAuthenticationEnabled()) {
   const auth0 = useAuth0()
-  isAuthenticatedRef.value = auth0.value.isAuthenticated
+  isAuthenticatedRef.value = auth0.isAuthenticated
 }
 
 // computed
@@ -437,8 +437,8 @@ onMounted(function () {
       boundary.value = regionData.geojson
     }
 
-    setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
-    // showPopover = false
+    // setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
+    showPopover.value = false
     player.value = getName.value
     uploadInProgress.value = false
   })

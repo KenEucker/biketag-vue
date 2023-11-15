@@ -1,5 +1,5 @@
 <script setup name="QueuePosted">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index'
 import { debug } from '@/common/utils'
@@ -68,7 +68,7 @@ onMounted(() => {
       postToInstagram: postToInstagram.value,
     }
     debug('autosubmitting tag with default share settings', defaultShareSettings)
-    setTimeout(() => submitTag(defaultShareSettings), 1000)
+    nextTick(() => submitTag(defaultShareSettings), 1000)
   }
 })
 </script>

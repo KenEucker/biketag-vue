@@ -132,7 +132,6 @@ const time = new Date()
 time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 const timer = ref(useTimer(time.getSeconds()))
 const uploadInProgress = ref(false)
-const countDown = ref(10)
 const queueError = ref(null)
 const lineSvg = LineSvg
 const arrowSvg = ArrowSvg
@@ -149,14 +148,6 @@ const getPlayerId = computed(() => store.getPlayerId)
 
 // methods
 const isViewingQueue = () => getFormStep.value === BiketagFormSteps[BiketagFormSteps.viewPosted]
-const countDownTimer = () => {
-  if (countDown.value > 0) {
-    setTimeout(() => {
-      countDown.value -= 1
-      countDownTimer()
-    }, 500)
-  }
-}
 const isSubmittingData = () =>
   !(
     getFormStep.value === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
@@ -235,7 +226,6 @@ async function onQueueSubmit(newTagSubmission) {
 const created = async () => {
   await store.setCurrentBikeTag(true)
   await store.setQueuedTags(true)
-  countDownTimer()
 }
 created()
 
