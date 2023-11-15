@@ -70,7 +70,7 @@
         >
           <img :src="pinIcon" alt="pin" />
           <GMapAutocomplete
-            v-if="isGpsDefault"
+            v-if="isGmapsEnabled() && isGpsDefault"
             id="google-input"
             :disabled="locationDisabled"
             @input="changeLocation"
@@ -131,7 +131,7 @@
 import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
-import { debug, isPointInPolygon, isAuthenticationEnabled } from '@/common/utils'
+import { debug, isPointInPolygon, isAuthenticationEnabled, isGmapsEnabled } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
 import exifr from 'exifr'
 import Pin from '@/assets/images/pin.svg'

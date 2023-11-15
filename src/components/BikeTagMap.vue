@@ -1,5 +1,5 @@
 <template>
-  <div :class="props.variant">
+  <div v-if="isGmapsEnabled()" :class="props.variant">
     <GMapMap
       v-if="props.variant === 'play/input'"
       :center="props.start"
@@ -66,6 +66,7 @@
 <script setup name="BikeTagMap">
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store/index'
+import { isGmapsEnabled } from '@/common/utils'
 import Pin from '@/assets/images/pin.svg'
 
 // components

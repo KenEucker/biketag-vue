@@ -433,3 +433,4 @@ export const isOnline = async (checkExternally = false) => {
 }
 
 export const isAuthenticationEnabled = () => !!process.env.A_DOMAIN?.length
+export const isGmapsEnabled = () => !!process.env.G_AKEY?.length
