@@ -135,6 +135,7 @@ import { debug, isPointInPolygon, isAuthenticationEnabled } from '@/common/utils
 import { useI18n } from 'vue-i18n'
 import exifr from 'exifr'
 import Pin from '@/assets/images/pin.svg'
+import heic2any from 'heic2any';
 
 // components
 import Loading from 'vue-loading-overlay'
@@ -335,7 +336,7 @@ const updateMarker = (e) => {
   }
 }
 const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
-const setImage = (event) => {
+const setImage = async (event) => {
   store.fetchCredentials()
   const input = event.target
   if (input.files) {
@@ -348,48 +349,65 @@ const setImage = (event) => {
       previewReader.readAsDataURL(input.files[0])
       if (input.files[0].size / Math.pow(1024, 2) > 15) {
         toast.open({
-          message: 'Image exceds 15mb',
+          message: 'Image exceeds 15mb',
           type: 'error',
           position: 'top',
         })
       } else {
-        input.files[0].arrayBuffer().then(async (value) => {
-          const results = await exifr.parse(value)
-          const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
+        const imageFile = input.files[0];
 
-          if (createDate < getCurrentBikeTag.value.mysteryTime) {
+        // Check if the file type is HEIC
+        if (imageFile.type === 'image/heic' || imageFile.name.toLowerCase().endsWith('.heic')) {
+          try {
+            const pngBlob = await heic2any({ blob: imageFile });
+            const pngFile = new File([pngBlob], 'converted.png', { type: 'image/png' });
+            image.value = pngFile;
+          } catch (conversionError) {
+            console.error('Error converting HEIC to PNG:', conversionError);
             toast.open({
-              message: 'Timestamp Error',
+              message: 'Error converting HEIC to PNG',
               type: 'error',
               position: 'top',
-            })
-          } else {
-            image.value = input.files[0]
+            });
+            return;
           }
+        } else {
+          // For non-HEIC files, proceed with the original image
+          image.value = imageFile;
+        }
+        const results = await exifr.parse(await input.files[0].arrayBuffer());
+        const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now();
 
-          const GPSData = await exifr.gps(value)
+        if (createDate < getCurrentBikeTag.value.mysteryTime) {
+          toast.open({
+            message: 'Timestamp Error',
+            type: 'error',
+            position: 'top',
+          });
+        } else {
+          const GPSData = await exifr.gps(await input.files[0].arrayBuffer());
 
           if (GPSData) {
             if (GPSData.latitude != null && GPSData.longitude != null) {
               gps.value = {
                 lat: round(GPSData.latitude),
                 lng: round(GPSData.longitude),
-              }
-              isGpsDefault.value = false
+              };
+              isGpsDefault.value = false;
             }
           } else {
-            gps.value = getGame.value?.boundary
-            isGpsDefault.value = true
+            gps.value = getGame.value?.boundary;
+            isGpsDefault.value = true;
           }
-          center.value = { ...gps.value }
-          location.value = ''
-        })
+          center.value = { ...gps.value };
+          location.value = '';
+        }
       }
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
   }
-}
+};
 
 const calculateInBoundary = () => {
   // If the boundary is set
