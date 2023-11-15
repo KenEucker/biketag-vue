@@ -288,6 +288,7 @@ onMounted(() => {
   margin-top: 1rem;
   font-size: 2rem;
   font-family: $default-font-family;
+
   @media (width >= 470px) {
     font-size: 3rem;
   }

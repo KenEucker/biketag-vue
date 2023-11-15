@@ -172,8 +172,9 @@ const store = useStore()
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
-const auth0 = useAuth0()
 let isAuthenticatedRef = ref(false)
+const authLogout = ref(null)
+const auth0 = ref(null)
 
 // computed
 const getGameTitle = computed(() => store.getGameTitle)
@@ -194,7 +195,9 @@ const getProfileImageSrc = computed(() => {
 })
 
 if (isAuthenticationEnabled()) {
-  isAuthenticatedRef = auth0.isAuthenticated
+  auth0.value = useAuth0()
+  isAuthenticatedRef.value = auth0.value.isAuthenticated
+  authLogout.value = auth0.value.logout
 }
 
 // methods
@@ -226,7 +229,7 @@ async function logoutClick() {
     await store.setProfile()
     const returnTo = `${window.location.origin}/#/logout`
     console.log({ returnTo })
-    await auth0.logout({
+    await authLogout.value({
       returnTo,
     })
   }
@@ -319,6 +322,7 @@ header {
         height: inherit;
         overflow: auto;
       }
+
       @media (min-width: $breakpoint-desktop) {
         height: auto;
       }
@@ -328,6 +332,7 @@ header {
       max-width: 25vw;
       height: auto;
     }
+
     @media (width >= 990px) {
       .profile-icon {
         max-width: 10vh;
@@ -337,6 +342,7 @@ header {
     .navbar-brand {
       margin: 0;
       margin-left: 1rem;
+
       @media (min-width: $breakpoint-desktop) {
         margin: 0 2rem;
       }

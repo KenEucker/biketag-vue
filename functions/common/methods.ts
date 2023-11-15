@@ -15,7 +15,7 @@ import { extname, join } from 'path'
 import qs from 'qs'
 import request from 'request'
 import { BikeTagProfile } from '../../src/common/types'
-import { getDomainInfo, getTagDate } from '../../src/common/utils'
+import { getDomainInfo, getTagDate, isAuthenticationEnabled } from '../../src/common/utils'
 import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
@@ -322,6 +322,9 @@ export const getProfileAuthorization = async (event: any): Promise<any> => {
     const biketagOpts = getBikeTagClientOpts(event, true, true)
     const biketag = new BikeTagClient(biketagOpts)
     const thisGamesAmbassadors = (await getThisGamesAmbassadors(biketag)) as Ambassador[]
+    if (!thisGamesAmbassadors?.length) {
+      return profile
+    }
     const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
     const isABikeTagAmbassador = profileAmbassadorMatch.length ? true : profile.email === process.env.ADMIN_EMAIL
 
@@ -356,11 +359,19 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
     const namePasscodeString = CryptoJS.AES.decrypt(
       authorizationString,
       process.env.HOST_KEY ?? ''
-    ).toString(CryptoJS.enc.Utf8)
-    const namePasscodeSplit = namePasscodeString.split('::')
+    )
+    const decryptedPasscode = namePasscodeString.toString(CryptoJS.enc.Utf8)
+    if (decryptedPasscode) {
+      const namePasscodeSplit = decryptedPasscode.split('::')
+
+      return {
+        name: namePasscodeSplit[0],
+        passcode: namePasscodeSplit[1],
+      }
+    }
     return {
-      name: namePasscodeSplit[0],
-      passcode: namePasscodeSplit[1],
+      name: null,
+      passcode: null,
     }
   }
 
@@ -1059,12 +1070,18 @@ const getAuthManagementToken = async () => {
     })
     return getManagementTokenRequest?.data?.access_token
   } catch (e) {
+    console.log({
+      domain: process.env.A_DOMAIN,
+      'client_id': process.env.A_M_CID,
+      'client_secret': process.env.A_M_CS,
+      'audience': process.env.A_AUDIENCE
+    })
     console.log('getAuthManagementToken error', e.message)
   }
 }
 
 export const auth0Headers = async () => {
-  const accessToken = await getAuthManagementToken()
+  const accessToken = await isAuthenticationEnabled() ? getAuthManagementToken() : null
   if (accessToken) {
     return { 'Authorization': `Bearer ${accessToken}` }
   }

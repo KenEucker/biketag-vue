@@ -65,9 +65,11 @@ const backgroundSrc = computed(() => {
       @media (min-width: $breakpoint-mobile-sm) {
         font-size: 1rem;
       }
+
       @media (min-width: $breakpoint-mobile-md) {
         font-size: 1.25rem;
       }
+
       @media (min-width: $breakpoint-mobile-lg) {
         font-size: 1.5rem;
       }
@@ -80,6 +82,7 @@ const backgroundSrc = computed(() => {
     font-family: $default-font-family;
     font-weight: bold;
     text-transform: uppercase;
+
     @include background-btn;
 
     &--underline {
@@ -101,6 +104,7 @@ const backgroundSrc = computed(() => {
       @media (min-width: $breakpoint-desktop) {
         min-width: 10rem;
       }
+
       @media (min-width: $breakpoint-mobile-md) {
         min-height: 8.9rem;
       }
@@ -127,9 +131,11 @@ const backgroundSrc = computed(() => {
       @media (max-width: $breakpoint-desktop) {
         line-height: 7rem;
       }
+
       @media (max-width: $breakpoint-tablet) {
         line-height: 6rem;
       }
+
       @media (max-width: $breakpoint-mobile-lg) {
         line-height: 5rem;
       }

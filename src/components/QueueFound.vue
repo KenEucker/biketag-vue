@@ -178,11 +178,11 @@ const boundary = ref({})
 const isInBoundary = ref(false)
 const confirmInBoundary = ref(false)
 const confirmedBoundary = ref(false)
-const auth0 = useAuth0()
 let isAuthenticatedRef = ref(false)
 
 if (isAuthenticationEnabled()) {
- isAuthenticatedRef = auth0.isAuthenticated
+  const auth0 = useAuth0()
+  isAuthenticatedRef.value = auth0.value.isAuthenticated
 }
 
 // computed
@@ -241,6 +241,7 @@ const onSubmit = async (e) => {
   }
   /// TODO: watch this?
   if (!isAuthenticatedRef.value) {
+    console.log('player', player.value)
     try {
       await store.checkPasscode({
         name: player.value,
@@ -482,6 +483,7 @@ input#found {
   .vue-map {
     height: 400px;
   }
+
   @media (width >= 600px) {
     max-width: 420px;
     width: 420px;
@@ -490,6 +492,7 @@ input#found {
       width: 400px;
     }
   }
+
   @media (width >= 800px) {
     width: 620px;
     max-width: 620px;

@@ -86,7 +86,7 @@
 </template>
 
 <script setup name="BikeTagFooter">
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index'
 import HintIcon from '@/assets/images/hint-icon.svg'
@@ -198,7 +198,7 @@ const randomCharacter = () => {
   return characters[getRandomInteger(0, characters.length - 1)]
 }
 const showHint = () => {
-  setTimeout(async () => {
+  nextTick(async () => {
     const popover = document.querySelector('.popover')
     if (popover) {
       popover.classList.add('popover__wrapper')
@@ -224,7 +224,7 @@ const showHint = () => {
         mysteryHint.value.innerText = `${mysteryHint.value.innerText}${i}`
       }
     }
-  }, 100)
+  })
 }
 const closePopover = () => {
   hint.value.click()

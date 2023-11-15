@@ -16,7 +16,6 @@ import BikeTagClient from 'biketag'
 import { Game, Player, Tag } from 'biketag/lib/common/schema'
 import { createPinia, defineStore } from 'pinia'
 import { debug } from '../common/utils'
-// import { inject } from 'vue'
 
 const domain = getDomainInfo(window)
 const profile = getProfileFromCookie()
@@ -120,7 +119,6 @@ export const useStore = defineStore('store', {
         await client.config(credentials, false, true)
         this.credentialsFetched = true
         // if (this.profile?.isBikeTagAmbassador) {
-        //   const auth = inject('auth0')
         //   /// fetch auth token for admin purposes
         //   const checkAuth = () => {
         //     if (auth?.isAuthenticated) {
