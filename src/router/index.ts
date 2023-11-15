@@ -1,5 +1,5 @@
 import { authGuard } from '@auth0/auth0-vue'
-import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
+import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router'
 import { debug, isAuthenticationEnabled } from '../common/utils'
 
 const routes: Array<RouteRecordRaw> = [
@@ -92,7 +92,7 @@ if (isAuthenticationEnabled()) {
 debug('init::router', { sitemap: routes.map((r) => r.path) })
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes: [...routes, ...protectedRoutes],
   scrollBehavior() {
     return { top: 0 }
