@@ -55,7 +55,7 @@
         ref="file"
         type="file"
         class="d-none"
-        accept="image/*"
+        accept="image/*,.heic,.heif"
         required
         @change="setImage"
       />
