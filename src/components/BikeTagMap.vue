@@ -230,6 +230,7 @@ onMounted(() => {
 .map {
   width: 100%;
   height: 450px;
+
   @media (min-width: $breakpoint-tablet) {
     height: 650px;
   }

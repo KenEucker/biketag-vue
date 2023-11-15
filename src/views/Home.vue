@@ -181,6 +181,7 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
 
       // line-height: 1rem !important;
       min-width: 1rem;
+
       @media (min-width: $breakpoint-tablet) {
         top: 0;
         min-width: 8rem;

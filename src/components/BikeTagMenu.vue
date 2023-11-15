@@ -196,7 +196,7 @@ const getProfileImageSrc = computed(() => {
 
 if (isAuthenticationEnabled()) {
   auth0.value = useAuth0()
-  isAuthenticatedRef = auth0.value.isAuthenticated
+  isAuthenticatedRef.value = auth0.value.isAuthenticated
   authLogout.value = auth0.value.logout
 }
 
@@ -322,6 +322,7 @@ header {
         height: inherit;
         overflow: auto;
       }
+
       @media (min-width: $breakpoint-desktop) {
         height: auto;
       }
@@ -331,6 +332,7 @@ header {
       max-width: 25vw;
       height: auto;
     }
+
     @media (width >= 990px) {
       .profile-icon {
         max-width: 10vh;
@@ -340,6 +342,7 @@ header {
     .navbar-brand {
       margin: 0;
       margin-left: 1rem;
+
       @media (min-width: $breakpoint-desktop) {
         margin: 0 2rem;
       }

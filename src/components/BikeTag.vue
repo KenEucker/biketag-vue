@@ -218,15 +218,15 @@ const getFoundImageSrc = computed(() => {
   return props.imageSize
     ? getImgurImageSized.value(_foundImageUrl.value, props.imageSize)
     : props.sizedFoundImage
-    ? getImgurImageSized.value(_foundImageUrl.value)
-    : _foundImageUrl.value
+      ? getImgurImageSized.value(_foundImageUrl.value)
+      : _foundImageUrl.value
 })
 const getMysteryImageSrc = computed(() => {
   return props.imageSize
     ? getImgurImageSized.value(_mysteryImageUrl.value, props.imageSize)
     : props.sizedMysteryImage
-    ? getImgurImageSized.value(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
-    : _mysteryImageUrl.value
+      ? getImgurImageSized.value(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
+      : _mysteryImageUrl.value
 })
 const _mysteryDescription = computed(() => {
   return props.mysteryDescription

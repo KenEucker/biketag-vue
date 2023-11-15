@@ -285,6 +285,7 @@ header {
         cursor: pointer;
       }
     }
+
     @media (width >= 992px) {
       width: 90%;
 
@@ -403,6 +404,7 @@ footer {
     }
   }
 }
+
 @media (width >= 780px) {
   main {
     margin-bottom: calc(-220px - 1rem);

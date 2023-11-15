@@ -35,6 +35,7 @@ body {
     animation-iteration-count: infinite;
     animation-timing-function: linear;
   }
+
   @keyframes spin {
     from {
       transform: rotate(0deg);
@@ -350,6 +351,7 @@ body {
           position: relative;
           padding: 0;
           bottom: -25px;
+
           @media (min-width: $breakpoint-mobile-md) {
             height: 6rem;
           }
@@ -396,6 +398,7 @@ body {
         z-index: 0;
         position: absolute;
         object-fit: contain;
+
         @media (width >= 400px){
           width: 98%;
         }

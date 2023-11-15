@@ -9,7 +9,7 @@
     "serve": "vite",
     "build": "vite build",
     "dev": "netlify dev --functionsPort 7200",
-    "preview": "npm run build -w && npm serve dist"
+    "preview": "npm run build -w && npm run serve dist"
   },
   "dependencies": {
     "@auth0/auth0-vue": "^2.0.0",

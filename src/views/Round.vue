@@ -117,6 +117,7 @@ onMounted(() => {
 
 .realign-spinner {
   margin-left: -15%;
+
   @media (width >= 620px) {
     margin-left: 0;
   }

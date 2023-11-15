@@ -170,6 +170,7 @@ function cardClick(i, e) {
     height: 400px;
   }
 }
+
 @keyframes rotate {
   10%,
   100% {

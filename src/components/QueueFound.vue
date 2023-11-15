@@ -181,7 +181,7 @@ let isAuthenticatedRef = ref(false)
 
 if (isAuthenticationEnabled()) {
   const auth0 = useAuth0()
-  isAuthenticatedRef = auth0.value.isAuthenticated
+  isAuthenticatedRef.value = auth0.value.isAuthenticated
 }
 
 // computed
@@ -465,6 +465,7 @@ input#found {
   .vue-map {
     height: 400px;
   }
+
   @media (width >= 600px) {
     max-width: 420px;
     width: 420px;
@@ -473,6 +474,7 @@ input#found {
       width: 400px;
     }
   }
+
   @media (width >= 800px) {
     width: 620px;
     max-width: 620px;

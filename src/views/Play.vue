@@ -295,6 +295,7 @@ onMounted(() => {
 
 .realign-spinner {
   margin-left: -15%;
+
   @media (width >= 620px) {
     margin-left: 0;
   }
@@ -314,6 +315,7 @@ onMounted(() => {
     background-repeat: no-repeat;
     background-position: center;
     margin: 0 1rem;
+
     @media (min-width: $breakpoint-mobile-md) {
       min-width: 5rem;
     }
