@@ -791,7 +791,7 @@ export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, 
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
       data = JSON.stringify({
-        content: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.mysteryPlayer} \r\n\n[View previous round](${host}/#/${currentNumber})`,
+        content: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.mysteryPlayer} \r\n\n[View previous round](${host}/${currentNumber})`,
         embeds: [
           {
             timestamp: getTagDate(tag.foundTime).toISOString(),
@@ -836,7 +836,7 @@ export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, 
             block_id: "foundTag",
             text: {
               type: "mrkdwn",
-              text: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}\r\n\n<${host}/#/${currentNumber}|View previous round>`
+              text: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}\r\n\n<${host}/${currentNumber}|View previous round>`
             },
             accessory: {
               type: "image",
@@ -974,7 +974,7 @@ export const setNewBikeTagPost = async (
             currentBikeTag: currentBikeTagUpdateResult.data,
             newBikeTagPost: newBikeTagUpdateResult.data,
             logo,
-            ambassadorsUrl: `${host}/#/queue?btaId=${a?.id}`,
+            ambassadorsUrl: `${host}/queue?btaId=${a?.id}`,
             tagAutoApprovedText:
               'This tag was auto-approved by the AutoPost feature for being the first, completed, BikeTag Post to be submitted. If there is a problem with this tag, please click the button below to address the issue.',
             newBikeTagRoundTitle: ``,

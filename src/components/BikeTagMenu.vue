@@ -227,7 +227,7 @@ function login() {
 async function logoutClick() {
   if (isAuthenticationEnabled()) {
     await store.setProfile()
-    const returnTo = `${window.location.origin}/#/logout`
+    const returnTo = `${window.location.origin}/logout`
     await authLogout.value({
       returnTo,
     })

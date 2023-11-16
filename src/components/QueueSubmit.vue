@@ -141,11 +141,11 @@ const supportsTwitter = computed(() => !!getGame.value?.settings[Settings.Suppor
 const supportsInstagram = computed(() => !!getGame.value?.settings[Settings.SupportsInstagram])
 const redditPostText = computed(
   () => `
-[#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://biketag.org/#/${getPlayerTag.value.tagnumber})
+[#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://biketag.org/${getPlayerTag.value.tagnumber})
 
 Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurrentBikeTag.value.tagnumber}](${getCurrentBikeTag.value.discussionUrl}) that ${getCurrentBikeTag.value.mysteryPlayer} posted!
 
-"[${getPlayerTag.value.foundLocation}](https://biketag.org/#/${getCurrentBikeTag.value.tagnumber})"
+"[${getPlayerTag.value.foundLocation}](https://biketag.org/${getCurrentBikeTag.value.tagnumber})"
 
 See all BikeTags and more, for ${getGameName.value}:
 
