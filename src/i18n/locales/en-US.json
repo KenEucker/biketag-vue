@@ -78,6 +78,7 @@
     },
     "profile": {
       "name": "name",
+      "email": "email address",
       "save": "Update Profile",
       "set_name": "Save my name",
       "set_name_placeholder": "Your new name",
