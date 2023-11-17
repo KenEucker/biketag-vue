@@ -288,6 +288,7 @@ onBeforeUnmount(() => {
       min-width: 350px;
       min-height: 190px;
     }
+
     @media (min-width: $breakpoint-tablet) {
       min-width: 400px;
       min-height: 210px;
