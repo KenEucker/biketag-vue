@@ -29,7 +29,7 @@
 
       <b-collapse id="navbarSupportedContent" ref="navList" class="navbar-collapse">
         <ul class="m-auto navbar-nav mb-lg-0">
-          <li v-if="isAuthenticated" class="nav-item">
+          <li v-if="isAuthenticatedRef" class="nav-item">
             <img
               class="profile-icon"
               :src="getProfileImageSrc"
@@ -90,8 +90,8 @@
           >
             {{ $t('menu.about') }}
           </li>
-          <template v-if="isAuthenticated">
-            <li class="nav-item" @click="logoutFunction">
+          <template v-if="isAuthenticatedRef">
+            <li class="nav-item" @click="logoutClick">
               {{ $t('menu.logout') }}
             </li>
           </template>
@@ -140,8 +140,8 @@
 <script setup name="BikeTagMenu">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/index.ts'
-import { debug, isOnline } from '@/common/utils'
+import { useStore } from '@/store/index'
+import { debug, isOnline, isAuthenticationEnabled } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { useI18n } from 'vue-i18n'
 
@@ -162,7 +162,7 @@ const props = defineProps({
 
 // data
 /// Now showing the login menu option, always
-const showLogin = ref(true) //process.env.CONTEXT === 'dev')
+const showLogin = ref(isAuthenticationEnabled())
 const showHeader = ref(true)
 const lastScrollPosition = ref(0)
 const scrollOffset = ref(40)
@@ -171,8 +171,10 @@ const navList = ref(null)
 const store = useStore()
 const router = useRouter()
 const route = useRoute()
-const { logout, isAuthenticated } = useAuth0()
 const { t } = useI18n()
+let isAuthenticatedRef = ref(false)
+const authLogout = ref(null)
+const auth0 = ref(null)
 
 // computed
 const getGameTitle = computed(() => store.getGameTitle)
@@ -191,6 +193,12 @@ const currentRoute = computed(() => {
 const getProfileImageSrc = computed(() => {
   return isBikeTagAmbassador.value ? '/images/biketag-ambassador.svg' : '/images/biketag-player.svg'
 })
+
+if (isAuthenticationEnabled()) {
+  auth0.value = useAuth0()
+  isAuthenticatedRef.value = auth0.value.isAuthenticated
+  authLogout.value = auth0.value.logout
+}
 
 // methods
 // Toggle if navigation is shown or hidden
@@ -216,11 +224,14 @@ function login() {
   closeCollapsible()
   router.push('/login')
 }
-function logoutFunction() {
-  store.setProfile()
-  logout({
-    returnTo: window.location.origin,
-  })
+async function logoutClick() {
+  if (isAuthenticationEnabled()) {
+    await store.setProfile()
+    const returnTo = `${window.location.origin}/logout`
+    await authLogout.value({
+      returnTo,
+    })
+  }
 }
 function closeCollapsible() {
   // console.log(buttonCollapse.value)
@@ -310,6 +321,7 @@ header {
         height: inherit;
         overflow: auto;
       }
+
       @media (min-width: $breakpoint-desktop) {
         height: auto;
       }
@@ -319,6 +331,7 @@ header {
       max-width: 25vw;
       height: auto;
     }
+
     @media (width >= 990px) {
       .profile-icon {
         max-width: 10vh;
@@ -328,6 +341,7 @@ header {
     .navbar-brand {
       margin: 0;
       margin-left: 1rem;
+
       @media (min-width: $breakpoint-desktop) {
         margin: 0 2rem;
       }

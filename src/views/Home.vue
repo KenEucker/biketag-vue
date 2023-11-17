@@ -63,7 +63,7 @@
 <script setup name="HomeView">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import 'vue-loading-overlay/dist/vue-loading.css'
 // import useSWRV from 'swrv'
 
@@ -181,6 +181,7 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
 
       // line-height: 1rem !important;
       min-width: 1rem;
+
       @media (min-width: $breakpoint-tablet) {
         top: 0;
         min-width: 8rem;

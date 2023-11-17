@@ -16,7 +16,6 @@ import BikeTagClient from 'biketag'
 import { Game, Player, Tag } from 'biketag/lib/common/schema'
 import { createPinia, defineStore } from 'pinia'
 import { debug } from '../common/utils'
-// import { inject } from 'vue'
 
 const domain = getDomainInfo(window)
 const profile = getProfileFromCookie()
@@ -120,7 +119,6 @@ export const useStore = defineStore('store', {
         await client.config(credentials, false, true)
         this.credentialsFetched = true
         // if (this.profile?.isBikeTagAmbassador) {
-        //   const auth = inject('auth0')
         //   /// fetch auth token for admin purposes
         //   const checkAuth = () => {
         //     if (auth?.isAuthenticated) {
@@ -183,7 +181,6 @@ export const useStore = defineStore('store', {
       }
     },
     async resetBikeTagCache() {
-      console.log('resetBikeTagCache')
       /// TODO: add a check for stale cache before unnecessarily resetting
       await this.setGame()
       await this.setTags(false)
@@ -494,19 +491,15 @@ export const useStore = defineStore('store', {
     },
     SET_PROFILE(profile: any) {
       const oldState = this.profile
-      this.profile = profile
-      console.trace('stale::profile', profile)
-      setProfileCookie(profile)
-
-      if (!profile) {
-        // setQueuedTagInCookie()
-      }
 
       if (
-        profile?.name !== oldState?.name ||
+        (profile && profile?.name !== oldState?.name) ||
+        profile?.user_metadata?.name !== oldState?.user_metadata?.name ||
         profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
       ) {
-        debug('state::profile', profile)
+        this.profile = profile
+        setProfileCookie(profile)
+        debug('store::profile', profile)
       }
     },
     SET_GAME(game: any) {
@@ -702,7 +695,7 @@ export const useStore = defineStore('store', {
   getters: {
     getAmbassadorId(state) {
       if (state.profile?.isBikeTagAmbassador) {
-        return state.profile.sub
+        return state.profile?.sub
       }
       return null
     },
@@ -720,7 +713,7 @@ export const useStore = defineStore('store', {
       return state.game?.slug
     },
     getPlayerId(state) {
-      return state.profile.sub
+      return state.profile?.sub
     },
     getGameBoundary(state) {
       return state.game?.boundary

@@ -107,7 +107,7 @@
 <script setup name="QueueApprove">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'

@@ -18,7 +18,7 @@
 <script setup name="QueueJoined">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { useI18n } from 'vue-i18n'
 
 // components
@@ -69,9 +69,11 @@ function goMysteryQueue() {
       }
 
       width: 90%;
+
       @media (width >= 48rem) {
         width: 60%;
       }
+
       @media (width >= 64rem) {
         width: 23rem;
       }

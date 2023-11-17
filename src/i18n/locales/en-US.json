@@ -73,10 +73,12 @@
     "login":{
       "player": "BikeTag Player Login",
       "description": "The BikeTag Game doesn't require you to log in to play the game, but creating a login does give you the opportunity to secure your player name and prevent others from using it.",
+      "disabled": "This game is not configured to be used with logins at the moment. If you think this is an error, please reach out to support@biketag.org for help.",
       "ambassador": "BikeTag Ambassador Login"
     },
     "profile": {
       "name": "name",
+      "email": "email address",
       "save": "Update Profile",
       "set_name": "Save my name",
       "set_name_placeholder": "Your new name",

@@ -100,7 +100,7 @@
 
 <script setup name="QueueBikeTagView">
 import { ref, inject, computed, watchEffect, onMounted } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
@@ -132,7 +132,6 @@ const time = new Date()
 time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 const timer = ref(useTimer(time.getSeconds()))
 const uploadInProgress = ref(false)
-const countDown = ref(10)
 const queueError = ref(null)
 const lineSvg = LineSvg
 const arrowSvg = ArrowSvg
@@ -149,14 +148,6 @@ const getPlayerId = computed(() => store.getPlayerId)
 
 // methods
 const isViewingQueue = () => getFormStep.value === BiketagFormSteps[BiketagFormSteps.viewPosted]
-const countDownTimer = () => {
-  if (countDown.value > 0) {
-    setTimeout(() => {
-      countDown.value -= 1
-      countDownTimer()
-    }, 500)
-  }
-}
 const isSubmittingData = () =>
   !(
     getFormStep.value === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
@@ -235,7 +226,6 @@ async function onQueueSubmit(newTagSubmission) {
 const created = async () => {
   await store.setCurrentBikeTag(true)
   await store.setQueuedTags(true)
-  countDownTimer()
 }
 created()
 
@@ -295,6 +285,7 @@ onMounted(() => {
 
 .realign-spinner {
   margin-left: -15%;
+
   @media (width >= 620px) {
     margin-left: 0;
   }
@@ -314,6 +305,7 @@ onMounted(() => {
     background-repeat: no-repeat;
     background-position: center;
     margin: 0 1rem;
+
     @media (min-width: $breakpoint-mobile-md) {
       min-width: 5rem;
     }

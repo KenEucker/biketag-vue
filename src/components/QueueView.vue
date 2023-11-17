@@ -44,9 +44,9 @@
 </template>
 
 <script setup name="QueueView">
-import { ref, inject, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'
@@ -78,8 +78,8 @@ const goNextQueueStepButtonText = computed(
       getPlayerTag.value?.mysteryImageUrl?.length > 0
         ? t('pages.round.submit_queue')
         : getPlayerTag.value?.foundImageUrl?.length > 0
-        ? t('pages.round.complete_queue')
-        : t('pages.round.join_queue')
+          ? t('pages.round.complete_queue')
+          : t('pages.round.join_queue')
     } #${getCurrentBikeTag.value?.tagnumber ?? 1}!`,
 )
 const showGoNextButton = computed(() => getQueuedTagState.value !== BiketagFormSteps.roundPosted)

@@ -1,8 +1,7 @@
 module.exports = {
   extends: [
     'stylelint-config-standard',
-    'stylelint-config-standard-scss',
-    'stylelint-config-prettier',
+    'stylelint-config-standard-scss'
   ],
   plugins: ['stylelint-order', 'stylelint-selector-bem-pattern'],
   ignoreFiles: ['node_modules/**', 'src/assets/fonts/**', 'src/assets/style/reset.css', 'public/**'],

@@ -33,11 +33,10 @@
 
 <script setup name="ApproveBikeTagView">
 import { ref, inject, computed, onMounted } from 'vue'
-import { useStore } from '@/store/index.ts'
-import { useAuth0 } from '@auth0/auth0-vue'
+import { useStore } from '@/store/index'
 // import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
-import { debug } from '@/common/utils'
+import { useAuth0 } from '@auth0/auth0-vue'
 
 // components
 import QueueApprove from '@/components/QueueApprove.vue'
@@ -56,9 +55,9 @@ const time = new Date()
 time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 // const timer = ref(useTimer(time))
 const uploadInProgress = ref(false)
+const { idTokenClaims } = useAuth0()
 const queueError = ref(null)
 const store = useStore()
-const { isAuthenticated, idTokenClaims, user } = useAuth0()
 const toast = inject('toast')
 const { t } = useI18n()
 
@@ -68,20 +67,6 @@ const getGameName = computed(() => store.getGameName)
 const getAmbassadorId = computed(() => store.getAmbassadorId)
 
 // methods
-function checkAuth() {
-  if (isAuthenticated.value) {
-    if (!store.getProfile?.nonce?.length) {
-      if (idTokenClaims.value) {
-        store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
-      } else {
-        debug("what's this? no speaka da mda5hash, brah?")
-        return false
-      }
-    }
-    return true
-  }
-  return false
-}
 async function onApproveSubmit(newTagSubmission) {
   const { tag, formAction, formData, storeAction } = newTagSubmission
   if ('scrollRestoration' in history) {
@@ -163,13 +148,13 @@ onMounted(async () => {
   await store.setQueuedTags(true)
   await store.fetchCredentials()
 
-  /// Get the user credentials for BikeTag Ambassador functions
-  if (!checkAuth()) {
-    await (() =>
-      new Promise((resolve) => {
-        setTimeout(resolve(checkAuth()), 1000)
-      }))()
-  }
+  /// TODO: do we need to?
+  // /// Get the user credentials for BikeTag Ambassador functions
+  // checkAuth(useAuth0(), (user, tokens) => {
+  //   if (!store.getProfile?.nonce?.length) {
+  //     store.setProfile({ ...user.value, token: tokens?.__raw })
+  //   }
+  // })
   uploadInProgress.value = false
 
   // watchEffect(async () => {

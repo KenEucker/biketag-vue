@@ -70,7 +70,7 @@
         >
           <img :src="pinIcon" alt="pin" />
           <GMapAutocomplete
-            v-if="isGpsDefault"
+            v-if="isGmapsEnabled() && isGpsDefault"
             id="google-input"
             :disabled="locationDisabled"
             @input="changeLocation"
@@ -103,7 +103,7 @@
           v-model="player"
           name="player"
           required
-          :readonly="isAuthenticated"
+          :readonly="isAuthenticatedRef"
           :placeholder="t('pages.round.name_placeholder')"
         />
         <b-modal
@@ -129,12 +129,13 @@
 
 <script setup name="QueueFoundTag">
 import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
-import { debug, isPointInPolygon } from '@/common/utils'
+import { debug, isPointInPolygon, isAuthenticationEnabled, isGmapsEnabled } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
 import exifr from 'exifr'
 import Pin from '@/assets/images/pin.svg'
+// import heic2any from 'heic2any';
 
 // components
 import Loading from 'vue-loading-overlay'
@@ -171,13 +172,18 @@ const player = ref('')
 const passcode = ref(Date.now().toString()) // don't let them just get away with it
 const foundTagRef = ref(null)
 const store = useStore()
-const { isAuthenticated } = useAuth0()
 const toast = inject('toast')
 const { t } = useI18n()
 const boundary = ref({})
 const isInBoundary = ref(false)
 const confirmInBoundary = ref(false)
 const confirmedBoundary = ref(false)
+let isAuthenticatedRef = ref(false)
+
+if (isAuthenticationEnabled()) {
+  const auth0 = useAuth0()
+  isAuthenticatedRef.value = auth0.isAuthenticated
+}
 
 // computed
 const getGameName = computed(() => store.getGameName)
@@ -233,7 +239,9 @@ const onSubmit = async (e) => {
     uploadInProgress.value = false
     return
   }
-  if (!isAuthenticated) {
+  /// TODO: watch this?
+  if (!isAuthenticatedRef.value) {
+    console.log('player', player.value)
     try {
       await store.checkPasscode({
         name: player.value,
@@ -328,7 +336,7 @@ const updateMarker = (e) => {
   }
 }
 const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
-const setImage = (event) => {
+const setImage = async (event) => {
   store.fetchCredentials()
   const input = event.target
   if (input.files) {
@@ -341,48 +349,67 @@ const setImage = (event) => {
       previewReader.readAsDataURL(input.files[0])
       if (input.files[0].size / Math.pow(1024, 2) > 15) {
         toast.open({
-          message: 'Image exceds 15mb',
+          message: 'Image exceeds 15mb',
           type: 'error',
           position: 'top',
         })
       } else {
-        input.files[0].arrayBuffer().then(async (value) => {
-          const results = await exifr.parse(value)
-          const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
+        // const imageFile = input.files[0];
+        image.value = input.files[0];
 
-          if (createDate < getCurrentBikeTag.value.mysteryTime) {
-            toast.open({
-              message: 'Timestamp Error',
-              type: 'error',
-              position: 'top',
-            })
-          } else {
-            image.value = input.files[0]
-          }
+        // Check if the file type is HEIC
+        // TODO: this needs resolved: https://github.com/alexcorvi/heic2any/issues/53
+        // if (imageFile.type === 'image/heic' || imageFile.name.toLowerCase().endsWith('.heic')) {
+        //   try {
+        //     const pngBlob = await heic2any({ blob: imageFile });
+        //     const pngFile = new File([pngBlob], 'converted.png', { type: 'image/png' });
+        //     image.value = pngFile;
+        //   } catch (conversionError) {
+        //     console.error('Error converting HEIC to PNG:', conversionError);
+        //     toast.open({
+        //       message: 'Error converting HEIC to PNG',
+        //       type: 'error',
+        //       position: 'top',
+        //     });
+        //     return;
+        //   }
+        // } else {
+        //   // For non-HEIC files, proceed with the original image
+        //   image.value = imageFile;
+        // }
+        const results = await exifr.parse(await input.files[0].arrayBuffer());
+        const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now();
 
-          const GPSData = await exifr.gps(value)
+        if (createDate < getCurrentBikeTag.value.mysteryTime) {
+          toast.open({
+            message: 'Timestamp Error',
+            type: 'error',
+            position: 'top',
+          });
+        } else {
+          const GPSData = await exifr.gps(await input.files[0].arrayBuffer());
 
           if (GPSData) {
             if (GPSData.latitude != null && GPSData.longitude != null) {
               gps.value = {
                 lat: round(GPSData.latitude),
                 lng: round(GPSData.longitude),
-              }
-              isGpsDefault.value = false
+              };
+              isGpsDefault.value = false;
             }
           } else {
-            gps.value = getGame.value?.boundary
-            isGpsDefault.value = true
+            gps.value = getGame.value?.boundary;
+            isGpsDefault.value = true;
           }
-          center.value = { ...gps.value }
-          location.value = ''
-        })
+          center.value = { ...gps.value };
+          location.value = '';
+        }
       }
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
   }
-}
+};
 
 const calculateInBoundary = () => {
   // If the boundary is set
@@ -412,8 +439,8 @@ onMounted(function () {
       boundary.value = regionData.geojson
     }
 
-    setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
-    // showPopover = false
+    // setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
+    showPopover.value = false
     player.value = getName.value
     uploadInProgress.value = false
   })
@@ -458,6 +485,7 @@ input#found {
   .vue-map {
     height: 400px;
   }
+
   @media (width >= 600px) {
     max-width: 420px;
     width: 420px;
@@ -466,6 +494,7 @@ input#found {
       width: 400px;
     }
   }
+
   @media (width >= 800px) {
     width: 620px;
     max-width: 620px;

@@ -98,7 +98,8 @@
 <script setup name="BikeTag">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
+import { getTagDate } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
 
 // componets
@@ -217,15 +218,15 @@ const getFoundImageSrc = computed(() => {
   return props.imageSize
     ? getImgurImageSized.value(_foundImageUrl.value, props.imageSize)
     : props.sizedFoundImage
-    ? getImgurImageSized.value(_foundImageUrl.value)
-    : _foundImageUrl.value
+      ? getImgurImageSized.value(_foundImageUrl.value)
+      : _foundImageUrl.value
 })
 const getMysteryImageSrc = computed(() => {
   return props.imageSize
     ? getImgurImageSized.value(_mysteryImageUrl.value, props.imageSize)
     : props.sizedMysteryImage
-    ? getImgurImageSized.value(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
-    : _mysteryImageUrl.value
+      ? getImgurImageSized.value(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
+      : _mysteryImageUrl.value
 })
 const _mysteryDescription = computed(() => {
   return props.mysteryDescription
@@ -247,9 +248,8 @@ const getPostedDate = (timestamp, timeOnly = false) => {
   if (!timestamp) {
     return ''
   }
-  const datetime = timeOnly
-    ? new Date(timestamp * 1000).toLocaleTimeString()
-    : new Date(timestamp * 1000).toLocaleDateString()
+  const date = getTagDate(timestamp)
+  const datetime = timeOnly ? date.toLocaleTimeString() : date.toLocaleDateString()
 
   return `${timeOnly ? ' @ ' : t('components.biketag.posted_on')} ${datetime}`
 }

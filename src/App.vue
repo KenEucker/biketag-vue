@@ -23,11 +23,11 @@
 </template>
 
 <script setup name="App">
-import { ref, inject, computed } from 'vue'
+import { ref, inject, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
-import { debug } from './common/utils'
+import { debug, isAuthenticationEnabled } from './common/utils'
 
 // componets
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
@@ -41,7 +41,6 @@ const store = useStore()
 const router = useRouter()
 const { t } = useI18n()
 const toast = inject('toast')
-const { isAuthenticated, idTokenClaims, user } = useAuth0()
 
 // computed
 const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name != 'Landing')
@@ -53,6 +52,26 @@ const title = computed(function () {
   return `${isNotLanding.value ? store.getGameName : t('app.gameof')} BikeTag!`
 })
 const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
+
+onMounted(async () => {
+  if (isAuthenticationEnabled()) {
+    const checkAuth = async () => {
+      if (auth0.isAuthenticated) {
+        if (auth0.idTokenClaims.value) {
+          if (!store.getProfile?.sub !== auth0.user.value.sub) {
+            const token = auth0.idTokenClaims?.value?.__raw
+            await store.setProfile({ ...auth0.user.value, token })
+          } else {
+            console.log('profile already in store', store.getProfile)
+          }
+        }
+      }
+    }
+    const auth0 = useAuth0()
+    watch(auth0.isAuthenticated, checkAuth)
+    watch(auth0.idTokenClaims, checkAuth)
+  }
+})
 
 // methods
 function checkForNewBikeTagPost() {
@@ -80,14 +99,6 @@ async function created() {
 
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
     gameIsSet.value = true
-
-    if (isAuthenticated.value) {
-      if (!store.getProfile?.nonce?.length) {
-        if (idTokenClaims.value)
-          store.setProfile({ ...user.value, token: idTokenClaims.value.__raw })
-        else debug("what's this? no speaka da mda5hash, brah?")
-      }
-    }
 
     if (!game) {
       router.push('/landing')
@@ -129,9 +140,11 @@ created()
 
 .spacer-top {
   height: 85px;
-  @media (width >= 990px) {
+
+  @media (width >=990px) {
     height: 105px;
   }
+
   @media (min-width: $breakpoint-desktop) {
     height: 130px;
   }

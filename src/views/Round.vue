@@ -27,7 +27,7 @@
 
 <script setup name="QueueBikeTagView">
 import { ref, computed, onMounted } from 'vue'
-import { useStore } from '@/store/index.ts'
+import { useStore } from '@/store/index'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 // import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
@@ -117,6 +117,7 @@ onMounted(() => {
 
 .realign-spinner {
   margin-left: -15%;
+
   @media (width >= 620px) {
     margin-left: 0;
   }

@@ -149,6 +149,7 @@ hr {
     text-align: left;
   }
 }
+
 @media (width >= 600px) {
   hr,
   .header {
