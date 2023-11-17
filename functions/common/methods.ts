@@ -23,7 +23,7 @@ export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.
 export const getBikeTagClientOpts = (
   req?: request.Request,
   authorized?: boolean,
-  admin?: boolean
+  admin?: boolean,
 ) => {
   const domainInfo = getDomainInfo(req)
   const isAuthenticatedPOST = req?.method === 'POST' || authorized
@@ -152,7 +152,7 @@ export const isValidJson = (data, type = 'none') => {
           user_metadata: {
             type: 'object',
             properties: {
-              name: {type: 'string'},
+              name: { type: 'string' },
               passcode: { type: 'string' },
               options: {
                 type: 'object',
@@ -303,7 +303,7 @@ export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTa
           method: 'get',
         } as unknown as request.Request,
         true,
-        true
+        true,
       )
   }
   client = client ?? new BikeTagClient(adminBikeTagOpts)
@@ -326,7 +326,9 @@ export const getProfileAuthorization = async (event: any): Promise<any> => {
       return profile
     }
     const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
-    const isABikeTagAmbassador = profileAmbassadorMatch.length ? true : profile.email === process.env.ADMIN_EMAIL
+    const isABikeTagAmbassador = profileAmbassadorMatch.length
+      ? true
+      : profile.email === process.env.ADMIN_EMAIL
 
     if (isABikeTagAmbassador) {
       profile.isBikeTagAmbassador = true
@@ -348,18 +350,15 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
     authorizationString?.indexOf(basic) === 0
       ? 'basic'
       : authorizationString?.indexOf(client) === 0
-      ? 'client'
-      : authorizationString?.indexOf(bearer) === 0
-      ? 'bearer'
-      : null
+        ? 'client'
+        : authorizationString?.indexOf(bearer) === 0
+          ? 'bearer'
+          : null
 
   const getBasicAuthProfile = (authorizationString: string) => {
     /// Basic Auth: "Basic [name]::[password]""
     // console.log('basic', { authorizationString })
-    const namePasscodeString = CryptoJS.AES.decrypt(
-      authorizationString,
-      process.env.HOST_KEY ?? ''
-    )
+    const namePasscodeString = CryptoJS.AES.decrypt(authorizationString, process.env.HOST_KEY ?? '')
     const decryptedPasscode = namePasscodeString.toString(CryptoJS.enc.Utf8)
     if (decryptedPasscode) {
       const namePasscodeSplit = decryptedPasscode.split('::')
@@ -391,14 +390,14 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
     // console.log('auth0', { authorizationString })
     try {
       const JWKS = jose.createRemoteJWKSet(
-        new URL(`https://${process.env.A_DOMAIN}/.well-known/jwks.json`)
+        new URL(`https://${process.env.A_DOMAIN}/.well-known/jwks.json`),
       )
 
       const { payload } = await jose.jwtVerify(authorizationString, JWKS)
       return payload
     } catch (e) {
       /// Swallow error
-      // console.error({ authorizationAuth0ValidationError: e })
+      console.error({ authorizationAuth0ValidationError: e })
       return authorizationString
     }
   }
@@ -581,7 +580,7 @@ export const getEncodedExpiry = (data = {}, days = 2) => {
     ...data,
     expiry: new Date(
       /// Expiry is now plus  Ms     s    h    days  x (default 2)
-      new Date().getTime() + 1000 * 60 * 60 * 24 * days
+      new Date().getTime() + 1000 * 60 * 60 * 24 * days,
     ),
   }
   return encodeURIComponent(!encrypt(expiryData))
@@ -592,7 +591,7 @@ export const sendEmailsToAmbassadors = async (
   emailSubject: string,
   ambassadors: Ambassador[],
   getEmailData: (a?: Ambassador) => any,
-  sendToAdmin = false
+  sendToAdmin = false,
 ): Promise<{ accepted: any[]; rejected: any[] }> => {
   let emailSent
   let accepted = []
@@ -612,7 +611,7 @@ export const sendEmailsToAmbassadors = async (
           ...defaultEmailData,
           ...getEmailData(ambassador),
         },
-        emailName
+        emailName,
       )
       accepted = accepted.concat(emailSent.accepted)
       rejected = rejected.concat(emailSent.rejected)
@@ -629,7 +628,7 @@ export const sendEmailsToAmbassadors = async (
           ...defaultEmailData,
           ...getEmailData({ id: biketagAdmin } as unknown as Ambassador),
         },
-        emailName
+        emailName,
       )
       accepted = accepted.concat(emailSent.accepted)
       rejected = rejected.concat(emailSent.rejected)
@@ -642,22 +641,26 @@ export const sendEmailsToAmbassadors = async (
 export const getSanityImageUrl = (
   logo: string,
   size = '',
-  sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/'
+  sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/',
 ) => {
-  const properFilePath = logo.replace('image-', '').replace('-png', '.png').replace('-jpg', '.jpg').replace('-webp', '.webp')
+  const properFilePath = logo
+    .replace('image-', '')
+    .replace('-png', '.png')
+    .replace('-jpg', '.jpg')
+    .replace('-webp', '.webp')
   return `${sanityBaseCDNUrl}${properFilePath}${size.length ? `?${size}` : ''}`
 }
 
 export const archiveAndClearQueue = async (
   queuedTags: Tag[],
-  game?: Game | null
+  game?: Game | null,
 ): Promise<BackgroundProcessResults> => {
-  const results:any = []
+  const results: any = []
   let errors = false
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,
-    true
+    true,
   )
   const biketag = new BikeTagClient(biketagOpts)
   if (!game) {
@@ -667,7 +670,7 @@ export const archiveAndClearQueue = async (
   if (queuedTags.length && game) {
     const nonAdminBikeTagOpts = getBikeTagClientOpts(
       { method: 'get' } as unknown as request.Request,
-      true
+      true,
     )
     const gameName = game.name.toLocaleLowerCase()
     console.log('archiving remaining queued tags', { game: gameName, queuedTags })
@@ -725,7 +728,7 @@ export const archiveAndClearQueue = async (
 export const getActiveQueueForGame = async (
   game: Game,
   adminBikeTagOpts?: any,
-  approvingAmbassador?: string
+  approvingAmbassador?: string,
 ): Promise<activeQueue> => {
   let queuedTags: Tag[] = []
   let completedTags: Tag[] = []
@@ -748,7 +751,7 @@ export const getActiveQueueForGame = async (
           method: 'get',
         } as unknown as request.Request,
         true,
-        true
+        true,
       )
     adminBikeTagOpts.game = game.name.toLocaleLowerCase()
     adminBikeTagOpts.imgur.hash = game.mainhash
@@ -783,11 +786,16 @@ export const getActiveQueueForGame = async (
   }
 }
 
-export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, type: string, host: string) => {
+export const sendBikeTagPostNotificationToWebhook = (
+  tag: Tag,
+  webhook: string,
+  type: string,
+  host: string,
+) => {
   const currentNumber = tag.tagnumber
   const winningTagnumber = currentNumber + 1
   let data = {}
-  switch(type) {
+  switch (type) {
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
       data = JSON.stringify({
@@ -813,40 +821,40 @@ export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, 
           },
         ],
       })
-    break
+      break
     case 'slack':
       data = JSON.stringify({
         text: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.foundPlayer}\r\nHint:${tag.hint}`,
         blocks: [
           {
-            type: "section",
-            block_id: "mysteryTag",
+            type: 'section',
+            block_id: 'mysteryTag',
             text: {
-              type: "mrkdwn",
-              text: `tag #${winningTagnumber}`
+              type: 'mrkdwn',
+              text: `tag #${winningTagnumber}`,
             },
             accessory: {
-              type: "image",
+              type: 'image',
               image_url: tag.mysteryImageUrl,
-              alt_text: `tag #${winningTagnumber} by ${tag.mysteryPlayer}`
-            }
+              alt_text: `tag #${winningTagnumber} by ${tag.mysteryPlayer}`,
+            },
           },
           {
-            type: "section",
-            block_id: "foundTag",
+            type: 'section',
+            block_id: 'foundTag',
             text: {
-              type: "mrkdwn",
-              text: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}\r\n\n<${host}/${currentNumber}|View previous round>`
+              type: 'mrkdwn',
+              text: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}\r\n\n<${host}/${currentNumber}|View previous round>`,
             },
             accessory: {
-              type: "image",
+              type: 'image',
               image_url: tag.foundImageUrl,
-              alt_text: `tag #${currentNumber} found by ${tag.foundPlayer}`
-            }
-          }
+              alt_text: `tag #${currentNumber} found by ${tag.foundPlayer}`,
+            },
+          },
         ],
       })
-    break
+      break
     default:
       return
   }
@@ -864,19 +872,19 @@ export const sendBikeTagPostNotificationToWebhook = (tag: Tag, webhook: string, 
 export const setNewBikeTagPost = async (
   winningBikeTagPost: Tag,
   game: Game,
-  currentBikeTag: Tag
+  currentBikeTag: Tag,
 ): Promise<BackgroundProcessResults> => {
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,
-    true
+    true,
   )
   biketagOpts.game = game?.slug
   biketagOpts.imgur.hash = game?.mainhash
   const biketag = new BikeTagClient(biketagOpts)
   currentBikeTag = currentBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
-  const results:any = []
+  const results: any = []
 
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost) // the new "current" mystery tag
   try {
@@ -948,7 +956,7 @@ export const setNewBikeTagPost = async (
         source: 'sanity',
       })) as Ambassador[]
       const thisGamesAmbassadors = ambassadors.filter(
-        (a) => game.ambassadors.indexOf(a.name) !== -1
+        (a) => game.ambassadors.indexOf(a.name) !== -1,
       )
       const winningTagnumber = newPostedBikeTag.tagnumber
       const host = `https://${game.name}.biketag.org`
@@ -960,9 +968,21 @@ export const setNewBikeTagPost = async (
 
       const currentPostedBikeTag = currentBikeTagUpdateResult.data as unknown as Tag
       const sendDiscordNotification = game.settings['notifications::discord']
-      if (sendDiscordNotification) sendBikeTagPostNotificationToWebhook(currentPostedBikeTag, sendDiscordNotification, 'discord', host)
+      if (sendDiscordNotification)
+        sendBikeTagPostNotificationToWebhook(
+          currentPostedBikeTag,
+          sendDiscordNotification,
+          'discord',
+          host,
+        )
       const sendSlackNotification = game.settings['notifications::slack']
-      if (sendSlackNotification) sendBikeTagPostNotificationToWebhook(currentPostedBikeTag, sendSlackNotification, 'slack', host)
+      if (sendSlackNotification)
+        sendBikeTagPostNotificationToWebhook(
+          currentPostedBikeTag,
+          sendSlackNotification,
+          'slack',
+          host,
+        )
 
       sendEmailsToAmbassadors(
         'biketag-auto-posted',
@@ -992,7 +1012,7 @@ export const setNewBikeTagPost = async (
             twitterLink: `https://twitter.com/${game.twitter?.length ? game.twitter : 'biketag'}`,
             // instagramLink: `https://www.reddit.com/r/${game. ?? 'biketag'}`,
           }
-        }
+        },
       )
 
       /************** REMOVE NEWLY POSTED BIKETAG FROM QUEUE *****************/
@@ -1000,7 +1020,7 @@ export const setNewBikeTagPost = async (
         {
           method: 'get',
         } as unknown as request.Request,
-        true
+        true,
       )
       nonAdminBikeTagOpts.game = game.name.toLocaleLowerCase()
       nonAdminBikeTagOpts.imgur.hash = game.queuehash
@@ -1041,7 +1061,10 @@ export const setNewBikeTagPost = async (
   }
 }
 
-export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag: Tag): Tag | undefined => {
+export const getWinningTagForCurrentRound = (
+  timedOutTags: Tag[],
+  currentBikeTag: Tag,
+): Tag | undefined => {
   if (timedOutTags.length) {
     const orderedTimedOutTags = timedOutTags.sort((t1, t2) => t1.mysteryTime - t2.mysteryTime)
     const winnerWinnerChickenDinner = orderedTimedOutTags[0] // the "first" completed tag in the queue
@@ -1050,57 +1073,57 @@ export const getWinningTagForCurrentRound = (timedOutTags: Tag[], currentBikeTag
       return winnerWinnerChickenDinner
     }
   }
-  return undefined;
+  return undefined
 }
 
 const getAuthManagementToken = async () => {
   try {
     const getManagementTokenRequest = await axios({
-      method: "POST",
+      method: 'POST',
       url: `https://${process.env.A_DOMAIN}/oauth/token`,
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       data: qs.stringify({
-        'grant_type': 'client_credentials',
-        'client_id': process.env.A_M_CID,
-        'client_secret': process.env.A_M_CS,
-        'audience': process.env.A_AUDIENCE
-      })
+        grant_type: 'client_credentials',
+        client_id: process.env.A_M_CID,
+        client_secret: process.env.A_M_CS,
+        audience: process.env.A_AUDIENCE,
+      }),
     })
     return getManagementTokenRequest?.data?.access_token
   } catch (e) {
     console.log({
       domain: process.env.A_DOMAIN,
-      'client_id': process.env.A_M_CID,
-      'client_secret': process.env.A_M_CS,
-      'audience': process.env.A_AUDIENCE
+      client_id: process.env.A_M_CID,
+      client_secret: process.env.A_M_CS,
+      audience: process.env.A_AUDIENCE,
     })
     console.log('getAuthManagementToken error', e.message)
   }
 }
 
 export const auth0Headers = async () => {
-  const accessToken = await isAuthenticationEnabled() ? getAuthManagementToken() : null
+  const accessToken = (await isAuthenticationEnabled()) ? await getAuthManagementToken() : null
   if (accessToken) {
-    return { 'Authorization': `Bearer ${accessToken}` }
+    return { Authorization: `Bearer ${accessToken}` }
   }
 
   return {}
 }
 
 export const acceptCorsHeaders = () => ({
-    Accept: '*',
-    'Access-Control-Allow-Headers': '*',
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Methods': '*',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Max-Age': '8640',
+  Accept: '*',
+  'Access-Control-Allow-Headers': '*',
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Methods': '*',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Max-Age': '8640',
 })
 
 export const constructAmbassadorProfile = (
   profile: any = {},
-  defaults: any = {}
+  defaults: any = {},
 ): BikeTagProfile => {
   const user_metadata = {
     name: profile?.user_metadata?.name ?? defaults?.user_metadata?.name ?? '',
