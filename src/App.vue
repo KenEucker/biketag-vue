@@ -58,7 +58,7 @@ onMounted(async () => {
     const checkAuth = async () => {
       if (auth0.isAuthenticated) {
         if (auth0.idTokenClaims.value) {
-          if (!store.getProfile?.sub !== auth0.user.value.sub) {
+          if (store.getProfile?.sub !== auth0.user?.value?.sub) {
             const token = auth0.idTokenClaims?.value?.__raw
             await store.setProfile({ ...auth0.user.value, token })
           } else {
