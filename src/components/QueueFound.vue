@@ -182,7 +182,7 @@ let isAuthenticatedRef = ref(false)
 
 if (isAuthenticationEnabled()) {
   const auth0 = useAuth0()
-  isAuthenticatedRef.value = auth0.isAuthenticated
+  isAuthenticatedRef = auth0.isAuthenticated
 }
 
 // computed

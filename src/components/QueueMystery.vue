@@ -235,22 +235,21 @@ const setImage = async (event) => {
             position: 'top',
           })
         } else {
-          const GPSData = await exifr.gps(await input.files[0].arrayBuffer())
-
-          if (GPSData) {
-            if (GPSData.latitude != null && GPSData.longitude != null) {
-              gps.value = {
-                lat: round(GPSData.latitude),
-                lng: round(GPSData.longitude),
-              }
-              isGpsDefault.value = false
-            }
-          } else {
-            gps.value = getGame.value?.boundary
-            isGpsDefault.value = true
-          }
-          center.value = { ...gps.value }
-          location.value = ''
+          // const GPSData = await exifr.gps(await input.files[0].arrayBuffer())
+          // if (GPSData) {
+          //   if (GPSData.latitude != null && GPSData.longitude != null) {
+          //     gps.value = {
+          //       lat: Math.round(GPSData.latitude),
+          //       lng: Math.round(GPSData.longitude),
+          //     }
+          //     isGpsDefault.value = false
+          //   }
+          // } else {
+          //   gps.value = getGame.value?.boundary
+          //   isGpsDefault.value = true
+          // }
+          // center.value = { ...gps.value }
+          // location.value = ''
         }
       }
     } catch (e) {

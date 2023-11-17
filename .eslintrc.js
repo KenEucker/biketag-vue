@@ -37,6 +37,8 @@ module.exports = {
 
     // this rule, if on, would require explicit return type on the `render` function
     '@typescript-eslint/explicit-function-return-type': 'off',
+
+    'vue/no-ref-as-operand': 'off',
   },
 
   ignorePatterns: ['public/**'],
