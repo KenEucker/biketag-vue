@@ -204,7 +204,7 @@ const setImage = async (event) => {
         })
       } else {
         // const imageFile = input.files[0];
-        image.value = input.files[0];
+        image.value = input.files[0]
 
         // // Check if the file type is HEIC
         // if (imageFile.type === 'image/heic' || imageFile.name.toLowerCase().endsWith('.heic')) {
@@ -225,39 +225,39 @@ const setImage = async (event) => {
         //   // For non-HEIC files, proceed with the original image
         //   image.value = imageFile;
         // }
-        const results = await exifr.parse(await input.files[0].arrayBuffer());
-        const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now();
+        const results = await exifr.parse(await input.files[0].arrayBuffer())
+        const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
 
         if (createDate < getCurrentBikeTag.value.mysteryTime) {
           toast.open({
             message: 'Timestamp Error',
             type: 'error',
             position: 'top',
-          });
+          })
         } else {
-          const GPSData = await exifr.gps(await input.files[0].arrayBuffer());
+          const GPSData = await exifr.gps(await input.files[0].arrayBuffer())
 
           if (GPSData) {
             if (GPSData.latitude != null && GPSData.longitude != null) {
               gps.value = {
                 lat: round(GPSData.latitude),
                 lng: round(GPSData.longitude),
-              };
-              isGpsDefault.value = false;
+              }
+              isGpsDefault.value = false
             }
           } else {
-            gps.value = getGame.value?.boundary;
-            isGpsDefault.value = true;
+            gps.value = getGame.value?.boundary
+            isGpsDefault.value = true
           }
-          center.value = { ...gps.value };
-          location.value = '';
+          center.value = { ...gps.value }
+          location.value = ''
         }
       }
     } catch (e) {
-      console.error(e);
+      console.error(e)
     }
   }
-};
+}
 function goViewRound() {
   hideModal()
   router.push('/round')
