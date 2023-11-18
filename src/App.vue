@@ -23,7 +23,7 @@
 </template>
 
 <script setup name="App">
-import { ref, inject, computed, onMounted, watch } from 'vue'
+import { ref, inject, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
@@ -41,9 +41,11 @@ const store = useStore()
 const router = useRouter()
 const { t } = useI18n()
 const toast = inject('toast')
+const auth0 = isAuthenticationEnabled() ? useAuth0() : undefined
 
 // computed
-const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name != 'Landing')
+const isLogout = computed(() => router.currentRoute.value.name === 'Logout')
+const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name !== 'Landing')
 const isWhiteBackground = computed(() =>
   router.currentRoute.value.name === 'About' ? 'white-bck' : '',
 )
@@ -54,22 +56,34 @@ const title = computed(function () {
 const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
 onMounted(async () => {
-  if (isAuthenticationEnabled()) {
+  nextTick(async () => {
+    await router.isReady()
+    if (isLogout.value) {
+      if (auth0?.isAuthenticated.value) {
+        await store.setProfile()
+        const returnTo = `${window.location.origin}/logout`
+        await auth0.logout({
+          returnTo,
+        })
+      }
+      router.push('/')
+    }
+  })
+
+  if (auth0) {
     const checkAuth = async () => {
       if (auth0.isAuthenticated.value) {
         if (auth0.idTokenClaims.value) {
           if (store.getProfile?.sub !== auth0.user?.value?.sub) {
             const token = auth0.idTokenClaims?.value?.__raw
             await store.setProfile({ ...auth0.user.value, token })
-          } else {
-            console.log('profile already in store', store.getProfile)
           }
         }
       }
     }
-    const auth0 = useAuth0()
     watch(auth0.isAuthenticated, checkAuth)
     watch(auth0.idTokenClaims, checkAuth)
+    // checkAuth()
   }
 })
 
