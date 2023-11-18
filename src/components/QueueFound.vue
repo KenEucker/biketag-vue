@@ -103,7 +103,7 @@
           v-model="player"
           name="player"
           required
-          :readonly="isAuthenticatedRef"
+          :readonly="isAuthenticated"
           :placeholder="t('pages.round.name_placeholder')"
         />
         <b-modal
@@ -178,14 +178,10 @@ const boundary = ref({})
 const isInBoundary = ref(false)
 const confirmInBoundary = ref(false)
 const confirmedBoundary = ref(false)
-let isAuthenticatedRef = ref(false)
-
-if (isAuthenticationEnabled()) {
-  const auth0 = useAuth0()
-  isAuthenticatedRef = auth0.isAuthenticated
-}
+let auth0 = isAuthenticationEnabled() ? useAuth0() : undefined
 
 // computed
+const isAuthenticated = computed(() => (auth0 ? auth0.isAuthenticated.value : false))
 const getGameName = computed(() => store.getGameName)
 const getPlayerId = computed(() => store.getPlayerId)
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
@@ -240,7 +236,7 @@ const onSubmit = async (e) => {
     return
   }
   /// TODO: watch this?
-  if (!isAuthenticatedRef.value) {
+  if (!isAuthenticated.value) {
     console.log('player', player.value)
     try {
       await store.checkPasscode({

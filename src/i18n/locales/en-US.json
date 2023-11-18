@@ -76,6 +76,9 @@
       "disabled": "This game is not configured to be used with logins at the moment. If you think this is an error, please reach out to support@biketag.org for help.",
       "ambassador": "BikeTag Ambassador Login"
     },
+    "logout":{
+      "description": "Thanks for playing BikeTag! You are being logged out."
+    },
     "profile": {
       "name": "name",
       "email": "email address",

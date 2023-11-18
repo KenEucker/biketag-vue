@@ -29,7 +29,7 @@
 
       <b-collapse id="navbarSupportedContent" ref="navList" class="navbar-collapse">
         <ul class="m-auto navbar-nav mb-lg-0">
-          <li v-if="isAuthenticatedRef" class="nav-item">
+          <li v-if="isAuthenticated" class="nav-item">
             <img
               class="profile-icon"
               :src="getProfileImageSrc"
@@ -90,7 +90,7 @@
           >
             {{ $t('menu.about') }}
           </li>
-          <template v-if="isAuthenticatedRef">
+          <template v-if="isAuthenticated">
             <li class="nav-item" @click="logoutClick">
               {{ $t('menu.logout') }}
             </li>
@@ -172,11 +172,10 @@ const store = useStore()
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
-let isAuthenticatedRef = ref(false)
-const authLogout = ref(null)
-const auth0 = ref(null)
+const auth0 = isAuthenticationEnabled() ? useAuth0() : undefined
 
 // computed
+const isAuthenticated = computed(() => (auth0 ? auth0.isAuthenticated.value : false))
 const getGameTitle = computed(() => store.getGameTitle)
 const getLogoUrl = computed(() => store.getLogoUrl)
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
@@ -193,12 +192,6 @@ const currentRoute = computed(() => {
 const getProfileImageSrc = computed(() => {
   return isBikeTagAmbassador.value ? '/images/biketag-ambassador.svg' : '/images/biketag-player.svg'
 })
-
-if (isAuthenticationEnabled()) {
-  auth0.value = useAuth0()
-  isAuthenticatedRef = auth0.value.isAuthenticated
-  authLogout.value = auth0.value.logout
-}
 
 // methods
 // Toggle if navigation is shown or hidden
@@ -225,10 +218,10 @@ function login() {
   router.push('/login')
 }
 async function logoutClick() {
-  if (isAuthenticationEnabled()) {
+  if (auth0) {
     await store.setProfile()
     const returnTo = `${window.location.origin}/logout`
-    await authLogout.value({
+    await auth0.logout({
       returnTo,
     })
   }
