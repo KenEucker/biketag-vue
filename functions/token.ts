@@ -6,7 +6,7 @@ import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadAuthorization } from
 
 const tokenHandler: Handler = async (event) => {
   /// Bailout on OPTIONS requests
-  let headers = acceptCorsHeaders(false)
+  const headers = acceptCorsHeaders()
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: HttpStatusCode.NoContent,
@@ -19,14 +19,13 @@ const tokenHandler: Handler = async (event) => {
   let statusCode = HttpStatusCode.Unauthorized
 
   if (authorization) {
-    headers = acceptCorsHeaders(true)
     const biketagOpts = getBikeTagClientOpts(
       {
         ...event,
         method: event.httpMethod,
       } as unknown as request.Request,
       true,
-      true
+      true,
     )
 
     const biketag = new BikeTagClient(biketagOpts)

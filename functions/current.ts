@@ -1,11 +1,11 @@
 import { builder, Handler } from '@netlify/functions'
-import { getBikeTagClientOpts, getPayloadOpts } from './common/methods'
-import { getDomainInfo, getImgurImageSized } from '../src/common/utils'
-import { BikeTagClient } from 'biketag'
-import request from 'request'
 import axios from 'axios'
+import { BikeTagClient } from 'biketag'
 import { Game } from 'biketag/lib/common/schema'
+import request from 'request'
+import { getDomainInfo, getImgurImageSized } from '../src/common/utils'
 import { HttpStatusCode } from './common/constants'
+import { getBikeTagClientOpts, getPayloadOpts } from './common/methods'
 
 const currentTagHandler = async (event) => {
   const biketagOpts = getBikeTagClientOpts(
@@ -13,7 +13,7 @@ const currentTagHandler = async (event) => {
       ...event,
       method: event.httpMethod,
     } as unknown as request.Request,
-    true
+    true,
   )
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game(biketagOpts.game, {
@@ -50,7 +50,7 @@ const currentTagHandler = async (event) => {
           responseType: 'arraybuffer',
         })
       ).data,
-      'utf-8'
+      'utf-8',
     ).toString('base64')
 
     return {

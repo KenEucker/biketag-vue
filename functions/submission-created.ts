@@ -42,7 +42,7 @@ export const handler = async (event) => {
             ...event,
             method: event.httpMethod,
           } as unknown as request.Request,
-          true
+          true,
         )
         const adminBiketagOpts = getBikeTagClientOpts(
           {
@@ -50,7 +50,7 @@ export const handler = async (event) => {
             method: event.httpMethod,
           } as unknown as request.Request,
           true,
-          true
+          true,
         )
         /// TODO: fix whatever is wrong with the biketag-api interface
         biketagOpts.game = gameName
@@ -64,7 +64,7 @@ export const handler = async (event) => {
           { game: gameName },
           {
             source: 'sanity',
-          }
+          },
         )) as Ambassador[]
         thisGamesAmbassadors = ambassadors.length
           ? ambassadors.filter((a) => game.ambassadors.indexOf(a?.name) !== -1)
@@ -168,7 +168,7 @@ export const handler = async (event) => {
                   playerIP,
                 }
               }
-            }
+            },
           )
           successfulEmailsSent = successfulEmailsSent.concat(emailSent.accepted)
           rejectedEmails = rejectedEmails.concat(emailSent.rejected)
@@ -231,7 +231,7 @@ export const handler = async (event) => {
                     playerIP,
                   }
                 }
-              }
+              },
             )
             successfulEmailsSent = successfulEmailsSent.concat(emailSent.accepted)
             rejectedEmails = rejectedEmails.concat(emailSent.rejected)
@@ -251,7 +251,7 @@ export const handler = async (event) => {
                 game: game.name,
                 playerIP,
               }
-            }
+            },
           )
           successfulEmailsSent = successfulEmailsSent.concat(emailSent.accepted)
           rejectedEmails = rejectedEmails.concat(emailSent.rejected)

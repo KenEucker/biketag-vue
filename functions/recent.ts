@@ -1,17 +1,17 @@
 import { builder, Handler } from '@netlify/functions'
-import { getBikeTagClientOpts, getPayloadOpts } from './common/methods'
 import { BikeTagClient } from 'biketag'
 import { getTagsPayload } from 'biketag/lib/common/payloads'
 import { Game } from 'biketag/lib/common/schema'
 import request from 'request'
+import { getBikeTagClientOpts, getPayloadOpts } from './common/methods'
 
-const tagsHandler: Handler = async (event) => {
+const recentHandler: Handler = async (event) => {
   const biketagOpts = getBikeTagClientOpts(
     {
       ...event,
       method: event.httpMethod,
     } as unknown as request.Request,
-    true
+    true,
   )
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game(biketagOpts.game, {
@@ -25,16 +25,16 @@ const tagsHandler: Handler = async (event) => {
     game: 'none',
     time: 'day',
   })
-  const tagsResponse = await biketag.getTags(biketagPayload as getTagsPayload, {
+  const recentResponse = await biketag.getTags(biketagPayload as getTagsPayload, {
     source: 'imgur',
   })
-  const { success, data } = tagsResponse
+  const { success, data } = recentResponse
   return {
-    statusCode: tagsResponse.status,
-    body: JSON.stringify(success ? data : tagsResponse),
+    statusCode: recentResponse.status,
+    body: JSON.stringify(success ? data : recentResponse),
   }
 }
 
-const handler = builder(tagsHandler)
+const handler = builder(recentHandler)
 
 export { handler }

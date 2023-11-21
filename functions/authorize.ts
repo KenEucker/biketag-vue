@@ -24,7 +24,7 @@ const authorizeHandler: Handler = async (event) => {
           ...event,
           method: event.httpMethod,
         } as unknown as request.Request,
-        true
+        true,
       )
       const biketag = new BikeTagClient(biketagOpts)
       const config = biketag.config()
