@@ -799,28 +799,21 @@ export const sendBikeTagPostNotificationToWebhook = (
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
       data = JSON.stringify({
-        content: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.mysteryPlayer} \r\n\n[View previous round](${host}/${currentNumber})`,
+        content: 'A new BikeTag has been posted!',
         embeds: [
           {
-            timestamp: getTagDate(tag.foundTime).toISOString(),
-            fields: [
-              {
-                name: `Tag #${winningTagnumber}`,
-                value: `previous location found at ${tag.foundLocation} by ${tag.foundPlayer}`,
-                inline: true,
-              },
-              {
-                name: '', // purposely left blank
-                value: ``,
-                inline: true,
-              },
-            ],
+            title": `Tag #${winningTagnumber} by ${tag.mysteryPlayer}`,
+            description": `||${newPostedBikeTag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${tag.foundLocation} by ${tag.foundPlayer}`,
+            timestamp": getTagDate(tag.foundTime).toISOString(),
             image: {
               url: tag.mysteryImageUrl,
             },
-          },
+            thumbnail: {
+              url: tag.foundImageUrl,
+            }
+          }
         ],
-      })
+      });
       break
     case 'slack':
       data = JSON.stringify({
