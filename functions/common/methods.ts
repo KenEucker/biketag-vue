@@ -804,7 +804,7 @@ export const sendBikeTagPostNotificationToWebhook = (
         embeds: [
           {
             title: `Tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
-            description: `||${winningTag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${currentNumber.foundLocation} by ${currentNumber.foundPlayer}`,
+            description: `||${winningTag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}`,
             timestamp: getTagDate(winningTag.foundTime).toISOString(),
             image: {
               url: winningTag.mysteryImageUrl,
@@ -818,7 +818,7 @@ export const sendBikeTagPostNotificationToWebhook = (
       break
     case 'slack':
       data = JSON.stringify({
-        text: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.foundPlayer}\r\nHint:${tag.hint}`,
+        text: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${currentTag.foundPlayer}\r\nHint:${winningTag.hint}`,
         blocks: [
           {
             type: 'section',
