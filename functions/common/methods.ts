@@ -802,18 +802,18 @@ export const sendBikeTagPostNotificationToWebhook = (
         content: 'A new BikeTag has been posted!',
         embeds: [
           {
-            title": `Tag #${winningTagnumber} by ${tag.mysteryPlayer}`,
-            description": `||${newPostedBikeTag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${tag.foundLocation} by ${tag.foundPlayer}`,
-            timestamp": getTagDate(tag.foundTime).toISOString(),
+            title: `Tag #${winningTagnumber} by ${tag.mysteryPlayer}`,
+            description: `||${tag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${tag.foundLocation} by ${tag.foundPlayer}`,
+            timestamp: getTagDate(tag.foundTime).toISOString(),
             image: {
               url: tag.mysteryImageUrl,
             },
             thumbnail: {
               url: tag.foundImageUrl,
-            }
-          }
+            },
+          },
         ],
-      });
+      })
       break
     case 'slack':
       data = JSON.stringify({
