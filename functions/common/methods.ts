@@ -787,13 +787,14 @@ export const getActiveQueueForGame = async (
 }
 
 export const sendBikeTagPostNotificationToWebhook = (
-  tag: Tag,
+  currentTag: Tag,
+  winningTag: Tag,
   webhook: string,
   type: string,
   host: string,
 ) => {
-  const currentNumber = tag.tagnumber
-  const winningTagnumber = currentNumber + 1
+  const currentNumber = currentTag.tagnumber
+  const winningTagnumber = winningTag.tagnumber
   let data = {}
   switch (type) {
     case 'discord':
@@ -802,14 +803,14 @@ export const sendBikeTagPostNotificationToWebhook = (
         content: 'A new BikeTag has been posted!',
         embeds: [
           {
-            title: `Tag #${winningTagnumber} by ${tag.mysteryPlayer}`,
-            description: `||${tag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${tag.foundLocation} by ${tag.foundPlayer}`,
-            timestamp: getTagDate(tag.foundTime).toISOString(),
+            title: `Tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
+            description: `||${winningTag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${currentNumber.foundLocation} by ${currentNumber.foundPlayer}`,
+            timestamp: getTagDate(winningTag.foundTime).toISOString(),
             image: {
-              url: tag.mysteryImageUrl,
+              url: winningTag.mysteryImageUrl,
             },
             thumbnail: {
-              url: tag.foundImageUrl,
+              url: currentTag.foundImageUrl,
             },
           },
         ],
@@ -828,8 +829,8 @@ export const sendBikeTagPostNotificationToWebhook = (
             },
             accessory: {
               type: 'image',
-              image_url: tag.mysteryImageUrl,
-              alt_text: `tag #${winningTagnumber} by ${tag.mysteryPlayer}`,
+              image_url: winningTag.mysteryImageUrl,
+              alt_text: `tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
             },
           },
           {
@@ -837,12 +838,12 @@ export const sendBikeTagPostNotificationToWebhook = (
             block_id: 'foundTag',
             text: {
               type: 'mrkdwn',
-              text: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}\r\n\n<${host}/${currentNumber}|View previous round>`,
+              text: `Tag #${currentNumber} found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}\r\n\n<${host}/${currentNumber}|View previous round>`,
             },
             accessory: {
               type: 'image',
-              image_url: tag.foundImageUrl,
-              alt_text: `tag #${currentNumber} found by ${tag.foundPlayer}`,
+              image_url: currentTag.foundImageUrl,
+              alt_text: `tag #${currentNumber} found by ${currentTag.foundPlayer}`,
             },
           },
         ],
@@ -964,6 +965,7 @@ export const setNewBikeTagPost = async (
       if (sendDiscordNotification)
         sendBikeTagPostNotificationToWebhook(
           currentPostedBikeTag,
+          newPostedBikeTag,
           sendDiscordNotification,
           'discord',
           host,
@@ -972,6 +974,7 @@ export const setNewBikeTagPost = async (
       if (sendSlackNotification)
         sendBikeTagPostNotificationToWebhook(
           currentPostedBikeTag,
+          newPostedBikeTag,
           sendSlackNotification,
           'slack',
           host,
