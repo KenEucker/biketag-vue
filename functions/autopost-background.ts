@@ -15,27 +15,27 @@ import { BackgroundProcessResults } from './common/types'
 export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> => {
   if (process.env.SKIP_AUTOPOST_FUNCTION) {
     return Promise.resolve({
-      results: ["function skipped"],
-      errors: false
+      results: ['function skipped'],
+      errors: false,
     })
   }
 
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,
-    true
+    true,
   )
   delete biketagOpts.game
   const nonAdminBiketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
-    true
+    true,
   )
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
   const adminBiketag = new BikeTagClient(biketagOpts)
   const gamesResponse = await nonAdminBiketag.getGame(undefined, {
     source: 'sanity',
   })
-  let results:any = []
+  let results: any = []
   let errors = false
 
   if (gamesResponse.success) {
@@ -55,18 +55,18 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
         const currentBikeTag = currentBikeTagResponse.data
         const autoSelectedWinningTag = getWinningTagForCurrentRound(
           activeQueue.timedOutTags,
-          currentBikeTag
+          currentBikeTag,
         )
 
         if (autoSelectedWinningTag) {
           const setNewBikeTagPostResults = await setNewBikeTagPost(
             autoSelectedWinningTag,
             game,
-            currentBikeTag
+            currentBikeTag,
           )
 
           const remainingNonWinningTags = activeQueue.queuedTags.filter(
-            (t) => t.foundPlayer !== autoSelectedWinningTag.foundPlayer
+            (t) => t.foundPlayer !== autoSelectedWinningTag.foundPlayer,
           )
           if (remainingNonWinningTags.length) {
             const archiveAndClearQueueResults = await archiveAndClearQueue(remainingNonWinningTags)

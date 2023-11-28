@@ -787,36 +787,30 @@ export const getActiveQueueForGame = async (
 }
 
 export const sendBikeTagPostNotificationToWebhook = (
-  tag: Tag,
+  currentTag: Tag,
+  winningTag: Tag,
   webhook: string,
   type: string,
   host: string,
 ) => {
-  const currentNumber = tag.tagnumber
-  const winningTagnumber = currentNumber + 1
+  const currentNumber = currentTag.tagnumber
+  const winningTagnumber = winningTag.tagnumber
   let data = {}
   switch (type) {
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
       data = JSON.stringify({
-        content: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.mysteryPlayer} \r\n\n[View previous round](${host}/${currentNumber})`,
+        content: 'A new BikeTag has been posted!',
         embeds: [
           {
-            timestamp: getTagDate(tag.foundTime).toISOString(),
-            fields: [
-              {
-                name: `Tag #${winningTagnumber}`,
-                value: `previous location found at ${tag.foundLocation} by ${tag.foundPlayer}`,
-                inline: true,
-              },
-              {
-                name: '', // purposely left blank
-                value: ``,
-                inline: true,
-              },
-            ],
+            title: `Tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
+            description: `||${winningTag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}`,
+            timestamp: getTagDate(currentTag.foundTime).toISOString(),
             image: {
-              url: tag.mysteryImageUrl,
+              url: winningTag.mysteryImageUrl,
+            },
+            thumbnail: {
+              url: currentTag.foundImageUrl,
             },
           },
         ],
@@ -824,7 +818,7 @@ export const sendBikeTagPostNotificationToWebhook = (
       break
     case 'slack':
       data = JSON.stringify({
-        text: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${tag.foundPlayer}\r\nHint:${tag.hint}`,
+        text: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${currentTag.foundPlayer}\r\nHint:${winningTag.hint}`,
         blocks: [
           {
             type: 'section',
@@ -835,8 +829,8 @@ export const sendBikeTagPostNotificationToWebhook = (
             },
             accessory: {
               type: 'image',
-              image_url: tag.mysteryImageUrl,
-              alt_text: `tag #${winningTagnumber} by ${tag.mysteryPlayer}`,
+              image_url: winningTag.mysteryImageUrl,
+              alt_text: `tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
             },
           },
           {
@@ -844,12 +838,12 @@ export const sendBikeTagPostNotificationToWebhook = (
             block_id: 'foundTag',
             text: {
               type: 'mrkdwn',
-              text: `Tag #${currentNumber} found at ${tag.foundLocation} by ${tag.foundPlayer}\r\n\n<${host}/${currentNumber}|View previous round>`,
+              text: `Tag #${currentNumber} found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}\r\n\n<${host}/${currentNumber}|View previous round>`,
             },
             accessory: {
               type: 'image',
-              image_url: tag.foundImageUrl,
-              alt_text: `tag #${currentNumber} found by ${tag.foundPlayer}`,
+              image_url: currentTag.foundImageUrl,
+              alt_text: `tag #${currentNumber} found by ${currentTag.foundPlayer}`,
             },
           },
         ],
@@ -895,7 +889,7 @@ export const setNewBikeTagPost = async (
     currentBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     // console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
     const currentBikeTagUpdateResult = await biketag.updateTag(currentBikeTag)
-    // console.log({ currentBikeTagUpdateResult })
+    // console.log({ currentBikeTagUpdateResult: currentBikeTagUpdateResult.data })
     if (currentBikeTagUpdateResult.success) {
       results.push({
         message: 'current BikeTag updated',
@@ -932,25 +926,26 @@ export const setNewBikeTagPost = async (
 
     if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
       const newPostedBikeTag = newBikeTagUpdateResult.data as unknown as Tag
-      const postToReddit = false
-      if (postToReddit) {
-        const postedToRedditResult = await biketag.updateTag(newPostedBikeTag, { source: 'reddit' })
-        if (postedToRedditResult.success) {
-          results.push({
-            message: 'new BikeTag posted to Reddit',
-            game: game.name,
-            tag: postedToRedditResult.data,
-          })
-        } else {
-          results.push({
-            message: 'new BikeTag was not posted to Reddit',
-            error: postedToRedditResult.error,
-            game: game.name,
-            tag: newPostedBikeTag,
-          })
-          errors = true
-        }
-      }
+
+      // const postToReddit = false
+      // if (postToReddit) {
+      //   const postedToRedditResult = await biketag.updateTag(newPostedBikeTag, { source: 'reddit' })
+      //   if (postedToRedditResult.success) {
+      //     results.push({
+      //       message: 'new BikeTag posted to Reddit',
+      //       game: game.name,
+      //       tag: postedToRedditResult.data,
+      //     })
+      //   } else {
+      //     results.push({
+      //       message: 'new BikeTag was not posted to Reddit',
+      //       error: postedToRedditResult.error,
+      //       game: game.name,
+      //       tag: newPostedBikeTag,
+      //     })
+      //     errors = true
+      //   }
+      // }
 
       const ambassadors = (await biketag.ambassadors(undefined, {
         source: 'sanity',
@@ -971,6 +966,7 @@ export const setNewBikeTagPost = async (
       if (sendDiscordNotification)
         sendBikeTagPostNotificationToWebhook(
           currentPostedBikeTag,
+          newPostedBikeTag,
           sendDiscordNotification,
           'discord',
           host,
@@ -979,6 +975,7 @@ export const setNewBikeTagPost = async (
       if (sendSlackNotification)
         sendBikeTagPostNotificationToWebhook(
           currentPostedBikeTag,
+          newPostedBikeTag,
           sendSlackNotification,
           'slack',
           host,
@@ -991,8 +988,8 @@ export const setNewBikeTagPost = async (
         (a) => {
           // console.log({ a })
           return {
-            currentBikeTag: currentBikeTagUpdateResult.data,
-            newBikeTagPost: newBikeTagUpdateResult.data,
+            currentBikeTag: currentPostedBikeTag,
+            newBikeTagPost: newPostedBikeTag,
             logo,
             ambassadorsUrl: `${host}/queue?btaId=${a?.id}`,
             tagAutoApprovedText:
@@ -1093,12 +1090,12 @@ const getAuthManagementToken = async () => {
     })
     return getManagementTokenRequest?.data?.access_token
   } catch (e) {
-    console.log({
-      domain: process.env.A_DOMAIN,
-      client_id: process.env.A_M_CID,
-      client_secret: process.env.A_M_CS,
-      audience: process.env.A_AUDIENCE,
-    })
+    // console.log({
+    //   domain: process.env.A_DOMAIN,
+    //   client_id: process.env.A_M_CID,
+    //   client_secret: process.env.A_M_CS,
+    //   audience: process.env.A_AUDIENCE,
+    // })
     console.log('getAuthManagementToken error', e.message)
   }
 }

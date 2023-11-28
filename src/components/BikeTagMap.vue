@@ -14,7 +14,7 @@
         @dragend="emitDragend"
       />
     </GMapMap>
-    <div v-else-if="variant === 'biketags'" class="game-map">
+    <div v-else-if="props.variant === 'biketags'" class="game-map">
       <GMapMap :center="data.center" :zoom="10" map-type-id="roadmap">
         <template v-for="(tag, i) in getTags" :key="i">
           <template v-if="tag.gps.lat && tag.gps.long">

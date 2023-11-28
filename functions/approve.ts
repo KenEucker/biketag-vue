@@ -33,8 +33,8 @@ const approveHandler: Handler = async (event) => {
   /// Retrieves the authorization and profile data, if present
   const profile = await getProfileAuthorization(event)
   const approvePayload = getPayloadOpts(event)
-  let results:any[] = []
-  let errors:any[] = []
+  let results: any[] = []
+  let errors: any[] = []
 
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile && profile.sub === approvePayload.ambassadorId) {

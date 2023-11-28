@@ -10,7 +10,7 @@ const gameHandler: Handler = async (event) => {
       ...event,
       method: event.httpMethod,
     } as unknown as request.Request,
-    true
+    true,
   )
   const biketagPayload = getPayloadOpts(event, { game: biketagOpts.game })
   const biketag = new BikeTagClient(biketagOpts)
