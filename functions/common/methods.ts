@@ -796,12 +796,6 @@ export const sendBikeTagPostNotificationToWebhook = (
   const currentNumber = currentTag.tagnumber
   const winningTagnumber = winningTag.tagnumber
   let data = {}
-  console.log({
-    mysteryImageUrl: winningTag.mysteryImageUrl,
-    foundImageUrl: currentTag.foundImageUrl,
-    foundTime: getTagDate(winningTag.foundTime),
-    foundTimeToISO: getTagDate(winningTag.foundTime).toISOString(),
-  })
   switch (type) {
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
@@ -811,7 +805,7 @@ export const sendBikeTagPostNotificationToWebhook = (
           {
             title: `Tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
             description: `||${winningTag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}`,
-            timestamp: getTagDate(winningTag.foundTime).toISOString(),
+            timestamp: getTagDate(currentTag.foundTime).toISOString(),
             image: {
               url: winningTag.mysteryImageUrl,
             },
