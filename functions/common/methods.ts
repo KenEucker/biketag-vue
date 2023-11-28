@@ -889,7 +889,7 @@ export const setNewBikeTagPost = async (
     currentBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     // console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
     const currentBikeTagUpdateResult = await biketag.updateTag(currentBikeTag)
-    console.log({ currentBikeTagUpdateResult: currentBikeTagUpdateResult.data })
+    // console.log({ currentBikeTagUpdateResult: currentBikeTagUpdateResult.data })
     if (currentBikeTagUpdateResult.success) {
       results.push({
         message: 'current BikeTag updated',
@@ -908,7 +908,6 @@ export const setNewBikeTagPost = async (
 
     /************** SET NEW BIKETAG POST FROM QUEUE *****************/
     const newBikeTagUpdateResult = await biketag.updateTag(newBikeTagPost)
-    console.log({ newBikeTagUpdateResult: newBikeTagUpdateResult.data })
     if (newBikeTagUpdateResult.success) {
       results.push({
         message: 'new BikeTag posted',
@@ -1091,12 +1090,12 @@ const getAuthManagementToken = async () => {
     })
     return getManagementTokenRequest?.data?.access_token
   } catch (e) {
-    console.log({
-      domain: process.env.A_DOMAIN,
-      client_id: process.env.A_M_CID,
-      client_secret: process.env.A_M_CS,
-      audience: process.env.A_AUDIENCE,
-    })
+    // console.log({
+    //   domain: process.env.A_DOMAIN,
+    //   client_id: process.env.A_M_CID,
+    //   client_secret: process.env.A_M_CS,
+    //   audience: process.env.A_AUDIENCE,
+    // })
     console.log('getAuthManagementToken error', e.message)
   }
 }
