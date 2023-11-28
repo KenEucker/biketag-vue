@@ -796,6 +796,12 @@ export const sendBikeTagPostNotificationToWebhook = (
   const currentNumber = currentTag.tagnumber
   const winningTagnumber = winningTag.tagnumber
   let data = {}
+  console.log({
+    mysteryImageUrl: winningTag.mysteryImageUrl,
+    foundImageUrl: currentTag.foundImageUrl,
+    foundTime: getTagDate(winningTag.foundTime),
+    foundTimeToISO: getTagDate(winningTag.foundTime).toISOString(),
+  })
   switch (type) {
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
@@ -889,7 +895,7 @@ export const setNewBikeTagPost = async (
     currentBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     // console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
     const currentBikeTagUpdateResult = await biketag.updateTag(currentBikeTag)
-    // console.log({ currentBikeTagUpdateResult })
+    console.log({ currentBikeTagUpdateResult: currentBikeTagUpdateResult.data })
     if (currentBikeTagUpdateResult.success) {
       results.push({
         message: 'current BikeTag updated',
@@ -908,6 +914,7 @@ export const setNewBikeTagPost = async (
 
     /************** SET NEW BIKETAG POST FROM QUEUE *****************/
     const newBikeTagUpdateResult = await biketag.updateTag(newBikeTagPost)
+    console.log({ newBikeTagUpdateResult: newBikeTagUpdateResult.data })
     if (newBikeTagUpdateResult.success) {
       results.push({
         message: 'new BikeTag posted',
@@ -926,25 +933,26 @@ export const setNewBikeTagPost = async (
 
     if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
       const newPostedBikeTag = newBikeTagUpdateResult.data as unknown as Tag
-      const postToReddit = false
-      if (postToReddit) {
-        const postedToRedditResult = await biketag.updateTag(newPostedBikeTag, { source: 'reddit' })
-        if (postedToRedditResult.success) {
-          results.push({
-            message: 'new BikeTag posted to Reddit',
-            game: game.name,
-            tag: postedToRedditResult.data,
-          })
-        } else {
-          results.push({
-            message: 'new BikeTag was not posted to Reddit',
-            error: postedToRedditResult.error,
-            game: game.name,
-            tag: newPostedBikeTag,
-          })
-          errors = true
-        }
-      }
+
+      // const postToReddit = false
+      // if (postToReddit) {
+      //   const postedToRedditResult = await biketag.updateTag(newPostedBikeTag, { source: 'reddit' })
+      //   if (postedToRedditResult.success) {
+      //     results.push({
+      //       message: 'new BikeTag posted to Reddit',
+      //       game: game.name,
+      //       tag: postedToRedditResult.data,
+      //     })
+      //   } else {
+      //     results.push({
+      //       message: 'new BikeTag was not posted to Reddit',
+      //       error: postedToRedditResult.error,
+      //       game: game.name,
+      //       tag: newPostedBikeTag,
+      //     })
+      //     errors = true
+      //   }
+      // }
 
       const ambassadors = (await biketag.ambassadors(undefined, {
         source: 'sanity',
@@ -987,8 +995,8 @@ export const setNewBikeTagPost = async (
         (a) => {
           // console.log({ a })
           return {
-            currentBikeTag: currentBikeTagUpdateResult.data,
-            newBikeTagPost: newBikeTagUpdateResult.data,
+            currentBikeTag: currentPostedBikeTag,
+            newBikeTagPost: newPostedBikeTag,
             logo,
             ambassadorsUrl: `${host}/queue?btaId=${a?.id}`,
             tagAutoApprovedText:
