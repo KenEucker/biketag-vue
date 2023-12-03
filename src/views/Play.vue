@@ -70,11 +70,11 @@
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.addNewBikeTag]">
         <queue-submit :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.shareBikeTagPost]">
-        <queue-posted-share :tag="getPlayerTag" @submit="onQueueSubmit" />
-      </div>
       <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.roundPosted]">
         <queue-posted :tag="getPlayerTag" @submit="onQueueSubmit" />
+      </div>
+      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.shareBikeTagPost]">
+        <queue-posted-share :tag="getPlayerTag" />
       </div>
       <span v-if="isSubmittingData()" class="player-agree">
         * {{ t('pages.round.user_agree') }}

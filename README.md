@@ -84,6 +84,8 @@ Thank you to [Netlify][netlify] for providing a [free open source plan][netlify-
 
 Support the BikeTag Project on [GitHub][github], [Patreon][patreon], or directly by going out and playing a round of [BikeTag in your city](https://biketag.org)!
 
+  ![Alt](https://repobeats.axiom.co/api/embed/c11cc935c10205774c8d5f48a95f6a313095845f.svg "Repobeats analytics image")
+
   ## Vendors
 
 

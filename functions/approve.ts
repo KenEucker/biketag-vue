@@ -55,7 +55,7 @@ const approveHandler: Handler = async (event) => {
         approvedTag.game = approvedTag.game.length ? approvedTag.game : game.name
         // console.log({ approvedTag, approvedTagList })
 
-        const newBikeTagPostedResults = await setNewBikeTagPost(approvedTag, game, currentBikeTag)
+        const newBikeTagPostedResults = await setNewBikeTagPost(game, approvedTag, currentBikeTag)
         results.push({
           message: `Approving BikeTag Ambassador: ${profile.name}`,
           ambassador: profile.email,
