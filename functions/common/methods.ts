@@ -792,6 +792,7 @@ export const sendBikeTagPostNotificationToWebhook = (
   webhook: string,
   type: string,
   host: string,
+  game: Game,
 ) => {
   const currentNumber = currentTag.tagnumber
   const winningTagnumber = winningTag.tagnumber
@@ -800,7 +801,7 @@ export const sendBikeTagPostNotificationToWebhook = (
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
       data = JSON.stringify({
-        content: 'A new BikeTag has been posted!',
+        content: `A new BikeTag has been posted for ${game.name}!`,
         embeds: [
           {
             title: `Tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
@@ -818,7 +819,7 @@ export const sendBikeTagPostNotificationToWebhook = (
       break
     case 'slack':
       data = JSON.stringify({
-        text: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${currentTag.foundPlayer}\r\nHint:${winningTag.hint}`,
+        text: `A new BikeTag has been posted for ${game.name}!\r\nTag #${winningTagnumber} by ${currentTag.foundPlayer}\r\nHint:${winningTag.hint}`,
         blocks: [
           {
             type: 'section',
@@ -902,6 +903,7 @@ export const sendNewBikeTagNotifications = async (
         sendGlobalDiscordNotification,
         'discord',
         host,
+        game,
       ),
     )
 
@@ -914,6 +916,7 @@ export const sendNewBikeTagNotifications = async (
         sendGlobalSlackNotification,
         'slack',
         host,
+        game,
       ),
     )
 
@@ -926,6 +929,7 @@ export const sendNewBikeTagNotifications = async (
         sendDiscordNotification,
         'discord',
         host,
+        game,
       ),
     )
   const sendSlackNotification = game.settings['notifications::slack']
@@ -937,6 +941,7 @@ export const sendNewBikeTagNotifications = async (
         sendSlackNotification,
         'slack',
         host,
+        game,
       ),
     )
 
