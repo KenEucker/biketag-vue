@@ -1093,6 +1093,7 @@ export const setNewBikeTagPost = async (
     if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
       /************** SEND NOTIFICATIONS *****************/
       /// Send it off and hope that it finishes
+      console.log('sending notifications', getApiUrl(game.name, 'autopost-notify'))
       axios({
         method: 'post',
         url: getApiUrl(game.name, 'autopost-notify'),
