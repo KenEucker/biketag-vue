@@ -176,6 +176,7 @@ onBeforeUnmount(() => {
 @import '../assets/styles/style';
 
 .popover {
+  background-color: $silver-sand;
   &__wrapper {
     @include background-btn;
     @include flx-center($jc: center);
@@ -207,8 +208,8 @@ onBeforeUnmount(() => {
 
   &__hint-icon {
     position: absolute;
-    left: 14px;
-    top: 35%;
+    left: -15px;
+    top: -30px;
   }
 
   &__close {
@@ -225,11 +226,9 @@ onBeforeUnmount(() => {
     cursor: default;
     white-space: pre-wrap;
     text-transform: uppercase;
-    word-break: break-all;
-    margin: 0;
+    margin: 10px;
     max-height: 96px;
     overflow: auto;
-    width: 80%;
     margin-left: auto;
   }
 }
