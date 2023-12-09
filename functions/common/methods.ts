@@ -24,7 +24,7 @@ export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.
 export const getApiUrl = (game = '', path = ''): string =>
   process.env.CONTEXT === 'dev'
     ? `http://${game.length ? `${game}.` : ''}${process.env.HOST}:7200/.netlify/functions/${path}`
-    : `${game.length ? `${game}.` : ''}${process.env.HOST}/${path}`
+    : `https://${game.length ? `${game}.` : ''}${process.env.HOST}/api/${path}`
 
 export const isRequestAllowed = (
   req: any,
