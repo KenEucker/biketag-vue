@@ -20,6 +20,8 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
     })
   }
 
+  // if (!isRequestAllowed()) {}
+
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,

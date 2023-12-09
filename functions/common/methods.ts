@@ -20,6 +20,49 @@ import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
 export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
+
+export const getApiUrl = (game = '', path = ''): string =>
+  process.env.CONTEXT === 'dev'
+    ? `http://${game.length ? `${game}.` : ''}${process.env.HOST}:7200/.netlify/functions/${path}`
+    : `${game.length ? `${game}.` : ''}${process.env.HOST}/${path}`
+
+export const isRequestAllowed = (
+  req: any,
+  authorized?: boolean,
+  admin?: boolean,
+  isFrontendRequest?: boolean,
+  restrictMethod?: string[] | string,
+): boolean => {
+  if (restrictMethod?.length) {
+    const restrictMethods = typeof restrictMethod === 'string' ? [restrictMethod] : restrictMethod
+    if (restrictMethods!.indexOf(req.httpMethod.toLowerCase()) === -1) {
+      return false
+    }
+  }
+
+  return true
+  // TODO: fill out the checks below
+  if (authorized) {
+    if (admin) {
+      return false
+    }
+    return false
+  }
+
+  if (isFrontendRequest) {
+    if (authorized) {
+      if (admin) {
+        return false
+      }
+      return false
+    }
+
+    return req.headers.referrer.includes(process.env.HOST)
+  }
+
+  return false
+}
+
 export const getBikeTagClientOpts = (
   req?: request.Request,
   authorized?: boolean,
@@ -861,7 +904,7 @@ export const sendBikeTagPostNotificationToWebhook = (
       'Content-Type': 'application/json',
     },
     data,
-  })
+  }).then((response) => `${type}::${response.status}`)
 }
 
 export const sendNewBikeTagNotifications = async (
@@ -945,6 +988,15 @@ export const sendNewBikeTagNotifications = async (
       ),
     )
 
+  console.log({
+    ambassadors,
+    thisGamesAmbassadors,
+    sendGlobalDiscordNotification,
+    sendDiscordNotification,
+    sendGlobalSlackNotification,
+    sendSlackNotification,
+  })
+
   notificationPromises.push(
     sendEmailsToAmbassadors(
       'biketag-auto-posted',
@@ -980,7 +1032,7 @@ export const sendNewBikeTagNotifications = async (
 export const setNewBikeTagPost = async (
   game: Game,
   winningBikeTagPost: Tag,
-  currentBikeTag: Tag,
+  previousBikeTag: Tag,
 ): Promise<BackgroundProcessResults> => {
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
@@ -990,32 +1042,32 @@ export const setNewBikeTagPost = async (
   biketagOpts.game = game?.slug
   biketagOpts.imgur.hash = game?.mainhash
   const biketag = new BikeTagClient(biketagOpts)
-  currentBikeTag = currentBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
+  previousBikeTag = previousBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
   const results: any = []
 
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost) // the new "current" mystery tag
   try {
     /************** UPDATE CURRENT BIKETAG WITH FOUND IMAGE *****************/
-    currentBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
-    currentBikeTag.foundTime = winningBikeTagPost.foundTime
-    currentBikeTag.foundLocation = winningBikeTagPost.foundLocation
-    currentBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
+    previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
+    previousBikeTag.foundTime = winningBikeTagPost.foundTime
+    previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
+    previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     // console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
-    const currentBikeTagUpdateResult = await biketag.updateTag(currentBikeTag)
+    const currentBikeTagUpdateResult = await biketag.updateTag(previousBikeTag)
     // console.log({ currentBikeTagUpdateResult: currentBikeTagUpdateResult.data })
     if (currentBikeTagUpdateResult.success) {
       results.push({
         message: 'current BikeTag updated',
         game: game.name,
-        tag: currentBikeTag,
+        tag: previousBikeTag,
       })
     } else {
       results.push({
         message: 'current BikeTag was not updated',
         error: currentBikeTagUpdateResult.error,
         game: game.name,
-        tag: currentBikeTag,
+        tag: previousBikeTag,
       })
       errors = true
     }
@@ -1039,13 +1091,15 @@ export const setNewBikeTagPost = async (
     }
 
     if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
-      /// Just let it do it's thing and move on
-      sendNewBikeTagNotifications(
-        game,
-        currentBikeTagUpdateResult.data as unknown as Tag,
-        newBikeTagUpdateResult.data as unknown as Tag,
-        biketag,
-      )
+      /************** SEND NOTIFICATIONS *****************/
+      /// Send it off and hope that it finishes
+      axios({
+        method: 'post',
+        url: getApiUrl(game.name, 'autopost-notify'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
 
       /************** REMOVE NEWLY POSTED BIKETAG FROM QUEUE *****************/
       const nonAdminBikeTagOpts = getBikeTagClientOpts(
@@ -1081,7 +1135,7 @@ export const setNewBikeTagPost = async (
       message: 'error setting new BikeTag Post',
       error: e?.message ?? e,
       game: game.name,
-      current: currentBikeTag,
+      current: previousBikeTag,
       tag: newBikeTagPost,
     })
     errors = true
