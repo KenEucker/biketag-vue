@@ -7,15 +7,14 @@
         <!-- Middle Button -->
         <bike-tag-button
           id="hint"
-          ref="hint"
+          ref="hintButton"
           class="button-group__middle"
           :text="t('menu.hint')"
           variant="bold"
-          @click="showHint"
         />
-        <b-popover hide-header target="hint" triggers="click" placement="top">
+        <b-popover ref="hintPopover" hide-header target="hint" triggers="click" placement="top">
           <img :src="hintIcon" class="popover__hint-icon" alt="Hint" />
-          <p ref="mysteryHint" class="popover__hint-text"></p>
+          <p class="popover__hint-text">{{ getCurrentHint }}</p>
           <img :src="closeRounded" class="popover__close" alt="close" @click="closePopover" />
         </b-popover>
         <!-- Right Button -->
@@ -114,49 +113,10 @@ const props = defineProps({
 const emit = defineEmits(['next', 'previous'])
 const root = ref(null)
 // const showCamera = ref(false)
-const characters = [
-  'a',
-  'b',
-  'c',
-  'd',
-  'e',
-  'f',
-  'g',
-  'h',
-  'i',
-  'j',
-  'k',
-  'l',
-  'm',
-  'n',
-  'o',
-  'p',
-  'q',
-  'r',
-  's',
-  't',
-  'u',
-  'v',
-  'x',
-  'y',
-  'x',
-  '#',
-  '%',
-  '&',
-  '-',
-  '+',
-  '_',
-  '?',
-  '/',
-  '\\',
-  '=',
-]
-const timeout = ref(5)
-const iterations = ref(10)
 const hintIcon = HintIcon
 const closeRounded = CloseRounded
-const mysteryHint = ref(null)
-const hint = ref(null)
+const hintPopover = ref(null)
+const hintButton = ref(null)
 const store = useStore()
 const router = useRouter()
 const { t } = useI18n()
@@ -168,16 +128,6 @@ const hasDownloadedFound = ref(false)
 const getCurrentHint = computed(() => store.getCurrentHint)
 const getQueuedTags = computed(() => store.getQueuedTags)
 
-// methods
-// const goAboutPage = () => {
-//   router.push('/about')
-// }
-// const goLeaderboardPage = () => {
-//   router.push('/leaderboard')
-// }
-// const goPlayersPage = () => {
-//   router.push('/players')
-// }
 const goMapPage = () => {
   router.push('/map')
 }
@@ -188,48 +138,8 @@ const goWorldwide = () => {
   window.location = 'http://biketag.org/'
   // router.push('/worldwide')
 }
-const sleep = (time) => {
-  return new Promise((resolve) => setTimeout(resolve, time))
-}
-const getRandomInteger = (min, max) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-const randomCharacter = () => {
-  return characters[getRandomInteger(0, characters.length - 1)]
-}
-const showHint = () => {
-  nextTick(async () => {
-    const popover = document.querySelector('.popover')
-    if (popover) {
-      popover.classList.add('popover__wrapper')
-      const hint = getCurrentHint.value
-      mysteryHint.value.innerText = ''
-      window.scrollBy({ top: 1 })
-      for (let i of hint) {
-        let j = 0
-        if (document.querySelector('.popover__wrapper')) {
-          while (j < iterations.value) {
-            mysteryHint.value.innerText = `${mysteryHint.value.innerText}${randomCharacter()}`
-            await sleep(timeout.value)
-            mysteryHint.value.innerText = mysteryHint.value.innerText.slice(
-              0,
-              mysteryHint.value.innerText.length - 1,
-            )
-            j++
-          }
-        } else {
-          mysteryHint.value.innerText = ''
-          break
-        }
-        mysteryHint.value.innerText = `${mysteryHint.value.innerText}${i}`
-      }
-    }
-  })
-}
 const closePopover = () => {
-  hint.value.click()
-  // console.log(hint.value)
-  // hint.value.click()
+  hintPopover.value.hide({ type: 'click' })
 }
 const downloadTag = async () => {
   if (downloadingTag.value !== true) {
@@ -336,6 +246,13 @@ onBeforeUnmount(() => {
 
 .footer-image {
   height: 40px;
+}
+
+.popover__close {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  z-index: 10;
 }
 
 .button-group {
