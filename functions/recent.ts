@@ -28,24 +28,24 @@ const recentHandler: Handler = async (event) => {
       true,
     )
     const biketagAdmin = new BikeTagClient(biketagAdminOpts)
-    const featuredGameNames = await biketagAdmin
-      .getGame(
-        { game: '', cached: false },
-        {
-          source: 'sanity',
-          cached: false,
-        },
-      )
-      .then((d) => {
-        if (d.success) {
-          const adminGames = d.data as unknown as Game[]
-          const featuredGamesList = adminGames.filter(
-            (g: Game) => g.settings['game::featured'] === 'true',
-          )
-          return featuredGamesList.map((g: Game) => g.name)
-        }
-        return []
-      })
+    // const featuredGameNames = await biketagAdmin
+    //   .getGame(
+    //     { game: '', cached: false },
+    //     {
+    //       source: 'sanity',
+    //       cached: false,
+    //     },
+    //   )
+    //   .then((d) => {
+    //     if (d.success) {
+    //       const adminGames = d.data as unknown as Game[]
+    //       const featuredGamesList = adminGames.filter(
+    //         (g: Game) => g.settings['game::featured'] === 'true',
+    //       )
+    //       return featuredGamesList.map((g: Game) => g.name)
+    //     }
+    //     return []
+    //   })
     const featuredGames = await biketag
       .getGame(
         { game: '', cached: false },
@@ -58,11 +58,8 @@ const recentHandler: Handler = async (event) => {
           const nonAdminGames = d.data as unknown as Game[]
           const supportedGames = nonAdminGames.filter((g: Game) => {
             return (
-              featuredGameNames.indexOf(g.name) !== -1 &&
-              g.mainhash?.length &&
-              g.archivehash?.length &&
-              g.queuehash?.length &&
-              g.logo?.length
+              // featuredGameNames.indexOf(g.name) !== -1 &&
+              g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length
             )
           })
           return supportedGames
