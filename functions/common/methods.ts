@@ -1100,6 +1100,8 @@ export const setNewBikeTagPost = async (
         headers: {
           'Content-Type': 'application/json',
         },
+      }).catch((e) => {
+        console.log('error sending notifications', e.message ?? e)
       })
 
       /************** REMOVE NEWLY POSTED BIKETAG FROM QUEUE *****************/
