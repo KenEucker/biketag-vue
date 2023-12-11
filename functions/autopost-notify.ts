@@ -30,7 +30,7 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
     { source: 'imgur' },
   )
   const [winningTag, previousTag] = twoMostRecentTags.data
-  const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24
+  const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
   if (twentyFourHoursAgo > winningTag.mysteryTime && !forceNotify) {
     const errorMessage = 'Most recent tag was created more than 24 hours ago.'
