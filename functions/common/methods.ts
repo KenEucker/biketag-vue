@@ -20,6 +20,49 @@ import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
 export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
+
+export const getApiUrl = (game = '', path = ''): string =>
+  process.env.CONTEXT === 'dev'
+    ? `http://${game.length ? `${game}.` : ''}${process.env.HOST}:7200/.netlify/functions/${path}`
+    : `https://${game.length ? `${game}.` : ''}${process.env.HOST}/api/${path}`
+
+export const isRequestAllowed = (
+  req: any,
+  authorized?: boolean,
+  admin?: boolean,
+  isFrontendRequest?: boolean,
+  restrictMethod?: string[] | string,
+): boolean => {
+  if (restrictMethod?.length) {
+    const restrictMethods = typeof restrictMethod === 'string' ? [restrictMethod] : restrictMethod
+    if (restrictMethods!.indexOf(req.httpMethod.toLowerCase()) === -1) {
+      return false
+    }
+  }
+
+  return true
+  // TODO: fill out the checks below
+  if (authorized) {
+    if (admin) {
+      return false
+    }
+    return false
+  }
+
+  if (isFrontendRequest) {
+    if (authorized) {
+      if (admin) {
+        return false
+      }
+      return false
+    }
+
+    return req.headers.referrer.includes(process.env.HOST)
+  }
+
+  return false
+}
+
 export const getBikeTagClientOpts = (
   req?: request.Request,
   authorized?: boolean,
@@ -792,6 +835,7 @@ export const sendBikeTagPostNotificationToWebhook = (
   webhook: string,
   type: string,
   host: string,
+  game: Game,
 ) => {
   const currentNumber = currentTag.tagnumber
   const winningTagnumber = winningTag.tagnumber
@@ -800,7 +844,7 @@ export const sendBikeTagPostNotificationToWebhook = (
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
       data = JSON.stringify({
-        content: 'A new BikeTag has been posted!',
+        content: `A new BikeTag has been posted for ${game.name}!`,
         embeds: [
           {
             title: `Tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
@@ -818,7 +862,7 @@ export const sendBikeTagPostNotificationToWebhook = (
       break
     case 'slack':
       data = JSON.stringify({
-        text: `A new BikeTag has been posted!\r\nTag #${winningTagnumber} by ${currentTag.foundPlayer}\r\nHint:${winningTag.hint}`,
+        text: `A new BikeTag has been posted for ${game.name}!\r\nTag #${winningTagnumber} by ${currentTag.foundPlayer}\r\nHint:${winningTag.hint}`,
         blocks: [
           {
             type: 'section',
@@ -860,13 +904,135 @@ export const sendBikeTagPostNotificationToWebhook = (
       'Content-Type': 'application/json',
     },
     data,
+  }).then((response) => `${type}::${response.status}`)
+}
+
+export const sendNewBikeTagNotifications = async (
+  game: Game,
+  currentTag: Tag,
+  winningTag: Tag,
+  biketag: BikeTagClient,
+) => {
+  if (!biketag) {
+    const biketagOpts = getBikeTagClientOpts(
+      { method: 'get' } as unknown as request.Request,
+      true,
+      true,
+    )
+    biketagOpts.game = game?.slug
+    biketagOpts.imgur.hash = game?.mainhash
+    biketag = new BikeTagClient(biketagOpts)
+  }
+
+  const notificationPromises: any = []
+  const ambassadors = (await biketag.ambassadors(undefined, {
+    source: 'sanity',
+  })) as Ambassador[]
+  const thisGamesAmbassadors = ambassadors.filter((a) => game.ambassadors.indexOf(a.name) !== -1)
+  const winningTagnumber = winningTag.tagnumber
+  const host = `https://${game.name}.biketag.org`
+  const logo = game.logo?.length
+    ? game.logo.indexOf('imgur.co') !== -1
+      ? game.logo
+      : getSanityImageUrl(game.logo)
+    : `${host}${defaultLogo}`
+
+  const sendGlobalDiscordNotification = process.env.DCN
+  if (sendGlobalDiscordNotification)
+    notificationPromises.push(
+      sendBikeTagPostNotificationToWebhook(
+        currentTag,
+        winningTag,
+        sendGlobalDiscordNotification,
+        'discord',
+        host,
+        game,
+      ),
+    )
+
+  const sendGlobalSlackNotification = process.env.SLN
+  if (sendGlobalSlackNotification)
+    notificationPromises.push(
+      sendBikeTagPostNotificationToWebhook(
+        currentTag,
+        winningTag,
+        sendGlobalSlackNotification,
+        'slack',
+        host,
+        game,
+      ),
+    )
+
+  const sendDiscordNotification = game.settings['notifications::discord']
+  if (sendDiscordNotification)
+    notificationPromises.push(
+      sendBikeTagPostNotificationToWebhook(
+        currentTag,
+        winningTag,
+        sendDiscordNotification,
+        'discord',
+        host,
+        game,
+      ),
+    )
+  const sendSlackNotification = game.settings['notifications::slack']
+  if (sendSlackNotification)
+    notificationPromises.push(
+      sendBikeTagPostNotificationToWebhook(
+        currentTag,
+        winningTag,
+        sendSlackNotification,
+        'slack',
+        host,
+        game,
+      ),
+    )
+
+  console.log({
+    ambassadors,
+    thisGamesAmbassadors,
+    sendGlobalDiscordNotification,
+    sendDiscordNotification,
+    sendGlobalSlackNotification,
+    sendSlackNotification,
   })
+
+  notificationPromises.push(
+    sendEmailsToAmbassadors(
+      'biketag-auto-posted',
+      `New BikeTag Round (#${winningTagnumber}) Auto-Posted for [${game.name}]`,
+      thisGamesAmbassadors,
+      (a) => {
+        return {
+          currentBikeTag: currentTag,
+          newBikeTagPost: winningTag,
+          logo,
+          ambassadorsUrl: `${host}/queue?btaId=${a?.id}`,
+          tagAutoApprovedText:
+            'This tag was auto-approved by the AutoPost feature for being the first, completed, BikeTag Post to be submitted. If there is a problem with this tag, please click the button below to address the issue.',
+          newBikeTagRoundTitle: ``,
+          newBikeTagRoundText: `BikeTag Round #${winningTagnumber} was just auto-posted!`,
+          tosText: 'Terms & Conditions',
+          replyToRemoveLink:
+            'reply to this email to request that these emails no longer be sent to you',
+          newBikeTagRoundFooter: 'Thank you for being a BikeTag Ambassador!',
+          btaDashboardButton: 'BikeTag Ambassador dashboard',
+          host,
+          game: game.name,
+          redditLink: `https://reddit.com/r/${game.subreddit?.length ? game.subreddit : 'biketag'}`,
+          twitterLink: `https://twitter.com/${game.twitter?.length ? game.twitter : 'biketag'}`,
+        }
+      },
+    ),
+  )
+
+  return notificationPromises
 }
 
 export const setNewBikeTagPost = async (
-  winningBikeTagPost: Tag,
   game: Game,
-  currentBikeTag: Tag,
+  winningBikeTagPost: Tag,
+  previousBikeTag: Tag,
 ): Promise<BackgroundProcessResults> => {
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
@@ -876,32 +1042,32 @@ export const setNewBikeTagPost = async (
   biketagOpts.game = game?.slug
   biketagOpts.imgur.hash = game?.mainhash
   const biketag = new BikeTagClient(biketagOpts)
-  currentBikeTag = currentBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
+  previousBikeTag = previousBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
   const results: any = []
 
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost) // the new "current" mystery tag
   try {
     /************** UPDATE CURRENT BIKETAG WITH FOUND IMAGE *****************/
-    currentBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
-    currentBikeTag.foundTime = winningBikeTagPost.foundTime
-    currentBikeTag.foundLocation = winningBikeTagPost.foundLocation
-    currentBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
+    previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
+    previousBikeTag.foundTime = winningBikeTagPost.foundTime
+    previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
+    previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     // console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
-    const currentBikeTagUpdateResult = await biketag.updateTag(currentBikeTag)
+    const currentBikeTagUpdateResult = await biketag.updateTag(previousBikeTag)
     // console.log({ currentBikeTagUpdateResult: currentBikeTagUpdateResult.data })
     if (currentBikeTagUpdateResult.success) {
       results.push({
         message: 'current BikeTag updated',
         game: game.name,
-        tag: currentBikeTag,
+        tag: previousBikeTag,
       })
     } else {
       results.push({
         message: 'current BikeTag was not updated',
         error: currentBikeTagUpdateResult.error,
         game: game.name,
-        tag: currentBikeTag,
+        tag: previousBikeTag,
       })
       errors = true
     }
@@ -925,92 +1091,18 @@ export const setNewBikeTagPost = async (
     }
 
     if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
-      const newPostedBikeTag = newBikeTagUpdateResult.data as unknown as Tag
-
-      // const postToReddit = false
-      // if (postToReddit) {
-      //   const postedToRedditResult = await biketag.updateTag(newPostedBikeTag, { source: 'reddit' })
-      //   if (postedToRedditResult.success) {
-      //     results.push({
-      //       message: 'new BikeTag posted to Reddit',
-      //       game: game.name,
-      //       tag: postedToRedditResult.data,
-      //     })
-      //   } else {
-      //     results.push({
-      //       message: 'new BikeTag was not posted to Reddit',
-      //       error: postedToRedditResult.error,
-      //       game: game.name,
-      //       tag: newPostedBikeTag,
-      //     })
-      //     errors = true
-      //   }
-      // }
-
-      const ambassadors = (await biketag.ambassadors(undefined, {
-        source: 'sanity',
-      })) as Ambassador[]
-      const thisGamesAmbassadors = ambassadors.filter(
-        (a) => game.ambassadors.indexOf(a.name) !== -1,
-      )
-      const winningTagnumber = newPostedBikeTag.tagnumber
-      const host = `https://${game.name}.biketag.org`
-      const logo = game.logo?.length
-        ? game.logo.indexOf('imgur.co') !== -1
-          ? game.logo
-          : getSanityImageUrl(game.logo)
-        : `${host}${defaultLogo}`
-
-      const currentPostedBikeTag = currentBikeTagUpdateResult.data as unknown as Tag
-      const sendDiscordNotification = game.settings['notifications::discord']
-      if (sendDiscordNotification)
-        sendBikeTagPostNotificationToWebhook(
-          currentPostedBikeTag,
-          newPostedBikeTag,
-          sendDiscordNotification,
-          'discord',
-          host,
-        )
-      const sendSlackNotification = game.settings['notifications::slack']
-      if (sendSlackNotification)
-        sendBikeTagPostNotificationToWebhook(
-          currentPostedBikeTag,
-          newPostedBikeTag,
-          sendSlackNotification,
-          'slack',
-          host,
-        )
-
-      sendEmailsToAmbassadors(
-        'biketag-auto-posted',
-        `New BikeTag Round (#${winningTagnumber}) Auto-Posted for [${game.name}]`,
-        thisGamesAmbassadors,
-        (a) => {
-          // console.log({ a })
-          return {
-            currentBikeTag: currentPostedBikeTag,
-            newBikeTagPost: newPostedBikeTag,
-            logo,
-            ambassadorsUrl: `${host}/queue?btaId=${a?.id}`,
-            tagAutoApprovedText:
-              'This tag was auto-approved by the AutoPost feature for being the first, completed, BikeTag Post to be submitted. If there is a problem with this tag, please click the button below to address the issue.',
-            newBikeTagRoundTitle: ``,
-            newBikeTagRoundText: `BikeTag Round #${winningTagnumber} was just auto-posted!`,
-            tosText: 'Terms & Conditions',
-            replyToRemoveLink:
-              'reply to this email to request that these emails no longer be sent to you',
-            newBikeTagRoundFooter: 'Thank you for being a BikeTag Ambassador!',
-            btaDashboardButton: 'BikeTag Ambassador dashboard',
-            host,
-            game: game.name,
-            redditLink: `https://reddit.com/r/${
-              game.subreddit?.length ? game.subreddit : 'biketag'
-            }`,
-            twitterLink: `https://twitter.com/${game.twitter?.length ? game.twitter : 'biketag'}`,
-            // instagramLink: `https://www.reddit.com/r/${game. ?? 'biketag'}`,
-          }
+      /************** SEND NOTIFICATIONS *****************/
+      /// Send it off and hope that it finishes
+      console.log('sending notifications', getApiUrl(game.name, 'autopost-notify'))
+      axios({
+        method: 'post',
+        url: getApiUrl(game.name, 'autopost-notify'),
+        headers: {
+          'Content-Type': 'application/json',
         },
-      )
+      }).catch((e) => {
+        console.log('error sending notifications', e.message ?? e)
+      })
 
       /************** REMOVE NEWLY POSTED BIKETAG FROM QUEUE *****************/
       const nonAdminBikeTagOpts = getBikeTagClientOpts(
@@ -1046,7 +1138,7 @@ export const setNewBikeTagPost = async (
       message: 'error setting new BikeTag Post',
       error: e?.message ?? e,
       game: game.name,
-      current: currentBikeTag,
+      current: previousBikeTag,
       tag: newBikeTagPost,
     })
     errors = true

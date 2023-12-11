@@ -2,6 +2,7 @@
   <button
     :class="`biketag__button biketag__button--${props.variant}`"
     :style="`background-image: url(${backgroundSrc})`"
+    v-bind="$attrs"
   >
     <span v-if="props.text" class="biketag__text">
       <span class="biketag__text--inner">{{ props.text }}</span>

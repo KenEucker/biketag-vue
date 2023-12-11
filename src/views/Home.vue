@@ -80,7 +80,7 @@ import { useI18n } from 'vue-i18n'
 // data
 const router = useRouter()
 const route = useRoute()
-const tagnumber = ref(route.params?.tagnumber ? parseInt(route.params.tagnumber) : 0)
+let tagnumber = ref(route.params?.tagnumber ? parseInt(route.params.tagnumber) : 0)
 const tagIsLoading = ref(true)
 const store = useStore()
 const { t } = useI18n()
@@ -89,6 +89,12 @@ const { t } = useI18n()
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getImgurImageSized = computed(() => store.getImgurImageSized)
 const getTags = computed(() => store.getTags)
+
+/// Support legacy webHashHistory urls
+if (tagnumber.value === 0 && window.location.hash.indexOf('#/') === 0) {
+  tagnumber.value = parseInt(window.location.hash.split('#/')[1])
+}
+
 const tag = computed(() => {
   if (tagnumber.value !== 0) {
     const tag = getTags.value?.filter((t) => t.tagnumber === tagnumber.value)
