@@ -25,8 +25,6 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game({ game: biketagOpts.game }, { source: 'sanity' })) as Game
 
-  console.log('notifying for game', game.name)
-
   const twoMostRecentTags = await biketag.getTags(
     { game: biketagOpts.game, limit: 2 },
     { source: 'imgur' },
@@ -35,11 +33,15 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24
 
   if (twentyFourHoursAgo > winningTag.mysteryTime && !forceNotify) {
+    const errorMessage = 'Most recent tag was created more than 24 hours ago.'
+    console.log(errorMessage)
     return {
-      results: ['Most recent tag was created more than 24 hours ago.'],
+      results: [errorMessage],
       errors: true,
     }
   }
+
+  console.log('notifying for game', game.name)
 
   const notificationsSent = await sendNewBikeTagNotifications(
     game,
@@ -54,7 +56,7 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
     results = await Promise.allSettled(notificationsSent)
       .then((r) => r.map((p: any) => p.value))
       .catch((e) => {
-        console.log({ e })
+        console.log('error sending notifications', { e })
         return []
       })
     console.log({ results })
