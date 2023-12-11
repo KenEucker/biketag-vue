@@ -32,7 +32,7 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   const [winningTag, previousTag] = twoMostRecentTags.data
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
-  if (twentyFourHoursAgo > winningTag.mysteryTime && !forceNotify) {
+  if (twentyFourHoursAgo > winningTag.mysteryTime * 1000 && !forceNotify) {
     const errorMessage = 'Most recent tag was created more than 24 hours ago.'
     console.log(errorMessage)
     return {
