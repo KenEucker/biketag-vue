@@ -563,6 +563,8 @@ const getLiquidInstance = () => {
 }
 
 export const sendEmail = async (to: string, subject: string, locals: any, template?: string) => {
+  if (!(process.env.G_EMAIL && process.env.G_PASS)) return null
+
   template = template ?? subject
   let html = ''
   let text = ''
@@ -591,7 +593,8 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
   }
 
   if (!html.length) {
-    console.log({ templateFilePath, htmlTemplateFilePath })
+    console.log('no html was loaded', { templateFilePath, htmlTemplateFilePath })
+    return null
   }
 
   const emailOpts = {
@@ -636,6 +639,9 @@ export const sendEmailsToAmbassadors = async (
   getEmailData: (a?: Ambassador) => any,
   sendToAdmin = false,
 ): Promise<{ accepted: any[]; rejected: any[] }> => {
+  if (!(process.env.G_EMAIL && process.env.G_PASS))
+    return Promise.resolve({ accepted: [], rejected: ['email is not configured'] })
+
   let emailSent
   let accepted = []
   let rejected = []
@@ -839,17 +845,27 @@ export const sendBikeTagPostNotificationToWebhook = (
 ) => {
   const currentNumber = currentTag.tagnumber
   const winningTagnumber = winningTag.tagnumber
+  const heading = `A new BikeTag has been posted for the [${game.name}](${host}) game!`
+  const headingSlack = `A new BikeTag has been posted for the <${host}|${game.name}> game!`
+  const title = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
+  const hint = `Hint: ||${winningTag.hint}||`
+  const previousDescription = `[Previous round](${host}/${currentNumber}) found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}`
+  const previousDescriptionSlack = `<${host}/${currentNumber}|Previous round> found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}`
+  const mysteryAltText = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
+  const foundAltText = `BikeTag #${currentNumber} found by ${currentTag.foundPlayer}`
+  const timestamp = getTagDate(currentTag.foundTime).toISOString()
+
   let data = {}
   switch (type) {
     case 'discord':
       // https://discord.com/developers/docs/resources/webhook
       data = JSON.stringify({
-        content: `A new BikeTag has been posted for ${game.name}!`,
+        content: heading,
         embeds: [
           {
-            title: `Tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
-            description: `||${winningTag.hint}||\n\n[Previous round](${host}/${currentNumber}) found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}`,
-            timestamp: getTagDate(currentTag.foundTime).toISOString(),
+            title,
+            description: `${hint}\n\n\t\t${previousDescription}`,
+            timestamp,
             image: {
               url: winningTag.mysteryImageUrl,
             },
@@ -862,32 +878,34 @@ export const sendBikeTagPostNotificationToWebhook = (
       break
     case 'slack':
       data = JSON.stringify({
-        text: `A new BikeTag has been posted for ${game.name}!\r\nTag #${winningTagnumber} by ${currentTag.foundPlayer}\r\nHint:${winningTag.hint}`,
         blocks: [
           {
             type: 'section',
-            block_id: 'mysteryTag',
             text: {
               type: 'mrkdwn',
-              text: `tag #${winningTagnumber}`,
-            },
-            accessory: {
-              type: 'image',
-              image_url: winningTag.mysteryImageUrl,
-              alt_text: `tag #${winningTagnumber} by ${winningTag.mysteryPlayer}`,
+              text: headingSlack,
             },
           },
           {
+            type: 'image',
+            title: {
+              type: 'plain_text',
+              text: mysteryAltText,
+              emoji: true,
+            },
+            image_url: winningTag.mysteryImageUrl,
+            alt_text: mysteryAltText,
+          },
+          {
             type: 'section',
-            block_id: 'foundTag',
             text: {
               type: 'mrkdwn',
-              text: `Tag #${currentNumber} found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}\r\n\n<${host}/${currentNumber}|View previous round>`,
+              text: previousDescriptionSlack,
             },
             accessory: {
               type: 'image',
               image_url: currentTag.foundImageUrl,
-              alt_text: `tag #${currentNumber} found by ${currentTag.foundPlayer}`,
+              alt_text: foundAltText,
             },
           },
         ],
@@ -939,7 +957,7 @@ export const sendNewBikeTagNotifications = async (
 
   const sendGlobalDiscordNotification = process.env.DCN
   if (sendGlobalDiscordNotification) {
-    console.log({ sendGlobalDiscordNotification })
+    // console.log({ sendGlobalDiscordNotification })
     notificationPromises.push(
       sendBikeTagPostNotificationToWebhook(
         currentTag,
@@ -954,7 +972,7 @@ export const sendNewBikeTagNotifications = async (
 
   const sendGlobalSlackNotification = process.env.SLN
   if (sendGlobalSlackNotification) {
-    console.log({ sendGlobalSlackNotification })
+    // console.log({ sendGlobalSlackNotification })
     notificationPromises.push(
       sendBikeTagPostNotificationToWebhook(
         currentTag,
@@ -969,7 +987,7 @@ export const sendNewBikeTagNotifications = async (
 
   const sendDiscordNotification = game.settings['notifications::discord']
   if (sendDiscordNotification) {
-    console.log({ sendDiscordNotification })
+    // console.log({ sendDiscordNotification })
     notificationPromises.push(
       sendBikeTagPostNotificationToWebhook(
         currentTag,
@@ -984,7 +1002,7 @@ export const sendNewBikeTagNotifications = async (
 
   const sendSlackNotification = game.settings['notifications::slack']
   if (sendSlackNotification) {
-    console.log({ sendSlackNotification })
+    // console.log({ sendSlackNotification })
     notificationPromises.push(
       sendBikeTagPostNotificationToWebhook(
         currentTag,
@@ -997,7 +1015,7 @@ export const sendNewBikeTagNotifications = async (
     )
   }
 
-  console.log('emailing', { thisGamesAmbassadors })
+  // console.log('emailing', { thisGamesAmbassadors })
   notificationPromises.push(
     sendEmailsToAmbassadors(
       'biketag-auto-posted',
@@ -1024,7 +1042,9 @@ export const sendNewBikeTagNotifications = async (
           twitterLink: `https://twitter.com/${game.twitter?.length ? game.twitter : 'biketag'}`,
         }
       },
-    ),
+    ).then((results) => {
+      return results.accepted.concat(results.rejected)
+    }),
   )
 
   return notificationPromises

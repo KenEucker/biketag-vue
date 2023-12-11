@@ -41,8 +41,6 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
     }
   }
 
-  console.log('notifying for game', game.name)
-
   const notificationsSent = await sendNewBikeTagNotifications(
     game,
     previousTag,
@@ -59,7 +57,6 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
         console.log('error sending notifications', { e })
         return []
       })
-    console.log({ results })
   }
 
   return {
@@ -72,6 +69,7 @@ const autoPostHandler: Handler = async (event) => {
   const { results, errors } = await autoNotifyNewBikeTagPosted(event)
 
   if (results.length) {
+    console.log('notifications sent', { results })
     return {
       statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: JSON.stringify(results),

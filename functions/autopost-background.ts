@@ -92,8 +92,8 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
 
 const autoPostHandler: Handler = async () => {
   const { results, errors } = await autoPostNewBikeTags()
-  console.log('autopost attempted', { results })
   if (results.length) {
+    console.log('autopost attempted', { results })
     return {
       statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: JSON.stringify(results),

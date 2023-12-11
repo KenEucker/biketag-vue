@@ -51,7 +51,7 @@ const profileHandler: Handler = async (event) => {
               })
             ).data
             if (!roles.length && !user_data.user_metadata?.name) {
-              console.log(InfoMessage.ProfileInit, profile.sub)
+              // console.log(InfoMessage.ProfileInit, profile.sub)
               const exists = (
                 await axios.request({
                   method: 'GET',
