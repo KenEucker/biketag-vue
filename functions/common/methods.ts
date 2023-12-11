@@ -938,7 +938,8 @@ export const sendNewBikeTagNotifications = async (
     : `${host}${defaultLogo}`
 
   const sendGlobalDiscordNotification = process.env.DCN
-  if (sendGlobalDiscordNotification)
+  if (sendGlobalDiscordNotification) {
+    console.log({ sendGlobalDiscordNotification })
     notificationPromises.push(
       sendBikeTagPostNotificationToWebhook(
         currentTag,
@@ -949,9 +950,11 @@ export const sendNewBikeTagNotifications = async (
         game,
       ),
     )
+  }
 
   const sendGlobalSlackNotification = process.env.SLN
-  if (sendGlobalSlackNotification)
+  if (sendGlobalSlackNotification) {
+    console.log({ sendGlobalSlackNotification })
     notificationPromises.push(
       sendBikeTagPostNotificationToWebhook(
         currentTag,
@@ -962,9 +965,11 @@ export const sendNewBikeTagNotifications = async (
         game,
       ),
     )
+  }
 
   const sendDiscordNotification = game.settings['notifications::discord']
-  if (sendDiscordNotification)
+  if (sendDiscordNotification) {
+    console.log({ sendDiscordNotification })
     notificationPromises.push(
       sendBikeTagPostNotificationToWebhook(
         currentTag,
@@ -975,8 +980,11 @@ export const sendNewBikeTagNotifications = async (
         game,
       ),
     )
+  }
+
   const sendSlackNotification = game.settings['notifications::slack']
-  if (sendSlackNotification)
+  if (sendSlackNotification) {
+    console.log({ sendSlackNotification })
     notificationPromises.push(
       sendBikeTagPostNotificationToWebhook(
         currentTag,
@@ -987,16 +995,9 @@ export const sendNewBikeTagNotifications = async (
         game,
       ),
     )
+  }
 
-  console.log({
-    ambassadors,
-    thisGamesAmbassadors,
-    sendGlobalDiscordNotification,
-    sendDiscordNotification,
-    sendGlobalSlackNotification,
-    sendSlackNotification,
-  })
-
+  console.log('emailing', { thisGamesAmbassadors })
   notificationPromises.push(
     sendEmailsToAmbassadors(
       'biketag-auto-posted',
