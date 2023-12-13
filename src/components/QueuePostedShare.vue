@@ -1,9 +1,9 @@
 <template>
   <div class="container queue-posted-share">
-    <h3 class="queue-title">{{ $t('pages.round.posted_title') }}</h3>
-    <p class="queue-text">{{ $t('pages.round.posted_text') }}</p>
-    <div>
-      <b-tabs nav-item-class="nav-item">
+    <h3 class="queue-title">{{ $t('pages.round.share_title') }}</h3>
+    <p class="queue-text">{{ $t('pages.round.share_text') }}</p>
+    <!-- <div> -->
+    <!-- <b-tabs nav-item-class="nav-item">
         <b-tab v-if="!!getGame?.subreddit?.length">
           <template #title>
             <img
@@ -50,16 +50,16 @@
             <pre v-if="!showInstagram">{{ instagramPostText }}</pre>
           </div>
         </b-tab>
-      </b-tabs>
-      <p v-if="supportsReddit || supportsTwitter || supportsInstagram" class="queue-text">
+      </b-tabs> -->
+    <!-- <p v-if="supportsReddit || supportsTwitter || supportsInstagram" class="queue-text">
         {{ $t('pages.round.submit_text') }}
       </p>
       <p v-else class="queue-text">
         {{ $t('pages.round.submit_text_no_autopost') }}
         {{ $t('pages.round.submit_text_manual_social') }}
-      </p>
+      </p> -->
 
-      <form
+    <!-- <form
         ref="submitTag"
         name="post-new-biketag"
         action="post-new-biketag"
@@ -105,13 +105,17 @@
             @click="onSubmit"
           />
         </div>
-      </form>
+      </form> -->
+    <!-- </div> -->
+
+    <div>
+      <share-it :icons="false" />
     </div>
 
     <div class="mt-3 align-center">
       <bike-tag-button
         class="border-0"
-        :text="`${$t('pages.round.joined_button')} #${getCurrentBikeTag?.tagnumber}`"
+        :text="`${$t('pages.round.round_button')} #${getCurrentBikeTag?.tagnumber}`"
         @click="goViewRound"
       />
     </div>
@@ -141,38 +145,46 @@ const submitTag = ref(null)
 const store = useStore()
 const router = useRouter()
 const { t } = useI18n()
-
+const shareOptions = computed(() => ({
+  url: `https://${getGameName.value}.biketag.org/${getCurrentBikeTag.value.tagnumber}`,
+  quote: `I won round ${getCurrentBikeTag.value.tagnumber} of BikeTag ${getGameName.value}!`,
+  hashtag: `#${getGameName.value}BikeTag`,
+}))
+const facebookShareUrl = computed(
+  () =>
+    `https://www.facebook.com/sharer/sharer.php?u=${getGameName.value}.biketag.org/${getCurrentBikeTag.value.tagnumber}`,
+)
 // computed
 const getPlayerTag = computed(() => store.getPlayerTag)
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getPlayerId = computed(() => store.getPlayerId)
 const getGameName = computed(() => store.getGameName)
 const getGame = computed(() => store.getGame)
-const supportsReddit = computed(() => !!getGame.value?.settings[Settings.SupportsReddit])
-const supportsTwitter = computed(() => !!getGame.value?.settings[Settings.SupportsTwitter])
-const supportsInstagram = computed(() => !!getGame.value?.settings[Settings.SupportsInstagram])
-const redditPostText = computed(
-  () => `
-[#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://${getGameName.value}.biketag.org/${getPlayerTag.value.tagnumber})
+// const supportsReddit = computed(() => !!getGame.value?.settings[Settings.SupportsReddit])
+// const supportsTwitter = computed(() => !!getGame.value?.settings[Settings.SupportsTwitter])
+// const supportsInstagram = computed(() => !!getGame.value?.settings[Settings.SupportsInstagram])
+// const redditPostText = computed(
+//   () => `
+// [#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://${getGameName.value}.biketag.org/${getPlayerTag.value.tagnumber})
 
-Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurrentBikeTag.value.tagnumber}](${getCurrentBikeTag.value.discussionUrl}) that ${getCurrentBikeTag.value.mysteryPlayer} posted!
+// Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurrentBikeTag.value.tagnumber}](${getCurrentBikeTag.value.discussionUrl}) that ${getCurrentBikeTag.value.mysteryPlayer} posted!
 
-"[${getPlayerTag.value.foundLocation}](https://${getGameName.value}.biketag.org/${getCurrentBikeTag.value.tagnumber})"
+// "[${getPlayerTag.value.foundLocation}](https://${getGameName.value}.biketag.org/${getCurrentBikeTag.value.tagnumber})"
 
-See all BikeTags and more, for ${getGameName.value}:
+// See all BikeTags and more, for ${getGameName.value}:
 
-[${getGameName.value}.biketag.org](https://${getGameName.value}.biketag.org) | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/#howto)
-    `,
-)
-const twitterPostText = computed(
-  () => `
-Seattle BikeTag!
+// [${getGameName.value}.biketag.org](https://${getGameName.value}.biketag.org) | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/#howto)
+//     `,
+// )
+// const twitterPostText = computed(
+//   () => `
+// Seattle BikeTag!
 
-This is bike tag number ${getPlayerTag.value.tagnumber} by ${getPlayerTag.value.foundPlayer}.
-Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
+// This is bike tag number ${getPlayerTag.value.tagnumber} by ${getPlayerTag.value.foundPlayer}.
+// Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at [seattle.biketag.org](https://seattle.biketag.org)
 
-#SeattleBikeTag #SeaBikes #BikeSeattle`,
-)
+// #SeattleBikeTag #SeaBikes #BikeSeattle`,
+// )
 // const instgramPostText = computed(
 //   () => `
 // [#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://${getGameName.value}biketag.org/${getPlayerTag.value.tagnumber})
@@ -188,9 +200,9 @@ Find this mystery location and move the tag to your favorite spot. The latest ta
 // )
 
 // methods
-function copyTabContents(text) {
-  navigator.clipboard.writeText(text)
-}
+// function copyTabContents(text) {
+//   navigator.clipboard.writeText(text)
+// }
 function goViewRound() {
   router.push('/round')
 }
@@ -223,14 +235,19 @@ function onSubmit() {
 
 // mounted
 onMounted(() => {
-  postToReddit.value = showReddit.value = supportsReddit.value
-  postToTwitter.value = showTwitter.value = supportsTwitter.value
-  postToInstagram.value = showInstagram.value = supportsInstagram.value
+  // postToReddit.value = showReddit.value = supportsReddit.value
+  // postToTwitter.value = showTwitter.value = supportsTwitter.value
+  // postToInstagram.value = showInstagram.value = supportsInstagram.value
+  console.log({ shareOptions: shareOptions.value })
 })
 </script>
 
 <style lang="scss">
 .queue-posted-share {
+  .queue-title {
+    text-transform: uppercase;
+  }
+
   .nav-tabs {
     margin-bottom: -6px;
 

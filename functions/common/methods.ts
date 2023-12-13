@@ -15,7 +15,12 @@ import { extname, join } from 'path'
 import qs from 'qs'
 import request from 'request'
 import { BikeTagProfile } from '../../src/common/types'
-import { getDomainInfo, getTagDate, isAuthenticationEnabled } from '../../src/common/utils'
+import {
+  getDomainInfo,
+  getImgurImageSized,
+  getTagDate,
+  isAuthenticationEnabled,
+} from '../../src/common/utils'
 import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
@@ -867,10 +872,10 @@ export const sendBikeTagPostNotificationToWebhook = (
             description: `${hint}\n\n\t\t${previousDescription}`,
             timestamp,
             image: {
-              url: winningTag.mysteryImageUrl,
+              url: getImgurImageSized(winningTag.mysteryImageUrl, 'l'),
             },
             thumbnail: {
-              url: currentTag.foundImageUrl,
+              url: getImgurImageSized(currentTag.foundImageUrl, 'l'),
             },
           },
         ],
@@ -893,7 +898,7 @@ export const sendBikeTagPostNotificationToWebhook = (
               text: mysteryAltText,
               emoji: true,
             },
-            image_url: winningTag.mysteryImageUrl,
+            image_url: getImgurImageSized(winningTag.mysteryImageUrl, 'l'),
             alt_text: mysteryAltText,
           },
           {
@@ -904,7 +909,7 @@ export const sendBikeTagPostNotificationToWebhook = (
             },
             accessory: {
               type: 'image',
-              image_url: currentTag.foundImageUrl,
+              image_url: getImgurImageSized(currentTag.foundImageUrl, 'l'),
               alt_text: foundAltText,
             },
           },

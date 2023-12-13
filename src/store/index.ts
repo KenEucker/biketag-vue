@@ -27,7 +27,7 @@ const options: any = {
   host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.org/api`,
   // game: gameName,
   clientKey: getBikeTagHash(window.location.hostname),
-  clientToken: process.env.ACCESS_TOKEN,
+  // clientToken: process.env.ACCESS_TOKEN,
   // },
   ...getBikeTagClientOpts(window),
 }
@@ -115,6 +115,7 @@ export const useStore = defineStore('store', {
     },
     async fetchCredentials() {
       if (!this.credentialsFetched) {
+        client = new BikeTagClient({ ...options, ...getBikeTagClientOpts(window, true) })
         const credentials = await client.fetchCredentials()
         await client.config(credentials, false, true)
         this.credentialsFetched = true
@@ -246,6 +247,7 @@ export const useStore = defineStore('store', {
             return this.SET_QUEUED_TAGS(currentBikeTagQueue)
           }
 
+          this.SET_QUEUED_TAG_STATE(null)
           return false
         })
       }
@@ -673,7 +675,13 @@ export const useStore = defineStore('store', {
     },
     SET_QUEUED_TAG_STATE(tag: any) {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
-      this.formStep = getQueuedTagState(tag)
+      /// If the current player won the last round, set the tag state to share post
+      console.log(this.currentBikeTag.mysteryPlayer, this.profile?.user_metadata?.name)
+      if (this.profile?.user_metadata?.name === this.currentBikeTag.mysteryPlayer) {
+        this.formStep = BiketagFormSteps.shareBikeTagPost
+      } else if (tag) {
+        this.formStep = getQueuedTagState(tag)
+      }
     },
     // RESET_FORM_STEP() {
     //   this.formStep =

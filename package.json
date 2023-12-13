@@ -46,6 +46,7 @@
     "vue-iframes": "^0.0.19",
     "vue-loading-overlay": "^5.0.3",
     "vue-router": "^4.0.12",
+    "vue-share-it": "^1.1.8",
     "vue-timer-hook": "^0.0.22",
     "vue-toast-notification": "3.0",
     "vue3-cookies": "^1.0.6",

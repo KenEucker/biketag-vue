@@ -20,7 +20,7 @@
         getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
       }}</span
     >
-    <bike-tag-queue :only-mine="true" />
+    <bike-tag-queue :only-mine="true" :show-number="false" />
     <div
       v-if="BiketagFormSteps[getFormStep] >= 1 && BiketagFormSteps[getFormStep] < 4"
       class="step"

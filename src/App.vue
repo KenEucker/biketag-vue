@@ -4,6 +4,7 @@
     <meta name="description" :content="description" />
 
     <!-- Social -->
+    <meta property="og:site_name" :content="siteName" />
     <meta property="og:title" :content="title" />
     <meta property="og:description" :content="description" />
     <meta property="og:image" :content="logo" />
@@ -50,6 +51,7 @@ const isWhiteBackground = computed(() =>
   router.currentRoute.value.name === 'About' ? 'white-bck' : '',
 )
 const logo = computed(() => store.getLogoUrl('m'))
+const siteName = computed(() => `BikeTag ${store.getGameName}`)
 const title = computed(function () {
   return `${isNotLanding.value ? store.getGameName : t('app.gameof')} BikeTag!`
 })
@@ -58,6 +60,7 @@ const description = computed(() => `The BikeTag game in ${store.getGame?.region?
 onMounted(async () => {
   nextTick(async () => {
     await router.isReady()
+
     if (isLogout.value) {
       if (auth0?.isAuthenticated.value) {
         await store.setProfile()

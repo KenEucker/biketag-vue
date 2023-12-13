@@ -108,14 +108,14 @@ export const getDomainInfo = (req: any): DomainInfo => {
 
 export const getTagDate = (time: number): Date => new Date(time * 1000)
 
-export const getBikeTagClientOpts = (win?: Window) => {
+export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
   const domainInfo = getDomainInfo(win)
   return {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
     imgur: {
       clientId: process.env.I_CID,
       clientSecret: process.env.I_CSECRET,
-      refreshToken: process.env.I_RTOKEN,
+      refreshToken: withToken ? process.env.I_RTOKEN : undefined,
     },
     sanity: {
       projectId: process.env.S_PID,
@@ -290,12 +290,6 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
   const foundImageSet = queuedTag.foundImageUrl?.length > 0
   let queuedTagState = BiketagFormSteps.addFoundImage
   if (mysteryImageSet && foundImageSet) {
-    // const discussionUrlIsSet = queuedTag.discussionUrl && queuedTag.discussionUrl.length > 0
-    // const mentionUrlIsSet = queuedTag.mentionUrl && queuedTag.mentionUrl.length > 0
-    // queuedTagState =
-    //   discussionUrlIsSet || mentionUrlIsSet
-    //     ? BiketagFormSteps.roundPosted
-    //     : BiketagFormSteps.shareBikeTagPost
     queuedTagState = BiketagFormSteps.roundPosted
   } else {
     queuedTagState = foundImageSet
