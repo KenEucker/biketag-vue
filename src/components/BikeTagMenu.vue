@@ -334,7 +334,7 @@ header {
     .navbar-brand {
       margin: 0;
       margin-left: 1rem;
-
+      font-size: 1rem;
       @media (min-width: $breakpoint-desktop) {
         margin: 0 2rem;
       }
@@ -356,17 +356,17 @@ header {
 
     .navbar-toggler {
       //   margin-right: 1rem;
-      margin: 0.5rem;
+      margin: 0.5rem 1rem;
     }
 
     .logo {
       max-width: 10rem;
-      height: 4.5rem;
+      height: 3.5rem;
     }
 
     .hamburger-image {
       width: auto;
-      height: 3.5rem;
+      height: 2.5rem;
     }
 
     .game-title {
@@ -381,7 +381,7 @@ header {
     .nav-item {
       font-family: $default-secondary-font-family;
       text-transform: uppercase;
-      font-size: 2rem;
+      font-size: 1.4rem;
       cursor: pointer;
 
       @media (width <= 990px) {
@@ -395,6 +395,7 @@ header {
 
     .back-arrow {
       margin-left: 1rem;
+      margin-right: 1.5rem;
       cursor: pointer;
     }
   }

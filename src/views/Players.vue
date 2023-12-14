@@ -15,7 +15,7 @@
       </div>
     </div>
     <b-form-group>
-      <select v-model="perPage" class="form-select w-25 m-auto" @change="resetCurrentPage">
+      <select v-model="perPage" class="form-select mb-2 m-auto" @change="resetCurrentPage">
         <option v-for="i in 3" :key="Math.pow(10, i)" :value="Math.pow(10, i)">
           {{ Math.pow(10, i) }}
         </option>
