@@ -207,17 +207,22 @@ body {
 
       .page-item {
         .page-link {
+          font-size: 0.8rem;
           color: $primary-color;
-          background-color: $btn-primary-text-color;
+          background-color: transparent;
+          @media (width >= 575px){
+            font-size: 1rem;
+          }
         }
 
         &.active {
           .page-link {
-            color: $btn-primary-text-color;
+            color: $btn-upload-text-color;
             background-color: $primary-color;
             border-color: $primary-color;
           }
         }
+        
       }
     }
 
@@ -274,6 +279,10 @@ body {
           font-size: $how-font-size;
         }
       }
+    }
+
+    .form-select {
+      width: 10rem;
     }
 
     .header-logo {
