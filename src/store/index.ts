@@ -45,7 +45,7 @@ debug('init::store', {
 })
 
 /// TODO: create a helper for the instantiation of the biketag client (use singleton?)
-let client = new BikeTagClient(options)
+const client = new BikeTagClient(options)
 
 export const store = createPinia()
 export const useStore = defineStore('store', {
@@ -115,9 +115,9 @@ export const useStore = defineStore('store', {
     },
     async fetchCredentials() {
       if (!this.credentialsFetched) {
-        client = new BikeTagClient({ ...options, ...getBikeTagClientOpts(window, true) })
-        const credentials = await client.fetchCredentials()
-        await client.config(credentials, false, true)
+        await client.config({ ...options, ...getBikeTagClientOpts(window, true) }, true, true)
+        // const credentials = await client.fetchCredentials()
+        // await client.config(credentials, false, true)
         this.credentialsFetched = true
         // if (this.profile?.isBikeTagAmbassador) {
         //   /// fetch auth token for admin purposes
@@ -172,7 +172,7 @@ export const useStore = defineStore('store', {
             const game = d as Game
             options.imgur.hash = game.mainhash
             options.imgur.queuehash = game.queuehash
-            client = new BikeTagClient(options)
+            // client = new BikeTagClient(options)
 
             this.SET_GAME(game)
             return game
@@ -188,8 +188,8 @@ export const useStore = defineStore('store', {
       await this.setQueuedTags(false)
     },
     setAllGames() {
-      const biketagClient = new BikeTagClient({ ...options, game: undefined })
-      return biketagClient
+      // const biketagClient = new BikeTagClient({ ...options, game: undefined })
+      return client
         .getGame(
           { game: '' },
           {
@@ -676,7 +676,7 @@ export const useStore = defineStore('store', {
     SET_QUEUED_TAG_STATE(tag: any) {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
       /// If the current player won the last round, set the tag state to share post
-      console.log(this.currentBikeTag.mysteryPlayer, this.profile?.user_metadata?.name)
+      // console.log(this.currentBikeTag.mysteryPlayer, this.profile?.user_metadata?.name)
       if (this.profile?.user_metadata?.name === this.currentBikeTag.mysteryPlayer) {
         this.formStep = BiketagFormSteps.shareBikeTagPost
       } else if (tag) {

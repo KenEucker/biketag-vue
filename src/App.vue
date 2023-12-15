@@ -111,9 +111,9 @@ async function created() {
   /// Set it first thing
   store.SET_DATA_INITIALIZED()
   const game = await store.setGame()
-  initResults.push(store.setAllGames())
   const _gameIsSet = game?.name?.length !== 0
 
+  initResults.push(store.setAllGames())
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
     gameIsSet.value = true
 

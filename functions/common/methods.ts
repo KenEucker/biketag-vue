@@ -435,7 +435,6 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
   }
 
   const getAuth0AuthProfile = async (authorizationString: string) => {
-    // console.log('auth0', { authorizationString })
     try {
       const JWKS = jose.createRemoteJWKSet(
         new URL(`https://${process.env.A_DOMAIN}/.well-known/jwks.json`),
@@ -445,7 +444,7 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
       return payload
     } catch (e) {
       /// Swallow error
-      console.error({ authorizationAuth0ValidationError: e })
+      // console.error({ authorizationAuth0ValidationError: e })
       return authorizationString
     }
   }
@@ -1075,6 +1074,8 @@ export const setNewBikeTagPost = async (
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost) // the new "current" mystery tag
   try {
     /************** UPDATE CURRENT BIKETAG WITH FOUND IMAGE *****************/
+    /// Zero out the gps for the new location, as the GPS of a newly posted tag is the current/previous tag found location
+    newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
     previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
     previousBikeTag.foundTime = winningBikeTagPost.foundTime
     previousBikeTag.foundLocation = winningBikeTagPost.foundLocation

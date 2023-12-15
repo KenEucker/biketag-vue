@@ -237,7 +237,7 @@ const onSubmit = async (e) => {
   }
   /// TODO: watch this?
   if (!isAuthenticated.value) {
-    console.log('player', player.value)
+    // console.log('player', player.value)
     try {
       await store.checkPasscode({
         name: player.value,
