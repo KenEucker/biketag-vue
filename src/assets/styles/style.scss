@@ -391,6 +391,8 @@ body {
     }
 
     .preview-container {
+      background-position: center;
+      background-size: cover;
       position: relative;
       display: flex;
       justify-content: center;
