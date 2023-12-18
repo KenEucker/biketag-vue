@@ -188,8 +188,8 @@ export const useStore = defineStore('store', {
       await this.setQueuedTags(false)
     },
     setAllGames() {
-      // const biketagClient = new BikeTagClient({ ...options, game: undefined })
-      return client
+      const biketagClient = new BikeTagClient({ ...options, game: undefined })
+      return biketagClient
         .getGame(
           { game: '' },
           {
