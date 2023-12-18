@@ -405,6 +405,8 @@ export const useStore = defineStore('store', {
     async addFoundTag(d: any) {
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = this.profile.sub
+        d.queuehash = this.game.queuehash
+
         return client.queueTag(d).then((t) => {
           if (t.success) {
             this.SET_QUEUE_FOUND(t.data)
@@ -420,6 +422,7 @@ export const useStore = defineStore('store', {
     async addMysteryTag(d: any) {
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = this.profile.sub
+        d.queuehash = this.game.queuehash
 
         return client.queueTag(d).then((t) => {
           if (t.success) {
@@ -436,6 +439,8 @@ export const useStore = defineStore('store', {
     async postNewBikeTag(d: any) {
       if (d.mysteryImageUrl && d.foundImageUrl) {
         d.playerId = this.profile.sub
+        d.queuehash = this.game.queuehash
+
         return client.queueTag(d).then((t) => {
           if (t.success) {
             this.SET_QUEUED_SUBMITTED(t.data)
