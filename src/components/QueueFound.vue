@@ -44,6 +44,7 @@
       method="POST"
       data-netlify="true"
       data-netlify-honeypot="bot-field"
+      @keydown.enter="$event.preventDefault()"
       @submit.prevent="onSubmit"
     >
       <input type="hidden" name="form-name" value="add-found-tag" />
