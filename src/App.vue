@@ -122,11 +122,13 @@ async function created() {
       gameIsSet.value = false
     }
 
-    initResults.push(await store.setTags())
     initResults.push(await store.setCurrentBikeTag())
-    initResults.push(await store.setQueuedTags())
-    initResults.push(await store.setPlayers())
-    initResults.push(await store.setLeaderboard())
+    initResults.push(store.setQueuedTags())
+    initResults.push(await store.setTags())
+    initResults.push(store.setPlayers())
+    initResults.push(store.setLeaderboard())
+
+    await Promise.allSettled(initResults)
 
     checkForNewBikeTagPost()
   } else if (!_gameIsSet) {

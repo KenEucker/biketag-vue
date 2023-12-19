@@ -176,7 +176,7 @@ async function onQueueSubmit(newTagSubmission) {
     /// Get a clean cache
     await store.setTags(true)
     /// Update the queue
-    store.setQueuedTags(true)
+    await store.setQueuedTags(true)
 
     formData.set('game', getGameName.value)
     formData.set('tag', JSON.stringify(getPlayerTag.value))
@@ -225,7 +225,7 @@ async function onQueueSubmit(newTagSubmission) {
 // created
 const created = async () => {
   await store.setCurrentBikeTag()
-  await store.setQueuedTags()
+  await store.setQueuedTags(true)
 }
 created()
 

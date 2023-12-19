@@ -96,7 +96,7 @@ async function onApproveSubmit(newTagSubmission) {
 
   if (success === true) {
     /// Update the queue
-    store.setQueuedTags(false)
+    store.setQueuedTags(true)
 
     formData.set('game', getGameName.value)
     formData.set('tag', JSON.stringify(getPlayerTag.value))
@@ -145,7 +145,7 @@ async function onApproveSubmit(newTagSubmission) {
 
 // mounted
 onMounted(async () => {
-  await store.setQueuedTags(false)
+  await store.setQueuedTags(true)
   await store.fetchCredentials()
 
   /// TODO: do we need to?
