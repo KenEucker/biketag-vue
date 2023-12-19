@@ -22,6 +22,11 @@
         </div>
       </div>
 
+      <!-- QueuedTags -->
+      <div v-if="getQueuedTags?.length" class="max-h-3" @click="goRoundPage">
+        <bike-tag-queue class="" />
+      </div>
+
       <!-- Hamburger Menu -->
       <button ref="buttonCollapse" v-b-toggle.navbarSupportedContent class="navbar-toggler">
         <img class="hamburger-image" src="/images/Hamburger.svg" alt="menu" />
@@ -147,6 +152,7 @@ import { useI18n } from 'vue-i18n'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton'
+import BikeTagQueue from '@/components/BikeTagQueue'
 
 // props
 const props = defineProps({
@@ -270,6 +276,9 @@ function goHowPage() {
 function goHomePage() {
   closeCollapsible()
   router.push('/')
+}
+function goRoundPage() {
+  router.push('/round')
 }
 function goBack() {
   router.back()

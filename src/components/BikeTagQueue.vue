@@ -1,11 +1,9 @@
 <template>
-  <div v-if="props.tag" class="container">
+  <div v-if="props.tag" :class="`bike-pagination container ${props.size}`">
     <div class="bike-pagination-bullet">
-      <span v-if="props.showNumber">
-        {{ props.tag.tagnumber }} by {{ props.tag.mysteryPlayer }}
-      </span>
-      <v-lazy-image :src="getImgurImageSized(props.tag.mysteryImageUrl, 's')" />
-      <v-lazy-image :src="getImgurImageSized(props.tag.foundImageUrl, 's')" />
+      <span v-if="showNumber"> {{ props.tag.tagnumber }} by {{ props.tag.mysteryPlayer }} </span>
+      <v-lazy-image :src="getImgurImageSized(props.tag.mysteryImageUrl, props.size)" />
+      <v-lazy-image :src="getImgurImageSized(props.tag.foundImageUrl, props.size)" />
     </div>
   </div>
   <div v-else-if="getCurrentBikeTag" class="container">
@@ -74,13 +72,13 @@
         </div>
       </b-popover>
     </div>
-    <div v-if="!props.onlyMine" class="bike-pagination mt-3 mb-3">
+    <div v-if="!props.onlyMine" :class="`bike-pagination ${props.size}`">
       <div v-for="(queuedTag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
         <v-lazy-image
           :src="getImgurImageSized(queuedTag.foundImageUrl)"
           @click="paginationClick(index)"
         />
-        <span v-if="props.showNumber">{{ index + 1 }}</span>
+        <span v-if="showNumber">{{ index + 1 }}</span>
       </div>
     </div>
   </div>
@@ -96,6 +94,10 @@ import VLazyImage from 'v-lazy-image'
 
 // props
 const props = defineProps({
+  size: {
+    type: String,
+    default: 's',
+  },
   tag: {
     type: Object,
     default: null,
@@ -126,6 +128,7 @@ const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getPlayerTag = computed(() => store.getPlayerTag)
 const getImgurImageSized = computed(() => store.getImgurImageSized)
 const getQueuedTagState = computed(() => store.getQueuedTagState)
+const showNumber = computed(() => (props.size !== 's' ? props.showNumber : false))
 
 // methods
 function canReset() {
@@ -173,6 +176,20 @@ function paginationClick(key) {
 </script>
 
 <style lang="scss" scoped>
+.queued-tags {
+  &.s {
+    max-height: 30px;
+  }
+
+  &.m {
+    max-height: 40px;
+  }
+
+  &.m {
+    max-height: 60px;
+  }
+}
+
 .navigation {
   width: 5rem;
   height: 5rem;
@@ -212,6 +229,19 @@ function paginationClick(key) {
   i {
     margin-right: 20px;
     font-size: 25px;
+  }
+
+  &.m {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+  }
+
+  &.s {
+    img {
+      height: 3rem;
+      width: 3rem;
+    }
   }
 }
 
