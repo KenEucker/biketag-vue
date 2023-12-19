@@ -36,6 +36,10 @@ body {
     animation-timing-function: linear;
   }
 
+  .black-text {
+    color: black;
+  }
+
   @keyframes spin {
     from {
       transform: rotate(0deg);
@@ -322,6 +326,7 @@ body {
       font-family: $title-font-family;
       font-size: $title-font-size;
       font-weight: $title-font-weight;
+      color: black;
     }
 
     .body-text {

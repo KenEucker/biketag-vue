@@ -82,6 +82,7 @@ const { t } = useI18n()
     &__button {
       &--children {
         padding: 0 1rem;
+        color: black;
       }
     }
   }
