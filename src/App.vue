@@ -123,10 +123,11 @@ async function created() {
     }
 
     initResults.push(await store.setCurrentBikeTag())
-    initResults.push(store.setQueuedTags())
     initResults.push(await store.setTags())
     initResults.push(store.setPlayers())
     initResults.push(store.setLeaderboard())
+    initResults.push(await store.fetchCredentials())
+    initResults.push(store.setQueuedTags())
 
     await Promise.allSettled(initResults)
 
