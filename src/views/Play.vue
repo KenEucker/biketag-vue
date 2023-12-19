@@ -20,7 +20,7 @@
         getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
       }}</span
     >
-    <bike-tag-queue :only-mine="true" />
+    <bike-tag-queue :only-mine="true" :show-number="false" />
     <div
       v-if="BiketagFormSteps[getFormStep] >= 1 && BiketagFormSteps[getFormStep] < 4"
       class="step"
@@ -176,7 +176,7 @@ async function onQueueSubmit(newTagSubmission) {
     /// Get a clean cache
     await store.setTags(true)
     /// Update the queue
-    store.setQueuedTags(true)
+    await store.setQueuedTags(true)
 
     formData.set('game', getGameName.value)
     formData.set('tag', JSON.stringify(getPlayerTag.value))
@@ -224,7 +224,7 @@ async function onQueueSubmit(newTagSubmission) {
 
 // created
 const created = async () => {
-  await store.setCurrentBikeTag(true)
+  await store.setCurrentBikeTag()
   await store.setQueuedTags(true)
 }
 created()

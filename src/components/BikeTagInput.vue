@@ -85,6 +85,7 @@ function update(e) {
     margin-left: 2em;
     width: 80%;
     background-color: transparent;
+    outline: none;
   }
 
   label {

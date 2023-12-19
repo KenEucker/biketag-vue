@@ -61,8 +61,8 @@ function isViewingQueue() {
 
 // created
 const created = async () => {
-  await store.setCurrentBikeTag(true)
-  await store.setQueuedTags(true)
+  await store.setCurrentBikeTag()
+  await store.setQueuedTags()
 }
 created()
 

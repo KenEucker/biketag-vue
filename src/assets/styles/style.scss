@@ -202,29 +202,45 @@ body {
       }
     }
 
+    .form-control:focus{
+      box-shadow: none;
+    }
+
+    .form-control:-webkit-autofill{
+      transition: background-color 5000s ease-in-out 0s;
+      box-shadow: inset 0 0 20px 20px white;
+    }
+    
     .pagination {
       padding-bottom: 1em;
 
       .page-item {
         .page-link {
+          font-size: 0.8rem;
           color: $primary-color;
-          background-color: $btn-primary-text-color;
+          background-color: transparent;
+          @media (width >= 575px){
+            font-size: 1rem;
+          }
         }
 
         &.active {
           .page-link {
-            color: $btn-primary-text-color;
+            color: $btn-upload-text-color;
             background-color: $primary-color;
             border-color: $primary-color;
           }
         }
+        
       }
     }
 
     .swiper {
+      padding-bottom: 20px;
+      
       .swiper-button-prev {
         color: $btn-swiper-color;
-        inset: 25% auto 0 -0.5rem !important;
+        inset: 25% auto 0 0rem !important;
 
         // z-index: 99;
 
@@ -237,7 +253,7 @@ body {
 
       .swiper-button-next {
         color: $btn-swiper-color;
-        inset: 25% -0.5rem 0 auto !important;
+        inset: 25% 0rem 0 auto !important;
 
         // z-index: 99;
 
@@ -263,7 +279,7 @@ body {
 
       .swiper-slide {
         height: unset;
-
+        padding: 0 2.5rem;
         &.active {
           flex-basis: max-content;
           align-self: stretch;
@@ -274,6 +290,10 @@ body {
           font-size: $how-font-size;
         }
       }
+    }
+
+    .form-select {
+      width: 10rem;
     }
 
     .header-logo {
@@ -380,6 +400,8 @@ body {
     }
 
     .preview-container {
+      background-position: center;
+      background-size: cover;
       position: relative;
       display: flex;
       justify-content: center;

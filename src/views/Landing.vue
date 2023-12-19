@@ -3,7 +3,7 @@
   <header class="biketag-header">
     <nav class="navbar">
       <div class="navbar-brand" @click="toSection('mg-top')">
-        <img src="@/assets/images/biketag-logo.svg" class="logo" alt="BikeTag Logo" />
+        <img src="@/assets/images/biketag-logo.svg" class="logo" alt="BikeTag  Logo" />
       </div>
 
       <!-- Hamburger Menu -->
@@ -247,25 +247,33 @@ header {
   position: fixed;
   background-color: #e5e5e5;
   width: 100%;
-  height: 113px;
   top: 0;
   left: 0;
   z-index: 100;
 
   nav {
-    width: 100%;
     height: inherit;
     margin: auto;
+    margin: auto 1rem;
     justify-content: space-between;
+
+    .logo {
+      height: 2.5rem;
+    }
 
     .navbar-brand,
     .navbar-toggler {
       cursor: pointer;
-      padding: 1rem;
+      padding: 0.25rem 0.75rem;
     }
 
     #navbar-supported-content {
       flex-grow: unset;
+    }
+
+    .hamburger-image {
+      width: auto;
+      height: 2.5rem;
     }
 
     .navbar-nav {
@@ -287,13 +295,9 @@ header {
     }
 
     @media (width >= 992px) {
-      width: 90%;
-
-      .navbar-brand,
-      .navbar-toggler {
-        padding: 0;
+      .logo {
+        height: auto;
       }
-
       .navbar-nav {
         align-items: unset;
         height: inherit;

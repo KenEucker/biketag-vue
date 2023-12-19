@@ -24,10 +24,11 @@ const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 /// TODO: move these options to a method for FE use only
 const options: any = {
   // biketag: {
+  cached: true,
   host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.org/api`,
   // game: gameName,
   clientKey: getBikeTagHash(window.location.hostname),
-  clientToken: process.env.ACCESS_TOKEN,
+  // clientToken: process.env.ACCESS_TOKEN,
   // },
   ...getBikeTagClientOpts(window),
 }
@@ -45,8 +46,13 @@ debug('init::store', {
 })
 
 /// TODO: create a helper for the instantiation of the biketag client (use singleton?)
-let client = new BikeTagClient(options)
-
+const client = new BikeTagClient(options)
+let storedRegionPolygon: any = localStorage.getItem(`${gameName}::regionPolygon`)
+try {
+  storedRegionPolygon = JSON.parse(storedRegionPolygon)
+} catch (e) {
+  storedRegionPolygon = null
+}
 export const store = createPinia()
 export const useStore = defineStore('store', {
   state: (): State => ({
@@ -66,7 +72,7 @@ export const useStore = defineStore('store', {
     profile,
     mostRecentlyViewedTagnumber,
     credentialsFetched: false,
-    regionPolyon: null,
+    regionPolyon: storedRegionPolygon,
   }),
   actions: {
     // eslint-disable-next-line no-empty-pattern
@@ -115,8 +121,10 @@ export const useStore = defineStore('store', {
     },
     async fetchCredentials() {
       if (!this.credentialsFetched) {
-        const credentials = await client.fetchCredentials()
-        await client.config(credentials, false, true)
+        // console.log('fetching credentials')
+        await client.config({ ...options, ...getBikeTagClientOpts(window, true) }, false, true)
+        // const credentials = await client.fetchCredentials()
+        // await client.config(credentials, false, true)
         this.credentialsFetched = true
         // if (this.profile?.isBikeTagAmbassador) {
         //   /// fetch auth token for admin purposes
@@ -171,7 +179,7 @@ export const useStore = defineStore('store', {
             const game = d as Game
             options.imgur.hash = game.mainhash
             options.imgur.queuehash = game.queuehash
-            client = new BikeTagClient(options)
+            // client = new BikeTagClient(options)
 
             this.SET_GAME(game)
             return game
@@ -184,7 +192,7 @@ export const useStore = defineStore('store', {
       /// TODO: add a check for stale cache before unnecessarily resetting
       await this.setGame()
       await this.setTags(false)
-      await this.setQueuedTags(false)
+      await this.setQueuedTags(true)
     },
     setAllGames() {
       const biketagClient = new BikeTagClient({ ...options, game: undefined })
@@ -213,16 +221,23 @@ export const useStore = defineStore('store', {
         })
     },
     setCurrentBikeTag(cached = true) {
-      return client.getTag({ cached }).then((r) => {
+      return client.getTag(undefined, { cached }).then((r) => {
         return this.SET_CURRENT_TAG(r.data)
       })
     },
     setTags(cached = true) {
       return client.tags({ cached }).then(this.SET_TAGS)
     },
-    setQueuedTags(cached = true) {
+    setQueuedTag(d: any) {
+      return this.SET_QUEUED_TAG(d)
+    },
+    async setQueuedTags(withCredentials = false) {
       if (this.currentBikeTag?.tagnumber > 0) {
-        return client.queue({ cached }).then((d) => {
+        if (withCredentials) {
+          await this.fetchCredentials()
+        }
+
+        return client.queue(undefined, { cached: false }).then((d) => {
           if ((d as Tag[])?.length > 0) {
             const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
               (t) => t.tagnumber >= this.currentBikeTag.tagnumber,
@@ -246,6 +261,7 @@ export const useStore = defineStore('store', {
             return this.SET_QUEUED_TAGS(currentBikeTagQueue)
           }
 
+          this.SET_QUEUED_TAG_STATE(null)
           return false
         })
       }
@@ -256,10 +272,7 @@ export const useStore = defineStore('store', {
       return client.players({ cached }).then(this.SET_PLAYERS)
     },
     setLeaderboard(cached = true) {
-      return client.players({ sort: 'top', limit: 10, cached }).then(this.SET_LEADERBOARD)
-    },
-    setQueuedTag(d: any) {
-      return this.SET_QUEUED_TAG(d)
+      return client.players({ sort: 'top', limit: 10 }, { cached }).then(this.SET_LEADERBOARD)
     },
     setFormStepToJoin(d: any) {
       if (this.formStep === BiketagFormSteps.viewRound || d) {
@@ -403,6 +416,7 @@ export const useStore = defineStore('store', {
     async addFoundTag(d: any) {
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = this.profile.sub
+
         return client.queueTag(d).then((t) => {
           if (t.success) {
             this.SET_QUEUE_FOUND(t.data)
@@ -434,6 +448,7 @@ export const useStore = defineStore('store', {
     async postNewBikeTag(d: any) {
       if (d.mysteryImageUrl && d.foundImageUrl) {
         d.playerId = this.profile.sub
+
         return client.queueTag(d).then((t) => {
           if (t.success) {
             this.SET_QUEUED_SUBMITTED(t.data)
@@ -557,6 +572,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== queuedTags?.length || queuedTags.length === 0) {
         debug('store::queuedTags', { queuedTags })
       }
+
+      return this.tagsInRound
     },
     SET_QUEUE_FOUND(data: any) {
       const oldState = this.playerTag
@@ -673,7 +690,13 @@ export const useStore = defineStore('store', {
     },
     SET_QUEUED_TAG_STATE(tag: any) {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
-      this.formStep = getQueuedTagState(tag)
+      /// If the current player won the last round, set the tag state to share post
+      // console.log(this.currentBikeTag.mysteryPlayer, this.profile?.user_metadata?.name)
+      if (this.profile?.user_metadata?.name === this.currentBikeTag.mysteryPlayer) {
+        this.formStep = BiketagFormSteps.shareBikeTagPost
+      } else if (tag) {
+        this.formStep = getQueuedTagState(tag)
+      }
     },
     // RESET_FORM_STEP() {
     //   this.formStep =
@@ -689,6 +712,7 @@ export const useStore = defineStore('store', {
       // debug('state::queue', BiketagFormSteps[this.formStep])
     },
     SET_REGION_POLYGON(regionPolygon: any) {
+      localStorage.setItem(`${gameName}::regionPolygon`, JSON.stringify(regionPolygon))
       this.regionPolyon = regionPolygon
     },
   },

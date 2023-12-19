@@ -15,7 +15,12 @@ import { extname, join } from 'path'
 import qs from 'qs'
 import request from 'request'
 import { BikeTagProfile } from '../../src/common/types'
-import { getDomainInfo, getTagDate, isAuthenticationEnabled } from '../../src/common/utils'
+import {
+  getDomainInfo,
+  getImgurImageSized,
+  getTagDate,
+  isAuthenticationEnabled,
+} from '../../src/common/utils'
 import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
@@ -430,7 +435,6 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
   }
 
   const getAuth0AuthProfile = async (authorizationString: string) => {
-    // console.log('auth0', { authorizationString })
     try {
       const JWKS = jose.createRemoteJWKSet(
         new URL(`https://${process.env.A_DOMAIN}/.well-known/jwks.json`),
@@ -440,7 +444,7 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
       return payload
     } catch (e) {
       /// Swallow error
-      console.error({ authorizationAuth0ValidationError: e })
+      // console.error({ authorizationAuth0ValidationError: e })
       return authorizationString
     }
   }
@@ -867,10 +871,10 @@ export const sendBikeTagPostNotificationToWebhook = (
             description: `${hint}\n\n\t\t${previousDescription}`,
             timestamp,
             image: {
-              url: winningTag.mysteryImageUrl,
+              url: getImgurImageSized(winningTag.mysteryImageUrl, 'l'),
             },
             thumbnail: {
-              url: currentTag.foundImageUrl,
+              url: getImgurImageSized(currentTag.foundImageUrl, 'l'),
             },
           },
         ],
@@ -893,7 +897,7 @@ export const sendBikeTagPostNotificationToWebhook = (
               text: mysteryAltText,
               emoji: true,
             },
-            image_url: winningTag.mysteryImageUrl,
+            image_url: getImgurImageSized(winningTag.mysteryImageUrl, 'l'),
             alt_text: mysteryAltText,
           },
           {
@@ -904,7 +908,7 @@ export const sendBikeTagPostNotificationToWebhook = (
             },
             accessory: {
               type: 'image',
-              image_url: currentTag.foundImageUrl,
+              image_url: getImgurImageSized(currentTag.foundImageUrl, 'l'),
               alt_text: foundAltText,
             },
           },
@@ -1070,6 +1074,8 @@ export const setNewBikeTagPost = async (
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost) // the new "current" mystery tag
   try {
     /************** UPDATE CURRENT BIKETAG WITH FOUND IMAGE *****************/
+    /// Zero out the gps for the new location, as the GPS of a newly posted tag is the current/previous tag found location
+    newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
     previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
     previousBikeTag.foundTime = winningBikeTagPost.foundTime
     previousBikeTag.foundLocation = winningBikeTagPost.foundLocation

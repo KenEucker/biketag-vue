@@ -21,12 +21,14 @@ const postToInstagram = ref(false)
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getPlayerTag = computed(() => store.getPlayerTag)
+const getPlayerId = computed(() => store.getPlayerId)
 
 // methods
 function goViewRound() {
   router.push('/round')
 }
-function submitTag(defaultShareSettings) {
+async function submitTag(defaultShareSettings) {
+  await store.fetchCredentials()
   const formAction = submitTagRef.value.getAttribute('action')
   const formData = new FormData(submitTagRef.value)
   const submittedTag = getPlayerTag.value
@@ -36,9 +38,7 @@ function submitTag(defaultShareSettings) {
     postToInstagram,
   }
 
-  submittedTag.discussionUrl = JSON.stringify({
-    postToReddit: defaultShareSettings.postToReddit.value,
-  })
+  submittedTag.discussionUrl = '☯'
   submittedTag.mentionUrl = JSON.stringify({
     postToTwitter: defaultShareSettings.postToTwitter.value,
   })
@@ -60,6 +60,7 @@ function submitTag(defaultShareSettings) {
 
 // mounted
 onMounted(() => {
+  /// TODO: check the mysteryTime instead of the discussion URL once (biketag-api)#207 is resolved.
   if (!getPlayerTag.value?.discussionUrl?.length) {
     /// TODO: check game settings for queue and remove this hardcoded hack
     const defaultShareSettings = {
@@ -92,7 +93,7 @@ onMounted(() => {
     >
       <input type="hidden" name="form-name" value="post-new-biketag" />
       <input type="hidden" name="playerId" :value="getPlayerId" />
-      <fieldset v-if="supportsReddit">
+      <!-- <fieldset v-if="supportsReddit">
         <label for="postToReddit">{{ $t('pages.round.post_to_reddit') }}</label>
         <input
           v-model="postToReddit"
@@ -118,7 +119,7 @@ onMounted(() => {
           type="checkbox"
           @click="showInstagram = !showInstagram"
         />
-      </fieldset>
+      </fieldset> -->
       <!-- <div class="mt-3 align-center">
         <bike-tag-button
           variant="medium"

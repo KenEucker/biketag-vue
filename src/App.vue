@@ -4,6 +4,7 @@
     <meta name="description" :content="description" />
 
     <!-- Social -->
+    <meta property="og:site_name" :content="siteName" />
     <meta property="og:title" :content="title" />
     <meta property="og:description" :content="description" />
     <meta property="og:image" :content="logo" />
@@ -50,6 +51,7 @@ const isWhiteBackground = computed(() =>
   router.currentRoute.value.name === 'About' ? 'white-bck' : '',
 )
 const logo = computed(() => store.getLogoUrl('m'))
+const siteName = computed(() => `BikeTag ${store.getGameName}`)
 const title = computed(function () {
   return `${isNotLanding.value ? store.getGameName : t('app.gameof')} BikeTag!`
 })
@@ -58,6 +60,7 @@ const description = computed(() => `The BikeTag game in ${store.getGame?.region?
 onMounted(async () => {
   nextTick(async () => {
     await router.isReady()
+
     if (isLogout.value) {
       if (auth0?.isAuthenticated.value) {
         await store.setProfile()
@@ -108,9 +111,9 @@ async function created() {
   /// Set it first thing
   store.SET_DATA_INITIALIZED()
   const game = await store.setGame()
-  initResults.push(store.setAllGames())
   const _gameIsSet = game?.name?.length !== 0
 
+  initResults.push(store.setAllGames())
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
     gameIsSet.value = true
 
@@ -119,11 +122,14 @@ async function created() {
       gameIsSet.value = false
     }
 
-    initResults.push(await store.setTags())
     initResults.push(await store.setCurrentBikeTag())
-    initResults.push(await store.setQueuedTags())
-    initResults.push(await store.setPlayers())
-    initResults.push(await store.setLeaderboard())
+    initResults.push(await store.setTags())
+    initResults.push(store.setPlayers())
+    initResults.push(store.setLeaderboard())
+    initResults.push(await store.fetchCredentials())
+    initResults.push(store.setQueuedTags())
+
+    await Promise.allSettled(initResults)
 
     checkForNewBikeTagPost()
   } else if (!_gameIsSet) {

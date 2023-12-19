@@ -20,8 +20,7 @@
     </div>
     <div class="preview-container">
       <template v-if="preview">
-        <img :src="preview" class="prev-img" alt="preview" />
-        <img class="img-bck" src="@/assets/images/transparent_img.svg" alt="background" />
+        <img class="img-bck" src="@/assets/images/transparent_img.png" alt="background" />
       </template>
       <img
         v-else
@@ -45,6 +44,7 @@
       method="POST"
       data-netlify="true"
       data-netlify-honeypot="bot-field"
+      @keydown.enter="$event.preventDefault()"
       @submit.prevent="onSubmit"
     >
       <input type="hidden" name="form-name" value="add-found-tag" />
@@ -237,7 +237,7 @@ const onSubmit = async (e) => {
   }
   /// TODO: watch this?
   if (!isAuthenticated.value) {
-    console.log('player', player.value)
+    // console.log('player', player.value)
     try {
       await store.checkPasscode({
         name: player.value,
@@ -341,6 +341,8 @@ const setImage = async (event) => {
       const previewReader = new FileReader()
       previewReader.onload = (e) => {
         preview.value = e.target.result
+        const bgImage = document.querySelector('.preview-container')
+        bgImage.style.backgroundImage = `url(${e.target.result})`
       }
       previewReader.readAsDataURL(input.files[0])
       if (input.files[0].size / Math.pow(1024, 2) > 15) {

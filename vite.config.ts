@@ -81,7 +81,8 @@ export default defineConfig({
       filename: 'worker.ts',
       strategies: 'injectManifest',
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.png'],
+      includeAssets: ['**/*'],
+      // includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.png'],
       manifest: {
         name: 'BikeTag',
         short_name: 'BikeTag',
@@ -105,24 +106,24 @@ export default defineConfig({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
-          }
+          },
         ],
         screenshots: [
           {
             src: `https://${host}/images/biketag-screen-desktop-1.webp`,
-            sizes: "389x366",
-            type: "image/webp",
-            form_factor: "wide",
-            label: "BikeTag"
+            sizes: '389x366',
+            type: 'image/webp',
+            form_factor: 'wide',
+            label: 'BikeTag',
           },
           {
             src: `https://${host}/images/biketag-screen-mobile-1.webp`,
-            sizes: "321x609",
-            type: "image/webp",
-            form_factor: "narrow",
-            label: "BikeTag"
-          }
-        ]
+            sizes: '321x609',
+            type: 'image/webp',
+            form_factor: 'narrow',
+            label: 'BikeTag',
+          },
+        ],
       },
     }),
     viteCommonjs(),

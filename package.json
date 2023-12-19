@@ -1,6 +1,6 @@
 {
   "name": "biketag-vue",
-  "version": "3.1.5-1",
+  "version": "3.1.8",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "lint": "npm run lint:js && npm run lint:style",
@@ -8,6 +8,7 @@
     "lint:style": "stylelint \"./src/**/*.vue\" \"./src/**/*.scss\" --fix",
     "serve": "vite",
     "build": "vite build",
+    "dev:clear": "rm -rf node_modules/.vite",
     "dev": "netlify dev --functionsPort 7200",
     "preview": "npm run build -w && npm run serve dist"
   },
@@ -21,7 +22,7 @@
     "@vueuse/head": "^0.7.5",
     "ajv": "^8.10.0",
     "autoprefixer": "^10.4.4",
-    "biketag": "^3.1.5",
+    "biketag": "^3.1.8",
     "bootstrap": "^5.1.3",
     "bootstrap-vue-next": "^0.15.5",
     "crypto-js": "^4.1.1",
@@ -46,6 +47,7 @@
     "vue-iframes": "^0.0.19",
     "vue-loading-overlay": "^5.0.3",
     "vue-router": "^4.0.12",
+    "vue-share-it": "github:KenEucker/vue-share-it",
     "vue-timer-hook": "^0.0.22",
     "vue-toast-notification": "3.0",
     "vue3-cookies": "^1.0.6",
