@@ -208,7 +208,7 @@ function onScroll() {
 async function resetBikeTagApp() {
   if (await isOnline()) {
     store.resetBikeTagCache()
-    router.push({ path: '/' }).then(router.go)
+    router.push({ path: '/' })
   } else {
     router.push('/')
   }
