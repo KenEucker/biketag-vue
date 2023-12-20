@@ -62,6 +62,7 @@ const backgroundSrc = computed(() => {
     &--inner {
       background: transparent;
       padding: 1rem;
+      color: black;
 
       @media (min-width: $breakpoint-mobile-sm) {
         font-size: 1rem;

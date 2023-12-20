@@ -67,8 +67,7 @@
     <div class="mt-5 mb-5 foss-container">
       <div class="row">
         <a href="https://github.com/KenEucker/biketag-vue">
-          <img src="@/assets/images/github-logo.webp" alt="GitHub" />
-          <img src="@/assets/images/github-mark.webp" alt="GitHub Mark" />
+          <img src="@/assets/images/github-logo.svg" alt="GitHub" />
         </a>
         <a href="https://www.netlify.com/">
           <img src="@/assets/images/netlify-logo-dark.svg" alt="Netlify" />

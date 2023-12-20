@@ -131,6 +131,7 @@ const showContent = (content) => (aboutOrganizationContent.value = content)
     &__button {
       &--children {
         padding: 0 1rem;
+        color: black;
       }
     }
   }

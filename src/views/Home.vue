@@ -160,14 +160,10 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
   }
 
   &__image {
-    width: 80vw;
     max-width: 750px;
     max-height: 70vh;
     height: auto;
     margin: auto;
-    box-shadow:
-      0 1px 3px rgb(0 0 0 / 12%),
-      0 1px 2px rgb(0 0 0 / 24%);
 
     &.expanded {
       max-width: unset;
