@@ -73,12 +73,12 @@
       </b-popover>
     </div>
     <div v-if="!props.onlyMine" :class="`bike-pagination ${props.size}`">
-      <div v-for="(queuedTag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
+      <div v-for="index in showLimit" :key="index" class="bike-pagination-bullet">
         <v-lazy-image
-          :src="getImgurImageSized(queuedTag.foundImageUrl)"
-          @click="paginationClick(index)"
+          :src="getImgurImageSized(getQueuedTags[index - 1]?.foundImageUrl)"
+          @click="paginationClick(index - 1)"
         />
-        <span v-if="showNumber">{{ index + 1 }}</span>
+        <span v-if="showNumber">{{ index }}</span>
       </div>
     </div>
   </div>
@@ -110,6 +110,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  limit: {
+    type: Number,
+    default: 0,
+  },
   paginationRef: {
     type: Object,
     default: null,
@@ -124,6 +128,7 @@ const { t } = useI18n()
 
 // computed
 const getQueuedTags = computed(() => store.getQueuedTags)
+const showLimit = computed(() => (props.limit ? props.limit : store.getQueuedTags?.length))
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getPlayerTag = computed(() => store.getPlayerTag)
 const getImgurImageSized = computed(() => store.getImgurImageSized)

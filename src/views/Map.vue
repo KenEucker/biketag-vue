@@ -4,7 +4,7 @@
     <div class="map d-flex justify-content-center">
       <h2>This is the boundary for the game of BikeTag in {{ getGameName }}</h2>
       <bike-tag-map class="biketags-map mt-5 mb-5" />
-      <html-content class="about" filename="about-map.html" />
+      <section-content class="about" filename="docs/about-map.html" />
       <bike-tag-button class="m-5" text="See all BikeTag Posts" @click="goBikeTagsPage" />
       <h4>Map of all BikeTag locations in {{ getGameName }}</h4>
       <bike-tag-map class="biketags-map mt-2 mb-5" variant="biketags" />
@@ -20,7 +20,7 @@ import { useStore } from '@/store/index'
 // import Pin from '@/assets/images/pin.svg'
 
 // components
-import HtmlContent from '@/components/HtmlContent.vue'
+import SectionContent from '@/components/SectionContent.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 
