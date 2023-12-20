@@ -418,9 +418,8 @@ header {
   padding-top: 0 !important;
 
   .navbar--top {
+    align-items: center;
     display: flex;
-    padding-bottom: 0 !important;
-    padding-top: 0 !important;
     justify-content: space-between;
     flex-wrap: nowrap;
     width: 100%;
