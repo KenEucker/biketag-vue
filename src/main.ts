@@ -3,7 +3,7 @@ import BootstrapVueNext from 'bootstrap-vue-next'
 import mitt from 'mitt'
 import { createApp } from 'vue'
 import VueGoogleMaps from 'vue-google-maps-community-fork'
-import VueShareIt from 'vue-share-it'
+import VueSocials from 'vue-socials'
 import { useToast } from 'vue-toast-notification'
 import VueCookies from 'vue3-cookies'
 import App from './App.vue'
@@ -74,7 +74,7 @@ class BikeTagApp {
     this.app.use(BootstrapVueNext)
     this.app.use(Markdown)
     this.app.use(VueIframe)
-    this.app.use(VueShareIt)
+    this.app.use(VueSocials)
     this.app.use(VueGoogleMaps, {
       load: {
         key: process.env.G_AKEY,

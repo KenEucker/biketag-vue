@@ -248,6 +248,7 @@ const getPostedDate = (timestamp, timeOnly = false) => {
   if (!timestamp) {
     return ''
   }
+
   const date = getTagDate(timestamp)
   const datetime = timeOnly ? date.toLocaleTimeString() : date.toLocaleDateString()
 

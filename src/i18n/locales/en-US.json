@@ -195,6 +195,13 @@
       "article3": {
         "title": "BikeTag Player Profiles",
         "create_profile": "Login and create your BikeTag Player profile"
+      },
+      "article4": {
+        "title": "BikeTag Organization Information",
+        "terms_of_service": "Read the Terms of Service",
+        "privacy_policy": "Read the Privacy Policy",
+        "code_of_conduct": "Read the Code of Conduct",
+        "organization": "Read about the BikeTag Project Organization"
       }
     },
     "approve": {

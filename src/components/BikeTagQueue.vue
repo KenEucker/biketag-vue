@@ -1,11 +1,9 @@
 <template>
-  <div v-if="props.tag" class="container">
+  <div v-if="props.tag" :class="`bike-pagination container ${props.size}`">
     <div class="bike-pagination-bullet">
-      <span v-if="props.showNumber">
-        {{ props.tag.tagnumber }} by {{ props.tag.mysteryPlayer }}
-      </span>
-      <v-lazy-image :src="getImgurImageSized(props.tag.mysteryImageUrl, 's')" />
-      <v-lazy-image :src="getImgurImageSized(props.tag.foundImageUrl, 's')" />
+      <span v-if="showNumber"> {{ props.tag.tagnumber }} by {{ props.tag.mysteryPlayer }} </span>
+      <v-lazy-image :src="getImgurImageSized(props.tag.mysteryImageUrl, props.size)" />
+      <v-lazy-image :src="getImgurImageSized(props.tag.foundImageUrl, props.size)" />
     </div>
   </div>
   <div v-else-if="getCurrentBikeTag" class="container">
@@ -74,13 +72,13 @@
         </div>
       </b-popover>
     </div>
-    <div v-if="!props.onlyMine" class="bike-pagination mt-3 mb-3">
-      <div v-for="(queuedTag, index) in getQueuedTags" :key="index" class="bike-pagination-bullet">
+    <div v-if="!props.onlyMine" :class="`bike-pagination ${props.size}`">
+      <div v-for="index in showLimit" :key="index" class="bike-pagination-bullet">
         <v-lazy-image
-          :src="getImgurImageSized(queuedTag.foundImageUrl)"
-          @click="paginationClick(index)"
+          :src="getImgurImageSized(getQueuedTags[index - 1]?.foundImageUrl)"
+          @click="paginationClick(index - 1)"
         />
-        <span v-if="props.showNumber">{{ index + 1 }}</span>
+        <span v-if="showNumber">{{ index }}</span>
       </div>
     </div>
   </div>
@@ -96,6 +94,10 @@ import VLazyImage from 'v-lazy-image'
 
 // props
 const props = defineProps({
+  size: {
+    type: String,
+    default: 's',
+  },
   tag: {
     type: Object,
     default: null,
@@ -107,6 +109,10 @@ const props = defineProps({
   showNumber: {
     type: Boolean,
     default: true,
+  },
+  limit: {
+    type: Number,
+    default: 0,
   },
   paginationRef: {
     type: Object,
@@ -122,10 +128,12 @@ const { t } = useI18n()
 
 // computed
 const getQueuedTags = computed(() => store.getQueuedTags)
+const showLimit = computed(() => (props.limit ? props.limit : store.getQueuedTags?.length))
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getPlayerTag = computed(() => store.getPlayerTag)
 const getImgurImageSized = computed(() => store.getImgurImageSized)
 const getQueuedTagState = computed(() => store.getQueuedTagState)
+const showNumber = computed(() => (props.size !== 's' ? props.showNumber : false))
 
 // methods
 function canReset() {
@@ -173,6 +181,20 @@ function paginationClick(key) {
 </script>
 
 <style lang="scss" scoped>
+.queued-tags {
+  &.s {
+    max-height: 30px;
+  }
+
+  &.m {
+    max-height: 40px;
+  }
+
+  &.l {
+    max-height: 60px;
+  }
+}
+
 .navigation {
   width: 5rem;
   height: 5rem;
@@ -200,6 +222,35 @@ function paginationClick(key) {
   }
 }
 
+// .current-mystery,
+// .queued-found,
+// .queued-mystery {
+// }
+
+.bike-pagination-bullet {
+  position: relative;
+
+  span {
+    position: absolute;
+    top: 75%;
+    left: 25%;
+    right: 25%;
+    font-size: 2rem;
+    color: white;
+  }
+
+  img {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 5rem;
+    height: 5rem;
+    margin: 5px;
+    border-radius: 5rem;
+    cursor: pointer;
+  }
+}
+
 .bike-pagination {
   display: flex;
   align-items: center;
@@ -213,34 +264,18 @@ function paginationClick(key) {
     margin-right: 20px;
     font-size: 25px;
   }
-}
 
-// .current-mystery,
-// .queued-found,
-// .queued-mystery {
-// }
-
-.bike-pagination-bullet {
-  position: relative;
-
-  img {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 5rem;
-    height: 5rem;
-    margin: 5px;
-    border-radius: 5rem;
-    cursor: pointer;
+  &.m {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
   }
 
-  span {
-    position: absolute;
-    top: 75%;
-    left: 25%;
-    right: 25%;
-    font-size: 2rem;
-    color: white;
+  &.s {
+    img {
+      width: 3rem;
+      height: 3rem;
+    }
   }
 }
 </style>

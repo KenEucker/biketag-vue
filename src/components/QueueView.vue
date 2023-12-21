@@ -1,6 +1,6 @@
 <template>
   <div class="container align-center">
-    <bike-tag-queue :pagination-ref="controlledSwiper" />
+    <bike-tag-queue :pagination-ref="controlledSwiper" size="m" />
   </div>
   <div class="container queue-view">
     <swiper

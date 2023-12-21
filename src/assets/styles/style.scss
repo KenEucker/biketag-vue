@@ -36,6 +36,10 @@ body {
     animation-timing-function: linear;
   }
 
+  .black-text {
+    color: black;
+  }
+
   @keyframes spin {
     from {
       transform: rotate(0deg);
@@ -219,6 +223,7 @@ body {
           font-size: 0.8rem;
           color: $primary-color;
           background-color: transparent;
+
           @media (width >= 575px){
             font-size: 1rem;
           }
@@ -240,7 +245,7 @@ body {
       
       .swiper-button-prev {
         color: $btn-swiper-color;
-        inset: 25% auto 0 0rem !important;
+        inset: 25% auto 0 0 !important;
 
         // z-index: 99;
 
@@ -253,7 +258,7 @@ body {
 
       .swiper-button-next {
         color: $btn-swiper-color;
-        inset: 25% 0rem 0 auto !important;
+        inset: 25% 0 0 auto !important;
 
         // z-index: 99;
 
@@ -280,6 +285,7 @@ body {
       .swiper-slide {
         height: unset;
         padding: 0 2.5rem;
+
         &.active {
           flex-basis: max-content;
           align-self: stretch;
@@ -322,6 +328,7 @@ body {
       font-family: $title-font-family;
       font-size: $title-font-size;
       font-weight: $title-font-weight;
+      color: black;
     }
 
     .body-text {

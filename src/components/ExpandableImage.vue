@@ -119,9 +119,9 @@ watch(
 }
 
 .expandable-image {
+  cursor: zoom-in;
   position: relative;
   transition: 0.25s opacity;
-  cursor: zoom-in;
 
   img {
     width: 100%;
@@ -136,19 +136,19 @@ watch(
 
 body {
   .expanded {
+    cursor: initial;
     position: fixed;
     z-index: 99999;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgb(0 0 0 / 90%);
+    background: rgb(0 0 0 / 60%);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 1;
     padding-bottom: 0 !important;
-    cursor: zoom-out;
 
     img {
       z-index: 999999;

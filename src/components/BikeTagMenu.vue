@@ -5,27 +5,34 @@
   >
     <!-- The header logo and profile and hamburger buttons go here -->
     <nav id="navmenu" class="navbar">
-      <!-- Back Arrow -->
-      <div v-if="isShow" class="back-arrow" @click="goBack">
-        <img
-          src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMzknIGhlaWdodD0nMjUnIHZpZXdCb3g9JzAgMCAzOSAyNScgZmlsbD0nbm9uZScgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz4KPHBhdGggZD0nTTQuNDUzMzcgOS42NDMzMUgzMi40NTM0JyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8cGF0aCBkPSdNMi40NTMzNyAxMi42NDM0QzEzLjI1MyAxMS4xMDA2IDQ2LjAyOTMgMTAuNjQzNCAzNS4xMiAxMC42NDM0QzMwLjc0MDcgMTAuNjQzNCA3LjE4NjUgOC4xNzcxIDUuNDUzMzcgMTEuNjQzNCcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWNhcD0ncm91bmQnLz4KPHBhdGggZD0nTTEzLjQ1MzQgMS42NDMyNUMxMi4wNTEyIDMuODg2NzMgMTAuNTA5MiA2LjA3MTUzIDguODk3ODMgOC4xNDMyNUM3Ljc4NTY5IDkuNTczMTQgNS40MDQ2MyA5LjI3NDg3IDQuNjc1NjEgMTAuODY1NUMzLjEyMDkyIDE0LjI1NzUgLTAuMzI1NTA2IDEyLjI4ODEgMy41MDg5NCAxNS42NDMyQzUuNTU4OSAxNy40MzcgNy43MzYyMSAxOC45MjYxIDkuNjc1NiAyMC44NjU1QzEzLjEwMjcgMjQuMjkyNiAxMS4xOTg3IDIzLjU3NzEgOC42NzU2IDIwLjY0MzJDNi4zMDQwMyAxNy44ODU2IDIuOTUwNjQgMTQuOTY1NSAxLjE3NTYxIDExLjgwOTlDMC4wNDYyMTQzIDkuODAyMTEgNC42ODczOCA3LjQ1MDIxIDUuODk3ODMgNi42NDMyNUM3LjMxOTIyIDUuNjk1NjUgMTUuMDExNSAtMS4wODYzOSAxMi4wMDg5IDEuNjQzMjVDOS4zMDkzOCA0LjA5NzM5IDQuNjI2OTUgNy4yNDg3OCAzLjIzMTE2IDEwLjQyMUMyLjQwMjM0IDEyLjMwNDcgLTAuMDMxMzczNSAxMi4zNjE5IDIuMDA4OTQgMTQuNTg3N0MzLjIxODc2IDE1LjkwNzUgNC43NjMyMSAxNi4yNzA2IDUuOTUzMzggMTcuNjk4OEM3LjgxNjg4IDE5LjkzNSAxMC40MDY2IDIyLjY0MzIgMTMuNDUzNCAyMi42NDMyJyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8cGF0aCBkPSdNMi40NTMzNyAxMS42NDMzQzUuNzUzNDIgMTQuMjIxNSAxMS42NDY4IDE5LjAzMDEgMTMuNDUzNCAyMi42NDMzJyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8L3N2Zz4K"
-          alt="go back"
-        />
-      </div>
-      <!-- Region Image -->
-      <div class="navbar-brand">
-        <a href="/" @click.prevent.stop="resetBikeTagApp">
-          <img :src="getLogoUrl('m')" class="logo" alt="BikeTag Logo" />
-        </a>
-        <div>
-          <span class="game-title">{{ getGameTitle }}</span>
+      <div class="navbar--top">
+        <!-- Back Arrow -->
+        <div v-if="isShow" class="back-arrow" @click="goBack">
+          <img
+            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMzknIGhlaWdodD0nMjUnIHZpZXdCb3g9JzAgMCAzOSAyNScgZmlsbD0nbm9uZScgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz4KPHBhdGggZD0nTTQuNDUzMzcgOS42NDMzMUgzMi40NTM0JyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8cGF0aCBkPSdNMi40NTMzNyAxMi42NDM0QzEzLjI1MyAxMS4xMDA2IDQ2LjAyOTMgMTAuNjQzNCAzNS4xMiAxMC42NDM0QzMwLjc0MDcgMTAuNjQzNCA3LjE4NjUgOC4xNzcxIDUuNDUzMzcgMTEuNjQzNCcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWNhcD0ncm91bmQnLz4KPHBhdGggZD0nTTEzLjQ1MzQgMS42NDMyNUMxMi4wNTEyIDMuODg2NzMgMTAuNTA5MiA2LjA3MTUzIDguODk3ODMgOC4xNDMyNUM3Ljc4NTY5IDkuNTczMTQgNS40MDQ2MyA5LjI3NDg3IDQuNjc1NjEgMTAuODY1NUMzLjEyMDkyIDE0LjI1NzUgLTAuMzI1NTA2IDEyLjI4ODEgMy41MDg5NCAxNS42NDMyQzUuNTU4OSAxNy40MzcgNy43MzYyMSAxOC45MjYxIDkuNjc1NiAyMC44NjU1QzEzLjEwMjcgMjQuMjkyNiAxMS4xOTg3IDIzLjU3NzEgOC42NzU2IDIwLjY0MzJDNi4zMDQwMyAxNy44ODU2IDIuOTUwNjQgMTQuOTY1NSAxLjE3NTYxIDExLjgwOTlDMC4wNDYyMTQzIDkuODAyMTEgNC42ODczOCA3LjQ1MDIxIDUuODk3ODMgNi42NDMyNUM3LjMxOTIyIDUuNjk1NjUgMTUuMDExNSAtMS4wODYzOSAxMi4wMDg5IDEuNjQzMjVDOS4zMDkzOCA0LjA5NzM5IDQuNjI2OTUgNy4yNDg3OCAzLjIzMTE2IDEwLjQyMUMyLjQwMjM0IDEyLjMwNDcgLTAuMDMxMzczNSAxMi4zNjE5IDIuMDA4OTQgMTQuNTg3N0MzLjIxODc2IDE1LjkwNzUgNC43NjMyMSAxNi4yNzA2IDUuOTUzMzggMTcuNjk4OEM3LjgxNjg4IDE5LjkzNSAxMC40MDY2IDIyLjY0MzIgMTMuNDUzNCAyMi42NDMyJyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8cGF0aCBkPSdNMi40NTMzNyAxMS42NDMzQzUuNzUzNDIgMTQuMjIxNSAxMS42NDY4IDE5LjAzMDEgMTMuNDUzNCAyMi42NDMzJyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPgo8L3N2Zz4K"
+            alt="go back"
+          />
         </div>
-      </div>
+        <!-- Region Image -->
+        <div class="navbar-brand">
+          <a href="/" @click.prevent.stop="resetBikeTagApp">
+            <img :src="getLogoUrl('m')" class="logo" alt="BikeTag Logo" />
+          </a>
+          <div>
+            <span class="game-title">{{ getGameTitle }}</span>
+          </div>
+        </div>
 
-      <!-- Hamburger Menu -->
-      <button ref="buttonCollapse" v-b-toggle.navbarSupportedContent class="navbar-toggler">
-        <img class="hamburger-image" src="/images/Hamburger.svg" alt="menu" />
-      </button>
+        <!-- QueuedTags -->
+        <div v-if="getQueuedTags?.length" class="max-h-3" @click="goRoundPage">
+          <bike-tag-queue :limit="limitQueue" />
+        </div>
+
+        <!-- Hamburger Menu -->
+        <button ref="buttonCollapse" v-b-toggle.navbarSupportedContent class="navbar-toggler">
+          <img class="hamburger-image" src="/images/Hamburger.svg" alt="menu" />
+        </button>
+      </div>
 
       <b-collapse id="navbarSupportedContent" ref="navList" class="navbar-collapse">
         <ul class="m-auto navbar-nav mb-lg-0">
@@ -147,6 +154,7 @@ import { useI18n } from 'vue-i18n'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton'
+import BikeTagQueue from '@/components/BikeTagQueue'
 
 // props
 const props = defineProps({
@@ -180,6 +188,7 @@ const getGameTitle = computed(() => store.getGameTitle)
 const getLogoUrl = computed(() => store.getLogoUrl)
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 const getQueuedTags = computed(() => store.getQueuedTags)
+const limitQueue = computed(() => (window.innerWidth < 500 ? 2 : 0))
 const isShow = computed(() => {
   if (route.name) {
     debug('view::loaded', route.name)
@@ -208,7 +217,7 @@ function onScroll() {
 async function resetBikeTagApp() {
   if (await isOnline()) {
     store.resetBikeTagCache()
-    router.push({ path: '/' }).then(router.go)
+    router.push({ path: '/' })
   } else {
     router.push('/')
   }
@@ -270,6 +279,9 @@ function goHowPage() {
 function goHomePage() {
   closeCollapsible()
   router.push('/')
+}
+function goRoundPage() {
+  router.push('/round')
 }
 function goBack() {
   router.back()
@@ -335,6 +347,7 @@ header {
       margin: 0;
       margin-left: 1rem;
       font-size: 1rem;
+
       @media (min-width: $breakpoint-desktop) {
         margin: 0 2rem;
       }
@@ -404,7 +417,14 @@ header {
 .navbar {
   padding-bottom: 0 !important;
   padding-top: 0 !important;
-  justify-content: space-between !important;
+
+  .navbar--top {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    width: 100%;
+  }
 }
 
 .navbar-nav {

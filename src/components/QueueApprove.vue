@@ -7,7 +7,7 @@
   <div v-else class="container queue-approve-tag queue-approve">
     <h3 class="queue-title">{{ $t('pages.round.approve_title') }}</h3>
     <p class="queue-text">{{ $t('pages.round.approve_text') }}</p>
-    <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" />
+    <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" size="m" />
     <swiper
       :modules="[Controller]"
       :pagination="{}"
