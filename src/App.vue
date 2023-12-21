@@ -101,7 +101,7 @@ function checkForNewBikeTagPost() {
   ) {
     debug('ui::new biketag posted!!')
     const visitingPlayerWonMostRecent =
-      store.getCurrentBikeTag?.player?.id === store.getProfile?.id ||
+      store.getCurrentBikeTag?.player?.id === store.getProfile?.sub ||
       store.getCurrentBikeTag?.player?.name === store.getProfile?.name
 
     if (visitingPlayerWonMostRecent) {

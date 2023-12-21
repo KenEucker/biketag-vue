@@ -242,7 +242,9 @@ export const useStore = defineStore('store', {
             const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
               (t) => t.tagnumber >= this.currentBikeTag.tagnumber,
             )
-            const queuedTag = currentBikeTagQueue.filter((t) => t.playerId === this.profile.sub)
+            const queuedTag = currentBikeTagQueue.filter(
+              (t) => t.playerId === this.profile.sub || t.playerId === this.profile.sub,
+            )
 
             if (queuedTag.length) {
               const fullyQueuedTag = queuedTag[0]
@@ -256,6 +258,8 @@ export const useStore = defineStore('store', {
               }
               this.SET_QUEUED_TAG(fullyQueuedTag)
               this.SET_QUEUED_TAG_STATE(fullyQueuedTag)
+            } else {
+              this.SET_QUEUED_TAG_STATE(null)
             }
 
             return this.SET_QUEUED_TAGS(currentBikeTagQueue)
@@ -692,7 +696,10 @@ export const useStore = defineStore('store', {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
       /// If the current player won the last round, set the tag state to share post
       // console.log(this.currentBikeTag.mysteryPlayer, this.profile?.user_metadata?.name)
-      if (this.profile?.user_metadata?.name === this.currentBikeTag.mysteryPlayer) {
+      if (
+        this.profile?.name === this.currentBikeTag?.mysteryPlayer ||
+        this.profile?.sub === this.currentBikeTag?.playerId
+      ) {
         this.formStep = BiketagFormSteps.shareBikeTagPost
       } else if (tag) {
         this.formStep = getQueuedTagState(tag)

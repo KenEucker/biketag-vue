@@ -109,7 +109,7 @@
     <!-- </div> -->
 
     <div>
-      <share-it :icons="false" />
+      <!-- <share-it :icons="false" /> -->
     </div>
 
     <div class="mt-3 align-center">
