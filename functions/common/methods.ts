@@ -1168,7 +1168,7 @@ export const setNewBikeTagPost = async (
           tag: winningBikeTagPost,
         })
       } else {
-        // console.log({ deleteQueuedTagResult: deleteWinningTagFromQueueResult })
+        console.log({ deleteQueuedTagResult: deleteWinningTagFromQueueResult })
         results.push({
           message: 'error deleting winning tag from queue',
           game: game.name,

@@ -52,7 +52,9 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
       adminBiketag.config(thisGameConfig)
       const activeQueue = await getActiveQueueForGame(game)
 
-      if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
+      if (activeQueue.completedTags.length && !activeQueue.timedOutTags.length) {
+        console.log('completed tags found but none timed out', { game, activeQueue })
+      } else if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
         const currentBikeTagResponse = await adminBiketag.getTag(undefined) // the "current" mystery tag to be updated from the main album
         const currentBikeTag = currentBikeTagResponse.data
         const autoSelectedWinningTag = getWinningTagForCurrentRound(
@@ -61,6 +63,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
         )
 
         if (autoSelectedWinningTag) {
+          console.log('winning tag found', { game, autoSelectedWinningTag })
           const setNewBikeTagPostResults = await setNewBikeTagPost(
             game,
             autoSelectedWinningTag,
@@ -71,6 +74,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
             (t) => t.foundPlayer !== autoSelectedWinningTag.foundPlayer,
           )
           if (remainingNonWinningTags.length) {
+            console.log('non-winning tag(s) found', { game, remainingNonWinningTags })
             const archiveAndClearQueueResults = await archiveAndClearQueue(remainingNonWinningTags)
             results = setNewBikeTagPostResults.results.concat(archiveAndClearQueueResults.results)
             errors = archiveAndClearQueueResults.errors
