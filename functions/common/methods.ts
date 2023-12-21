@@ -1056,35 +1056,50 @@ export const sendNewBikeTagNotifications = async (
   return notificationPromises
 }
 
+/**
+ * Sets a new BikeTag post by updating the current BikeTag with the winning tag information
+ * and posting the new BikeTag from the queue.
+ *
+ * @param game - The game object.
+ * @param winningBikeTagPost - The winning BikeTag post.
+ * @param previousBikeTag - The previous BikeTag post.
+ * @returns A promise that resolves to the background process results.
+ */
 export const setNewBikeTagPost = async (
   game: Game,
   winningBikeTagPost: Tag,
   previousBikeTag: Tag,
 ): Promise<BackgroundProcessResults> => {
+  /// This gets admin credentials
   const biketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,
     true,
   )
+  /// Set the game and imgur album hashes
   biketagOpts.game = game?.slug
   biketagOpts.imgur.hash = game?.mainhash
   const biketag = new BikeTagClient(biketagOpts)
+  /// Get the current BikeTag
   previousBikeTag = previousBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
   const results: any = []
 
+  /// Create the new BikeTag to be posted from the mystery information of the winning BikeTag
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost) // the new "current" mystery tag
+
   try {
     /************** UPDATE CURRENT BIKETAG WITH FOUND IMAGE *****************/
     /// Zero out the gps for the new location, as the GPS of a newly posted tag is the current/previous tag found location
     newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
+    /// Update the current BikeTag with the winning tag found information
     previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
     previousBikeTag.foundTime = winningBikeTagPost.foundTime
     previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
     previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     // console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
     const currentBikeTagUpdateResult = await biketag.updateTag(previousBikeTag)
-    // console.log({ currentBikeTagUpdateResult: currentBikeTagUpdateResult.data })
+
     if (currentBikeTagUpdateResult.success) {
       results.push({
         message: 'current BikeTag updated',
