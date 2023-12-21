@@ -1311,7 +1311,7 @@ export const constructAmbassadorProfile = (
     },
   }
   return {
-    name: profile.name ?? defaults.name ?? '',
+    name: profile.name ?? user_metadata.name ?? defaults.name ?? '',
     sub: profile.sub ?? defaults.sub ?? '',
     slug: profile.slug ?? defaults.slug ?? '',
     address1: profile.address1 ?? defaults.address1 ?? '',
@@ -1347,7 +1347,7 @@ export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): B
     },
   }
   return {
-    name: profile.name ?? defaults.name ?? '',
+    name: profile.name ?? user_metadata.name ?? defaults.name ?? '',
     sub: profile.sub ?? defaults.sub ?? '',
     slug: profile.slug ?? defaults.slug ?? '',
     email: profile.email ?? defaults.email ?? '',

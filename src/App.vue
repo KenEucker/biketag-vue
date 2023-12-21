@@ -14,6 +14,7 @@
       <div :class="`spacer-top ${isWhiteBackground}`"></div>
       <bike-tag-menu variant="top" />
     </template>
+    <confetti-explosion v-if="showConfetti" />
     <service-worker />
     <router-view />
     <!-- <template v-if="isNotLanding">
@@ -29,6 +30,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { debug, isAuthenticationEnabled } from './common/utils'
+import ConfettiExplosion from 'vue-confetti-explosion'
 
 // componets
 import BikeTagMenu from '@/components/BikeTagMenu.vue'
@@ -38,6 +40,7 @@ import { useI18n } from 'vue-i18n'
 
 // data
 const gameIsSet = ref(false)
+const showConfetti = ref(false)
 const store = useStore()
 const router = useRouter()
 const { t } = useI18n()
@@ -97,11 +100,26 @@ function checkForNewBikeTagPost() {
     store.getMostRecentlyViewedTagnumber !== 0
   ) {
     debug('ui::new biketag posted!!')
-    toast.open({
-      message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName} has been posted!`,
-      type: 'default',
-      position: 'top',
-    })
+    const visitingPlayerWonMostRecent =
+      store.getCurrentBikeTag?.player?.id === store.getProfile?.id ||
+      store.getCurrentBikeTag?.player?.name === store.getProfile?.name
+
+    if (visitingPlayerWonMostRecent) {
+      toast.success(
+        `YOU WON Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName}!!`,
+        { type: 'default', position: 'top' },
+      )
+      showConfetti.value = true
+      setTimeout(() => {
+        showConfetti.value = false
+      }, 3000)
+    } else {
+      toast.open({
+        message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName} has been posted!`,
+        type: 'default',
+        position: 'top',
+      })
+    }
   }
 }
 
