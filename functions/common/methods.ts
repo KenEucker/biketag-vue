@@ -858,6 +858,8 @@ export const sendBikeTagPostNotificationToWebhook = (
   const mysteryAltText = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
   const foundAltText = `BikeTag #${currentNumber} found by ${currentTag.foundPlayer}`
   const timestamp = getTagDate(currentTag.foundTime).toISOString()
+  const mysteryImageUrl = getImgurImageSized(winningTag.mysteryImageUrl, 'l')
+  const foundImageUrl = getImgurImageSized(currentTag.foundImageUrl, 'l')
 
   let data = {}
   switch (type) {
@@ -871,10 +873,10 @@ export const sendBikeTagPostNotificationToWebhook = (
             description: `${hint}\n\n\t\t${previousDescription}`,
             timestamp,
             image: {
-              url: getImgurImageSized(winningTag.mysteryImageUrl, 'l'),
+              url: winningTag.mysteryImageUrl,
             },
             thumbnail: {
-              url: getImgurImageSized(currentTag.foundImageUrl, 'l'),
+              url: currentTag.foundImageUrl,
             },
           },
         ],
@@ -897,7 +899,7 @@ export const sendBikeTagPostNotificationToWebhook = (
               text: mysteryAltText,
               emoji: true,
             },
-            image_url: getImgurImageSized(winningTag.mysteryImageUrl, 'l'),
+            image_url: mysteryImageUrl,
             alt_text: mysteryAltText,
           },
           {
@@ -908,7 +910,7 @@ export const sendBikeTagPostNotificationToWebhook = (
             },
             accessory: {
               type: 'image',
-              image_url: getImgurImageSized(currentTag.foundImageUrl, 'l'),
+              image_url: foundImageUrl,
               alt_text: foundAltText,
             },
           },

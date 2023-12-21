@@ -30,11 +30,11 @@
 
 ## Getting Started With Running The Source Code
 
-`yarn install`
+`npm install`
 
 then
 
-`yarn run dev`
+`npm run dev`
 
 ### Configuration
 
