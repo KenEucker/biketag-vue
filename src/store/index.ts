@@ -244,7 +244,7 @@ export const useStore = defineStore('store', {
               (t) => t.tagnumber >= this.currentBikeTag.tagnumber,
             )
             const queuedTag = currentBikeTagQueue.filter(
-              (t) => t.playerId === this.profile.sub || t.playerId === this.profile.sub,
+              (t) => this.profile?.sub && t.playerId === this.profile.sub,
             )
 
             if (queuedTag.length) {
@@ -698,8 +698,8 @@ export const useStore = defineStore('store', {
       /// If the current player won the last round, set the tag state to share post
       // console.log(this.currentBikeTag.mysteryPlayer, this.profile?.user_metadata?.name)
       if (
-        this.profile?.name === this.currentBikeTag?.mysteryPlayer ||
-        this.profile?.sub === this.currentBikeTag?.playerId
+        (this.profile?.name && this.profile?.name === this.currentBikeTag?.mysteryPlayer) ||
+        (this.profile?.sub && this.profile?.sub === this.currentBikeTag?.playerId)
       ) {
         this.formStep = BiketagFormSteps.shareBikeTagPost
       } else if (tag) {

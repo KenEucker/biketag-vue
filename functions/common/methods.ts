@@ -1097,7 +1097,7 @@ export const setNewBikeTagPost = async (
     previousBikeTag.foundTime = winningBikeTagPost.foundTime
     previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
     previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
-    // console.log('updating current BikeTag with the winning tag found information', currentBikeTag)
+    console.log('updating current BikeTag with the winning tag found information', previousBikeTag)
     const currentBikeTagUpdateResult = await biketag.updateTag(previousBikeTag)
 
     if (currentBikeTagUpdateResult.success) {
