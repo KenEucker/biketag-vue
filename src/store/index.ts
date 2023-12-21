@@ -787,6 +787,9 @@ export const useStore = defineStore('store', {
     getCurrentBikeTag(state) {
       return state.currentBikeTag
     },
+    getPreviousBikeTag(state) {
+      return state.tags[1]
+    },
     getTags(state) {
       return state.tags
     },

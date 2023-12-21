@@ -149,7 +149,7 @@ Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurr
 
 See all BikeTags and more, for ${getGameName.value}:
 
-[biketag.org](https://https://biketag.org) | [Leaderboard](https://https://biketag.org/leaderboard) | [Rules](https://https://biketag.org/#howto)
+[biketag.org](https://https://biketag.org) | [Leaderboard](https://https://biketag.org/leaderboard) | [Rules](https://https://biketag.org/howto)
     `,
 )
 const twitterPostText = computed(
