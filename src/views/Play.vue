@@ -204,6 +204,7 @@ async function onQueueSubmit(newTagSubmission) {
         toast.open({
           message: `${t('notifications.error')} ${m}`,
           type: 'error',
+          duration: 10000,
           timeout: false,
           position: 'bottom',
         })
@@ -216,6 +217,7 @@ async function onQueueSubmit(newTagSubmission) {
       message,
       type: 'error',
       timeout: false,
+      duration: 10000,
       position: 'bottom',
     })
     return sendNetlifyError(message, undefined, errorAction)

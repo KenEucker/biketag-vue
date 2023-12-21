@@ -211,6 +211,7 @@ const onSubmit = async (e) => {
     toast.open({
       message: 'Please add your Found Location',
       type: 'error',
+      duration: 10000,
       position: 'top',
     })
     uploadInProgress.value = false
@@ -221,6 +222,7 @@ const onSubmit = async (e) => {
     toast.open({
       message: 'That location is outside of the game boundaries.',
       type: 'error',
+      duration: 10000,
       position: 'top',
     })
     uploadInProgress.value = false
@@ -230,6 +232,7 @@ const onSubmit = async (e) => {
     toast.open({
       message: 'Please enter a name',
       type: 'error',
+      duration: 10000,
       position: 'top',
     })
     uploadInProgress.value = false
@@ -250,6 +253,7 @@ const onSubmit = async (e) => {
         toast.open({
           message: 'Incorrect passcode',
           type: 'error',
+          duration: 10000,
           position: 'top',
         })
       }
@@ -263,6 +267,7 @@ const onSubmit = async (e) => {
     toast.open({
       message: 'Invalid image, add a new one.',
       type: 'error',
+      duration: 10000,
       position: 'top',
     })
     uploadInProgress.value = false
@@ -349,6 +354,7 @@ const setImage = async (event) => {
         toast.open({
           message: 'Image exceeds 15mb',
           type: 'error',
+          duration: 10000,
           position: 'top',
         })
       } else {
@@ -382,6 +388,7 @@ const setImage = async (event) => {
           toast.open({
             message: 'Timestamp Error',
             type: 'error',
+            duration: 10000,
             position: 'top',
           })
         } else {

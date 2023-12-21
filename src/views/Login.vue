@@ -25,6 +25,7 @@ async function login() {
     toast.open({
       message: 'cannot login because authentication is not configured',
       type: 'error',
+      duration: 10000,
       position: 'top',
     })
     return

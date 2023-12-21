@@ -146,6 +146,7 @@ async function resetToFound() {
       return toast.open({
         message: `dequeue tag error: ${dequeueSuccessful}`,
         type: 'error',
+        duration: 10000,
         timeout: false,
         position: 'bottom',
       })
@@ -163,6 +164,7 @@ async function resetToMystery() {
       return toast.open({
         message: `dequeue tag error: ${dequeueSuccessful}`,
         type: 'error',
+        duration: 10000,
         timeout: false,
         position: 'bottom',
       })

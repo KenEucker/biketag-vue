@@ -125,6 +125,7 @@ async function onApproveSubmit(newTagSubmission) {
         toast.open({
           message: `${t('notifications.error')} ${m}`,
           type: 'error',
+          duration: 10000,
           timeout: false,
           position: 'bottom',
         })
@@ -136,6 +137,7 @@ async function onApproveSubmit(newTagSubmission) {
     toast.open({
       message,
       type: 'error',
+      duration: 10000,
       timeout: false,
       position: 'bottom',
     })

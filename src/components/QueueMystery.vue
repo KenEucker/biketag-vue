@@ -155,6 +155,7 @@ function onSubmit(e) {
     toast.open({
       message: 'Invalid image, add a new one.',
       type: 'error',
+      duration: 10000,
       position: 'top',
     })
     return
@@ -164,6 +165,7 @@ function onSubmit(e) {
     toast.open({
       message: "You didn't add a hint, but it would sure be nice if you did.",
       type: 'error',
+      duration: 10000,
       position: 'top',
     })
     return
@@ -202,6 +204,7 @@ const setImage = async (event) => {
         toast.open({
           message: 'Image exceeds 15mb',
           type: 'error',
+          duration: 10000,
           position: 'top',
         })
       } else {
@@ -234,6 +237,7 @@ const setImage = async (event) => {
           toast.open({
             message: 'Timestamp Error',
             type: 'error',
+            duration: 10000,
             position: 'top',
           })
         } else {

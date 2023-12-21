@@ -222,6 +222,7 @@ async function onSubmitName() {
       toast.open({
         message: e.response?.data ?? e.message,
         type: 'error',
+        duration: 10000,
         position: 'top',
       })
     } finally {
@@ -243,6 +244,7 @@ async function onSubmit() {
       toast.open({
         message: e.response?.data ?? e.message,
         type: 'error',
+        duration: 10000,
         position: 'top',
       })
     }
