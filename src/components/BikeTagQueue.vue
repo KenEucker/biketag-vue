@@ -190,7 +190,7 @@ function paginationClick(key) {
     max-height: 40px;
   }
 
-  &.m {
+  &.l {
     max-height: 60px;
   }
 }
@@ -222,6 +222,35 @@ function paginationClick(key) {
   }
 }
 
+// .current-mystery,
+// .queued-found,
+// .queued-mystery {
+// }
+
+.bike-pagination-bullet {
+  position: relative;
+
+  span {
+    position: absolute;
+    top: 75%;
+    left: 25%;
+    right: 25%;
+    font-size: 2rem;
+    color: white;
+  }
+
+  img {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 5rem;
+    height: 5rem;
+    margin: 5px;
+    border-radius: 5rem;
+    cursor: pointer;
+  }
+}
+
 .bike-pagination {
   display: flex;
   align-items: center;
@@ -244,38 +273,9 @@ function paginationClick(key) {
 
   &.s {
     img {
-      height: 3rem;
       width: 3rem;
+      height: 3rem;
     }
-  }
-}
-
-// .current-mystery,
-// .queued-found,
-// .queued-mystery {
-// }
-
-.bike-pagination-bullet {
-  position: relative;
-
-  img {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 5rem;
-    height: 5rem;
-    margin: 5px;
-    border-radius: 5rem;
-    cursor: pointer;
-  }
-
-  span {
-    position: absolute;
-    top: 75%;
-    left: 25%;
-    right: 25%;
-    font-size: 2rem;
-    color: white;
   }
 }
 </style>

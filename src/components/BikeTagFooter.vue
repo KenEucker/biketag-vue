@@ -176,6 +176,7 @@ onBeforeUnmount(() => {
 
 .popover {
   background-color: $silver-sand;
+
   &__wrapper {
     @include background-btn;
     @include flx-center($jc: center);

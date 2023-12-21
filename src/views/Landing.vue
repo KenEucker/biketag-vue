@@ -298,6 +298,7 @@ header {
       .logo {
         height: auto;
       }
+
       .navbar-nav {
         align-items: unset;
         height: inherit;

@@ -118,15 +118,11 @@ const shareOptions = computed(() => ({
   text: shareText.value,
   hashtag: `#${getGameName.value}BikeTag`,
 }))
-const facebookShareUrl = computed(
-  () =>
-    `https://www.facebook.com/sharer/sharer.php?u=${getGameName.value}.biketag.org/${getCurrentBikeTag.value.tagnumber}`,
-)
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getPreviousBikeTag = computed(() => store.getPreviousBikeTag)
-const getPlayerId = computed(() => store.getPlayerId)
 const getGameName = computed(() => store.getGameName)
+const getGameNameProper = computed(() => store.getGameNameProper)
 const getGame = computed(() => store.getGame)
 const shareUrl = computed(
   () => `[${getGameName.value}.biketag.org](https://${getGameName.value}.biketag.org)`,
@@ -137,19 +133,19 @@ const redditPostText = computed(
 
 Credit goes to ${getPreviousBikeTag.value.foundPlayer} for finding BikeTag #${getPreviousBikeTag.value.tagnumber} that ${getPreviousBikeTag.value.mysteryPlayer} posted!
 
-See all BikeTags and more, for ${getGameName.value}:
+See all BikeTags and more, for ${getGameNameProper.value}:
 
 [${getGameName.value}.biketag.org](https://${getGameName.value}.biketag.org) | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/howto)
     `,
 )
 const postText = computed(
   () => `
-I played ${getGameName.value} BikeTag!
+I played ${getGameNameProper.value} BikeTag!
 
 This is BikeTag number ${getCurrentBikeTag.value.tagnumber} by ${getCurrentBikeTag.value.mysteryPlayer}.
 Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at ${shareUrl.value}
 
-#SeattleBikeTag #SeaBikes #BikeSeattle`,
+#${getGameNameProper.value}BikeTag #Bike${getGameNameProper.value}`,
 )
 const instgramPostText = computed(
   () => `
@@ -159,7 +155,7 @@ Credit goes to ${getCurrentBikeTag.value.foundPlayer} for finding BikeTag [#${ge
 
 "[${getCurrentBikeTag.value.foundLocation}](https://${getGameName.value}biketag.org/${getCurrentBikeTag.value.tagnumber})"
 
-See all BikeTags and more, for ${getGameName.value}:
+See all BikeTags and more, for ${getGameNameProper.value}:
 
 ${shareUrl} | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/howto)
     `,
@@ -209,8 +205,8 @@ onMounted(() => {
   }
 
   .share-logo {
-    height: 2.5em;
     width: 2.5em;
+    height: 2.5em;
     margin-right: 1em;
   }
 

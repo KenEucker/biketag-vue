@@ -58,6 +58,7 @@ export const useStore = defineStore('store', {
   state: (): State => ({
     dataInitialized: false,
     gameName,
+    gameNameProper: gameName[0].toUpperCase() + gameName.slice(1),
     game: {} as Game,
     allGames: [] as Game[],
     currentBikeTag: {} as Tag,
@@ -767,6 +768,9 @@ export const useStore = defineStore('store', {
     },
     getGameName(state) {
       return state.gameName
+    },
+    getGameNameProper(state) {
+      return state.gameNameProper
     },
     getLogoUrl(state) {
       return (size = '', logo?: string, squared = false) => {

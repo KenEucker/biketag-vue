@@ -122,6 +122,7 @@ watch(
   cursor: zoom-in;
   position: relative;
   transition: 0.25s opacity;
+
   img {
     width: 100%;
   }
