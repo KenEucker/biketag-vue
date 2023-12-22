@@ -20,18 +20,28 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   const errors = false
   const forceNotify = event.queryStringParameters.force === 'true'
   let results: any = []
+  const nonAdminBiketagOpts = getBikeTagClientOpts(event, true)
   const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
-  const adminBiketag = new BikeTagClient(adminBiketagOpts)
-  const game = (await adminBiketag.game(
-    { game: adminBiketagOpts.game },
+  const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
+  const game = (await nonAdminBiketag.game(
+    { game: nonAdminBiketagOpts.game },
     { source: 'sanity' },
   )) as Game
 
-  const twoMostRecentTags = await adminBiketag.getTags(
+  const twoMostRecentTags = await nonAdminBiketag.getTags(
     { game: game.slug, limit: 2 },
     { source: 'imgur' },
   )
   console.log('twoMostRecentTags.data', twoMostRecentTags.data)
+  if (twoMostRecentTags.data?.length !== 2) {
+    const errorMessage = 'Could not retrieve two most recent tags.'
+    console.log(errorMessage)
+    return {
+      results: [errorMessage],
+      errors: true,
+    }
+  }
+
   const [winningTag, previousTag] = twoMostRecentTags.data
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
@@ -44,11 +54,13 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
     }
   }
 
+  /// Set to admin credentials
+  nonAdminBiketag.config(adminBiketagOpts)
   const notificationsSent = await sendNewBikeTagNotifications(
     game,
     previousTag,
     winningTag,
-    adminBiketag,
+    nonAdminBiketag,
   ).catch((err) => {
     console.log('error sending notifications', err)
   })

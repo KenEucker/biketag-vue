@@ -11,9 +11,7 @@
   <div class="queue-page">
     <div v-if="approveSuccess">
       You successfully posted a new round of BikeTag {{ getGameName }}!
-      <bike-tag-button>
-        <router-link :to="{ name: 'home' }">Go to the Home Page</router-link>
-      </bike-tag-button>
+      <bike-tag-button @click="router.push('/')"> Go to the Home Page </bike-tag-button>
     </div>
     <queue-approve v-else-if="!uploadInProgress" @submit="onApproveSubmit" />
     <div v-else class="loading-message">
@@ -43,6 +41,7 @@ import { useStore } from '@/store/index'
 // import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
+import { useRouter } from 'vue-router'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
@@ -66,6 +65,7 @@ const approveSuccess = ref(false)
 const { idTokenClaims } = useAuth0()
 const queueError = ref(null)
 const store = useStore()
+const router = useRouter()
 const toast = inject('toast')
 const { t } = useI18n()
 
