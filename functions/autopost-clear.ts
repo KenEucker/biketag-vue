@@ -22,14 +22,18 @@ export const autoClearQueue = async (event): Promise<BackgroundProcessResults> =
   const forceNotify = event.queryStringParameters.force === 'true'
   let results: any = []
   const nonAdminBiketagOpts = getBikeTagClientOpts(event, true)
-  const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
-  const adminBiketag = new BikeTagClient(adminBiketagOpts)
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
-  const game = (await nonAdminBiketag.game(undefined, { source: 'sanity' })) as Game
+  const game = (await nonAdminBiketag.game(
+    { game: nonAdminBiketagOpts.game },
+    { source: 'sanity' },
+  )) as Game
 
+  const adminBiketagOpts = getBikeTagClientOpts(event, true, true, game)
+  const adminBiketag = new BikeTagClient(adminBiketagOpts)
   const { data: mostRecentTag } = await adminBiketag.getTag(undefined, { source: 'imgur' })
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
+  console.log({ mostRecentTag })
   if (twentyFourHoursAgo > mostRecentTag.mysteryTime * 1000 && !forceNotify) {
     const errorMessage =
       'Most recent tag was created more than 24 hours ago. Please clear the queue manually.'

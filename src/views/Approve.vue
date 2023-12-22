@@ -128,7 +128,7 @@ async function onApproveSubmit(newTagSubmission) {
           position: 'top',
         })
         approveSuccess.value = true
-        store.setQueuedTags()
+        store.resetBikeTagCache()
       },
       (m) => {
         toast.open({

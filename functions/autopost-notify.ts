@@ -32,7 +32,6 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
     { game: game.slug, limit: 2 },
     { source: 'imgur' },
   )
-  console.log('twoMostRecentTags.data', twoMostRecentTags.data)
   if (twoMostRecentTags.data?.length !== 2) {
     const errorMessage = 'Could not retrieve two most recent tags.'
     console.log(errorMessage)
