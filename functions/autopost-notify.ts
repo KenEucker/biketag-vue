@@ -27,7 +27,10 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
     { source: 'sanity' },
   )) as Game
 
-  const twoMostRecentTags = await adminBiketag.getTags({ limit: 2 }, { source: 'imgur' })
+  const twoMostRecentTags = await adminBiketag.getTags(
+    { game: game.slug, limit: 2 },
+    { source: 'imgur' },
+  )
   const [winningTag, previousTag] = twoMostRecentTags.data
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
