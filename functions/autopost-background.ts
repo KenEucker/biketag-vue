@@ -58,7 +58,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
         console.log('completed tags found but none timed out', { game, activeQueue })
       } else if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
         const currentBikeTagResponse = await adminBiketag.getTag(undefined) // the "current" mystery tag to be updated from the main album
-        console.log({ currentBikeTagResponse })
+        console.log({ currentBikeTagResponse: currentBikeTagResponse.data })
         const currentBikeTag = currentBikeTagResponse.data
         const autoSelectedWinningTag = getWinningTagForCurrentRound(
           activeQueue.timedOutTags,
