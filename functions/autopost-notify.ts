@@ -22,7 +22,10 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   let results: any = []
   const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
   const adminBiketag = new BikeTagClient(adminBiketagOpts)
-  const game = (await adminBiketag.game(undefined, { source: 'sanity' })) as Game
+  const game = (await adminBiketag.game(
+    { game: adminBiketagOpts.game },
+    { source: 'sanity' },
+  )) as Game
 
   const twoMostRecentTags = await adminBiketag.getTags({ limit: 2 }, { source: 'imgur' })
   const [winningTag, previousTag] = twoMostRecentTags.data
