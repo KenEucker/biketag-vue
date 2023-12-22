@@ -1097,7 +1097,7 @@ export const setNewBikeTagPost = async (
     previousBikeTag.foundTime = winningBikeTagPost.foundTime
     previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
     previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
-    console.log('updating current BikeTag with the winning tag found information', previousBikeTag)
+    // console.log('updating current BikeTag with the winning tag found information', previousBikeTag)
     const currentBikeTagUpdateResult = await biketag.updateTag(previousBikeTag)
 
     if (currentBikeTagUpdateResult.success) {
@@ -1137,7 +1137,7 @@ export const setNewBikeTagPost = async (
     if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
       /************** SEND NOTIFICATIONS *****************/
       /// Send it off and hope that it finishes
-      console.log('sending notifications', getApiUrl(game.name, 'autopost-notify'))
+      // console.log('sending notifications', getApiUrl(game.name, 'autopost-notify'))
       axios({
         method: 'post',
         url: getApiUrl(game.name, 'autopost-notify'),
