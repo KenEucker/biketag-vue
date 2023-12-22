@@ -122,12 +122,16 @@ export const useStore = defineStore('store', {
     },
     async fetchCredentials() {
       if (!this.credentialsFetched) {
-        // console.log('fetching credentials')
-        await client.config(
-          { ...biketagClientOptions, ...getBikeTagClientOpts(window, true) },
-          false,
-          true,
-        )
+        // console.log('fetching credentials')]
+        try {
+          await client.config(
+            { ...biketagClientOptions, ...getBikeTagClientOpts(window, true) },
+            false,
+            true,
+          )
+        } catch (e) {
+          console.error('error fetching credentials', e)
+        }
         // const credentials = await client.fetchCredentials()
         // await client.config(credentials, false, true)
         this.credentialsFetched = true
@@ -247,34 +251,31 @@ export const useStore = defineStore('store', {
             const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
               (t) => t.tagnumber >= this.currentBikeTag.tagnumber,
             )
-            const queuedTag = currentBikeTagQueue.filter(
+            /// Get the player queued tag by player id
+            const [playerQueuedTag] = currentBikeTagQueue.filter(
               (t) => this.profile?.sub && t.playerId === this.profile.sub,
             )
 
-            if (queuedTag.length) {
-              const fullyQueuedTag = queuedTag[0]
-              const queuedMysteryTag = (d as Tag[]).filter(
-                (t) => t.mysteryPlayer === queuedTag[0].foundPlayer,
-              )
-              if (queuedMysteryTag.length) {
-                fullyQueuedTag.mysteryImage = queuedMysteryTag[0].mysteryImage
-                fullyQueuedTag.mysteryImageUrl = queuedMysteryTag[0].mysteryImageUrl
-                fullyQueuedTag.mysteryPlayer = queuedMysteryTag[0].mysteryPlayer
-              }
-              this.SET_QUEUED_TAG(fullyQueuedTag)
-              this.SET_QUEUED_TAG_STATE(fullyQueuedTag)
-            } else {
-              this.SET_QUEUED_TAG_STATE(null)
+            if (playerQueuedTag) {
+              // const [queuedMysteryTag] = (d as Tag[]).filter(
+              //   (t) => t.mysteryPlayer === playerQueuedTag.foundPlayer,
+              // )
+              // if (queuedMysteryTag) {
+              //   /// Add the mystery tag image to the player queued tag (WHY?)
+              //   playerQueuedTag.mysteryImage = queuedMysteryTag.mysteryImage
+              //   playerQueuedTag.mysteryImageUrl = queuedMysteryTag.mysteryImageUrl
+              //   playerQueuedTag.mysteryPlayer = queuedMysteryTag.mysteryPlayer
+              // }
+              this.SET_QUEUED_TAG(playerQueuedTag)
+              this.SET_QUEUED_TAG_STATE(playerQueuedTag)
             }
 
             return this.SET_QUEUED_TAGS(currentBikeTagQueue)
           } else {
-            this.SET_QUEUED_TAGS([])
+            this.SET_QUEUED_TAG(null)
+            this.SET_QUEUED_TAG_STATE(null)
+            return this.SET_QUEUED_TAGS([])
           }
-
-          this.SET_QUEUED_TAG(null)
-          this.SET_QUEUED_TAG_STATE(null)
-          return false
         })
       }
 
@@ -610,6 +611,7 @@ export const useStore = defineStore('store', {
       ) {
         debug('store::queuedFoundTag', this.playerTag)
         this.resetBikeTagCache()
+        console.log('SET_QUEUE_FOUND')
         if (oldState?.mysteryPlayer !== data?.foundPlayer) {
           this.formStep = BiketagFormSteps.roundJoined
         } else {
@@ -668,7 +670,7 @@ export const useStore = defineStore('store', {
     },
     SET_QUEUED_TAG(data?: any) {
       const oldState = this.playerTag
-      this.playerTag = BikeTagClient.createTagObject(data ?? {}, data ? this.playerTag : {})
+      this.playerTag = BikeTagClient.createTagObject(data ?? {}, data ? {} : this.playerTag)
       // setQueuedTagInCookie(data ? this.queuedTag : undefined)
 
       if (
@@ -703,7 +705,12 @@ export const useStore = defineStore('store', {
     SET_QUEUED_TAG_STATE(tag: any) {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
       /// If the current player won the last round, set the tag state to share post
-      // console.log(this.currentBikeTag.mysteryPlayer, this.profile?.user_metadata?.name)
+      console.log(
+        'SET_QUEUED_TAG_STATE',
+        this.currentBikeTag.mysteryPlayer,
+        this.profile?.user_metadata?.name,
+        this.playerTag,
+      )
       if (
         (this.profile?.name && this.profile?.name === this.currentBikeTag?.mysteryPlayer) ||
         (this.profile?.sub && this.profile?.sub === this.currentBikeTag?.playerId)
@@ -712,6 +719,7 @@ export const useStore = defineStore('store', {
       } else if (tag) {
         this.formStep = getQueuedTagState(tag)
       } else {
+        console.log('SET_QUEUED_TAG_STATE')
         this.formStep = BiketagFormSteps.addFoundImage
       }
     },
@@ -721,6 +729,7 @@ export const useStore = defineStore('store', {
     //   debug('state::queue', BiketagFormSteps[this.formStep])
     // },
     RESET_FORM_STEP_TO_FOUND() {
+      console.log('RESET_FORM_STEP_TO_FOUND')
       this.formStep = BiketagFormSteps.addFoundImage
       // debug('state::queue', BiketagFormSteps[this.formStep])
     },
