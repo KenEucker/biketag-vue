@@ -129,36 +129,36 @@ const shareUrl = computed(
 )
 const redditPostText = computed(
   () => `
-[#${getCurrentBikeTag.value.tagnumber} tag by ${getCurrentBikeTag.value.mysteryPlayer}](https://${getGameName.value}.biketag.org/${getCurrentBikeTag.value.tagnumber})
+  [#${getCurrentBikeTag.value.tagnumber} tag by ${getCurrentBikeTag.value.mysteryPlayer}](https://${getGameName.value}.biketag.org/${getCurrentBikeTag.value.tagnumber})
 
-Credit goes to ${getPreviousBikeTag.value.foundPlayer} for finding BikeTag #${getPreviousBikeTag.value.tagnumber} that ${getPreviousBikeTag.value.mysteryPlayer} posted!
+  Credit goes to ${getPreviousBikeTag.value.foundPlayer} for finding BikeTag #${getPreviousBikeTag.value.tagnumber} that ${getPreviousBikeTag.value.mysteryPlayer} posted!
 
-See all BikeTags and more, for ${getGameNameProper.value}:
+  See all BikeTags and more, for ${getGameNameProper.value}:
 
-[${getGameName.value}.biketag.org](https://${getGameName.value}.biketag.org) | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/howto)
-    `,
+  [${getGameName.value}.biketag.org](https://${getGameName.value}.biketag.org) | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/howto)
+      `,
 )
 const postText = computed(
   () => `
-I played ${getGameNameProper.value} BikeTag!
+  I played ${getGameNameProper.value} BikeTag!
 
-This is BikeTag number ${getCurrentBikeTag.value.tagnumber} by ${getCurrentBikeTag.value.mysteryPlayer}.
-Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at ${shareUrl.value}
+  This is BikeTag number ${getCurrentBikeTag.value.tagnumber} by ${getCurrentBikeTag.value.mysteryPlayer}.
+  Find this mystery location and move the tag to your favorite spot. The latest tag, instructions, and a hint are at ${shareUrl.value}
 
-#${getGameNameProper.value}BikeTag #Bike${getGameNameProper.value}`,
+  #${getGameNameProper.value}BikeTag #Bike${getGameNameProper.value}`,
 )
 const instgramPostText = computed(
   () => `
-[#${getCurrentBikeTag.value.tagnumber} tag by ${getCurrentBikeTag.value.foundPlayer}](https://${getGameName.value}biketag.org/${getCurrentBikeTag.value.tagnumber})
+  [#${getCurrentBikeTag.value.tagnumber} tag by ${getCurrentBikeTag.value.foundPlayer}](https://${getGameName.value}biketag.org/${getCurrentBikeTag.value.tagnumber})
 
-Credit goes to ${getCurrentBikeTag.value.foundPlayer} for finding BikeTag [#${getCurrentBikeTag.value.tagnumber}](${getCurrentBikeTag.value.discussionUrl}) that ${getCurrentBikeTag.value.mysteryPlayer} posted!
+  Credit goes to ${getCurrentBikeTag.value.foundPlayer} for finding BikeTag [#${getCurrentBikeTag.value.tagnumber}](${getCurrentBikeTag.value.discussionUrl}) that ${getCurrentBikeTag.value.mysteryPlayer} posted!
 
-"[${getCurrentBikeTag.value.foundLocation}](https://${getGameName.value}biketag.org/${getCurrentBikeTag.value.tagnumber})"
+  "[${getCurrentBikeTag.value.foundLocation}](https://${getGameName.value}biketag.org/${getCurrentBikeTag.value.tagnumber})"
 
-See all BikeTags and more, for ${getGameNameProper.value}:
+  See all BikeTags and more, for ${getGameNameProper.value}:
 
-${shareUrl} | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/howto)
-    `,
+  ${shareUrl} | [Leaderboard](https://${getGameName.value}.biketag.org/leaderboard) | [Rules](https://${getGameName.value}.biketag.org/howto)
+      `,
 )
 
 // methods

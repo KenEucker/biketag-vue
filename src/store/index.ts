@@ -191,8 +191,8 @@ export const useStore = defineStore('store', {
     },
     async resetBikeTagCache() {
       /// TODO: add a check for stale cache before unnecessarily resetting
-      await this.setGame()
       await this.setTags(false)
+      await this.setCurrentBikeTag(true)
       await this.setQueuedTags(true)
     },
     setAllGames() {
