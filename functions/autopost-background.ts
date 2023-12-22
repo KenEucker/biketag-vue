@@ -33,9 +33,10 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
     { method: 'get' } as unknown as request.Request,
     true,
   )
+  delete nonAdminBiketagOpts.game
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
   const adminBiketag = new BikeTagClient(adminBiketagOpts)
-  const gamesResponse = await adminBiketag.getGame(undefined, {
+  const gamesResponse = await nonAdminBiketag.getGame(undefined, {
     source: 'sanity',
   })
   let results: any = []
