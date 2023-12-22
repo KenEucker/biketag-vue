@@ -39,7 +39,7 @@ const approveHandler: Handler = async (event) => {
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile?.sub && profile.sub === approvePayload.ambassadorId) {
     const biketagOpts = getBikeTagClientOpts(event as unknown as request.Request, true)
-    biketagOpts.cached = true
+    // biketagOpts.cached = true
     const biketag = new BikeTagClient(biketagOpts)
     const { playerId, tagnumber } = approvePayload.tag
     const game = (await biketag.game(undefined, { source: 'sanity' })) as Game

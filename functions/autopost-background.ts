@@ -29,7 +29,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
   )
   delete biketagOpts.game
   /// Cache what we can here, so that it improves this method's performance
-  biketagOpts.cached = true
+  // biketagOpts.cached = true
   const nonAdminBiketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,
