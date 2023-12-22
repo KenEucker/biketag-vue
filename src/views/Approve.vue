@@ -9,7 +9,13 @@
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
   <div class="queue-page">
-    <queue-approve v-if="!uploadInProgress" @submit="onApproveSubmit" />
+    <div v-if="approveSuccess">
+      You successfully posted a new round of BikeTag {{ getGameName }}!
+      <bike-tag-button>
+        <router-link :to="{ name: 'home' }">Go to the Home Page</router-link>
+      </bike-tag-button>
+    </div>
+    <queue-approve v-else-if="!uploadInProgress" @submit="onApproveSubmit" />
     <div v-else class="loading-message">
       <p>The next BikeTag Round is loading!</p>
     </div>
@@ -39,6 +45,7 @@ import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
 
 // components
+import BikeTagButton from '@/components/BikeTagButton.vue'
 import QueueApprove from '@/components/QueueApprove.vue'
 import { useI18n } from 'vue-i18n'
 
@@ -55,6 +62,7 @@ const time = new Date()
 time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 // const timer = ref(useTimer(time))
 const uploadInProgress = ref(false)
+const approveSuccess = ref(false)
 const { idTokenClaims } = useAuth0()
 const queueError = ref(null)
 const store = useStore()
@@ -119,6 +127,7 @@ async function onApproveSubmit(newTagSubmission) {
           type: 'success',
           position: 'top',
         })
+        approveSuccess.value = true
         store.setQueuedTags()
       },
       (m) => {
