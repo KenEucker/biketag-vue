@@ -20,15 +20,27 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   const errors = false
   const forceNotify = event.queryStringParameters.force === 'true'
   let results: any = []
-  const biketagOpts = getBikeTagClientOpts(event, true)
-  const biketagAdminOpts = getBikeTagClientOpts(event, true, true)
-  const biketag = new BikeTagClient(biketagOpts)
-  const game = (await biketag.game({ game: biketagOpts.game }, { source: 'sanity' })) as Game
+  const nonAdminBiketagOpts = getBikeTagClientOpts(event, true)
+  const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
+  const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
+  const game = (await nonAdminBiketag.game(
+    { game: nonAdminBiketagOpts.game },
+    { source: 'sanity' },
+  )) as Game
 
-  const twoMostRecentTags = await biketag.getTags(
-    { game: biketagOpts.game, limit: 2 },
+  const twoMostRecentTags = await nonAdminBiketag.getTags(
+    { game: game.slug, limit: 2 },
     { source: 'imgur' },
   )
+  if (twoMostRecentTags.data?.length !== 2) {
+    const errorMessage = 'Could not retrieve two most recent tags.'
+    console.log(errorMessage)
+    return {
+      results: [errorMessage],
+      errors: true,
+    }
+  }
+
   const [winningTag, previousTag] = twoMostRecentTags.data
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
@@ -41,11 +53,13 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
     }
   }
 
+  /// Set to admin credentials
+  nonAdminBiketag.config(adminBiketagOpts)
   const notificationsSent = await sendNewBikeTagNotifications(
     game,
     previousTag,
     winningTag,
-    new BikeTagClient(biketagAdminOpts),
+    nonAdminBiketag,
   ).catch((err) => {
     console.log('error sending notifications', err)
   })
@@ -65,7 +79,7 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   }
 }
 
-const autoPostHandler: Handler = async (event) => {
+const autoPostNotifyHandler: Handler = async (event) => {
   const { results, errors } = await autoNotifyNewBikeTagPosted(event)
 
   if (results.length) {
@@ -83,6 +97,6 @@ const autoPostHandler: Handler = async (event) => {
   }
 }
 
-const handler = autoPostHandler
+const handler = autoPostNotifyHandler
 
 export { handler }

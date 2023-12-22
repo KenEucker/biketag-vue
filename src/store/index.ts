@@ -22,7 +22,7 @@ const profile = getProfileFromCookie()
 const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
 const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
 /// TODO: move these options to a method for FE use only
-const options: any = {
+const biketagClientOptions: any = {
   // biketag: {
   cached: true,
   host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.org/api`,
@@ -36,7 +36,7 @@ const gameOpts = { source: 'sanity' }
 /// TODO: move these constants to common
 const defaultLogo = '/images/BikeTag.svg'
 const defaultJingle = 'media/biketag-jingle-1.mp3'
-const sanityBaseCDNUrl = `${process.env.S_CURL}${options.sanity?.projectId}/${options.sanity?.dataset}/`
+const sanityBaseCDNUrl = `${process.env.S_CURL}${biketagClientOptions.sanity?.projectId}/${biketagClientOptions.sanity?.dataset}/`
 
 debug('init::store', {
   subdomain: domain.subdomain,
@@ -46,7 +46,7 @@ debug('init::store', {
 })
 
 /// TODO: create a helper for the instantiation of the biketag client (use singleton?)
-const client = new BikeTagClient(options)
+const client = new BikeTagClient(biketagClientOptions)
 let storedRegionPolygon: any = localStorage.getItem(`${gameName}::regionPolygon`)
 try {
   storedRegionPolygon = JSON.parse(storedRegionPolygon)
@@ -123,7 +123,11 @@ export const useStore = defineStore('store', {
     async fetchCredentials() {
       if (!this.credentialsFetched) {
         // console.log('fetching credentials')
-        await client.config({ ...options, ...getBikeTagClientOpts(window, true) }, false, true)
+        await client.config(
+          { ...biketagClientOptions, ...getBikeTagClientOpts(window, true) },
+          false,
+          true,
+        )
         // const credentials = await client.fetchCredentials()
         // await client.config(credentials, false, true)
         this.credentialsFetched = true
@@ -178,9 +182,9 @@ export const useStore = defineStore('store', {
         return client.game(this.gameName, gameOpts as any).then(async (d) => {
           if (d) {
             const game = d as Game
-            options.imgur.hash = game.mainhash
-            options.imgur.queuehash = game.queuehash
-            // client = new BikeTagClient(options)
+            biketagClientOptions.imgur.hash = game.mainhash
+            biketagClientOptions.imgur.queuehash = game.queuehash
+            client.config(biketagClientOptions)
 
             this.SET_GAME(game)
             return game
@@ -191,12 +195,12 @@ export const useStore = defineStore('store', {
     },
     async resetBikeTagCache() {
       /// TODO: add a check for stale cache before unnecessarily resetting
-      await this.setGame()
       await this.setTags(false)
+      await this.setCurrentBikeTag(false)
       await this.setQueuedTags(true)
     },
     setAllGames() {
-      const biketagClient = new BikeTagClient({ ...options, game: undefined })
+      const biketagClient = new BikeTagClient({ ...biketagClientOptions, game: undefined })
       return biketagClient
         .getGame(
           { game: '' },
@@ -222,7 +226,7 @@ export const useStore = defineStore('store', {
         })
     },
     setCurrentBikeTag(cached = true) {
-      return client.getTag(undefined, { cached }).then((r) => {
+      return client.getTag({ cached }).then((r) => {
         return this.SET_CURRENT_TAG(r.data)
       })
     },
@@ -238,7 +242,7 @@ export const useStore = defineStore('store', {
           await this.fetchCredentials()
         }
 
-        return client.queue(undefined, { cached: false }).then((d) => {
+        return client.queue({ cached: false }).then((d) => {
           if ((d as Tag[])?.length > 0) {
             const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
               (t) => t.tagnumber >= this.currentBikeTag.tagnumber,
@@ -264,8 +268,11 @@ export const useStore = defineStore('store', {
             }
 
             return this.SET_QUEUED_TAGS(currentBikeTagQueue)
+          } else {
+            this.SET_QUEUED_TAGS([])
           }
 
+          this.SET_QUEUED_TAG(null)
           this.SET_QUEUED_TAG_STATE(null)
           return false
         })
@@ -277,7 +284,7 @@ export const useStore = defineStore('store', {
       return client.players({ cached }).then(this.SET_PLAYERS)
     },
     setLeaderboard(cached = true) {
-      return client.players({ sort: 'top', limit: 10 }, { cached }).then(this.SET_LEADERBOARD)
+      return client.players({ sort: 'top', limit: 10, cached }).then(this.SET_LEADERBOARD)
     },
     setFormStepToJoin(d: any) {
       if (this.formStep === BiketagFormSteps.viewRound || d) {
@@ -661,7 +668,7 @@ export const useStore = defineStore('store', {
     },
     SET_QUEUED_TAG(data?: any) {
       const oldState = this.playerTag
-      this.playerTag = BikeTagClient.createTagObject(data, data ? this.playerTag : {})
+      this.playerTag = BikeTagClient.createTagObject(data ?? {}, data ? this.playerTag : {})
       // setQueuedTagInCookie(data ? this.queuedTag : undefined)
 
       if (
@@ -704,6 +711,8 @@ export const useStore = defineStore('store', {
         this.formStep = BiketagFormSteps.shareBikeTagPost
       } else if (tag) {
         this.formStep = getQueuedTagState(tag)
+      } else {
+        this.formStep = BiketagFormSteps.addFoundImage
       }
     },
     // RESET_FORM_STEP() {

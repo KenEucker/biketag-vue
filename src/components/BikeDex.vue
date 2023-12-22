@@ -11,7 +11,7 @@
         <img class="deck__card--front" :src="tag.foundImageUrl" :alt="tag.foundImageUrl" />
         <div class="deck__card--back">
           <p># {{ tag.tagnumber }}</p>
-          <p>{{ getTagDateFunction(tag.foundTime).toDateString() }}</p>
+          <p>{{ getTagDate(tag.foundTime).toDateString() }}</p>
           <p>{{ tag.foundLocation }}</p>
         </div>
       </div>
@@ -20,10 +20,7 @@
 </template>
 
 <script setup name="BikeDex">
-import { computed } from 'vue'
 import { getTagDate } from '@/common/utils'
-
-const getTagDateFunction = computed(getTagDate)
 
 // props
 const props = defineProps({

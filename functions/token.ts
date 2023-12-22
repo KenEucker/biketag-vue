@@ -19,7 +19,7 @@ const tokenHandler: Handler = async (event) => {
   let statusCode = HttpStatusCode.Unauthorized
 
   if (authorization) {
-    const biketagOpts = getBikeTagClientOpts(
+    const adminBiketagOpts = getBikeTagClientOpts(
       {
         ...event,
         method: event.httpMethod,
@@ -28,8 +28,8 @@ const tokenHandler: Handler = async (event) => {
       true,
     )
 
-    const biketag = new BikeTagClient(biketagOpts)
-    const credentials = await biketag.fetchCredentials(authorization)
+    const adminBiketag = new BikeTagClient(adminBiketagOpts)
+    const credentials = await adminBiketag.fetchCredentials(authorization)
     body = JSON.stringify(credentials)
     statusCode = HttpStatusCode.Ok
   } else {

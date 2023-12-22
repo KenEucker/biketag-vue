@@ -38,15 +38,27 @@ const approveHandler: Handler = async (event) => {
 
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile?.sub && profile.sub === approvePayload.ambassadorId) {
-    const biketagOpts = getBikeTagClientOpts(event as unknown as request.Request, true)
-    // biketagOpts.cached = true
-    const biketag = new BikeTagClient(biketagOpts)
     const { playerId, tagnumber } = approvePayload.tag
-    const game = (await biketag.game(undefined, { source: 'sanity' })) as Game
-    const currentBikeTag = (await biketag.getTag()).data
+
+    const nonAdminBiketagOpts = getBikeTagClientOpts(event as unknown as request.Request, true)
+    const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
+    const game = (await nonAdminBiketag.game(undefined, { source: 'sanity' })) as Game
 
     if (game) {
-      const activeQueue = await getActiveQueueForGame(game, undefined, approvePayload.ambassadorId)
+      const currentBikeTag = (await nonAdminBiketag.getTag()).data
+      const adminBiketagOpts = getBikeTagClientOpts(
+        event as unknown as request.Request,
+        true,
+        true,
+        game,
+      )
+      // biketagOpts.cached = true
+      const adminBiketag = new BikeTagClient(adminBiketagOpts)
+      const activeQueue = await getActiveQueueForGame(
+        game,
+        adminBiketag,
+        approvePayload.ambassadorId,
+      )
       const approvedTagList = activeQueue.completedTags.filter((t) => {
         return t.tagnumber === tagnumber && t.playerId === playerId
       })
@@ -56,7 +68,13 @@ const approveHandler: Handler = async (event) => {
         approvedTag.game = approvedTag.game.length ? approvedTag.game : game.name
         // console.log({ approvedTag, approvedTagList })
 
-        const newBikeTagPostedResults = await setNewBikeTagPost(game, approvedTag, currentBikeTag)
+        const newBikeTagPostedResults = await setNewBikeTagPost(
+          game,
+          approvedTag,
+          currentBikeTag,
+          adminBiketag,
+          nonAdminBiketag,
+        )
         results.push({
           message: `Approving BikeTag Ambassador: ${profile.name}`,
           ambassador: profile.email,
@@ -65,11 +83,11 @@ const approveHandler: Handler = async (event) => {
         results = results.concat(newBikeTagPostedResults.results)
         errors = errors.concat(newBikeTagPostedResults.errors)
       } else {
-        errors.push(`tag could not be approved: ${biketagOpts.game}`)
+        errors.push(`tag could not be approved: ${nonAdminBiketagOpts.game}`)
       }
     } else {
-      console.error({ biketagOpts })
-      errors.push(`no game found: ${biketagOpts.game}`)
+      console.error({ biketagOpts: nonAdminBiketagOpts })
+      errors.push(`no game found: ${nonAdminBiketagOpts.game}`)
     }
   } else {
     return {
