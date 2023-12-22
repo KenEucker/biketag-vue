@@ -49,7 +49,7 @@ const approveHandler: Handler = async (event) => {
       const adminBiketagOpts = getBikeTagClientOpts(
         event as unknown as request.Request,
         true,
-        undefined,
+        true,
         game,
       )
       // biketagOpts.cached = true

@@ -1081,20 +1081,11 @@ export const setNewBikeTagPost = async (
   adminBiketag?: BikeTagClient,
   nonAdminBiketag?: BikeTagClient,
 ): Promise<BackgroundProcessResults> => {
-  /// This gets admin credentials
-  const adminBiketagOpts = getBikeTagClientOpts(
-    { method: 'get' } as unknown as request.Request,
-    true,
-    true,
-  )
-  /// Set the game and imgur album hashes
-  adminBiketagOpts.game = game?.slug
-  adminBiketagOpts.imgur.hash = game?.mainhash
-  if (!adminBiketag) {
-    adminBiketag = new BikeTagClient(adminBiketagOpts)
-  } else {
-    adminBiketag.config(adminBiketagOpts)
-  }
+  adminBiketag =
+    adminBiketag ??
+    new BikeTagClient(
+      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, true, true, game),
+    )
   /// Get the current BikeTag
   previousBikeTag = previousBikeTag ?? ((await adminBiketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
