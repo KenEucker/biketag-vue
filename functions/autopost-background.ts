@@ -4,7 +4,6 @@ import { Game } from 'biketag/lib/common/schema'
 import request from 'request'
 import { HttpStatusCode } from './common/constants'
 import {
-  archiveAndClearQueue,
   getActiveQueueForGame,
   getBikeTagClientOpts,
   getWinningTagForCurrentRound,
@@ -22,12 +21,12 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
 
   // if (!isRequestAllowed()) {}
 
-  const biketagOpts = getBikeTagClientOpts(
+  const adminBiketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,
     true,
   )
-  delete biketagOpts.game
+  delete adminBiketagOpts.game
   /// Cache what we can here, so that it improves this method's performance
   // biketagOpts.cached = true
   const nonAdminBiketagOpts = getBikeTagClientOpts(
@@ -35,8 +34,8 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
     true,
   )
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
-  const adminBiketag = new BikeTagClient(biketagOpts)
-  const gamesResponse = await nonAdminBiketag.getGame(undefined, {
+  const adminBiketag = new BikeTagClient(adminBiketagOpts)
+  const gamesResponse = await adminBiketag.getGame(undefined, {
     source: 'sanity',
   })
   let results: any = []
@@ -52,14 +51,12 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
       }
       nonAdminBiketag.config(thisGameConfig)
       adminBiketag.config(thisGameConfig)
-      const activeQueue = await getActiveQueueForGame(game)
+      const activeQueue = await getActiveQueueForGame(game, adminBiketag)
 
-      // if (activeQueue.completedTags.length && activeQueue.timedOutTags.length === 0) {
-      // console.log('completed tags found but none timed out', { game, activeQueue })
-      // } else
-      if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
+      if (activeQueue.completedTags.length && activeQueue.timedOutTags.length === 0) {
+        console.log('completed tags found but none timed out', { game, activeQueue })
+      } else if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
         const currentBikeTagResponse = await adminBiketag.getTag(undefined) // the "current" mystery tag to be updated from the main album
-        // console.log({ currentBikeTagResponse: currentBikeTagResponse.data })
         const currentBikeTag = currentBikeTagResponse.data
         const autoSelectedWinningTag = getWinningTagForCurrentRound(
           activeQueue.timedOutTags,
@@ -67,24 +64,19 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
         )
 
         if (autoSelectedWinningTag) {
-          console.log('winning tag found', { game, autoSelectedWinningTag })
+          console.log('winning tag found, setting new BikeTag post', {
+            game,
+            autoSelectedWinningTag,
+          })
           const setNewBikeTagPostResults = await setNewBikeTagPost(
             game,
             autoSelectedWinningTag,
             currentBikeTag,
+            adminBiketag,
+            nonAdminBiketag,
           )
-
-          const remainingNonWinningTags = activeQueue.queuedTags.filter(
-            (t) => t.foundPlayer !== autoSelectedWinningTag.foundPlayer,
-          )
-          if (remainingNonWinningTags.length) {
-            console.log('non-winning tag(s) found', { game, remainingNonWinningTags })
-            const archiveAndClearQueueResults = await archiveAndClearQueue(remainingNonWinningTags)
-            results = setNewBikeTagPostResults.results.concat(archiveAndClearQueueResults.results)
-            errors = archiveAndClearQueueResults.errors
-          }
-          results = setNewBikeTagPostResults.results.concat(setNewBikeTagPostResults.results)
-          errors = errors || setNewBikeTagPostResults.errors
+          results = results.concat(setNewBikeTagPostResults.results)
+          errors = setNewBikeTagPostResults.errors
         }
       }
     }

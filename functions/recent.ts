@@ -10,25 +10,25 @@ const recentHandler: Handler = async (event) => {
     statusCode: 500,
     body: '',
   }
-  const biketagOpts = getBikeTagClientOpts(
+  const nonAdminBiketagOpts = getBikeTagClientOpts(
     {
       ...event,
       method: event.httpMethod,
     } as unknown as request.Request,
     true,
   )
-  const biketag = new BikeTagClient(biketagOpts)
-  if (!biketagOpts.game?.length) {
-    const biketagAdminOpts = getBikeTagClientOpts(
-      {
-        ...event,
-        method: event.httpMethod,
-      } as unknown as request.Request,
-      true,
-      true,
-    )
-    const biketagAdmin = new BikeTagClient(biketagAdminOpts)
-    // const featuredGameNames = await biketagAdmin
+  const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
+  if (!nonAdminBiketagOpts.game?.length) {
+    // const adminBiketagOpts = getBikeTagClientOpts(
+    //   {
+    //     ...event,
+    //     method: event.httpMethod,
+    //   } as unknown as request.Request,
+    //   true,
+    //   true,
+    // )
+    // const adminBiketag = new BikeTagClient(adminBiketagOpts)
+    // const featuredGameNames = await adminBiketag
     //   .getGame(
     //     { game: '', cached: false },
     //     {
@@ -46,7 +46,7 @@ const recentHandler: Handler = async (event) => {
     //     }
     //     return []
     //   })
-    const featuredGames = await biketag
+    const featuredGames = await nonAdminBiketag
       .getGame(
         { game: '', cached: false },
         {
@@ -76,7 +76,7 @@ const recentHandler: Handler = async (event) => {
         cached: true,
       })
       recentResponses.push(
-        biketag.getTags(biketagPayload as getTagsPayload, {
+        nonAdminBiketag.getTags(biketagPayload as getTagsPayload, {
           source: 'imgur',
           cached: true,
         }),
@@ -89,7 +89,7 @@ const recentHandler: Handler = async (event) => {
     response.statusCode = 200
     response.body = JSON.stringify(recentTags)
   } else {
-    const game = (await biketag.game(biketagOpts.game, {
+    const game = (await nonAdminBiketag.game(nonAdminBiketagOpts.game, {
       source: 'sanity',
       concise: true,
     })) as unknown as Game
@@ -98,7 +98,7 @@ const recentHandler: Handler = async (event) => {
       game: 'none',
       time: 'day',
     })
-    const recentResponse = await biketag.getTags(biketagPayload as getTagsPayload, {
+    const recentResponse = await nonAdminBiketag.getTags(biketagPayload as getTagsPayload, {
       source: 'imgur',
     })
     if (recentResponse.success) {

@@ -72,16 +72,24 @@ export const getBikeTagClientOpts = (
   req?: request.Request,
   authorized?: boolean,
   admin?: boolean,
+  game?: Game,
 ) => {
   const domainInfo = getDomainInfo(req)
   const isAuthenticatedPOST = req?.method === 'POST' || authorized
   const isGET = !isAuthenticatedPOST && req?.method === 'GET'
   const opts: any = {
-    game: domainInfo.subdomain ?? process.env.GAME_NAME,
+    game:
+      game?.name?.toLocaleLowerCase() ??
+      game?.slug ??
+      domainInfo.subdomain ??
+      process.env.GAME_NAME,
     cached: isGET || !isAuthenticatedPOST,
     accessToken: process.env.ACCESS_TOKEN,
     imgur: {
       clientId: process.env.I_CID,
+      hash: game?.mainhash,
+      queuehash: game?.queuehash,
+      archivehash: game?.archivehash,
     },
   }
 
@@ -367,9 +375,9 @@ export const getProfileAuthorization = async (event: any): Promise<any> => {
   let profile: any = authorization
 
   if (authorization) {
-    const biketagOpts = getBikeTagClientOpts(event, true, true)
-    const biketag = new BikeTagClient(biketagOpts)
-    const thisGamesAmbassadors = (await getThisGamesAmbassadors(biketag)) as Ambassador[]
+    const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
+    const adminBiketag = new BikeTagClient(adminBiketagOpts)
+    const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag)) as Ambassador[]
     if (!thisGamesAmbassadors?.length) {
       return profile
     }
@@ -671,15 +679,15 @@ export const sendEmailsToAmbassadors = async (
     }
   }
   if (sendToAdmin) {
-    const biketagAdmin = process.env.ADMIN_EMAIL ?? ''
-    if (biketagAdmin?.length) {
-      console.log(`sending ${emailName} email to BikeTag Administrator: ${biketagAdmin}`)
+    const biketagAdminEmail = process.env.ADMIN_EMAIL ?? ''
+    if (biketagAdminEmail?.length) {
+      console.log(`sending ${emailName} email to BikeTag Administrator: ${biketagAdminEmail}`)
       emailSent = await sendEmail(
-        biketagAdmin,
+        biketagAdminEmail,
         emailSubject,
         {
           ...defaultEmailData,
-          ...getEmailData({ id: biketagAdmin } as unknown as Ambassador),
+          ...getEmailData({ id: biketagAdminEmail } as unknown as Ambassador),
         },
         emailName,
       )
@@ -707,17 +715,21 @@ export const getSanityImageUrl = (
 export const archiveAndClearQueue = async (
   queuedTags: Tag[],
   game?: Game | null,
+  adminBiketag?: BikeTagClient,
+  nonAdminBikeTag?: BikeTagClient,
 ): Promise<BackgroundProcessResults> => {
   const results: any = []
   let errors = false
-  const biketagOpts = getBikeTagClientOpts(
-    { method: 'get' } as unknown as request.Request,
-    true,
-    true,
-  )
-  const biketag = new BikeTagClient(biketagOpts)
+  adminBiketag =
+    adminBiketag ??
+    new BikeTagClient(
+      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, true, true),
+    )
   if (!game) {
-    const gameResponse = await biketag.getGame({ game: queuedTags[0].game }, { source: 'sanity' })
+    const gameResponse = await adminBiketag.getGame(
+      { game: queuedTags[0].game },
+      { source: 'sanity' },
+    )
     game = gameResponse.success ? gameResponse.data : null
   }
   if (queuedTags.length && game) {
@@ -729,11 +741,16 @@ export const archiveAndClearQueue = async (
     console.log('archiving remaining queued tags', { game: gameName, queuedTags })
     nonAdminBikeTagOpts.game = gameName
     nonAdminBikeTagOpts.imgur.hash = game.queuehash
-    const nonAdminBikeTag = new BikeTagClient(nonAdminBikeTagOpts)
+
+    if (!nonAdminBikeTag) {
+      nonAdminBikeTag = nonAdminBikeTag ?? new BikeTagClient(nonAdminBikeTagOpts)
+    } else {
+      nonAdminBikeTag.config(nonAdminBikeTagOpts, false)
+    }
 
     for (const nonWinningTag of queuedTags) {
       /* Archive using ambassador credentials (mainhash and archivehash are both ambassador albums) */
-      const archiveTagResult = await biketag.archiveTag({
+      const archiveTagResult = await adminBiketag.archiveTag({
         ...nonWinningTag,
         archivehash: game.archivehash,
       })
@@ -780,7 +797,7 @@ export const archiveAndClearQueue = async (
 
 export const getActiveQueueForGame = async (
   game: Game,
-  adminBikeTagOpts?: any,
+  adminBikeTag?: BikeTagClient,
   approvingAmbassador?: string,
 ): Promise<activeQueue> => {
   let queuedTags: Tag[] = []
@@ -797,22 +814,19 @@ export const getActiveQueueForGame = async (
   // console.log({ autoPostSetting, game })
   if ((autoPostSetting && game.queuehash?.length) || approvingAmbassadorIsApproved) {
     /************** GET WINNING QUEUE *****************/
-    adminBikeTagOpts =
-      adminBikeTagOpts ??
-      getBikeTagClientOpts(
-        {
-          method: 'get',
-        } as unknown as request.Request,
-        true,
-        true,
+    adminBikeTag =
+      adminBikeTag ??
+      new BikeTagClient(
+        getBikeTagClientOpts(
+          {
+            method: 'get',
+          } as unknown as request.Request,
+          true,
+          true,
+          game,
+        ),
       )
-    adminBikeTagOpts.game = game.name.toLocaleLowerCase()
-    adminBikeTagOpts.imgur.hash = game.mainhash
-    adminBikeTagOpts.imgur.queuehash = game.queuehash
-    adminBikeTagOpts.imgur.archivehash = game.archivehash
-
-    const biketag = new BikeTagClient(adminBikeTagOpts)
-    const getQueueResponse = await biketag.getQueue(undefined, {
+    const getQueueResponse = await adminBikeTag.getQueue(undefined, {
       source: 'imgur',
     })
     queuedTags = getQueueResponse.success ? getQueueResponse.data : []
@@ -935,21 +949,16 @@ export const sendNewBikeTagNotifications = async (
   game: Game,
   currentTag: Tag,
   winningTag: Tag,
-  biketag: BikeTagClient,
+  adminBiketag?: BikeTagClient,
 ) => {
-  if (!biketag) {
-    const biketagOpts = getBikeTagClientOpts(
-      { method: 'get' } as unknown as request.Request,
-      true,
-      true,
+  adminBiketag =
+    adminBiketag ??
+    new BikeTagClient(
+      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, true, true, game),
     )
-    biketagOpts.game = game?.slug
-    biketagOpts.imgur.hash = game?.mainhash
-    biketag = new BikeTagClient(biketagOpts)
-  }
 
   const notificationPromises: any = []
-  const ambassadors = (await biketag.ambassadors(undefined, {
+  const ambassadors = (await adminBiketag.ambassadors(undefined, {
     source: 'sanity',
   })) as Ambassador[]
   const thisGamesAmbassadors = ambassadors.filter((a) => game.ambassadors.indexOf(a.name) !== -1)
@@ -1069,19 +1078,25 @@ export const setNewBikeTagPost = async (
   game: Game,
   winningBikeTagPost: Tag,
   previousBikeTag: Tag,
+  adminBiketag?: BikeTagClient,
+  nonAdminBiketag?: BikeTagClient,
 ): Promise<BackgroundProcessResults> => {
   /// This gets admin credentials
-  const biketagOpts = getBikeTagClientOpts(
+  const adminBiketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as request.Request,
     true,
     true,
   )
   /// Set the game and imgur album hashes
-  biketagOpts.game = game?.slug
-  biketagOpts.imgur.hash = game?.mainhash
-  const biketag = new BikeTagClient(biketagOpts)
+  adminBiketagOpts.game = game?.slug
+  adminBiketagOpts.imgur.hash = game?.mainhash
+  if (!adminBiketag) {
+    adminBiketag = new BikeTagClient(adminBiketagOpts)
+  } else {
+    adminBiketag.config(adminBiketagOpts)
+  }
   /// Get the current BikeTag
-  previousBikeTag = previousBikeTag ?? ((await biketag.getTag()).data as Tag) // the "current" mystery tag to be updated
+  previousBikeTag = previousBikeTag ?? ((await adminBiketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
   const results: any = []
 
@@ -1098,7 +1113,7 @@ export const setNewBikeTagPost = async (
     previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
     previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     // console.log('updating current BikeTag with the winning tag found information', previousBikeTag)
-    const currentBikeTagUpdateResult = await biketag.updateTag(previousBikeTag)
+    const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag)
 
     if (currentBikeTagUpdateResult.success) {
       results.push({
@@ -1117,7 +1132,7 @@ export const setNewBikeTagPost = async (
     }
 
     /************** SET NEW BIKETAG POST FROM QUEUE *****************/
-    const newBikeTagUpdateResult = await biketag.updateTag(newBikeTagPost)
+    const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost)
     if (newBikeTagUpdateResult.success) {
       results.push({
         message: 'new BikeTag posted',
@@ -1157,10 +1172,14 @@ export const setNewBikeTagPost = async (
       )
       nonAdminBikeTagOpts.game = game.name.toLocaleLowerCase()
       nonAdminBikeTagOpts.imgur.hash = game.queuehash
-      const nonAdminBikeTag = new BikeTagClient(nonAdminBikeTagOpts)
+      if (!nonAdminBiketag) {
+        nonAdminBiketag = new BikeTagClient(nonAdminBikeTagOpts)
+      } else {
+        nonAdminBiketag.config(nonAdminBikeTagOpts)
+      }
       // console.log({ config: nonAdminBikeTag.config() })
 
-      const deleteWinningTagFromQueueResult = await nonAdminBikeTag.deleteTag(winningBikeTagPost)
+      const deleteWinningTagFromQueueResult = await nonAdminBiketag.deleteTag(winningBikeTagPost)
       if (deleteWinningTagFromQueueResult.success) {
         results.push({
           message: 'winning tag deleted from queue',
@@ -1168,7 +1187,7 @@ export const setNewBikeTagPost = async (
           tag: winningBikeTagPost,
         })
       } else {
-        console.log({ deleteQueuedTagResult: deleteWinningTagFromQueueResult })
+        // console.log({ deleteQueuedTagResult: deleteWinningTagFromQueueResult })
         results.push({
           message: 'error deleting winning tag from queue',
           game: game.name,
@@ -1176,6 +1195,18 @@ export const setNewBikeTagPost = async (
         })
         errors = true
       }
+
+      /************** REMOVE REMAINING BIKETAGS FROM QUEUE *****************/
+      /// Send it off and hope that it finishes
+      axios({
+        method: 'post',
+        url: getApiUrl(game.name, 'autopost-clear'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).catch((e) => {
+        console.log('error clearing queue', e.message ?? e)
+      })
     }
   } catch (e) {
     results.push({

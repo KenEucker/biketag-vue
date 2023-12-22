@@ -40,7 +40,7 @@ export const autoClearQueue = async (event): Promise<BackgroundProcessResults> =
     }
   }
 
-  const { queuedTags } = await getActiveQueueForGame(game)
+  const { queuedTags } = await getActiveQueueForGame(game, adminBiketag)
 
   if (queuedTags.length) {
     console.log('non-winning tag(s) found', { game, queuedTags })
