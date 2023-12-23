@@ -705,12 +705,6 @@ export const useStore = defineStore('store', {
     SET_QUEUED_TAG_STATE(tag: any) {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
       /// If the current player won the last round, set the tag state to share post
-      console.log(
-        'SET_QUEUED_TAG_STATE',
-        this.currentBikeTag.mysteryPlayer,
-        this.profile?.user_metadata?.name,
-        this.playerTag,
-      )
       if (
         (this.profile?.name && this.profile?.name === this.currentBikeTag?.mysteryPlayer) ||
         (this.profile?.sub && this.profile?.sub === this.currentBikeTag?.playerId)
@@ -719,7 +713,6 @@ export const useStore = defineStore('store', {
       } else if (tag) {
         this.formStep = getQueuedTagState(tag)
       } else {
-        console.log('SET_QUEUED_TAG_STATE')
         this.formStep = BiketagFormSteps.addFoundImage
       }
     },

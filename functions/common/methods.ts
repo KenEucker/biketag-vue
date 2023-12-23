@@ -748,26 +748,33 @@ export const archiveAndClearQueue = async (
       nonAdminBikeTag.config(nonAdminBikeTagOpts, false)
     }
 
+    const currentBikeTag = (await adminBiketag.getTag({ limit: 1 })).data
     for (const nonWinningTag of queuedTags) {
-      /* Archive using ambassador credentials (mainhash and archivehash are both ambassador albums) */
-      const archiveTagResult = await adminBiketag.archiveTag({
-        ...nonWinningTag,
-        archivehash: game.archivehash,
-      })
-      if (archiveTagResult.success) {
-        results.push({
-          message: 'non-winning found image archived',
-          game: gameName,
-          tag: nonWinningTag,
+      /// If there are remnants of tags from the currently posted biketag, don't archive them
+      if (
+        nonWinningTag.mysteryPlayer !== currentBikeTag?.mysteryPlayer &&
+        nonWinningTag.foundPlayer !== currentBikeTag?.mysteryPlayer
+      ) {
+        /* Archive using ambassador credentials (mainhash and archivehash are both ambassador albums) */
+        const archiveTagResult = await adminBiketag.archiveTag({
+          ...nonWinningTag,
+          archivehash: game.archivehash,
         })
-      } else {
-        // console.log({ archiveTagResult })
-        results.push({
-          message: 'error archiving non-winning found image',
-          game: gameName,
-          tag: nonWinningTag,
-        })
-        errors = true
+        if (archiveTagResult.success) {
+          results.push({
+            message: 'non-winning found image archived',
+            game: gameName,
+            tag: nonWinningTag,
+          })
+        } else {
+          // console.log({ archiveTagResult })
+          results.push({
+            message: 'error archiving non-winning found image',
+            game: gameName,
+            tag: nonWinningTag,
+          })
+          errors = true
+        }
       }
       /* delete using player credentials (queuehash is player album) */
       const deleteArchivedTagFromQueueResult = await nonAdminBikeTag.deleteTag(nonWinningTag)
