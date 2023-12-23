@@ -7,7 +7,7 @@
     <loading v-if="tagIsLoading" v-model:active="tagIsLoading" :is-full-page="false">
       <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
     </loading>
-    <div :class="`${tagIsLoading ? 'tag-hidden' : ''}`">
+    <div class="container" :class="`${tagIsLoading ? 'tag-hidden' : ''}`">
       <!-- Image and Number -->
       <div v-if="tagnumber" class="m-4 mt-5 tag-screen">
         <bike-tag id="the-tag" :tag="tag" image-size="l" />
@@ -138,13 +138,19 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
   position: relative;
   width: 80vw;
   max-width: 750px;
-  max-height: 70vh;
-  height: auto;
+  height: 70vh;
   margin: auto;
 
   // @media (max-width: $breakpoint-mobile-lg) {
   //   width: 100vw;
   // }
+  @media (max-width: 767px) {
+    height: 60vh;
+  }
+
+  @media (max-width: 479px) {
+    height: 50vh;
+  }
 
   &__mystery-player {
     position: relative;
@@ -160,9 +166,9 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
   }
 
   &__image {
+    object-fit: cover;
     max-width: 750px;
     max-height: 70vh;
-    height: auto;
     margin: auto;
 
     &.expanded {

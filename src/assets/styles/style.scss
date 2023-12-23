@@ -70,6 +70,10 @@ body {
       border-color: $card-border-color;
 
       .card-body {
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+
         .btn-hint {
           color: $btn-hint-text-color;
           font-weight: $btn-hint-font-weight;
@@ -209,7 +213,11 @@ body {
     .form-control:focus{
       box-shadow: none;
     }
-
+    .small-margin {
+      @media (width >= 1199px){
+        margin: 0 7rem;
+      }
+    }
     .form-control:-webkit-autofill{
       transition: background-color 5000s ease-in-out 0s;
       box-shadow: inset 0 0 20px 20px white;

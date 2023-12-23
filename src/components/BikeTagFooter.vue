@@ -142,6 +142,20 @@ const closePopover = () => {
 }
 const downloadTag = async () => {
   if (downloadingTag.value !== true) {
+    const cardBody = Array.from(document.getElementsByClassName('card-body'))
+    const img = Array.from(document.getElementsByClassName('img-selector'))
+    const imgCopy = img
+
+    cardBody.forEach((element) => {
+      element.style.height = 'auto'
+      element.style.display = 'block'
+    })
+
+    img.forEach((element) => {
+      element.style.aspectRatio = 'unset'
+      element.style.objectFit = 'unset'
+    })
+
     downloadingTag.value = true
     const downloadPrefix = `BikeTag-${props.tag.game}-${props.tag.tagnumber}--`
     if (!hasDownloadedMystery.value) {
@@ -162,6 +176,15 @@ const downloadTag = async () => {
       hasDownloadedFound.value = !!foundImageDataUrl
     }
     downloadingTag.value = false
+
+    cardBody.forEach((element) => {
+      element.style.height = '600px'
+      element.style.display = 'flex'
+    })
+
+    img.forEach((element, i) => {
+      element.style = imgCopy[i].style
+    })
   }
 }
 

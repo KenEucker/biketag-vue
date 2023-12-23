@@ -343,6 +343,8 @@ onMounted(() => {
 
 .img-wrapper {
   position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .tag-number {
@@ -356,6 +358,8 @@ onMounted(() => {
 }
 
 .card-bottom {
+  margin-top: auto;
+
   .description {
     position: relative;
     white-space: break-spaces;
