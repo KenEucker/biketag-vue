@@ -41,7 +41,7 @@
         align="center"
         @page-click="changePage"
       ></b-pagination>
-      <div class="m-auto player-tags">
+      <div class="small-margin player-tags">
         <div v-for="tag in tagsForList" :key="tag?.tagnumber">
           <bike-tag
             :key="tag?.tagnumber"
