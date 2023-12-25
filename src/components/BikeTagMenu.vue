@@ -394,7 +394,7 @@ header {
     .nav-item {
       font-family: $default-secondary-font-family;
       text-transform: uppercase;
-      font-size: 1.4rem;
+      font-size: 2.5rem;
       cursor: pointer;
 
       @media (width <= 990px) {
@@ -403,6 +403,7 @@ header {
           0 1px 2px rgb(0 0 0 / 24%);
         border-bottom: 1px solid black;
         padding: 1rem 0;
+        font-size: 1.5rem;
       }
     }
 

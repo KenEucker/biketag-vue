@@ -119,9 +119,9 @@ watch(
 }
 
 .expandable-image {
+  width: 100%;
   height: 100%;
   cursor: zoom-in;
-  width: 100%;
   position: relative;
   transition: 0.25s opacity;
 

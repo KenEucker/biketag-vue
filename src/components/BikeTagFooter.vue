@@ -257,12 +257,26 @@ onBeforeUnmount(() => {
 }
 </style>
 <style scoped lang="scss">
+@import '../assets/styles/style';
+
 .foss-container {
   i {
     margin: auto;
     padding: 2em;
-    max-width: 500px;
-    color: white;
+    max-width: 70%;
+    color: black;
+  }
+
+  @media (min-width: $breakpoint-mobile-sm) {
+    i {
+      max-width: 90%;
+    }
+  }
+
+  @media (min-width: $breakpoint-mobile-md) {
+    i {
+      max-width: 80%;
+    }
   }
 }
 

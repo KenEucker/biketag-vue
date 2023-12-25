@@ -211,7 +211,7 @@ main {
 
       .biketag__text {
         .biketag__text--inner {
-          font-size: 0.8rem !important;
+          font-size: 13rem !important;
           line-height: 1;
         }
       }

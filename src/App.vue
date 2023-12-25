@@ -170,7 +170,7 @@ created()
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   overflow: hidden;
-  font-family: biketag;
+  font-family: $default-font-family;
 }
 
 .spacer-bottom {

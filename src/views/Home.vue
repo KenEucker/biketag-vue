@@ -144,11 +144,11 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
   // @media (max-width: $breakpoint-mobile-lg) {
   //   width: 100vw;
   // }
-  @media (max-width: 767px) {
+  @media (width <= 767px) {
     height: 60vh;
   }
 
-  @media (max-width: 479px) {
+  @media (width <= 479px) {
     height: 50vh;
   }
 
@@ -225,6 +225,10 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
     position: absolute;
     left: 25%;
     right: 25%;
+  }
+
+  i {
+    font-size: 2rem;
   }
 }
 

@@ -65,15 +65,15 @@ const backgroundSrc = computed(() => {
       color: black;
 
       @media (min-width: $breakpoint-mobile-sm) {
-        font-size: 1rem;
-      }
-
-      @media (min-width: $breakpoint-mobile-md) {
         font-size: 1.25rem;
       }
 
-      @media (min-width: $breakpoint-mobile-lg) {
+      @media (min-width: $breakpoint-mobile-md) {
         font-size: 1.5rem;
+      }
+
+      @media (min-width: $breakpoint-mobile-lg) {
+        font-size: 1.85rem;
       }
     }
   }
