@@ -54,7 +54,7 @@ const isWhiteBackground = computed(() =>
   router.currentRoute.value.name === 'About' ? 'white-bck' : '',
 )
 const logo = computed(() => store.getLogoUrl('m'))
-const siteName = computed(() => `BikeTag ${store.getGameName}`)
+const siteName = computed(() => `BikeTag ${store.getGameName?.length ? store.getGameName : 'Game'}`)
 const title = computed(function () {
   return `${isNotLanding.value ? store.getGameName : t('app.gameof')} BikeTag!`
 })
@@ -131,7 +131,6 @@ async function created() {
   const game = await store.setGame()
   const _gameIsSet = game?.name?.length !== 0
 
-  initResults.push(store.setAllGames())
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
     gameIsSet.value = true
 
@@ -146,6 +145,8 @@ async function created() {
     initResults.push(store.setLeaderboard())
     initResults.push(await store.fetchCredentials())
     initResults.push(store.setQueuedTags())
+    initResults.push(store.setAllGames())
+
     await Promise.allSettled(initResults)
 
     checkForNewBikeTagPost()
@@ -169,6 +170,7 @@ created()
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   overflow: hidden;
+  font-family: biketag;
 }
 
 .spacer-bottom {

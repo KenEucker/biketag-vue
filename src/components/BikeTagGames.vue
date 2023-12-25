@@ -67,6 +67,7 @@ hr {
     display: flex;
     flex-flow: wrap;
     max-width: 80vw;
+    gap: 2.5em;
     justify-content: center;
     height: 100% !important;
 
@@ -76,8 +77,10 @@ hr {
       align-items: center;
 
       img {
-        width: 8rem;
+        width: auto;
         height: auto;
+        max-width: 125px;
+        max-height: 100px;
       }
     }
   }
