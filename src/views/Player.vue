@@ -150,8 +150,10 @@ const startLoading = async () => {
       tagsAreLoading.value = false
     }, 500)
   }
-  playerSocial.value = (await store.getUserSocial(playerName())).data
-  playerSocial.value = playerSocial.value.length ? playerSocial.value[0]?.user_metadata?.social : {}
+  const playerData = (await store.fetchPlayerProfile(playerName())).data
+  playerSocial.value = playerSocial.value?.length
+    ? playerSocial.value[0]?.user_metadata?.social
+    : {}
   playerSocial.value?.discord && (playerSocial.value.discord = '')
 }
 const showModal = () => {

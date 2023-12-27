@@ -162,13 +162,18 @@ export const useStore = defineStore('store', {
         const token = profile.token
         profile.token = undefined
 
-        const response = await client.plainRequest({
-          method: 'GET',
-          url: getApiUrl('profile'),
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        })
+        const response = await client
+          .plainRequest({
+            method: 'GET',
+            url: getApiUrl('profile'),
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          })
+          .catch((e) => {
+            console.error('error fetching profile', e)
+            return e
+          })
         if (response.status == 200) {
           if (typeof response.data === 'string') {
             const biketagProfile = JSON.parse(response.data)
@@ -176,6 +181,8 @@ export const useStore = defineStore('store', {
           } else if (typeof response.data === 'object') {
             return this.SET_PROFILE(response.data)
           }
+        } else if (response.status === 400) {
+          return { error: response.data.error }
         }
       }
 
@@ -377,7 +384,7 @@ export const useStore = defineStore('store', {
       })
     },
     // eslint-disable-next-line no-empty-pattern
-    async getUserSocial(name: any) {
+    async fetchPlayerProfile(name: any) {
       return await client.plainRequest({
         method: 'GET',
         url: getApiUrl('profile'),

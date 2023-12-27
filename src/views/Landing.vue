@@ -30,8 +30,8 @@
           <li class="nav-item" @click="toSection('BikeTag Ambassador program')">
             {{ $t('BikeTag Ambassadors') }}
           </li>
-          <li class="nav-item" @click="toSection('Open Source')">
-            {{ $t('Open Source Project') }}
+          <li class="nav-item" @click="toSection('Open-Source')">
+            {{ $t('Open-Source Project') }}
           </li>
         </ul>
       </div>
@@ -87,9 +87,9 @@
     >
       <p>
         Our mission is to make the game of BikeTag easy for anyone to play and to support games of
-        BikeTag all over the world. To that goal, we created BikeTag.Org and maintain the Open
-        Source code that runs the website. We help integrate with existing BikeTag games and we help
-        create new ones.
+        BikeTag all over the world. To that goal, we created BikeTag.Org and maintain the
+        Open-Source code that runs the website. We help integrate with existing BikeTag games and we
+        help create new ones.
       </p>
       <br />
       <p>
@@ -108,7 +108,7 @@
       </p>
     </bike-tag-blurb>
     <bike-tag-blurb
-      title="Open Source"
+      title="Open-Source"
       subtitle="BikeTag is an Open-Source Project Deployed on Netlify "
       img-src="/images/github-netlify.webp"
       link-text="Contribute to BikeTag"
@@ -116,7 +116,7 @@
       variant="left"
     >
       <p>
-        This project was started as an open source code repository on GitHub. The entirety of the
+        This project was started as an open-source code repository on GitHub. The entirety of the
         BikeTag platform lives on, there, and you can host/run the software if you are so inclined.
         We also have a developer API that you can use to develop your own version of the BikeTag
         App! Every aspect of the planning, volunteer coordination, software development, design, and
@@ -192,6 +192,8 @@ function closeMenu() {
 
 <style lang="scss">
 main {
+  font-size: 1.25rem;
+
   section {
     margin-bottom: 1.5rem;
   }

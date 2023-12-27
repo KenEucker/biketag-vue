@@ -2,7 +2,7 @@ import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
 import BikeTagClient from 'biketag'
-import { Ambassador, Game, Tag } from 'biketag/lib/common/schema'
+import { Ambassador, Game, Player, Tag } from 'biketag/lib/common/schema'
 import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
 import { readFileSync } from 'fs'
@@ -21,6 +21,7 @@ import {
   getTagDate,
   isAuthenticationEnabled,
 } from '../../src/common/utils'
+import { ErrorMessage, HttpStatusCode } from './constants'
 import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
@@ -374,7 +375,7 @@ export const getProfileAuthorization = async (event: any): Promise<any> => {
   const authorization = await getPayloadAuthorization(event)
   let profile: any = authorization
 
-  if (authorization) {
+  if (authorization && profile) {
     const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
     const adminBiketag = new BikeTagClient(adminBiketagOpts)
     const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag)) as Ambassador[]
@@ -452,7 +453,8 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
       return payload
     } catch (e) {
       /// Swallow error
-      // console.error({ authorizationAuth0ValidationError: e })
+      if (e.code === 'ERR_JWT_EXPIRED') return null
+
       return authorizationString
     }
   }
@@ -858,6 +860,241 @@ export const getActiveQueueForGame = async (
     completedTags,
     timedOutTags,
   }
+}
+
+export const handleAuth0ProfileRequest = async (method, request, profile): Promise<any> => {
+  let body = ''
+  let statusCode = HttpStatusCode.Continue
+  let options = {}
+  const authorizationHeaders = await auth0Headers()
+
+  switch (method) {
+    case 'PUT':
+      /// CREATE a new BikeTag profile fields (role, name)
+      try {
+        const data = JSON.parse(request)
+        /// If the request is valid for an update
+        if (isValidJson(data, 'profile.role')) {
+          /// Happy path
+          /// Get the roles for the profile
+          const roles = (
+            await axios.request({
+              method: 'GET',
+              url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}/roles`,
+              headers: authorizationHeaders,
+            })
+          ).data
+          /// Get the metadata for the profile because we need to check if the name has been set (initialized)
+          const user_data = (
+            await axios.request({
+              method: 'GET',
+              url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
+              headers: authorizationHeaders,
+            })
+          ).data
+
+          /// If the user has not been assigned a role nor username
+          if (!roles.length && !user_data.user_metadata?.name) {
+            /// Happy path
+            // console.log(InfoMessage.ProfileInit, profile.sub)
+            /// Verify that the user exists in Auth0
+            const exists = (
+              await axios.request({
+                method: 'GET',
+                url: `https://${process.env.A_DOMAIN}/api/v2/users`,
+                params: {
+                  page: 0,
+                  per_page: 1,
+                  include_totals: false,
+                  fields: 'user_metadata.name',
+                  q: `user_metadata.name:"${data.name}"`,
+                  search_engine: 'v3',
+                },
+                headers: authorizationHeaders,
+              })
+            ).data
+            if (!exists?.length) {
+              /// Happy path
+              /// Set the user role before setting the rest of the profile data
+              await axios.request({
+                method: 'POST',
+                url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}/roles`,
+                headers: authorizationHeaders,
+                data: {
+                  roles: [
+                    profile.isBikeTagAmbassador
+                      ? process.env.AMBASSADOR_ROLE
+                      : process.env.PLAYER_ROLE,
+                  ],
+                },
+              })
+
+              /// CONTINUE to the request for initializing the BikeTag profile
+              options = {
+                method: 'PATCH',
+                url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}`,
+                headers: authorizationHeaders,
+                data,
+              }
+            } else {
+              body = ErrorMessage.NameTaken
+              statusCode = HttpStatusCode.BadRequest
+            }
+          } else {
+            /// Else, user has already been initialized, cannot initialize again (PUT)
+            body = ErrorMessage.ProfileInitialized
+            statusCode = HttpStatusCode.Forbidden
+          }
+        } else {
+          /// Else the request is not a valid PUT for a player Profile
+          body = ErrorMessage.InvalidRequestData
+          statusCode = HttpStatusCode.BadRequest
+        }
+      } catch (e) {
+        body = `${ErrorMessage.PatchFailed}: ${e.message ?? e}`
+        statusCode = HttpStatusCode.BadRequest
+      }
+      break
+    case 'PATCH':
+      /// UPDATE a BikeTag profile
+      try {
+        const data = JSON.parse(request)
+        delete data.user_metadata?.name
+        const profileType = profile.isBikeTagAmbassador
+          ? 'profile.patch.ambassador'
+          : 'profile.patch'
+        const isValid = isValidJson(data, profileType)
+        /// If the request is valid for a patch
+        if (isValid) {
+          /// CONTINUE to the request for updating the BikeTag profile
+          options = {
+            method: 'PATCH',
+            url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}`,
+            headers: authorizationHeaders,
+            data,
+          }
+        } else {
+          /// Invalid data
+          console.log(data.user_metadata.credentials)
+          console.log('data is not valid', data, profileType)
+          body = ErrorMessage.InvalidRequestData
+          statusCode = HttpStatusCode.BadRequest
+        }
+      } catch (e) {
+        body = `${ErrorMessage.PatchFailed}: ${e.message ?? e}`
+        statusCode = HttpStatusCode.BadRequest
+      }
+      break
+    case 'GET':
+      /// CONTINUE to the request for getting the BikeTag profile
+      options = {
+        method: 'GET',
+        url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
+        headers: authorizationHeaders,
+      }
+      break
+    default:
+      body = ErrorMessage.MethodNotAllowed
+      statusCode = HttpStatusCode.NotImplemented
+  }
+
+  if (statusCode == HttpStatusCode.Continue) {
+    /// TODO: How often does this run?
+    console.log('this is weird, what are we doing here?')
+    await axios
+      .request(options)
+      .then(function (response) {
+        if (typeof response.data === 'string') {
+          body = response.data
+        } else {
+          const profileDataResponse = profile.isBikeTagAmbassador
+            ? constructAmbassadorProfile(response.data, profile)
+            : constructPlayerProfile(response.data, profile)
+          body = JSON.stringify(profileDataResponse)
+        }
+        statusCode = HttpStatusCode.Ok
+      })
+      .catch(function (error) {
+        console.error(error.message)
+        statusCode = HttpStatusCode.InternalServerError
+        body = error.message
+      })
+  }
+
+  return {
+    statusCode,
+    body,
+  }
+}
+
+export const getBikeTagAuth0Profile = async (
+  name,
+  authorized = false,
+  passcode?: string,
+  sub?: string,
+): Promise<any> => {
+  const authorizationHeaders = await auth0Headers()
+  const method = 'GET'
+  const url = `https://${process.env.A_DOMAIN}/api/v2/users`
+  const restrictUserMeta = !authorized || !passcode || !sub
+  const params: any = {
+    page: 0,
+    per_page: 1,
+    include_totals: false,
+    fields: `${restrictUserMeta ? 'user_metadata.social,user_metadata.options' : 'user_metadata'}${
+      authorized ? ',sub,user_metadata.name,user_metadata.passcode' : ''
+    }`,
+    q: `user_metadata.name:"${name}"`,
+    search_engine: 'v3',
+  }
+
+  return axios
+    .request({
+      method,
+      url,
+      params,
+      headers: authorizationHeaders,
+    })
+    .then(function (response) {
+      if (response.status === HttpStatusCode.Ok) {
+        const data =
+          typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
+
+        const playerData = Array.isArray(response.data) ? response.data[0] : response.data
+        if (authorized && passcode) {
+          if (playerData.user_metadata?.passcode !== passcode) {
+            return {
+              status: HttpStatusCode.Unauthorized,
+              data: 'passcode does not match',
+            }
+          }
+        }
+
+        return {
+          status: HttpStatusCode.Ok,
+          data,
+        }
+      }
+      return {
+        status: response.status,
+        data: response.data,
+      }
+    })
+}
+
+export const getBikeTagPlayerProfile = async (
+  profile,
+  authorized = false,
+  adminBikeTag?: BikeTagClient,
+): Promise<any> => {
+  adminBikeTag =
+    adminBikeTag ??
+    new BikeTagClient(
+      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, authorized, true),
+    )
+  const playerProfile = await adminBikeTag.getPlayer(profile.name)
+
+  return profile
 }
 
 export const sendBikeTagPostNotificationToWebhook = (

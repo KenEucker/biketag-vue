@@ -76,6 +76,10 @@ hr,
 .header {
   width: 90%;
   margin: 1rem auto;
+
+  h1 {
+    text-transform: uppercase;
+  }
 }
 
 hr {
@@ -117,6 +121,7 @@ hr {
 
   .text-container {
     padding: 1rem;
+    font-size: 1.6rem;
     text-align: justify;
   }
 }

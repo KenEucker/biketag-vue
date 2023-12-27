@@ -64,7 +64,7 @@ const backgroundSrc = computed(
 
   p {
     font-weight: 900;
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     font-family: $default-secondary-font-family;
     height: 100%;
     display: flex;
