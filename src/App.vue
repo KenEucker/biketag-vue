@@ -151,10 +151,12 @@ async function created() {
 
     checkForNewBikeTagPost()
   } else if (!_gameIsSet) {
+    await store.setAllGames()
     router.push('/landing')
   }
   debug(`view::data-init`, 'created')
 }
+
 created()
 </script>
 
