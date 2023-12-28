@@ -300,6 +300,16 @@ export const useStore = defineStore('store', {
     setLeaderboard(cached = true) {
       return client.players({ sort: 'top', limit: 10, cached }).then(this.SET_LEADERBOARD)
     },
+    async setLeaderboardPlayersProfiles(cached = true) {
+      const names = this.leaderboard.map((p) => p.name)
+      return client
+        .players({ names: names.concat('Ken'), cached }, gameOpts as any)
+        .then(async (d) => {
+          if (Array.isArray(d)) {
+            d.forEach(this.SET_PLAYER)
+          }
+        })
+    },
     setFormStepToJoin(d: any) {
       if (this.formStep === BiketagFormSteps.viewRound || d) {
         return this.SET_FORM_STEP_TO_JOIN(d)
