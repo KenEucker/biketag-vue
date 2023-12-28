@@ -36,6 +36,7 @@ const profileHandler: Handler = async (event) => {
           : null
       const profileFound = success ? results.data : null
 
+      console.log({ profileFound })
       if (profileFound) {
         body =
           statusCode === HttpStatusCode.Ok
@@ -57,7 +58,7 @@ const profileHandler: Handler = async (event) => {
         body = error.message
       })
   } else if (event.httpMethod === 'GET' && profile?.name) {
-    /// Else if the profile name is known and passed in via data (Authorized)
+    /// Else if the profile name is known and passed in via data and Authorized
     /// TODO: make this more secure
     await getBikeTagAuth0Profile(profile.name, true)
       .then(mergeProfilesIfSuccess())
@@ -68,8 +69,13 @@ const profileHandler: Handler = async (event) => {
   } else if (event.httpMethod === 'GET' && !profile) {
     /// Else get the public player profile by name via query string (Unauthorized)
     if (event.queryStringParameters?.name) {
-      await getBikeTagAuth0Profile(event.queryStringParameters.name, true)
-        .then(mergeProfilesIfSuccess())
+      await getBikeTagPlayerProfile({ name: event.queryStringParameters.name }, true, true)
+        .then((profile) => {
+          if (profile) {
+            statusCode = HttpStatusCode.Ok
+            body = profile
+          }
+        })
         .catch(function (error) {
           statusCode = HttpStatusCode.InternalServerError
           body = error.message
