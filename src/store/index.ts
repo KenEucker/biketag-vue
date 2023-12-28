@@ -238,7 +238,7 @@ export const useStore = defineStore('store', {
         })
     },
     setAllAchievements(cached = true) {
-      return client.getAchievements({ cached }).then(this.SET_ACHIEVEMENTS)
+      return client.getAchievements({ cached }).then((r) => this.SET_ACHIEVEMENTS(r.data))
     },
     setCurrentBikeTag(cached = true) {
       return client.getTag({ cached }).then((r) => {
@@ -422,6 +422,9 @@ export const useStore = defineStore('store', {
       const playerProfile = playerProfileResult.data
 
       return this.SET_PLAYER(playerProfile, existingPlayerIndex)
+    },
+    getGameAchievement(name: string) {
+      return this.achievements.find((a: Achievement) => a.name === name)
     },
     async dequeueFoundTag() {
       if (this.playerTag?.playerId === this.profile.sub) {
@@ -829,6 +832,9 @@ export const useStore = defineStore('store', {
     },
     getGameSettings(state) {
       return state.game?.settings
+    },
+    getGameAchievements(state) {
+      return state.achievements
     },
     getEasterEgg(state) {
       if (state.game?.settings) {
