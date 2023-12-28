@@ -224,7 +224,7 @@ body {
       transition: background-color 5000s ease-in-out 0s;
       box-shadow: inset 0 0 20px 20px white;
     }
-    
+
     .pagination {
       padding-bottom: 1em;
 
@@ -246,13 +246,13 @@ body {
             border-color: $primary-color;
           }
         }
-        
+
       }
     }
 
     .swiper {
       padding-bottom: 20px;
-      
+
       .swiper-button-prev {
         color: $btn-swiper-color;
         inset: 25% auto 0 0 !important;

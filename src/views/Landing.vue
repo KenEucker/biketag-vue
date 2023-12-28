@@ -193,7 +193,7 @@ function closeMenu() {
 
 <style lang="scss">
 main {
-  font-size: 1.25rem;
+  // font-size: 1.25rem;
 
   section {
     margin-bottom: 1.5rem;

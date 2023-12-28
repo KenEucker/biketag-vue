@@ -2,6 +2,7 @@
 @import 'colors';
 
 $default-font-family: biketag;
+$default-font-size: 1.25rem;
 $default-secondary-font-family: biketagbold;
 $how-font-family: biketag;
 $how-font-size: 3vh;
@@ -9,6 +10,7 @@ $btn-hint-font-weight: 1000;
 $btn-hint-font-family: 'Circular-Loom';
 $btn-hint-font-size: 1.2em;
 $btn-swiper-font-size: 20pt;
+$btn-max-width: 25rem;
 $title-font-family: biketag;
 $title-font-size: calc(1.375rem + 1.5vw);
 $title-font-weight: 600;

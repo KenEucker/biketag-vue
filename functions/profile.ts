@@ -24,19 +24,19 @@ const profileHandler: Handler = async (event) => {
   const profile = await getProfileAuthorization(event)
 
   const mergeProfilesIfSuccess =
-    (authorized = false) =>
-    (results) => {
-      statusCode = results.status
+    (authorized = true) =>
+    async (results) => {
+      statusCode = results.statusCode ?? results.status
       body =
-        results.statusCode === HttpStatusCode.Ok
-          ? getBikeTagPlayerProfile(results.body, authorized)
+        statusCode === HttpStatusCode.Ok
+          ? await getBikeTagPlayerProfile(JSON.parse(results.body), authorized, true)
           : results.body
     }
 
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile?.sub?.length) {
-    await handleAuth0ProfileRequest(event.httpMethod, profile, event.body).then(
-      mergeProfilesIfSuccess(true),
+    await handleAuth0ProfileRequest(event.httpMethod, event.body, profile).then(
+      mergeProfilesIfSuccess(),
     )
   } else if (event.httpMethod === 'GET' && profile?.name) {
     await getBikeTagAuth0Profile(profile.name, true)
@@ -61,7 +61,8 @@ const profileHandler: Handler = async (event) => {
   }
 
   if (statusCode !== HttpStatusCode.Ok) {
-    console.log('profile retrieval error', body)
+    console.log(statusCode + ' profile retrieval error', body)
+    statusCode = HttpStatusCode.InternalServerError
   }
 
   return {

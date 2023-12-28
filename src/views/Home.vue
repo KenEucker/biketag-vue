@@ -161,7 +161,7 @@ onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
       bottom: -40px;
       position: relative;
       width: 80%;
-      max-width: 25em;
+      max-width: $btn-max-width;
     }
   }
 

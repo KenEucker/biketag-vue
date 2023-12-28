@@ -80,7 +80,7 @@ const backgroundSrc = computed(
 .biketag-label {
   font-family: $default-secondary-font-family;
   text-transform: uppercase;
-  max-width: 25em;
+  max-width: $btn-max-width;
   position: relative;
   margin: 0 auto;
 }

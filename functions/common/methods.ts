@@ -999,8 +999,6 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
   }
 
   if (statusCode == HttpStatusCode.Continue) {
-    /// TODO: How often does this run?
-    console.log('this is weird, what are we doing here?')
     await axios
       .request(options)
       .then(function (response) {
@@ -1085,16 +1083,19 @@ export const getBikeTagAuth0Profile = async (
 export const getBikeTagPlayerProfile = async (
   profile,
   authorized = false,
+  stringifyResponse = false,
   adminBikeTag?: BikeTagClient,
 ): Promise<any> => {
   adminBikeTag =
     adminBikeTag ??
     new BikeTagClient(
-      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, authorized, true),
+      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, authorized, false),
     )
-  const playerProfile = await adminBikeTag.getPlayer(profile.name)
+  const playerProfileResult = await adminBikeTag.getPlayer(profile.name, { source: 'sanity' })
+  const playerProfile = playerProfileResult.success ? playerProfileResult.data : {}
+  const mergedProfile = { ...profile, ...playerProfile }
 
-  return profile
+  return stringifyResponse ? JSON.stringify(mergedProfile) : mergedProfile
 }
 
 export const sendBikeTagPostNotificationToWebhook = (

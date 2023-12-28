@@ -173,6 +173,7 @@ created()
   text-align: center;
   overflow: hidden;
   font-family: $default-font-family;
+  font-size: $default-font-size;
 }
 
 .spacer-bottom {

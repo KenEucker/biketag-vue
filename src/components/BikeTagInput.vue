@@ -126,8 +126,10 @@ function update(e) {
 }
 </style>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 .biketag-input {
-  max-width: 25em;
+  max-width: $btn-max-width;
   position: relative;
   margin: 0 auto;
 }

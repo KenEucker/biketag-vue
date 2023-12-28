@@ -275,12 +275,14 @@ export const useStore = defineStore('store', {
               // }
               this.SET_QUEUED_TAG(playerQueuedTag)
               this.SET_QUEUED_TAG_STATE(playerQueuedTag)
+            } else {
+              this.SET_QUEUED_TAG()
             }
 
             return this.SET_QUEUED_TAGS(currentBikeTagQueue)
           } else {
-            this.SET_QUEUED_TAG(null)
-            this.SET_QUEUED_TAG_STATE(null)
+            this.SET_QUEUED_TAG()
+            this.SET_QUEUED_TAG_STATE()
             return this.SET_QUEUED_TAGS([])
           }
         })
@@ -709,7 +711,7 @@ export const useStore = defineStore('store', {
         debug('state::queue', BiketagFormSteps[this.formStep])
       }
     },
-    SET_QUEUED_TAG_STATE(tag: any) {
+    SET_QUEUED_TAG_STATE(tag?: any) {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
       /// If the current player won the last round, set the tag state to share post
       if (

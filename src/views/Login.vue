@@ -71,6 +71,7 @@ async function login() {
   .description {
     background-color: transparent !important;
     font-family: $default-font-family;
+    font-size: $default-font-size;
     text-transform: uppercase;
   }
 
