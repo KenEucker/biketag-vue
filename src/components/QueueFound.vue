@@ -458,6 +458,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
+@import '../assets/styles/style';
+
 input#found {
   margin-left: 3.5rem;
   display: none;
@@ -471,7 +473,7 @@ input#found {
   img {
     position: absolute;
     top: 33%;
-    left: 1.5rem;
+    left: $default-font-size;
   }
 
   #google-input {

@@ -176,10 +176,10 @@ body {
 
     .player-name {
       color: $tag-text-color;
-      font-family: $default-font-family;
+      font-family: $default-secondary-font-family;
       font-weight: $tag-player-font-weight;
 
-      // font-size: $tag-player-font-size;
+      font-size: $tag-player-font-size;
       line-height: $tag-player-line-height;
       text-transform: uppercase;
     }
@@ -210,8 +210,12 @@ body {
       }
     }
 
-    .form-control:focus{
-      box-shadow: none;
+    .form-control {
+      font-size: $tag-description-font-size;
+
+      &:focus{
+        box-shadow: none;
+      }
     }
 
     .small-margin {
@@ -230,13 +234,9 @@ body {
 
       .page-item {
         .page-link {
-          font-size: 0.8rem;
+          font-size: $default-font-size;
           color: $primary-color;
           background-color: transparent;
-
-          @media (width >= 575px){
-            font-size: 1rem;
-          }
         }
 
         &.active {
@@ -344,7 +344,7 @@ body {
     .body-text {
       font-family: $default-font-family;
       font-weight: 100;
-      font-size: 1.5rem;
+      font-size: $default-font-size;
       transform: unset;
     }
 
@@ -371,7 +371,7 @@ body {
     }
 
     .queue-text {
-      font-size: 1.2rem!important;
+      // font-size: 1.2rem!important;
       margin: 1rem;
       text-align: justify;
     }
@@ -396,8 +396,7 @@ body {
 
         &__text {
           .queue-title {
-            font-size: 1.2rem!important;
-            margin: 0 1rem;
+            font-size: 1.5rem!important;
           }
         }
       }

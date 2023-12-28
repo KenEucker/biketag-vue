@@ -45,8 +45,8 @@ function goBikeTagsPage() {
 
 .map {
   align-items: center;
-  font-family: $default-font-family;
-  font-size: 1.5rem;
+  font-family: $default-secondary-font-family;
+  font-size: $default-font-size;
   flex-flow: column nowrap;
   text-transform: uppercase;
 }

@@ -11,6 +11,7 @@
   <div v-if="player" class="container mt-5">
     <div class="social mb-2">
       <player-bicon class="social__cnt--center" size="lg" :player="player" :no-link="true" />
+      <!-- ADD ACHIEVEMENTS player.achievements -->
       <div class="social__cnt--left" @click="showModal">
         <img
           class="social__icon"
@@ -113,6 +114,8 @@ const socialLinks = {
 const modal = ref(false)
 const store = useStore()
 
+store.setAllAchievements()
+
 // computed
 const getPlayers = computed(() => store.getPlayers)
 const player = computed(() => {
@@ -150,11 +153,6 @@ const startLoading = async () => {
       tagsAreLoading.value = false
     }, 500)
   }
-  const playerData = (await store.fetchPlayerProfile(playerName())).data
-  playerSocial.value = playerSocial.value?.length
-    ? playerSocial.value[0]?.user_metadata?.social
-    : {}
-  playerSocial.value?.discord && (playerSocial.value.discord = '')
 }
 const showModal = () => {
   modal.value = true
@@ -181,6 +179,7 @@ onMounted(async () => {
   tagsAreLoading.value = true
   await store.setTags()
   await store.setPlayers()
+  store.fetchPlayerProfile(playerName())
   tagsAreLoading.value = false
 })
 </script>

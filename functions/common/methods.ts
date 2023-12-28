@@ -1004,6 +1004,9 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
       .then(function (response) {
         if (typeof response.data === 'string') {
           body = response.data
+        } else if (Array.isArray(response.data)) {
+          if (response.data?.length) console.log('well how did this happen?')
+          body = ''
         } else {
           const profileDataResponse = profile.isBikeTagAmbassador
             ? constructAmbassadorProfile(response.data, profile)
@@ -1055,10 +1058,7 @@ export const getBikeTagAuth0Profile = async (
     })
     .then(function (response) {
       if (response.status === HttpStatusCode.Ok) {
-        const data =
-          typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
-
-        const playerData = Array.isArray(response.data) ? response.data[0] : response.data
+        const playerData = response.data
         if (authorized && passcode) {
           if (playerData.user_metadata?.passcode !== passcode) {
             return {
@@ -1070,7 +1070,7 @@ export const getBikeTagAuth0Profile = async (
 
         return {
           status: HttpStatusCode.Ok,
-          data,
+          data: playerData,
         }
       }
       return {
@@ -1091,7 +1091,10 @@ export const getBikeTagPlayerProfile = async (
     new BikeTagClient(
       getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, authorized, false),
     )
-  const playerProfileResult = await adminBikeTag.getPlayer(profile.name, { source: 'sanity' })
+  const playerProfileResult = await adminBikeTag.getPlayer(
+    profile.name ?? profile.user_metadata?.name,
+    { source: 'sanity' },
+  )
   const playerProfile = playerProfileResult.success ? playerProfileResult.data : {}
   const mergedProfile = { ...profile, ...playerProfile }
 

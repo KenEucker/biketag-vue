@@ -73,6 +73,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
+@import '../assets/styles/style';
 #app {
   .queue-page {
     .card.polaroid .player-wrapper .player-name {
@@ -86,7 +87,7 @@ onMounted(() => {
     }
 
     .queue-text {
-      font-size: 1.5rem;
+      font-size: $default-font-size;
     }
   }
 }

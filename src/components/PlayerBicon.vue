@@ -73,10 +73,10 @@ const playerBiconUrl = computed(() => {
   if (props.player && typeof props.player === 'object') {
     if (props.player.bicon) {
       url = props.player.bicon
-    } else if (props.player.tags[props.player.tags.length - 1].mysteryImageUrl) {
+    } else if (props.player.tags[props.player.tags.length - 1]?.mysteryImageUrl) {
       url = props.player.tags[props.player.tags.length - 1].mysteryImageUrl
     } else {
-      url = props.player.tags[props.player.tags.length - 1].foundImageUrl
+      url = props.player.tags[props.player.tags.length - 1]?.foundImageUrl
     }
   }
   return getImgurImageSized.value(url, props.size[0])
@@ -110,6 +110,8 @@ function tagColorNumber(count) {
 </script>
 
 <style scoped lang="scss">
+@import '../assets/styles/style';
+
 .player-wrapper {
   position: relative;
   padding-top: 2rem;
@@ -120,6 +122,7 @@ function tagColorNumber(count) {
     display: block;
     animation: fadein 2s;
     word-break: break-all;
+    font-family: $default-secondary-font-family;
 
     // word-break: break-word;
     // text-decoration-line: underline;
@@ -202,14 +205,14 @@ function tagColorNumber(count) {
   }
 
   .player-name {
-    font-size: 1.5rem;
+    font-size: $default-font-size;
     bottom: 0;
     right: -22%;
     top: auto;
   }
 
   .tag-count {
-    font-size: 1.5rem;
+    font-size: $default-font-size;
     width: 3.5rem;
     left: 55%;
     top: 15%;

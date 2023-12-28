@@ -199,6 +199,8 @@ onMounted(() => {
 }
 </style>
 <style scoped lang="scss">
+@import '../assets/styles/style';
+
 .queue-posted-share {
   .tab-logo {
     max-width: 2em;
@@ -228,7 +230,7 @@ onMounted(() => {
 
   form {
     label {
-      font-size: 1.5rem;
+      font-size: $default-font-size;
       margin-right: 1em;
     }
 

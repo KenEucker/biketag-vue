@@ -13,7 +13,7 @@ import {
   setProfileCookie,
 } from '@/common/utils'
 import BikeTagClient from 'biketag'
-import { Game, Player, Tag } from 'biketag/lib/common/schema'
+import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
 import { createPinia, defineStore } from 'pinia'
 import { debug } from '../common/utils'
 
@@ -61,6 +61,7 @@ export const useStore = defineStore('store', {
     gameNameProper: gameName[0].toUpperCase() + gameName.slice(1),
     game: {} as Game,
     allGames: [] as Game[],
+    achievements: [] as Achievement[],
     currentBikeTag: {} as Tag,
     tags: [] as Tag[],
     tagsInRound: [] as Tag[],
@@ -236,6 +237,9 @@ export const useStore = defineStore('store', {
           return false
         })
     },
+    setAllAchievements(cached = true) {
+      return client.getAchievements({ cached }).then(this.SET_ACHIEVEMENTS)
+    },
     setCurrentBikeTag(cached = true) {
       return client.getTag({ cached }).then((r) => {
         return this.SET_CURRENT_TAG(r.data)
@@ -386,14 +390,38 @@ export const useStore = defineStore('store', {
       })
     },
     // eslint-disable-next-line no-empty-pattern
-    async fetchPlayerProfile(name: any) {
-      return await client.plainRequest({
-        method: 'GET',
-        url: getApiUrl('profile'),
-        params: {
-          name,
-        },
-      })
+    async fetchPlayerProfile(name: any, force = false) {
+      const existingPlayerIndex = this.players.findIndex((p) => p.name === name)
+      if (!force && existingPlayerIndex !== -1) {
+        const hasTags = this.players[existingPlayerIndex].tags?.length
+        const hasAchievements = this.players[existingPlayerIndex].achievements?.length
+        const mightAlreadyHaveBeenFetched = hasTags && hasAchievements
+        if (mightAlreadyHaveBeenFetched) {
+          return this.players[existingPlayerIndex]
+        }
+      }
+
+      const playerProfileResult = await client
+        .plainRequest({
+          method: 'GET',
+          url: getApiUrl('profile'),
+          params: {
+            name,
+          },
+        })
+        .catch((err) => ({
+          status: err.response?.status,
+          data: err.response?.data,
+        }))
+
+      if (playerProfileResult.status !== 200) {
+        console.log(playerProfileResult.data)
+        return existingPlayerIndex !== -1 ? this.players[existingPlayerIndex] : {}
+      }
+
+      const playerProfile = playerProfileResult.data
+
+      return this.SET_PLAYER(playerProfile, existingPlayerIndex)
     },
     async dequeueFoundTag() {
       if (this.playerTag?.playerId === this.profile.sub) {
@@ -563,6 +591,14 @@ export const useStore = defineStore('store', {
         debug('store::currentBikeTag', { tag })
       }
     },
+    SET_ACHIEVEMENTS(achievements: any) {
+      const oldState = this.achievements
+      this.achievements = achievements
+
+      if (oldState?.length !== achievements?.length) {
+        debug('store::achievements', { achievements })
+      }
+    },
     SET_TAGS(tags: any) {
       const oldState = this.tags
       this.tags = tags
@@ -578,6 +614,27 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== leaderboard?.length) {
         debug('store::leaderboard', { leaderboard })
       }
+    },
+    SET_PLAYER(player: any, existingPlayerIndex?: number) {
+      if (player) {
+        existingPlayerIndex =
+          existingPlayerIndex ?? this.players.findIndex((p) => p.name === player.name)
+        if (existingPlayerIndex !== -1) {
+          const existingPlayer = this.players[existingPlayerIndex]
+          player = { ...existingPlayer, ...player }
+          player.tags = existingPlayer.tags?.length ? existingPlayer.tags : player.tags
+          player.achievements = existingPlayer.achievements?.length
+            ? existingPlayer.achievements
+            : player.achievements
+          player.games =
+            existingPlayer.games?.length > player.games?.length
+              ? existingPlayer.games
+              : player.games
+          this.players[existingPlayerIndex] = player
+          debug('store::player:' + player.name, { player })
+        }
+      }
+      return player
     },
     SET_PLAYERS(players: any) {
       const oldState = this.players

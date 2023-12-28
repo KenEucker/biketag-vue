@@ -27,18 +27,38 @@ const profileHandler: Handler = async (event) => {
     (authorized = true) =>
     async (results) => {
       statusCode = results.statusCode ?? results.status
-      body =
+      const dataIsArray = Array.isArray(results.data)
+      const success =
         statusCode === HttpStatusCode.Ok
-          ? await getBikeTagPlayerProfile(JSON.parse(results.body), authorized, true)
-          : results.body
+          ? dataIsArray
+            ? results.data?.length
+            : results.data
+          : null
+      const profileFound = success ? results.data : null
+
+      if (profileFound) {
+        body =
+          statusCode === HttpStatusCode.Ok
+            ? await getBikeTagPlayerProfile(results.data, authorized, true)
+            : results.body
+      } else {
+        body = 'no profile found'
+        statusCode = HttpStatusCode.NotFound
+      }
     }
 
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile?.sub?.length) {
-    await handleAuth0ProfileRequest(event.httpMethod, event.body, profile).then(
-      mergeProfilesIfSuccess(),
-    )
+    /// If the profile sub (Auth0 field) exists (Authorized)
+    await handleAuth0ProfileRequest(event.httpMethod, event.body, profile)
+      .then(mergeProfilesIfSuccess())
+      .catch(function (error) {
+        statusCode = HttpStatusCode.InternalServerError
+        body = error.message
+      })
   } else if (event.httpMethod === 'GET' && profile?.name) {
+    /// Else if the profile name is known and passed in via data (Authorized)
+    /// TODO: make this more secure
     await getBikeTagAuth0Profile(profile.name, true)
       .then(mergeProfilesIfSuccess())
       .catch(function (error) {
@@ -48,7 +68,7 @@ const profileHandler: Handler = async (event) => {
   } else if (event.httpMethod === 'GET' && !profile) {
     /// Else get the public player profile by name via query string (Unauthorized)
     if (event.queryStringParameters?.name) {
-      await getBikeTagAuth0Profile(event.queryStringParameters.name, true, profile.passcode)
+      await getBikeTagAuth0Profile(event.queryStringParameters.name, true)
         .then(mergeProfilesIfSuccess())
         .catch(function (error) {
           statusCode = HttpStatusCode.InternalServerError
@@ -62,7 +82,6 @@ const profileHandler: Handler = async (event) => {
 
   if (statusCode !== HttpStatusCode.Ok) {
     console.log(statusCode + ' profile retrieval error', body)
-    statusCode = HttpStatusCode.InternalServerError
   }
 
   return {

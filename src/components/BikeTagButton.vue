@@ -80,7 +80,7 @@ const backgroundSrc = computed(() => {
   &__button {
     background: transparent;
     border: none;
-    font-family: $default-font-family;
+    font-family: $default-secondary-font-family;
     font-weight: bold;
     text-transform: uppercase;
 

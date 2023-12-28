@@ -307,8 +307,8 @@ header {
         height: inherit;
 
         .nav-item {
-          font-size: 1rem;
-          margin: 0 1rem !important;
+          font-size: 2rem;
+          // margin: 0 1rem !important;
           box-shadow: unset;
           border-bottom: unset;
         }

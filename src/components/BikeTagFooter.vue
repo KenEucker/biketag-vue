@@ -244,13 +244,12 @@ onBeforeUnmount(() => {
 
   &__hint-text {
     font-weight: 900;
-    font-size: 1rem;
+    font-size: 2rem;
     font-family: $default-secondary-font-family;
     cursor: default;
     white-space: pre-wrap;
     text-transform: uppercase;
     margin: 10px;
-    max-height: 96px;
     overflow: auto;
     margin-left: auto;
   }
