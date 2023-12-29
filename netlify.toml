@@ -27,6 +27,10 @@
   schedule = "*/15 * * * *"
   included_files=["functions/emails/*.liquid"]
 
+[functions."achievements-background"]
+  schedule = "0 1 * * *"
+  included_files=["functions/emails/*.liquid"]
+
 [functions."autopost-notify"]
   included_files=["functions/emails/*.liquid"]
 

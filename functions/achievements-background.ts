@@ -1,17 +1,13 @@
 import { Handler } from '@netlify/functions'
 import BikeTagClient from 'biketag'
-import { Game } from 'biketag/lib/common/schema'
+import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
 import request from 'request'
+import { getSupportedGames } from '../src/common/utils'
 import { HttpStatusCode } from './common/constants'
-import {
-  getActiveQueueForGame,
-  getBikeTagClientOpts,
-  getWinningTagForCurrentRound,
-  setNewBikeTagPost,
-} from './common/methods'
+import { getBikeTagClientOpts } from './common/methods'
 import { BackgroundProcessResults } from './common/types'
 
-export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> => {
+export const assignAchievements = async (): Promise<BackgroundProcessResults> => {
   if (process.env.SKIP_AUTOPOST_FUNCTION) {
     return Promise.resolve({
       results: ['function skipped'],
@@ -21,12 +17,12 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
 
   // if (!isRequestAllowed()) {}
 
-  const adminBiketagOpts = getBikeTagClientOpts(
-    { method: 'get' } as unknown as request.Request,
-    true,
-    true,
-  )
-  delete adminBiketagOpts.game
+  // const adminBiketagOpts = getBikeTagClientOpts(
+  //   { method: 'get' } as unknown as request.Request,
+  //   true,
+  //   true,
+  // )
+  // delete adminBiketagOpts.game
   /// Cache what we can here, so that it improves this method's performance
   // biketagOpts.cached = true
   const nonAdminBiketagOpts = getBikeTagClientOpts(
@@ -35,49 +31,43 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
   )
   delete nonAdminBiketagOpts.game
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
-  const adminBiketag = new BikeTagClient(adminBiketagOpts)
+  // const adminBiketag = new BikeTagClient(adminBiketagOpts)
   const gamesResponse = await nonAdminBiketag.getGame(undefined, {
     source: 'sanity',
   })
-  let results: any = []
-  let errors = false
+  const results: any = []
+  const errors = false
 
   if (gamesResponse.success) {
-    const games = gamesResponse.data as unknown as Game[]
+    const games = getSupportedGames(gamesResponse.data as unknown as Game[])
 
     for (const game of games) {
       const thisGameConfig = {
         game: game.slug,
         imgur: { hash: game.mainhash, queuehash: game.queuehash, archivehash: game.archivehash },
       }
-      nonAdminBiketag.config(thisGameConfig)
-      adminBiketag.config(thisGameConfig)
-      const activeQueue = await getActiveQueueForGame(game, adminBiketag)
+      nonAdminBiketag.config(thisGameConfig, false, true)
+      // adminBiketag.config(thisGameConfig, false, true)
+      const tags = (await nonAdminBiketag.tags()) as Tag[]
+      // const players = (await nonAdminBiketag.players(undefined, { source: 'sanity' })) as Player[]
 
-      if (activeQueue.completedTags.length && activeQueue.timedOutTags.length === 0) {
-        console.log('completed tags found but none timed out', { game, activeQueue })
-      } else if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
-        const currentBikeTagResponse = await adminBiketag.getTag(undefined) // the "current" mystery tag to be updated from the main album
-        const currentBikeTag = currentBikeTagResponse.data
-        const autoSelectedWinningTag = getWinningTagForCurrentRound(
-          activeQueue.timedOutTags,
-          currentBikeTag,
-        )
+      if (tags.length > 100) {
+        // console.log('game is ready for achievements', game.name)
+        /// If the game has achievements, it is enabled
+        const achievements = (await nonAdminBiketag.achievements()) as Achievement[]
 
-        if (autoSelectedWinningTag) {
-          console.log('winning tag found, setting new BikeTag post', {
-            game,
-            autoSelectedWinningTag,
-          })
-          const setNewBikeTagPostResults = await setNewBikeTagPost(
-            game,
-            autoSelectedWinningTag,
-            currentBikeTag,
-            adminBiketag,
-            nonAdminBiketag,
-          )
-          results = results.concat(setNewBikeTagPostResults.results)
-          errors = setNewBikeTagPostResults.errors
+        if (achievements?.length) {
+          // console.log({ achievements }, game.name)
+          /// Get a list of BikeTag Players who have logged in
+          const players = (await nonAdminBiketag.players(undefined, {
+            source: 'sanity',
+          })) as Player[]
+
+          if (players.length > 20) {
+            /// Only award achievements if at least 20 players have logged in
+          } else {
+            console.log(`[${game.name}] does not have enough players to award achievements`)
+          }
         }
       }
     }
@@ -91,11 +81,11 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
   }
 }
 
-const autoPostHandler: Handler = async () => {
-  const { results, errors } = await autoPostNewBikeTags()
+const assignAchievementsHandler: Handler = async () => {
+  const { results, errors } = await assignAchievements()
 
   if (results.length) {
-    console.log('autopost attempted', { results })
+    console.log('achievements assigning attempted', { results })
     return {
       statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
       body: JSON.stringify(results),
@@ -109,6 +99,6 @@ const autoPostHandler: Handler = async () => {
   }
 }
 
-const handler = autoPostHandler
+const handler = assignAchievementsHandler
 
 export { handler }

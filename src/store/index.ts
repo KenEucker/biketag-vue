@@ -9,6 +9,7 @@ import {
   getProfileFromCookie,
   getQueuedTagState,
   getSanityImageUrl,
+  getSupportedGames,
   setNPAuthorization,
   setProfileCookie,
 } from '@/common/utils'
@@ -223,14 +224,7 @@ export const useStore = defineStore('store', {
         .then((d) => {
           if (d.success) {
             const games = d.data as unknown as Game[]
-            const supportedGames = games.filter(
-              (g: Game) =>
-                g.mainhash?.length &&
-                g.archivehash?.length &&
-                g.queuehash?.length &&
-                g.logo?.length,
-            )
-            // console.log({ setAllGames: supportedGames, games })
+            const supportedGames = getSupportedGames(games)
             return this.SET_ALL_GAMES(supportedGames)
           }
 
@@ -836,6 +830,9 @@ export const useStore = defineStore('store', {
     },
     getPlayerId(state) {
       return state.profile?.sub
+    },
+    getPlayerName(state) {
+      return state.profile?.user_metadata?.name
     },
     getGameBoundary(state) {
       return state.game?.boundary

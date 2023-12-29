@@ -185,11 +185,8 @@ const isAuthenticated = computed(() => (auth0 ? auth0.isAuthenticated.value : fa
 const getGameName = computed(() => store.getGameName)
 const getPlayerId = computed(() => store.getPlayerId)
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-const getProfile = computed(() => store.getProfile)
 const getGame = computed(() => store.getGame)
-const getName = computed(
-  () => getProfile.value?.user_metadata?.name ?? props.tag?.foundPlayer ?? '',
-)
+const getName = computed(() => store.getPlayerName ?? props.tag?.foundPlayer ?? '')
 const isGps = computed(() => gps.value.lat && gps.value.lng)
 const getLocation = computed(() => {
   if (location.value.length > 0) {

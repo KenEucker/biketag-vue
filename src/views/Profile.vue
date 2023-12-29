@@ -1,17 +1,24 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <b-modal
-    v-if="profile && !profile?.user_metadata?.name?.length"
+    v-if="profile && !getPlayerName?.length"
     v-model="showModal"
     title="User Name"
     hide-footer
     hide-header
   >
+    <!-- SHOW THIS MODAL IF THE PLAYER DOES NOT YET HAVE A SANITY PROFILE -->
+    <!-- First, show this modal to set the name in the user_metadata of auth0 -->
+    <!-- Second, show this modal again with "confirm my name" and save their profile into sanity -->
     <img class="close-btn" src="@/assets/images/close.svg" alt="close" @click="hideModal" />
     <form @submit.prevent="onSubmitName">
-      <div class="mt-3">
+      <div class="mt-3 set-name-modal">
+        <span>
+          {{ $t('pages.profile.set_name_description') }}
+        </span>
         <bike-tag-input
           v-model="requestedName"
+          class="mt-3"
           :placeholder="$t('pages.profile.set_name_placeholder')"
         />
         <bike-tag-button
@@ -180,6 +187,7 @@ const router = useRouter()
 // computed
 const getPlayers = computed(() => store.getPlayers)
 const getProfile = computed(() => store.getProfile)
+const getPlayerName = computed(() => store.getPlayerName)
 
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 const player = computed(() => {
@@ -259,8 +267,7 @@ onMounted(() => {
   profile.value.user_metadata.options = profile.value.user_metadata.options ?? {
     skipSteps: false,
   }
-  showModal.value =
-    profile.value?.user_metadata?.name != null && !profile.value?.user_metadata?.name.length
+  showModal.value = !getPlayerName?.length
   switch (profile.value.sub.toLowerCase().replace('oauth2|', '').split('|')[0]) {
     case 'reddit':
       if (!profile.value.user_metadata.social?.reddit) {
@@ -312,6 +319,8 @@ onMounted(() => {
 }
 </style>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 .icon-container {
   width: 100%;
   justify-content: flex-end;
@@ -336,6 +345,12 @@ hr {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100%;
+}
+
+.set-name-modal {
+  font-family: $default-font-family;
+  font-size: $default-font-size;
+  margin: 2em;
 }
 
 .center-container {

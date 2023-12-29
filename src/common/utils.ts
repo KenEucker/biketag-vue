@@ -1,6 +1,6 @@
 import { DeviceUUID } from '@/common/uuid'
 import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
-import { Tag } from 'biketag/lib/common/schema'
+import { Game, Tag } from 'biketag/lib/common/schema'
 import CryptoJS from 'crypto-js'
 import domtoimage from 'dom-to-image'
 import log from 'loglevel'
@@ -299,6 +299,12 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
 
   return queuedTagState
 }
+
+export const getSupportedGames = (games: Game[]) =>
+  games.filter(
+    (g: Game) =>
+      g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length,
+  )
 
 export const getSanityImageActualSize = (logo: string) => logo?.split('.')[2]?.split('-')[1]
 
