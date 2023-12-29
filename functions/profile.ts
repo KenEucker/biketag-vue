@@ -27,21 +27,18 @@ const profileHandler: Handler = async (event) => {
     (authorized = true) =>
     async (results) => {
       statusCode = results.statusCode ?? results.status
-      const dataIsArray = Array.isArray(results.data)
+      const data = results.data ?? results.body
+      const dataIsArray = Array.isArray(data)
+      const dataIsString = typeof data === 'string'
       const success =
-        statusCode === HttpStatusCode.Ok
-          ? dataIsArray
-            ? results.data?.length
-            : results.data
-          : null
-      const profileFound = success ? results.data : null
+        statusCode === HttpStatusCode.Ok ? (dataIsArray ? data?.length : !!data) : !!data
+      const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
 
-      console.log({ profileFound })
       if (profileFound) {
         body =
           statusCode === HttpStatusCode.Ok
-            ? await getBikeTagPlayerProfile(results.data, authorized, true)
-            : results.body
+            ? await getBikeTagPlayerProfile(profileFound, authorized, true)
+            : profileFound
       } else {
         body = 'no profile found'
         statusCode = HttpStatusCode.NotFound
