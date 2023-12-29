@@ -85,10 +85,6 @@ onMounted(() => {
     .queue-title {
       font-size: 2rem;
     }
-
-    .queue-text {
-      font-size: $default-font-size;
-    }
   }
 }
 </style>

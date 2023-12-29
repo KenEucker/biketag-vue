@@ -346,7 +346,7 @@ header {
     .navbar-brand {
       margin: 0;
       margin-left: 1rem;
-      font-size: 1rem;
+      // font-size: 1rem;
 
       @media (min-width: $breakpoint-desktop) {
         margin: 0 2rem;

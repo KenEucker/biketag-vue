@@ -97,7 +97,7 @@ function update(e) {
 
   .checkbox {
     &__label {
-      font-size: 1rem;
+      // font-size: 1rem;
       top: 5px;
       left: 10%;
     }

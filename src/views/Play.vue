@@ -249,8 +249,6 @@ onMounted(() => {
 @import '../assets/styles/style';
 #app {
   .queue-page {
-    margin-top: 2rem;
-
     .card.polaroid .player-wrapper .player-name {
       font-weight: 100;
       font-size: 3rem;
@@ -262,7 +260,7 @@ onMounted(() => {
     }
 
     .queue-text {
-      font-size: $default-font-size;
+      font-size: 1.5rem;
     }
   }
 }

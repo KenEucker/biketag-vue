@@ -5,7 +5,7 @@
   <b-modal v-model="showModal" title="Authenticate" hide-footer hide-header>
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
-      <div style="margin-top: 2rem">
+      <div>
         <p>{{ t('pages.round.player_name_reserved') }}</p>
         <bike-tag-input id="passcode" v-model="passcode" name="passcode" placeholder="passcode" />
         <bike-tag-button class="modal-sub-btn" variant="medium" text="Submit" />
