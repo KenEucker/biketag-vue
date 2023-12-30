@@ -54,9 +54,11 @@ const isWhiteBackground = computed(() =>
   router.currentRoute.value.name === 'About' ? 'white-bck' : '',
 )
 const logo = computed(() => store.getLogoUrl('m'))
-const siteName = computed(() => `BikeTag ${store.getGameName?.length ? store.getGameName : 'Game'}`)
+const siteName = computed(
+  () => `BikeTag ${store.getGameNameProper?.length ? store.getGameNameProper : 'Game'}`,
+)
 const title = computed(function () {
-  return `${isNotLanding.value ? store.getGameName : t('app.gameof')} BikeTag!`
+  return `${isNotLanding.value ? store.getGameNameProper : t('app.gameof')} BikeTag!`
 })
 const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
@@ -106,7 +108,7 @@ function checkForNewBikeTagPost() {
 
     if (visitingPlayerWonMostRecent) {
       toast.success(
-        `YOU WON Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName}!!`,
+        `YOU WON Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameNameProper}!!`,
         { type: 'default', position: 'top' },
       )
       showConfetti.value = true
@@ -115,7 +117,7 @@ function checkForNewBikeTagPost() {
       }, 3000)
     } else {
       toast.open({
-        message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName} has been posted!`,
+        message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameNameProper} has been posted!`,
         type: 'default',
         position: 'top',
       })

@@ -2,10 +2,10 @@
 <template>
   <div class="container mt-5 mb-5">
     <div class="map d-flex justify-content-center">
-      <h2>This is the boundary for the game of BikeTag in {{ getGameName }}</h2>
+      <h2>This is the boundary for the game of BikeTag in {{ getGameNameProper }}</h2>
       <bike-tag-map class="biketags-map" />
       <section-content class="about" filename="docs/about-map.html" />
-      <h4>Map of all BikeTag locations in {{ getGameName }}</h4>
+      <h4>Map of all BikeTag locations in {{ getGameNameProper }}</h4>
       <bike-tag-map class="biketags-map mt-2 mb-5" variant="biketags" />
       <section-content class="about" filename="docs/about-map-2.html" />
       <bike-tag-button class="m-5" text="See all BikeTag Posts" @click="goBikeTagsPage" />
@@ -32,7 +32,7 @@ const store = useStore()
 const router = useRouter()
 
 // computed
-const getGameName = computed(() => store.getGameName)
+const getGameNameProper = computed(() => store.getGameNameProper)
 
 // methods
 function goBikeTagsPage() {

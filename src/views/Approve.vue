@@ -10,7 +10,7 @@
   </loading>
   <div class="queue-page">
     <div v-if="approveSuccess">
-      You successfully posted a new round of BikeTag {{ getGameName }}!
+      You successfully posted a new round of BikeTag {{ getGameNameProper }}!
       <bike-tag-button @click="router.push('/')"> Go to the Home Page </bike-tag-button>
     </div>
     <queue-approve v-else-if="!uploadInProgress" @submit="onApproveSubmit" />
@@ -72,6 +72,7 @@ const { t } = useI18n()
 // computed
 const getPlayerTag = computed(() => store.getPlayerTag)
 const getGameName = computed(() => store.getGameName)
+const getGameNameProper = computed(() => store.getGameNameProper)
 const getAmbassadorId = computed(() => store.getAmbassadorId)
 
 // methods

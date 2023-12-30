@@ -134,7 +134,7 @@ const { t } = useI18n()
 const getPlayerTag = computed(() => store.getPlayerTag)
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getPlayerId = computed(() => store.getPlayerId)
-const getGameName = computed(() => store.getGameName)
+const getGameNameProper = computed(() => store.getGameNameProper)
 const getGame = computed(() => store.getGame)
 const supportsReddit = computed(() => !!getGame.value?.settings[Settings.SupportsReddit])
 const supportsTwitter = computed(() => !!getGame.value?.settings[Settings.SupportsTwitter])
@@ -147,7 +147,7 @@ Credit goes to ${getPlayerTag.value.foundPlayer} for finding BikeTag [#${getCurr
 
 "[${getPlayerTag.value.foundLocation}](https://biketag.org/${getCurrentBikeTag.value.tagnumber})"
 
-See all BikeTags and more, for ${getGameName.value}:
+See all BikeTags and more, for ${getGameNameProper.value}:
 
 [biketag.org](https://https://biketag.org) | [Leaderboard](https://https://biketag.org/leaderboard) | [Rules](https://https://biketag.org/howto)
     `,

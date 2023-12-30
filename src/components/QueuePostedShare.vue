@@ -109,7 +109,7 @@ const router = useRouter()
 const { t } = useI18n()
 const showConfetti = ref(false)
 const shareText = computed(
-  () => `I won round ${getCurrentBikeTag.value.tagnumber} of BikeTag ${getGameName.value}!`,
+  () => `I won round ${getCurrentBikeTag.value.tagnumber} of BikeTag ${getGameNameProper.value}!`,
 )
 const shareOptions = computed(() => ({
   url: `https://${getGameName.value}.biketag.org/${getCurrentBikeTag.value.tagnumber}`,
