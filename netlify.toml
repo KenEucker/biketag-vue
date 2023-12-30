@@ -23,6 +23,12 @@
   [headers.values]
     cache-control = "max-age=0,no-cache,no-store,must-revalidate"
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Credentials = "true"
+
 [functions."autopost-background"]
   schedule = "*/15 * * * *"
   included_files=["functions/emails/*.liquid"]
