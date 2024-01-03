@@ -1014,7 +1014,6 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
             : constructPlayerProfile(response.data, profile)
           body = JSON.stringify(profileDataResponse)
         }
-        console.log({ body })
         statusCode = HttpStatusCode.Ok
       })
       .catch(function (error) {
