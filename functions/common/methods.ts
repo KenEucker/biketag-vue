@@ -894,7 +894,7 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
           ).data
 
           /// If the user has not been assigned a role nor username
-          if (!roles.length && !user_data.user_metadata?.name) {
+          if (!roles.length || !user_data.user_metadata?.name) {
             /// Happy path
             // console.log(InfoMessage.ProfileInit, profile.sub)
             /// Verify that the user exists in Auth0
