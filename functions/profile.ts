@@ -28,19 +28,20 @@ const profileHandler: Handler = async (event) => {
     async (results) => {
       statusCode = results.statusCode ?? results.status
       const data = results.data ?? results.body
-      const dataIsArray = Array.isArray(data)
-      const dataIsString = typeof data === 'string'
-      const success = statusCode === HttpStatusCode.Ok && (dataIsArray ? data?.length : !!data)
-      const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
+      body = data
 
-      if (profileFound) {
-        body =
-          statusCode === HttpStatusCode.Ok
-            ? await getBikeTagPlayerProfile(profileFound, authorized, true)
-            : profileFound
-      } else {
-        body = 'no profile found'
-        statusCode = HttpStatusCode.NotFound
+      if (statusCode === HttpStatusCode.Ok) {
+        const dataIsArray = Array.isArray(data)
+        const dataIsString = typeof data === 'string'
+        const success = dataIsArray ? data?.length : !!data
+        const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
+
+        if (profileFound) {
+          body = await getBikeTagPlayerProfile(profileFound, authorized, true)
+        } else {
+          body = 'no profile found'
+          statusCode = HttpStatusCode.NotFound
+        }
       }
     }
 
@@ -56,7 +57,7 @@ const profileHandler: Handler = async (event) => {
   } else if (event.httpMethod === 'GET' && profile?.name) {
     /// Else if the profile name is known and passed in via data and Authorized
     /// TODO: make this more secure
-    await getBikeTagAuth0Profile(profile.name, true)
+    await getBikeTagAuth0Profile(profile.name, true, profile.passcode)
       .then(mergeProfilesIfSuccess())
       .catch(function (error) {
         statusCode = HttpStatusCode.InternalServerError

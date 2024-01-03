@@ -172,6 +172,7 @@ export const isValidJson = (data, type = 'none') => {
           user_metadata: {
             type: 'object',
             properties: {
+              name: { type: 'string' },
               passcode: { type: 'string' },
               options: {
                 type: 'object',
@@ -976,7 +977,6 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
           }
         } else {
           /// Invalid data
-          console.log(data.user_metadata.credentials)
           console.log('data is not valid', data, profileType)
           body = ErrorMessage.InvalidRequestData
           statusCode = HttpStatusCode.BadRequest
@@ -1059,7 +1059,8 @@ export const getBikeTagAuth0Profile = async (
     })
     .then(function (response) {
       if (response.status === HttpStatusCode.Ok) {
-        const playerData = response.data
+        const playerData = Array.isArray(response.data) ? response.data[0] : response.data
+
         if (authorized && passcode) {
           if (playerData.user_metadata?.passcode !== passcode) {
             return {

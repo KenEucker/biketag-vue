@@ -1,5 +1,6 @@
 import { BiketagFormSteps, State } from '@/common/types'
 import {
+  encodeBikeTagString,
   getApiUrl,
   getBikeTagClientOpts,
   getBikeTagHash,
@@ -10,7 +11,6 @@ import {
   getQueuedTagState,
   getSanityImageUrl,
   getSupportedGames,
-  setNPAuthorization,
   setProfileCookie,
 } from '@/common/utils'
 import BikeTagClient from 'biketag'
@@ -388,7 +388,7 @@ export const useStore = defineStore('store', {
         method: 'GET',
         url: getApiUrl('profile'),
         headers: {
-          authorization: `Basic ${setNPAuthorization(`${name}::${passcode}`)}`,
+          authorization: `Basic ${encodeBikeTagString(`${name}::${passcode}`)}`,
         },
       })
     },
@@ -832,7 +832,7 @@ export const useStore = defineStore('store', {
       return state.profile?.sub
     },
     getPlayerName(state) {
-      return state.profile?.user_metadata?.name
+      return state.profile?.name ?? state.profile?.user_metadata?.name
     },
     getGameBoundary(state) {
       return state.game?.boundary

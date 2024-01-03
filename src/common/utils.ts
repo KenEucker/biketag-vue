@@ -195,7 +195,7 @@ export const setProfileCookie = (
   }
 }
 
-export const setNPAuthorization = (basic: string): string => {
+export const encodeBikeTagString = (basic: string): string => {
   return CryptoJS.AES.encrypt(basic, process.env.HOST_KEY ?? 'BikeTag').toString()
 }
 
