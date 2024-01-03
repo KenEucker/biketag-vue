@@ -959,7 +959,8 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
       /// UPDATE a BikeTag profile
       try {
         const data = JSON.parse(request)
-        delete data.user_metadata?.name
+        /// WAIT WHY was this added? this needs to be in the request.
+        // delete data.user_metadata?.name
         const profileType = profile.isBikeTagAmbassador
           ? 'profile.patch.ambassador'
           : 'profile.patch'
