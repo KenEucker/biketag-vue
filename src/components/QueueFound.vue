@@ -204,6 +204,13 @@ const hideModal = () => (showModal.value = false)
 const onSubmit = async (e) => {
   e.preventDefault()
   uploadInProgress.value = true
+  /// Attempts to fix the tagnumber === #NaN issue
+  if (!getCurrentBikeTag?.tagnumber) {
+    await store.setTags()
+    await store.setCurrentBikeTag()
+    await store.setQueuedTags()
+  }
+
   if (!location.value?.length) {
     toast.open({
       message: 'Please add your Found Location',
@@ -225,6 +232,7 @@ const onSubmit = async (e) => {
     uploadInProgress.value = false
     return
   }
+
   if (!player.value) {
     toast.open({
       message: 'Please enter a name',
@@ -235,6 +243,7 @@ const onSubmit = async (e) => {
     uploadInProgress.value = false
     return
   }
+
   /// TODO: watch this?
   if (!isAuthenticated.value) {
     // console.log('player', player.value)
@@ -245,19 +254,22 @@ const onSubmit = async (e) => {
       })
       showModal.value = false
       await sleep(100)
-    } catch {
-      if (showModal.value) {
+    } catch (e) {
+      const noProfileFound = e.response.data === 'no profile found'
+      if (noProfileFound) {
+        /// All good
+      } else if (showModal.value) {
         toast.open({
           message: 'Incorrect passcode',
           type: 'error',
           duration: 10000,
           position: 'top',
         })
+        nextTick(() => (showModal.value = !showModal.value))
+        passcode.value = ''
+        uploadInProgress.value = false
+        return
       }
-      nextTick(() => (showModal.value = !showModal.value))
-      passcode.value = ''
-      uploadInProgress.value = false
-      return
     }
   }
   if (!image.value) {
@@ -391,7 +403,7 @@ const setImage = async (event) => {
         } else {
           const GPSData = await exifr.gps(await input.files[0].arrayBuffer())
 
-          if (GPSData && gpsData.latitude && GPSData.longitude) {
+          if (GPSData?.latitude && GPSData?.longitude) {
             gps.value = {
               lat: round(GPSData.latitude),
               lng: round(GPSData.longitude),
