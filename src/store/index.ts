@@ -383,9 +383,8 @@ export const useStore = defineStore('store', {
 
       return this.SET_PROFILE(updatedProfileResponse.data)
     },
-    // eslint-disable-next-line no-empty-pattern
     async checkPasscode({ name, passcode }: any) {
-      return await client.plainRequest({
+      return client.plainRequest({
         method: 'GET',
         url: getApiUrl('profile'),
         headers: {

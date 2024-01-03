@@ -308,6 +308,7 @@ header {
 
         .nav-item {
           font-size: 2rem;
+
           // margin: 0 1rem !important;
           box-shadow: unset;
           border-bottom: unset;

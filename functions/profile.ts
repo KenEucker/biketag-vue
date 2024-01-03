@@ -30,10 +30,10 @@ const profileHandler: Handler = async (event) => {
       const data = results.data ?? results.body
       const dataIsArray = Array.isArray(data)
       const dataIsString = typeof data === 'string'
-      const success =
-        statusCode === HttpStatusCode.Ok ? (dataIsArray ? data?.length : !!data) : !!data
+      const success = statusCode === HttpStatusCode.Ok && (dataIsArray ? data?.length : !!data)
       const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
 
+      console.log({ profileFound, data })
       if (profileFound) {
         body =
           statusCode === HttpStatusCode.Ok
