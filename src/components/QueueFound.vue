@@ -391,14 +391,12 @@ const setImage = async (event) => {
         } else {
           const GPSData = await exifr.gps(await input.files[0].arrayBuffer())
 
-          if (GPSData) {
-            if (GPSData.latitude != null && GPSData.longitude != null) {
-              gps.value = {
-                lat: round(GPSData.latitude),
-                lng: round(GPSData.longitude),
-              }
-              isGpsDefault.value = false
+          if (GPSData && gpsData.latitude && GPSData.longitude) {
+            gps.value = {
+              lat: round(GPSData.latitude),
+              lng: round(GPSData.longitude),
             }
+            isGpsDefault.value = false
           } else {
             gps.value = getGame.value?.boundary
             isGpsDefault.value = true
