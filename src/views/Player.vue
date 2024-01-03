@@ -8,15 +8,21 @@
       <bike-dex :tags="player.tags" />
     </div>
   </b-modal>
-  <div v-if="player" class="container mt-5">
+  <div v-if="player" class="container">
     <div class="social mb-2">
-      <player-bicon class="social__cnt--center" size="lg" :player="player" :no-link="true" />
-      <!-- ADD ACHIEVEMENTS player.achievements -->
-      <div class="social__cnt--left" @click="showModal">
+      <div class="mt-5 mr-2" @click="showModal">
         <img
           class="social__icon"
           src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktYm9vdHN0cmFwLXJlYm9vdCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS4xNjEgOGE2Ljg0IDYuODQgMCAxIDAgNi44NDItNi44NC41OC41OCAwIDEgMSAwLTEuMTYgOCA4IDAgMSAxLTYuNTU2IDMuNDEybC0uNjYzLS41NzdhLjU4LjU4IDAgMCAxIC4yMjctLjk5N2wyLjUyLS42OWEuNTguNTggMCAwIDEgLjcyOC42MzNsLS4zMzIgMi41OTJhLjU4LjU4IDAgMCAxLS45NTYuMzY0bC0uNjQzLS41NkE2LjgxMiA2LjgxMiAwIDAgMCAxLjE2IDh6Ii8+CiAgPHBhdGggZD0iTTYuNjQxIDExLjY3MVY4Ljg0M2gxLjU3bDEuNDk4IDIuODI4aDEuMzE0TDkuMzc3IDguNjY1Yy44OTctLjMgMS40MjctMS4xMDYgMS40MjctMi4xIDAtMS4zNy0uOTQzLTIuMjQ2LTIuNDU2LTIuMjQ2SDUuNXY3LjM1MmgxLjE0MXptMC0zLjc1VjUuMjc3aDEuNTdjLjg4MSAwIDEuNDE2LjQ5OSAxLjQxNiAxLjMyIDAgLjg0LS41MDQgMS4zMjQtMS4zODYgMS4zMjRoLTEuNnoiLz4KPC9zdmc+"
         />
+      </div>
+      <player-bicon class="social__cnt--center" size="lg" :player="player" :no-link="true" />
+      <!-- ADD ACHIEVEMENTS player.achievements -->
+      <div v-if="achievements[0]" class="achievements">
+        <h3>Achievements</h3>
+        <div v-for="achievement in achievements" :key="achievement.key" class="achievement-scroll">
+          <img :src="`/images/${achievement.key}.webp`" @click="selectAchievement(achievement)" />
+        </div>
       </div>
       <div v-if="Object.keys(playerSocial ?? {}).length" class="social__cnt--rigth">
         <a
@@ -69,6 +75,11 @@
         @page-click="changePage"
       ></b-pagination>
     </div>
+    <AchievementPopup
+      v-if="achievementPopupActive"
+      :data="achievementPopupProps"
+      @close="closePopup"
+    />
   </div>
 </template>
 
@@ -88,6 +99,7 @@ import PlayerBicon from '@/components/PlayerBicon.vue'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import BikeDex from '@/components/BikeDex.vue'
+import AchievementPopup from '@/components/AchievementPopup.vue'
 
 // data
 const router = useRouter()
@@ -113,6 +125,32 @@ const socialLinks = {
 }
 const modal = ref(false)
 const store = useStore()
+const achievements = ref([])
+const achievementPopupActive = ref(false)
+const achievementPopupProps = ref({
+  title: '',
+  description: '',
+  image: '',
+})
+
+const selectAchievement = (achievement) => {
+  console.log(achievement)
+  achievementPopupActive.value = true
+  achievementPopupProps.value = {
+    title: achievement.name,
+    description: achievement.description,
+    image: achievement.key,
+  }
+}
+
+const closePopup = () => {
+  achievementPopupActive.value = false
+  achievementPopupProps.value = {
+    title: '',
+    description: '',
+    image: '',
+  }
+}
 
 store.setAllAchievements()
 
@@ -123,6 +161,9 @@ const player = computed(() => {
     const player_name = playerName()
     return decodeURIComponent(encodeURIComponent(player.name)) == player_name
   })
+  if (playerList[0]) {
+    achievements.value = store.getGameAchievement(playerList[0].achievements)
+  }
   return playerList[0]
 })
 const tagsForList = computed(() => {
@@ -201,6 +242,8 @@ onMounted(async () => {
 }
 
 .player-wrapper {
+  right: 2rem;
+
   .player-bicon {
     width: 100%;
 
@@ -209,14 +252,46 @@ onMounted(async () => {
     }
   }
 }
+
+.achievements {
+  margin: auto auto 2.5rem 2rem;
+  width: 100%;
+  overflow-x: auto;
+
+  h3 {
+    margin-top: auto;
+    text-align: left;
+  }
+
+  img {
+    height: 10rem;
+    cursor: pointer;
+  }
+
+  .achievement-scroll {
+    display: flex;
+    overflow-x: scroll;
+  }
+}
+
+@media (max-width: 767px) {
+  .social {
+    flex-wrap: wrap;
+  }
+  .player-wrapper {
+    margin: auto;
+  }
+  .achievements h3 {
+    text-align: center;
+  }
+}
 </style>
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 
 .social {
-  flex-flow: column nowrap;
-  width: fit-content;
-  margin: 0 auto;
+  display: flex;
+  width: 100%;
 
   &__cnt {
     &--left,
@@ -235,22 +310,15 @@ onMounted(async () => {
       justify-content: space-between;
       width: 65%;
     }
-
-    &--center {
-      width: 100%;
-    }
   }
 
   &__icon {
     cursor: pointer;
     width: 2rem;
+    margin-right: 1rem;
   }
 
   @media (min-width: $breakpoint-laptop) {
-    display: grid;
-    grid-template-columns: 50px 1fr 50px;
-    grid-template-rows: 1fr;
-
     &__cnt {
       &--left,
       &--center,

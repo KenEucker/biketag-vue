@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="_playerName?.length"
-    :class="'player-wrapper mt-5 avatar-' + props.size"
+    :class="'player-wrapper my-5 avatar-' + props.size"
     role="button"
     @click="goPlayerPage"
   >
@@ -123,6 +123,7 @@ function tagColorNumber(count) {
     animation: fadein 2s;
     word-break: break-all;
     font-family: $default-secondary-font-family;
+    white-space: nowrap;
 
     // word-break: break-word;
     // text-decoration-line: underline;
@@ -227,8 +228,10 @@ function tagColorNumber(count) {
 
 .avatar-lg {
   .player-bicon {
-    border-radius: 5%;
-    max-width: 90vw;
+    width: 14rem;
+    height: 14rem;
+    object-fit: cover;
+    border-radius: 100%;
   }
 
   .player-name {
