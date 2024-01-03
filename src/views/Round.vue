@@ -74,6 +74,7 @@ onMounted(() => {
 
 <style lang="scss">
 @import '../assets/styles/style';
+
 #app {
   .queue-page {
     .card.polaroid .player-wrapper .player-name {

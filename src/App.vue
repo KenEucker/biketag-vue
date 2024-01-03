@@ -101,21 +101,28 @@ function checkForNewBikeTagPost() {
     store.getCurrentBikeTag?.tagnumber > store.getMostRecentlyViewedTagnumber &&
     store.getMostRecentlyViewedTagnumber !== 0
   ) {
-    debug('ui::new biketag posted!!')
-    const visitingPlayerWonMostRecent =
-      store.getCurrentBikeTag?.player?.id === store.getProfile?.sub ||
-      store.getCurrentBikeTag?.player?.name === store.getProfile?.name
+    let showNewRoundNotification = true
+    debug('ui::new biketag posted!!', store.getCurrentBikeTag.tagnumber)
+    if (store.getCurrentBikeTag?.playerId?.length && store.getProfile?.sub?.length) {
+      const playerIdMatches = store.getCurrentBikeTag.playerId === store.getProfile.sub
+      const playerName = store.getProfile.name ?? store.getProfile.user_metadata?.name
+      const playerNameMatches = store.getCurrentBikeTag.mysteryPlayer === playerName
+      const visitingPlayerWonMostRecent =
+        playerIdMatches && ((!!playerName && playerNameMatches) || !playerName)
 
-    if (visitingPlayerWonMostRecent) {
-      toast.success(
-        `YOU WON Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameNameProper}!!`,
-        { type: 'default', position: 'top' },
-      )
-      showConfetti.value = true
-      setTimeout(() => {
-        showConfetti.value = false
-      }, 3000)
-    } else {
+      if (visitingPlayerWonMostRecent) {
+        toast.success(
+          `YOU WON Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameNameProper}!!`,
+          { type: 'default', position: 'top' },
+        )
+        showConfetti.value = true
+        setTimeout(() => {
+          showConfetti.value = false
+        }, 3000)
+        showNewRoundNotification = false
+      }
+    }
+    if (showNewRoundNotification) {
       toast.open({
         message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameNameProper} has been posted!`,
         type: 'default',
