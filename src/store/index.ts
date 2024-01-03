@@ -427,8 +427,9 @@ export const useStore = defineStore('store', {
 
       return this.SET_PLAYER(playerProfile, existingPlayerIndex)
     },
-    getGameAchievement(name: string) {
-      return this.achievements.find((a: Achievement) => a.name === name)
+    getGameAchievement(names: string | string[]) {
+      names = Array.isArray(names) ? names : [names]
+      return this.achievements.filter((a) => names.includes(a.name))
     },
     async dequeueFoundTag() {
       if (this.playerTag?.playerId === this.profile.sub) {
