@@ -239,21 +239,27 @@ function tagColorNumber(count) {
 .avatar-lg {
   .player-bicon__image {
     width: 100%;
-    max-width: 75vw;
+    max-width: 85vw;
     border-radius: 5%;
   }
 
   .player-name {
     transform: unset;
-    font-size: 5rem !important;
+    max-width: 50vw;
+    font-size: 2.5rem !important;
     margin-bottom: 5%;
   }
 
   .tag-count {
     font-size: 2rem;
-    top: 2rem;
-    right: 1rem;
+    right: 0;
     padding: 2px 8px;
+  }
+
+  @media (width >= 1024px) {
+    .player-name {
+      font-size: 5rem !important;
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 import { Handler } from '@netlify/functions'
+import { getDomainInfo } from '../src/common/utils'
 import { ErrorMessage, HttpStatusCode } from './common/constants'
 import {
   acceptCorsHeaders,
@@ -20,6 +21,7 @@ const profileHandler: Handler = async (event) => {
   /// If all else fails
   let body: any = 'missing authorization header'
   let statusCode: number = HttpStatusCode.Unauthorized
+
   /// Retrieves the authorization and profile data, if present
   const profile = await getProfileAuthorization(event)
 
@@ -36,6 +38,7 @@ const profileHandler: Handler = async (event) => {
         const success = dataIsArray ? data?.length : !!data
         const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
 
+        console.log({ profileFound })
         if (profileFound) {
           body = await getBikeTagPlayerProfile(profileFound, authorized, true)
         } else {
@@ -47,8 +50,9 @@ const profileHandler: Handler = async (event) => {
 
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile?.sub?.length) {
+    console.log({ profile })
     /// If the profile sub (Auth0 field) exists (Authorized)
-    await handleAuth0ProfileRequest(event.httpMethod, event.body, profile)
+    await handleAuth0ProfileRequest(event, event.body, profile)
       .then(mergeProfilesIfSuccess())
       .catch(function (error) {
         statusCode = HttpStatusCode.InternalServerError

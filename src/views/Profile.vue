@@ -188,7 +188,7 @@ const getPlayers = computed(() => store.getPlayers)
 const getProfile = computed(() => store.getProfile)
 const getPlayerName = computed(() => store.getPlayerName)
 
-const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+// const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 const player = computed(() => {
   const playerList = getPlayers.value?.filter((player) => {
     return user.value.name === decodeURIComponent(encodeURIComponent(player.name))
@@ -216,9 +216,10 @@ function toggleShowFields(name) {
 async function onSubmitName() {
   if (requestedName.value.length > 0) {
     profile.value.user_metadata.name = requestedName.value
+    /// Be sure to set the game on the first creation of the BikeTag Profile
     profile.value['token'] = idTokenClaims.value.__raw
     try {
-      await store.assignName(profile.value)
+      await store.assignPlayerName(profile.value)
       toast.open({
         message: 'Success',
         type: 'success',

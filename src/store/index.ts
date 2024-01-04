@@ -355,8 +355,8 @@ export const useStore = defineStore('store', {
       }
       return 'incorrect permissions'
     },
-    async assignName(profile: any) {
-      await client.plainRequest({
+    async assignPlayerName(profile: any) {
+      const nameAssigned = await client.plainRequest({
         method: 'PUT',
         url: getApiUrl('profile'),
         headers: {
@@ -365,7 +365,13 @@ export const useStore = defineStore('store', {
         },
         data: { user_metadata: { name: profile.user_metadata.name } },
       })
-      return this.SET_PROFILE(profile)
+
+      if (nameAssigned.status === 200) {
+        profile.name = nameAssigned.data.user_metadata.name
+        return this.SET_PROFILE(profile)
+      }
+
+      return null
     },
     async updateProfile(profile: any) {
       // Update Auth0 Profile

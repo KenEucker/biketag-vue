@@ -387,7 +387,7 @@ export const getProfileAuthorization = async (event: any): Promise<any> => {
     const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
     const isABikeTagAmbassador = profileAmbassadorMatch.length
       ? true
-      : profile.email === process.env.ADMIN_EMAIL
+      : profile.email && profile.email === process.env.ADMIN_EMAIL
 
     if (isABikeTagAmbassador) {
       profile.isBikeTagAmbassador = true
@@ -861,18 +861,32 @@ export const getActiveQueueForGame = async (
   }
 }
 
-export const createBikeTagPlayerProfile = async (profile) => {
-  if (profile?.name?.length) {
-    const biketag = new BikeTagClient(getBikeTagClientOpts())
+export const createBikeTagPlayerProfile = async (
+  profile: any = {},
+  game?: string,
+  biketag?: BikeTagClient,
+) => {
+  profile = {
+    ...profile,
+    name: profile.name ?? profile.user_metadata.name,
   }
-  return null
+  if (profile.name?.length) {
+    biketag = biketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true))
+    if (game?.length) {
+      profile.games = profile.games ?? [game]
+    }
+    // console.log('creating new BikeTag Profile', profile)
+    return biketag.updatePlayer(profile, { source: 'sanity' })
+  }
+  return Promise.resolve({ data: null, success: false })
 }
 
-export const handleAuth0ProfileRequest = async (method, request, profile): Promise<any> => {
+export const handleAuth0ProfileRequest = async (req, request, profile): Promise<any> => {
   let body = ''
   let statusCode = HttpStatusCode.Continue
   let options = {}
   const authorizationHeaders = await auth0Headers()
+  const method = req.method ?? req.httpMethod
 
   switch (method) {
     case 'PUT':
@@ -889,7 +903,7 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
               url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}/roles`,
               headers: authorizationHeaders,
             })
-          ).data
+          )?.data
           /// Get the metadata for the profile because we need to check if the name has been set (initialized)
           const user_data = (
             await axios.request({
@@ -897,13 +911,14 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
               url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}?fields=user_metadata`,
               headers: authorizationHeaders,
             })
-          ).data
+          )?.data
 
           /// If the user has not been assigned a role nor username
           if (!roles.length || !user_data.user_metadata?.name) {
             /// Happy path
-            // console.log(InfoMessage.ProfileInit, profile.sub)
+            // console.log('getting auth0 user by name', profile.sub, user_data, data)
             /// Verify that the user exists in Auth0
+            const name = data.name ?? data.user_metadata?.name
             const exists = (
               await axios.request({
                 method: 'GET',
@@ -913,29 +928,38 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
                   per_page: 1,
                   include_totals: false,
                   fields: 'user_metadata.name',
-                  q: `user_metadata.name:"${data.name}"`,
+                  q: `user_metadata.name:"${name}"`,
                   search_engine: 'v3',
                 },
                 headers: authorizationHeaders,
               })
-            ).data
+            )?.data
             if (!exists?.length) {
               /// Happy path
               /// Set the user role before setting the rest of the profile data
+              // console.log('no BikeTag Profile found with that name', name)
+              const roles = [
+                profile.isBikeTagAmbassador ? process.env.AMBASSADOR_ROLE : process.env.PLAYER_ROLE,
+              ]
+              // console.log('setting roles for profile', profile.sub, roles)
               await axios.request({
                 method: 'POST',
                 url: `https://${process.env.A_DOMAIN}/api/v2/users/${profile.sub}/roles`,
                 headers: authorizationHeaders,
-                data: {
-                  roles: [
-                    profile.isBikeTagAmbassador
-                      ? process.env.AMBASSADOR_ROLE
-                      : process.env.PLAYER_ROLE,
-                  ],
-                },
+                data: { roles },
               })
 
+              const biketagAdminOpts = getBikeTagClientOpts(req, true)
+
               /// Create the player profile in sanity
+              const updatedPlayer = await createBikeTagPlayerProfile(
+                data,
+                biketagAdminOpts.game,
+                new BikeTagClient(biketagAdminOpts),
+              )
+              if (!updatedPlayer.success) {
+                console.error('Failed to create the player profile', updatedPlayer.data)
+              }
 
               /// CONTINUE to the request for initializing the BikeTag profile
               options = {
@@ -1599,7 +1623,7 @@ export const constructAmbassadorProfile = (
     city: profile.city ?? defaults.city ?? '',
     country: profile.country ?? defaults.country ?? '',
     email: profile.email ?? defaults.email ?? '',
-    isBikeTagAmbassador: profile.isBikeTagAmbassador ?? defaults.isBikeTagAmbassador ?? '',
+    isBikeTagAmbassador: profile.isBikeTagAmbassador ?? defaults?.isBikeTagAmbassador ?? false,
     locale: profile.locale ?? defaults.locale ?? '',
     nonce: profile.nonce ?? defaults.nonce ?? '',
     phone: profile.phone ?? defaults.phone ?? '',
