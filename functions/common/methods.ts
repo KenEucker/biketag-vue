@@ -75,9 +75,10 @@ export const getBikeTagClientOpts = (
   admin?: boolean,
   game?: Game,
 ) => {
-  const domainInfo = getDomainInfo(req)
-  const isAuthenticatedPOST = req?.method === 'POST' || authorized
-  const isGET = !isAuthenticatedPOST && req?.method === 'GET'
+  const request = req ?? { method: 'GET' }
+  const domainInfo = getDomainInfo(request)
+  const isAuthenticatedPOST = request?.method === 'POST' || authorized
+  const isGET = !isAuthenticatedPOST && request?.method === 'GET'
   const opts: any = {
     game:
       game?.name?.toLocaleLowerCase() ??
@@ -736,10 +737,7 @@ export const archiveAndClearQueue = async (
     game = gameResponse.success ? gameResponse.data : null
   }
   if (queuedTags.length && game) {
-    const nonAdminBikeTagOpts = getBikeTagClientOpts(
-      { method: 'get' } as unknown as request.Request,
-      true,
-    )
+    const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true)
     const gameName = game.name.toLocaleLowerCase()
     console.log('archiving remaining queued tags', { game: gameName, queuedTags })
     nonAdminBikeTagOpts.game = gameName
@@ -863,6 +861,13 @@ export const getActiveQueueForGame = async (
   }
 }
 
+export const createBikeTagPlayerProfile = async (profile) => {
+  if (profile?.name?.length) {
+    const biketag = new BikeTagClient(getBikeTagClientOpts())
+  }
+  return null
+}
+
 export const handleAuth0ProfileRequest = async (method, request, profile): Promise<any> => {
   let body = ''
   let statusCode = HttpStatusCode.Continue
@@ -929,6 +934,8 @@ export const handleAuth0ProfileRequest = async (method, request, profile): Promi
                   ],
                 },
               })
+
+              /// Create the player profile in sanity
 
               /// CONTINUE to the request for initializing the BikeTag profile
               options = {
@@ -1089,10 +1096,7 @@ export const getBikeTagPlayerProfile = async (
   adminBikeTag?: BikeTagClient,
 ): Promise<any> => {
   adminBikeTag =
-    adminBikeTag ??
-    new BikeTagClient(
-      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, authorized, false),
-    )
+    adminBikeTag ?? new BikeTagClient(getBikeTagClientOpts(undefined, authorized, false))
   const playerProfileResult = await adminBikeTag.getPlayer(
     profile.name ?? profile.user_metadata?.name,
     { source: 'sanity' },
@@ -1202,10 +1206,7 @@ export const sendNewBikeTagNotifications = async (
   adminBiketag?: BikeTagClient,
 ) => {
   adminBiketag =
-    adminBiketag ??
-    new BikeTagClient(
-      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, true, true, game),
-    )
+    adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
 
   const notificationPromises: any = []
   const ambassadors = (await adminBiketag.ambassadors(undefined, {
@@ -1332,10 +1333,7 @@ export const setNewBikeTagPost = async (
   nonAdminBiketag?: BikeTagClient,
 ): Promise<BackgroundProcessResults> => {
   adminBiketag =
-    adminBiketag ??
-    new BikeTagClient(
-      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, true, true, game),
-    )
+    adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
   /// Get the current BikeTag
   previousBikeTag = previousBikeTag ?? ((await adminBiketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   let errors = false
@@ -1405,12 +1403,7 @@ export const setNewBikeTagPost = async (
       })
 
       /************** REMOVE NEWLY POSTED BIKETAG FROM QUEUE *****************/
-      const nonAdminBikeTagOpts = getBikeTagClientOpts(
-        {
-          method: 'get',
-        } as unknown as request.Request,
-        true,
-      )
+      const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true)
       nonAdminBikeTagOpts.game = game.name.toLocaleLowerCase()
       nonAdminBikeTagOpts.imgur.hash = game.queuehash
       if (!nonAdminBiketag) {

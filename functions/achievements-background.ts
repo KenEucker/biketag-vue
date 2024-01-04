@@ -1,7 +1,6 @@
 import { Handler } from '@netlify/functions'
 import BikeTagClient from 'biketag'
 import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
-import request from 'request'
 import { getSupportedGames } from '../src/common/utils'
 import { HttpStatusCode } from './common/constants'
 import { getBikeTagClientOpts } from './common/methods'
@@ -25,10 +24,7 @@ export const assignAchievements = async (): Promise<BackgroundProcessResults> =>
   // delete adminBiketagOpts.game
   /// Cache what we can here, so that it improves this method's performance
   // biketagOpts.cached = true
-  const nonAdminBiketagOpts = getBikeTagClientOpts(
-    { method: 'get' } as unknown as request.Request,
-    true,
-  )
+  const nonAdminBiketagOpts = getBikeTagClientOpts(undefined, true)
   delete nonAdminBiketagOpts.game
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
   // const adminBiketag = new BikeTagClient(adminBiketagOpts)

@@ -17,11 +17,10 @@
         />
       </div>
       <player-bicon class="social__cnt--center" size="lg" :player="player" :no-link="true" />
-      <!-- ADD ACHIEVEMENTS player.achievements -->
-      <div v-if="achievements[0]" class="achievements">
+      <div v-if="achievements?.length" class="achievements">
         <h3>Achievements</h3>
         <div v-for="achievement in achievements" :key="achievement.key" class="achievement-scroll">
-          <img :src="`/images/${achievement.key}.webp`" @click="selectAchievement(achievement)" />
+          <bike-tag-achievement :achievement="achievement" />
         </div>
       </div>
       <div v-if="Object.keys(playerSocial ?? {}).length" class="social__cnt--rigth">
@@ -75,11 +74,6 @@
         @page-click="changePage"
       ></b-pagination>
     </div>
-    <AchievementPopup
-      v-if="achievementPopupActive"
-      :data="achievementPopupProps"
-      @close="closePopup"
-    />
   </div>
 </template>
 
@@ -95,11 +89,11 @@ import Imgur from '@/assets/images/Imgur.svg'
 import Discord from '@/assets/images/Discord.svg'
 
 // components
+import BikeTagAchievement from '@/components/BikeTagAchievement.vue'
 import PlayerBicon from '@/components/PlayerBicon.vue'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import BikeDex from '@/components/BikeDex.vue'
-import AchievementPopup from '@/components/AchievementPopup.vue'
 
 // data
 const router = useRouter()
@@ -125,47 +119,14 @@ const socialLinks = {
 }
 const modal = ref(false)
 const store = useStore()
-const achievements = ref([])
-const achievementPopupActive = ref(false)
-const achievementPopupProps = ref({
-  title: '',
-  description: '',
-  image: '',
-})
-
-const selectAchievement = (achievement) => {
-  console.log(achievement)
-  achievementPopupActive.value = true
-  achievementPopupProps.value = {
-    title: achievement.name,
-    description: achievement.description,
-    image: achievement.key,
-  }
-}
-
-const closePopup = () => {
-  achievementPopupActive.value = false
-  achievementPopupProps.value = {
-    title: '',
-    description: '',
-    image: '',
-  }
-}
+const playerName = ref(decodeURIComponent(encodeURIComponent(route.params.name)))
 
 store.setAllAchievements()
 
 // computed
 const getPlayers = computed(() => store.getPlayers)
-const player = computed(() => {
-  const playerList = getPlayers.value?.filter((player) => {
-    const player_name = playerName()
-    return decodeURIComponent(encodeURIComponent(player.name)) == player_name
-  })
-  if (playerList[0]) {
-    achievements.value = store.getGameAchievement(playerList[0].achievements)
-  }
-  return playerList[0]
-})
+const player = computed(() => getPlayers.value?.find((p) => p.name === playerName.value))
+const achievements = computed(() => player.value?.achievements?.map(store.getBikeTagAchievement))
 const tagsForList = computed(() => {
   const tags = player.value?.tags
   return tags
@@ -181,10 +142,9 @@ const resetCurrentPage = () => {
   startLoading()
   currentPage.value = 1
 }
-const playerName = () => decodeURIComponent(encodeURIComponent(route.params.name))
 const changePage = (event, pageNumber) => {
   startLoading()
-  router.push('/player/' + encodeURIComponent(playerName()) + '/' + pageNumber)
+  router.push('/player/' + encodeURIComponent(playerName.value) + '/' + pageNumber)
 }
 const startLoading = async () => {
   tagsLoaded.value = []
@@ -220,7 +180,7 @@ onMounted(async () => {
   tagsAreLoading.value = true
   await store.setTags()
   await store.setPlayers()
-  store.fetchPlayerProfile(playerName())
+  store.fetchPlayerProfile(playerName.value)
   tagsAreLoading.value = false
 })
 </script>
@@ -253,41 +213,23 @@ onMounted(async () => {
   }
 }
 
-.achievements {
-  margin: auto auto 2.5rem 2rem;
-  width: 100%;
-  overflow-x: auto;
-
-  h3 {
-    margin-top: auto;
-    text-align: left;
-  }
-
-  img {
-    height: 10rem;
-    cursor: pointer;
-  }
-
-  .achievement-scroll {
-    display: flex;
-    overflow-x: scroll;
-  }
-}
-
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .social {
     flex-wrap: wrap;
   }
+
   .player-wrapper {
     margin: auto;
-  }
-  .achievements h3 {
-    text-align: center;
   }
 }
 </style>
 <style lang="scss" scoped>
 @import '../assets/styles/style';
+
+.achievement-scroll {
+  display: flex;
+  overflow-x: scroll;
+}
 
 .social {
   display: flex;

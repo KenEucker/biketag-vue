@@ -76,9 +76,9 @@ export const getDomainInfo = (req: any): DomainInfo => {
     'localhost',
   ]
   let host = (
-    req.headers?.host?.length
+    req?.headers?.host?.length
       ? req.headers.host
-      : req.location?.host?.length
+      : req?.location?.host?.length
         ? req.location.host
         : ''
   )

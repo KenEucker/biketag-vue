@@ -426,7 +426,10 @@ export const useStore = defineStore('store', {
 
       return this.SET_PLAYER(playerProfile, existingPlayerIndex)
     },
-    getGameAchievement(names: string | string[]) {
+    getBikeTagAchievement(name: string) {
+      return this.achievements.find((a) => a.name === name)
+    },
+    getBikeTagAchievements(names: string | string[]) {
       names = Array.isArray(names) ? names : [names]
       return this.achievements.filter((a) => names.includes(a.name))
     },
