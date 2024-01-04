@@ -142,6 +142,20 @@ const closePopover = () => {
 }
 const downloadTag = async () => {
   if (downloadingTag.value !== true) {
+    const cardBody = Array.from(document.getElementsByClassName('card-body'))
+    const img = Array.from(document.getElementsByClassName('img-selector'))
+    const imgCopy = img
+
+    cardBody.forEach((element) => {
+      element.style.height = 'auto'
+      element.style.display = 'block'
+    })
+
+    img.forEach((element) => {
+      element.style.aspectRatio = 'unset'
+      element.style.objectFit = 'unset'
+    })
+
     downloadingTag.value = true
     const downloadPrefix = `BikeTag-${props.tag.game}-${props.tag.tagnumber}--`
     if (!hasDownloadedMystery.value) {
@@ -162,6 +176,15 @@ const downloadTag = async () => {
       hasDownloadedFound.value = !!foundImageDataUrl
     }
     downloadingTag.value = false
+
+    cardBody.forEach((element) => {
+      element.style.height = '600px'
+      element.style.display = 'flex'
+    })
+
+    img.forEach((element, i) => {
+      element.style = imgCopy[i].style
+    })
   }
 }
 
@@ -221,25 +244,38 @@ onBeforeUnmount(() => {
 
   &__hint-text {
     font-weight: 900;
-    font-size: 1rem;
+    font-size: 2rem;
     font-family: $default-secondary-font-family;
     cursor: default;
     white-space: pre-wrap;
     text-transform: uppercase;
     margin: 10px;
-    max-height: 96px;
     overflow: auto;
     margin-left: auto;
   }
 }
 </style>
 <style scoped lang="scss">
+@import '../assets/styles/style';
+
 .foss-container {
   i {
     margin: auto;
     padding: 2em;
-    max-width: 500px;
-    color: white;
+    max-width: 70%;
+    color: black;
+  }
+
+  @media (min-width: $breakpoint-mobile-sm) {
+    i {
+      max-width: 90%;
+    }
+  }
+
+  @media (min-width: $breakpoint-mobile-md) {
+    i {
+      max-width: 80%;
+    }
   }
 }
 

@@ -19,6 +19,8 @@ import Player from '@/components/PlayerBicon.vue'
 // data
 const store = useStore()
 
+store.setLeaderboardPlayersProfiles()
+
 // computed
 const playersList = computed(() => store.getLeaderboard)
 </script>

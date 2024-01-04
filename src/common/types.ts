@@ -1,4 +1,4 @@
-import { Game, Player, Tag } from 'biketag/lib/common/schema'
+import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
 
 export type DomainInfo = {
   host: string
@@ -91,6 +91,7 @@ export interface State {
   dataInitialized: boolean
   game: Game
   allGames: Game[]
+  achievements: Achievement[]
   gameName: string
   gameNameProper: string
   currentBikeTag: Tag

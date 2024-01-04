@@ -54,9 +54,11 @@ const isWhiteBackground = computed(() =>
   router.currentRoute.value.name === 'About' ? 'white-bck' : '',
 )
 const logo = computed(() => store.getLogoUrl('m'))
-const siteName = computed(() => `BikeTag ${store.getGameName}`)
+const siteName = computed(
+  () => `BikeTag ${store.getGameNameProper?.length ? store.getGameNameProper : 'Game'}`,
+)
 const title = computed(function () {
-  return `${isNotLanding.value ? store.getGameName : t('app.gameof')} BikeTag!`
+  return `${isNotLanding.value ? store.getGameNameProper : t('app.gameof')} BikeTag!`
 })
 const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
@@ -99,23 +101,30 @@ function checkForNewBikeTagPost() {
     store.getCurrentBikeTag?.tagnumber > store.getMostRecentlyViewedTagnumber &&
     store.getMostRecentlyViewedTagnumber !== 0
   ) {
-    debug('ui::new biketag posted!!')
-    const visitingPlayerWonMostRecent =
-      store.getCurrentBikeTag?.player?.id === store.getProfile?.sub ||
-      store.getCurrentBikeTag?.player?.name === store.getProfile?.name
+    let showNewRoundNotification = true
+    debug('ui::new biketag posted!!', store.getCurrentBikeTag.tagnumber)
+    if (store.getCurrentBikeTag?.playerId?.length && store.getProfile?.sub?.length) {
+      const playerIdMatches = store.getCurrentBikeTag.playerId === store.getProfile.sub
+      const playerName = store.getProfile.name ?? store.getProfile.user_metadata?.name
+      const playerNameMatches = store.getCurrentBikeTag.mysteryPlayer === playerName
+      const visitingPlayerWonMostRecent =
+        playerIdMatches && ((!!playerName && playerNameMatches) || !playerName)
 
-    if (visitingPlayerWonMostRecent) {
-      toast.success(
-        `YOU WON Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName}!!`,
-        { type: 'default', position: 'top' },
-      )
-      showConfetti.value = true
-      setTimeout(() => {
-        showConfetti.value = false
-      }, 3000)
-    } else {
+      if (visitingPlayerWonMostRecent) {
+        toast.success(
+          `YOU WON Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameNameProper}!!`,
+          { type: 'default', position: 'top' },
+        )
+        showConfetti.value = true
+        setTimeout(() => {
+          showConfetti.value = false
+        }, 3000)
+        showNewRoundNotification = false
+      }
+    }
+    if (showNewRoundNotification) {
       toast.open({
-        message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameName} has been posted!`,
+        message: `Round #${store.getCurrentBikeTag.tagnumber} of BikeTag ${store.getGameNameProper} has been posted!`,
         type: 'default',
         position: 'top',
       })
@@ -131,7 +140,6 @@ async function created() {
   const game = await store.setGame()
   const _gameIsSet = game?.name?.length !== 0
 
-  initResults.push(store.setAllGames())
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
     gameIsSet.value = true
 
@@ -141,20 +149,23 @@ async function created() {
     }
 
     initResults.push(await store.setCurrentBikeTag())
-    initResults.push(await store.setTags())
+    initResults.push(store.setTags())
     initResults.push(store.setPlayers())
     initResults.push(store.setLeaderboard())
     initResults.push(await store.fetchCredentials())
     initResults.push(store.setQueuedTags())
+    initResults.push(store.setAllGames())
 
     await Promise.allSettled(initResults)
 
     checkForNewBikeTagPost()
   } else if (!_gameIsSet) {
+    await store.setAllGames()
     router.push('/landing')
   }
   debug(`view::data-init`, 'created')
 }
+
 created()
 </script>
 
@@ -170,6 +181,8 @@ created()
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   overflow: hidden;
+  font-family: $default-font-family;
+  font-size: $default-font-size;
 }
 
 .spacer-bottom {

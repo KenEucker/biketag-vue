@@ -246,11 +246,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
+@import '../assets/styles/style';
+
 #app {
   .queue-page {
-    margin-top: 2rem;
-
-    .card.polaroid .player-wrapper .player-name {
+    .card.polaroid .player-bicon .player-name {
       font-weight: 100;
       font-size: 3rem;
       transform: unset;
@@ -293,6 +293,12 @@ onMounted(() => {
   }
 }
 
+.player-agree {
+  max-width: 50%;
+  margin: auto;
+  font-family: $default-secondary-font-family;
+}
+
 .step {
   .biketag__button {
     min-height: 3.5rem;
@@ -315,7 +321,7 @@ onMounted(() => {
 
   &__arrow {
     transform: scaleX(-1);
-    height: 1.5rem;
+    height: $default-font-size;
     margin-bottom: 0.5rem;
   }
 }

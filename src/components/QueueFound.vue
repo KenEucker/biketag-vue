@@ -5,7 +5,7 @@
   <b-modal v-model="showModal" title="Authenticate" hide-footer hide-header>
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
-      <div style="margin-top: 2rem">
+      <div>
         <p>{{ t('pages.round.player_name_reserved') }}</p>
         <bike-tag-input id="passcode" v-model="passcode" name="passcode" placeholder="passcode" />
         <bike-tag-button class="modal-sub-btn" variant="medium" text="Submit" />
@@ -128,7 +128,7 @@
 </template>
 
 <script setup name="QueueFoundTag">
-import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { debug, isPointInPolygon, isAuthenticationEnabled, isGmapsEnabled } from '@/common/utils'
@@ -185,11 +185,8 @@ const isAuthenticated = computed(() => (auth0 ? auth0.isAuthenticated.value : fa
 const getGameName = computed(() => store.getGameName)
 const getPlayerId = computed(() => store.getPlayerId)
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-const getProfile = computed(() => store.getProfile)
 const getGame = computed(() => store.getGame)
-const getName = computed(
-  () => getProfile.value?.user_metadata?.name ?? props.tag?.foundPlayer ?? '',
-)
+const getPlayerName = computed(() => store.getPlayerName ?? props.tag?.foundPlayer ?? '')
 const isGps = computed(() => gps.value.lat && gps.value.lng)
 const getLocation = computed(() => {
   if (location.value.length > 0) {
@@ -207,6 +204,13 @@ const hideModal = () => (showModal.value = false)
 const onSubmit = async (e) => {
   e.preventDefault()
   uploadInProgress.value = true
+  /// Attempts to fix the tagnumber === #NaN issue
+  if (!getCurrentBikeTag?.tagnumber) {
+    await store.setTags()
+    await store.setCurrentBikeTag()
+    await store.setQueuedTags()
+  }
+
   if (!location.value?.length) {
     toast.open({
       message: 'Please add your Found Location',
@@ -228,6 +232,7 @@ const onSubmit = async (e) => {
     uploadInProgress.value = false
     return
   }
+
   if (!player.value) {
     toast.open({
       message: 'Please enter a name',
@@ -238,29 +243,45 @@ const onSubmit = async (e) => {
     uploadInProgress.value = false
     return
   }
+
   /// TODO: watch this?
   if (!isAuthenticated.value) {
     // console.log('player', player.value)
     try {
-      await store.checkPasscode({
+      const passcodeCheckResponse = await store.checkPasscode({
         name: player.value,
         passcode: passcode.value,
       })
+      // console.log({ passcodeCheckResponse })
       showModal.value = false
       await sleep(100)
-    } catch {
-      if (showModal.value) {
+    } catch (e) {
+      // console.log('response', e.response)
+      const noProfileFound = e.response.status === 404 && e.response.data === 'no profile found'
+      const incorrectPasscode = e.response.status === 401
+
+      if (noProfileFound) {
+        /// All good
+        console.log('no profile found')
+      } else if (showModal.value) {
         toast.open({
           message: 'Incorrect passcode',
           type: 'error',
           duration: 10000,
           position: 'top',
         })
+        nextTick(() => (showModal.value = !showModal.value))
+        passcode.value = ''
+        uploadInProgress.value = false
+        return
+      } else {
+        if (incorrectPasscode) {
+          nextTick(() => (showModal.value = !showModal.value))
+          passcode.value = ''
+          uploadInProgress.value = false
+          return
+        }
       }
-      nextTick(() => (showModal.value = !showModal.value))
-      passcode.value = ''
-      uploadInProgress.value = false
-      return
     }
   }
   if (!image.value) {
@@ -281,12 +302,12 @@ const onSubmit = async (e) => {
     }
   }
   if (player.value.length == 0) {
-    if (getName.value.length == 0) {
+    if (getPlayerName.value.length == 0) {
       debug('player name must set')
       uploadInProgress.value = false
       return
     } else {
-      player.value = getName.value
+      player.value = getPlayerName.value
     }
   }
   document.querySelector('.popover')?.remove()
@@ -394,14 +415,12 @@ const setImage = async (event) => {
         } else {
           const GPSData = await exifr.gps(await input.files[0].arrayBuffer())
 
-          if (GPSData) {
-            if (GPSData.latitude != null && GPSData.longitude != null) {
-              gps.value = {
-                lat: round(GPSData.latitude),
-                lng: round(GPSData.longitude),
-              }
-              isGpsDefault.value = false
+          if (GPSData?.latitude && GPSData?.longitude) {
+            gps.value = {
+              lat: round(GPSData.latitude),
+              lng: round(GPSData.longitude),
             }
+            isGpsDefault.value = false
           } else {
             gps.value = getGame.value?.boundary
             isGpsDefault.value = true
@@ -415,7 +434,6 @@ const setImage = async (event) => {
     }
   }
 }
-
 const calculateInBoundary = () => {
   // If the boundary is set
   if (boundary.value.type) {
@@ -436,6 +454,11 @@ const calculateInBoundary = () => {
 
 nextTick(() => (showPopover.value = true))
 
+// watch
+watch(getPlayerName, () => {
+  player.value = getPlayerName.value
+})
+
 // mounted
 onMounted(function () {
   nextTick(async () => {
@@ -446,7 +469,7 @@ onMounted(function () {
 
     // setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
     showPopover.value = false
-    player.value = getName.value
+    player.value = getPlayerName.value
     uploadInProgress.value = false
   })
 })
@@ -458,6 +481,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
+@import '../assets/styles/style';
+
 input#found {
   margin-left: 3.5rem;
   display: none;
@@ -471,7 +496,7 @@ input#found {
   img {
     position: absolute;
     top: 33%;
-    left: 1.5rem;
+    left: $default-font-size;
   }
 
   #google-input {

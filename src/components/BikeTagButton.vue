@@ -64,16 +64,12 @@ const backgroundSrc = computed(() => {
       padding: 1rem;
       color: black;
 
-      @media (min-width: $breakpoint-mobile-sm) {
-        font-size: 1rem;
-      }
-
       @media (min-width: $breakpoint-mobile-md) {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
       }
 
       @media (min-width: $breakpoint-mobile-lg) {
-        font-size: 1.5rem;
+        font-size: 1.85rem;
       }
     }
   }
@@ -81,7 +77,7 @@ const backgroundSrc = computed(() => {
   &__button {
     background: transparent;
     border: none;
-    font-family: $default-font-family;
+    font-family: $default-secondary-font-family;
     font-weight: bold;
     text-transform: uppercase;
 

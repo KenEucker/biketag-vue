@@ -3,19 +3,33 @@
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
-  <b-modal v-model="modal" title="BikeDex" hide-footer hide-header modal-class="trans-bck">
-    <div v-if="player" class="container mt-5">
-      <bike-dex :tags="player.tags" />
+  <b-modal
+    v-if="player && bikedex?.length"
+    v-model="modal"
+    title="BikeDex"
+    hide-footer
+    hide-header
+    modal-class="bikedex-modal"
+  >
+    <div class="container mt-5">
+      <bike-dex :tags="bikedex" />
     </div>
   </b-modal>
-  <div v-if="player" class="container mt-5">
+  <div v-if="player" class="container biketag-player">
     <div class="social mb-2">
-      <player-bicon class="social__cnt--center" size="lg" :player="player" :no-link="true" />
-      <div class="social__cnt--left" @click="showModal">
+      <div class="mt-5 mr-2" @click="showBikeDex">
         <img
-          class="social__icon"
+          v-if="bikedex?.length"
+          class="bikedex-icon"
           src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktYm9vdHN0cmFwLXJlYm9vdCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS4xNjEgOGE2Ljg0IDYuODQgMCAxIDAgNi44NDItNi44NC41OC41OCAwIDEgMSAwLTEuMTYgOCA4IDAgMSAxLTYuNTU2IDMuNDEybC0uNjYzLS41NzdhLjU4LjU4IDAgMCAxIC4yMjctLjk5N2wyLjUyLS42OWEuNTguNTggMCAwIDEgLjcyOC42MzNsLS4zMzIgMi41OTJhLjU4LjU4IDAgMCAxLS45NTYuMzY0bC0uNjQzLS41NkE2LjgxMiA2LjgxMiAwIDAgMCAxLjE2IDh6Ii8+CiAgPHBhdGggZD0iTTYuNjQxIDExLjY3MVY4Ljg0M2gxLjU3bDEuNDk4IDIuODI4aDEuMzE0TDkuMzc3IDguNjY1Yy44OTctLjMgMS40MjctMS4xMDYgMS40MjctMi4xIDAtMS4zNy0uOTQzLTIuMjQ2LTIuNDU2LTIuMjQ2SDUuNXY3LjM1MmgxLjE0MXptMC0zLjc1VjUuMjc3aDEuNTdjLjg4MSAwIDEuNDE2LjQ5OSAxLjQxNiAxLjMyIDAgLjg0LS41MDQgMS4zMjQtMS4zODYgMS4zMjRoLTEuNnoiLz4KPC9zdmc+"
         />
+      </div>
+      <player-bicon class="social__cnt--center" size="lg" :player="player" :no-link="true" />
+      <div v-if="achievements?.length" class="achievements">
+        <h3>Achievements</h3>
+        <div v-for="achievement in achievements" :key="achievement.key" class="achievement-scroll">
+          <bike-tag-achievement :achievement="achievement" />
+        </div>
       </div>
       <div v-if="Object.keys(playerSocial ?? {}).length" class="social__cnt--rigth">
         <a
@@ -41,7 +55,7 @@
         align="center"
         @page-click="changePage"
       ></b-pagination>
-      <div class="m-auto player-tags">
+      <div class="small-margin player-tags">
         <div v-for="tag in tagsForList" :key="tag?.tagnumber">
           <bike-tag
             :key="tag?.tagnumber"
@@ -83,6 +97,7 @@ import Imgur from '@/assets/images/Imgur.svg'
 import Discord from '@/assets/images/Discord.svg'
 
 // components
+import BikeTagAchievement from '@/components/BikeTagAchievement.vue'
 import PlayerBicon from '@/components/PlayerBicon.vue'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
@@ -112,16 +127,15 @@ const socialLinks = {
 }
 const modal = ref(false)
 const store = useStore()
+const playerName = ref(decodeURIComponent(encodeURIComponent(route.params.name)))
+
+store.setAllAchievements()
 
 // computed
+const bikedex = computed(() => [])
 const getPlayers = computed(() => store.getPlayers)
-const player = computed(() => {
-  const playerList = getPlayers.value?.filter((player) => {
-    const player_name = playerName()
-    return decodeURIComponent(encodeURIComponent(player.name)) == player_name
-  })
-  return playerList[0]
-})
+const player = computed(() => getPlayers.value?.find((p) => p.name === playerName.value))
+const achievements = computed(() => player.value?.achievements?.map(store.getBikeTagAchievement))
 const tagsForList = computed(() => {
   const tags = player.value?.tags
   return tags
@@ -137,10 +151,9 @@ const resetCurrentPage = () => {
   startLoading()
   currentPage.value = 1
 }
-const playerName = () => decodeURIComponent(encodeURIComponent(route.params.name))
 const changePage = (event, pageNumber) => {
   startLoading()
-  router.push('/player/' + encodeURIComponent(playerName()) + '/' + pageNumber)
+  router.push('/player/' + encodeURIComponent(playerName.value) + '/' + pageNumber)
 }
 const startLoading = async () => {
   tagsLoaded.value = []
@@ -150,11 +163,8 @@ const startLoading = async () => {
       tagsAreLoading.value = false
     }, 500)
   }
-  playerSocial.value = (await store.getUserSocial(playerName())).data
-  playerSocial.value = playerSocial.value.length ? playerSocial.value[0]?.user_metadata?.social : {}
-  playerSocial.value?.discord && (playerSocial.value.discord = '')
 }
-const showModal = () => {
+const showBikeDex = () => {
   modal.value = true
   // console.log(modal)
 }
@@ -179,6 +189,7 @@ onMounted(async () => {
   tagsAreLoading.value = true
   await store.setTags()
   await store.setPlayers()
+  store.fetchPlayerProfile(playerName.value)
   tagsAreLoading.value = false
 })
 </script>
@@ -186,7 +197,7 @@ onMounted(async () => {
 <style lang="scss">
 @import '../assets/styles/style';
 
-.trans-bck {
+.bikedex-modal {
   .modal-content {
     background-color: transparent;
     border: unset;
@@ -199,7 +210,9 @@ onMounted(async () => {
   }
 }
 
-.player-wrapper {
+.player-bicon {
+  // right: 2rem;
+
   .player-bicon {
     width: 100%;
 
@@ -208,14 +221,44 @@ onMounted(async () => {
     }
   }
 }
+
+@media (width <= 767px) {
+  .social {
+    flex-wrap: wrap;
+  }
+
+  // .player-bicon {
+  //   margin: auto;
+  // }
+}
 </style>
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 
+.achievements {
+  margin-left: 5%;
+
+  h3 {
+    margin-top: auto;
+    text-align: left;
+  }
+}
+.achievement-scroll {
+  display: flex;
+  overflow-x: scroll;
+}
+
+.bikedex-icon {
+  cursor: pointer;
+  width: 2rem;
+  margin-right: 1rem;
+}
+
 .social {
-  flex-flow: column nowrap;
-  width: fit-content;
-  margin: 0 auto;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
 
   &__cnt {
     &--left,
@@ -234,22 +277,15 @@ onMounted(async () => {
       justify-content: space-between;
       width: 65%;
     }
-
-    &--center {
-      width: 100%;
-    }
   }
 
   &__icon {
     cursor: pointer;
     width: 2rem;
+    margin-right: 1rem;
   }
 
   @media (min-width: $breakpoint-laptop) {
-    display: grid;
-    grid-template-columns: 50px 1fr 50px;
-    grid-template-rows: 1fr;
-
     &__cnt {
       &--left,
       &--center,

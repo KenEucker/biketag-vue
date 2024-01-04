@@ -54,6 +54,7 @@ async function close() {
 
 // created
 async function created() {
+  /// TODO: remove this extra call and ensure that the manifest is still being created
   await store.setGame()
   try {
     const manifestLinkEl = document.querySelector('link[rel="manifest"]')

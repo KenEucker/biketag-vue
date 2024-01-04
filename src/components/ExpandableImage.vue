@@ -13,7 +13,7 @@
     <img
       v-show="!loading"
       :src="imgSrc"
-      class="img-fluid"
+      class="img-fluid img-selector"
       v-bind="$attrs"
       :alt="imgSrc"
       @load="loaded"
@@ -119,12 +119,17 @@ watch(
 }
 
 .expandable-image {
+  width: 100%;
+  height: 100%;
   cursor: zoom-in;
   position: relative;
   transition: 0.25s opacity;
 
   img {
     width: 100%;
+    height: 100%;
+    aspect-ratio: 2;
+    object-fit: cover;
   }
 }
 

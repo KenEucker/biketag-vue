@@ -1,6 +1,6 @@
 import { DeviceUUID } from '@/common/uuid'
 import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
-import { Tag } from 'biketag/lib/common/schema'
+import { Game, Tag } from 'biketag/lib/common/schema'
 import CryptoJS from 'crypto-js'
 import domtoimage from 'dom-to-image'
 import log from 'loglevel'
@@ -76,9 +76,9 @@ export const getDomainInfo = (req: any): DomainInfo => {
     'localhost',
   ]
   let host = (
-    req.headers?.host?.length
+    req?.headers?.host?.length
       ? req.headers.host
-      : req.location?.host?.length
+      : req?.location?.host?.length
         ? req.location.host
         : ''
   )
@@ -195,7 +195,7 @@ export const setProfileCookie = (
   }
 }
 
-export const setNPAuthorization = (basic: string): string => {
+export const encodeBikeTagString = (basic: string): string => {
   return CryptoJS.AES.encrypt(basic, process.env.HOST_KEY ?? 'BikeTag').toString()
 }
 
@@ -297,9 +297,14 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
       : BiketagFormSteps.addFoundImage
   }
 
-  console.log({ queuedTagState })
   return queuedTagState
 }
+
+export const getSupportedGames = (games: Game[]) =>
+  games.filter(
+    (g: Game) =>
+      g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length,
+  )
 
 export const getSanityImageActualSize = (logo: string) => logo?.split('.')[2]?.split('-')[1]
 

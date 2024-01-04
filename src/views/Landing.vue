@@ -30,8 +30,8 @@
           <li class="nav-item" @click="toSection('BikeTag Ambassador program')">
             {{ $t('BikeTag Ambassadors') }}
           </li>
-          <li class="nav-item" @click="toSection('Open Source')">
-            {{ $t('Open Source Project') }}
+          <li class="nav-item" @click="toSection('Open-Source')">
+            {{ $t('Open-Source Project') }}
           </li>
         </ul>
       </div>
@@ -41,7 +41,7 @@
   <main>
     <bike-tag-blurb
       title="What is BikeTag?"
-      subtitle="BikeTag is a mystery photo tag game played on bicycle"
+      subtitle="BikeTag is a mystery photo tag game played on bicycles"
       :img-src="BikeTagSvg"
       link-text="Support BikeTag"
       link="https://patreon.com/biketag"
@@ -55,9 +55,10 @@
         see the most recent Bike Tags in their city and participate in the game in an easy and
         simple way, without needing to login to anything. The origins of the game of BikeTag, as far
         as we have been able to track, put the game in Minneapolis, Minnesota, in 2007. BikeTag on
-        Reddit was started on in 2011 on /r/BikingATX, that was then adopted by /r/bikeLA, that was
-        then adopted by /r/chibike. The game in /r/CyclePDX was created in 2016 and this website was
-        created in 2018 as a tool for the game in Portland, Oregon.
+        Reddit was started in 2011 on the /r/BikingATX subreddit, that was then adopted by
+        /r/bikeLA, then adopted by /r/chibike. The game in /r/CyclePDX was created in 2016 and this
+        website was created in 2018 as a tool for the game in Portland, Oregon. In 2020, BikeTag.org
+        opened up to host games all over the world and continues to launch new games.
       </p>
       <br />
       <p>
@@ -87,9 +88,9 @@
     >
       <p>
         Our mission is to make the game of BikeTag easy for anyone to play and to support games of
-        BikeTag all over the world. To that goal, we created BikeTag.Org and maintain the Open
-        Source code that runs the website. We help integrate with existing BikeTag games and we help
-        create new ones.
+        BikeTag all over the world. To that goal, we created BikeTag.Org and maintain the
+        Open-Source code that runs the website. We help integrate with existing BikeTag games and we
+        help create new ones.
       </p>
       <br />
       <p>
@@ -108,7 +109,7 @@
       </p>
     </bike-tag-blurb>
     <bike-tag-blurb
-      title="Open Source"
+      title="Open-Source"
       subtitle="BikeTag is an Open-Source Project Deployed on Netlify "
       img-src="/images/github-netlify.webp"
       link-text="Contribute to BikeTag"
@@ -116,7 +117,7 @@
       variant="left"
     >
       <p>
-        This project was started as an open source code repository on GitHub. The entirety of the
+        This project was started as an open-source code repository on GitHub. The entirety of the
         BikeTag platform lives on, there, and you can host/run the software if you are so inclined.
         We also have a developer API that you can use to develop your own version of the BikeTag
         App! Every aspect of the planning, volunteer coordination, software development, design, and
@@ -192,6 +193,8 @@ function closeMenu() {
 
 <style lang="scss">
 main {
+  // font-size: 1.25rem;
+
   section {
     margin-bottom: 1.5rem;
   }
@@ -211,7 +214,7 @@ main {
 
       .biketag__text {
         .biketag__text--inner {
-          font-size: 0.8rem !important;
+          font-size: 13rem !important;
           line-height: 1;
         }
       }
@@ -304,8 +307,9 @@ header {
         height: inherit;
 
         .nav-item {
-          font-size: 1rem;
-          margin: 0 1rem !important;
+          font-size: 2rem;
+
+          // margin: 0 1rem !important;
           box-shadow: unset;
           border-bottom: unset;
         }

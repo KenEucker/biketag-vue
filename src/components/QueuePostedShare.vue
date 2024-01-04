@@ -109,7 +109,7 @@ const router = useRouter()
 const { t } = useI18n()
 const showConfetti = ref(false)
 const shareText = computed(
-  () => `I won round ${getCurrentBikeTag.value.tagnumber} of BikeTag ${getGameName.value}!`,
+  () => `I won round ${getCurrentBikeTag.value.tagnumber} of BikeTag ${getGameNameProper.value}!`,
 )
 const shareOptions = computed(() => ({
   url: `https://${getGameName.value}.biketag.org/${getCurrentBikeTag.value.tagnumber}`,
@@ -199,6 +199,8 @@ onMounted(() => {
 }
 </style>
 <style scoped lang="scss">
+@import '../assets/styles/style';
+
 .queue-posted-share {
   .tab-logo {
     max-width: 2em;
@@ -228,7 +230,7 @@ onMounted(() => {
 
   form {
     label {
-      font-size: 1.5rem;
+      font-size: $default-font-size;
       margin-right: 1em;
     }
 

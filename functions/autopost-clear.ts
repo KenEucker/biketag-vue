@@ -33,7 +33,6 @@ export const autoClearQueue = async (event): Promise<BackgroundProcessResults> =
   const { data: mostRecentTag } = await adminBiketag.getTag(undefined, { source: 'imgur' })
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
-  console.log({ mostRecentTag })
   if (twentyFourHoursAgo > mostRecentTag.mysteryTime * 1000 && !forceNotify) {
     const errorMessage =
       'Most recent tag was created more than 24 hours ago. Please clear the queue manually.'

@@ -1,11 +1,12 @@
 <template>
   <div
     v-if="_playerName?.length"
-    :class="'player-wrapper mt-5 avatar-' + props.size"
+    :class="`player-bicon avatar-${props.size} my-5 `"
     role="button"
     @click="goPlayerPage"
   >
-    <div>
+    <span v-if="props.size === 'lg'" class="player-name p-1">{{ _playerName }}</span>
+    <div class="player-bicon__count">
       <svg class="svg">
         <clipPath id="badge-clip" clipPathUnits="objectBoundingBox">
           <path
@@ -19,9 +20,14 @@
         :class="`tag-count tag-count--color-${tagColorNumber(props.player.tags.length)}`"
         >{{ getTagCount }}</span
       >
+      <img
+        v-if="playerBiconUrl"
+        class="player-bicon__image"
+        :src="playerBiconUrl"
+        :alt="_playerName"
+      />
     </div>
-    <img v-if="playerBiconUrl" class="player-bicon" :src="playerBiconUrl" :alt="_playerName" />
-    <span class="player-name p-1">{{ _playerName }}</span>
+    <span v-if="props.size !== 'lg'" class="player-name p-1">{{ _playerName }}</span>
   </div>
 </template>
 
@@ -73,10 +79,10 @@ const playerBiconUrl = computed(() => {
   if (props.player && typeof props.player === 'object') {
     if (props.player.bicon) {
       url = props.player.bicon
-    } else if (props.player.tags[props.player.tags.length - 1].mysteryImageUrl) {
+    } else if (props.player.tags[props.player.tags.length - 1]?.mysteryImageUrl) {
       url = props.player.tags[props.player.tags.length - 1].mysteryImageUrl
     } else {
-      url = props.player.tags[props.player.tags.length - 1].foundImageUrl
+      url = props.player.tags[props.player.tags.length - 1]?.foundImageUrl
     }
   }
   return getImgurImageSized.value(url, props.size[0])
@@ -110,9 +116,15 @@ function tagColorNumber(count) {
 </script>
 
 <style scoped lang="scss">
-.player-wrapper {
+@import '../assets/styles/style';
+
+.player-bicon {
   position: relative;
   padding-top: 2rem;
+
+  &__count {
+    position: relative;
+  }
 
   .player-name {
     z-index: 99;
@@ -120,6 +132,8 @@ function tagColorNumber(count) {
     display: block;
     animation: fadein 2s;
     word-break: break-all;
+    font-family: $default-secondary-font-family;
+    white-space: nowrap;
 
     // word-break: break-word;
     // text-decoration-line: underline;
@@ -169,13 +183,13 @@ function tagColorNumber(count) {
     font-size: 0.5em;
   }
 
-  .player-bicon {
+  .player-bicon__image {
     display: none;
   }
 }
 
 .avatar-sm {
-  .player-bicon {
+  .player-bicon__image {
     width: 8rem;
     height: 8rem;
     clip-path: circle(50%);
@@ -195,21 +209,21 @@ function tagColorNumber(count) {
 }
 
 .avatar-md {
-  .player-bicon {
+  .player-bicon__image {
     width: 10rem;
     height: 10rem;
     clip-path: circle(50%);
   }
 
   .player-name {
-    font-size: 1.5rem;
+    font-size: $default-font-size;
     bottom: 0;
     right: -22%;
     top: auto;
   }
 
   .tag-count {
-    font-size: 1.5rem;
+    font-size: $default-font-size;
     width: 3.5rem;
     left: 55%;
     top: 15%;
@@ -223,25 +237,29 @@ function tagColorNumber(count) {
 }
 
 .avatar-lg {
-  .player-bicon {
+  .player-bicon__image {
+    width: 100%;
+    max-width: 85vw;
     border-radius: 5%;
-    max-width: 90vw;
   }
 
   .player-name {
-    position: absolute;
-    top: -5%;
-    left: 0;
-    right: 0;
     transform: unset;
-    font-size: 2rem;
+    max-width: 50vw;
+    font-size: 2.5rem !important;
+    margin-bottom: 5%;
   }
 
   .tag-count {
     font-size: 2rem;
-    top: 2rem;
-    right: 1rem;
+    right: 0;
     padding: 2px 8px;
+  }
+
+  @media (width >= 1024px) {
+    .player-name {
+      font-size: 5rem !important;
+    }
   }
 }
 

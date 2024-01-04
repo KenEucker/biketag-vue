@@ -70,6 +70,10 @@ body {
       border-color: $card-border-color;
 
       .card-body {
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+
         .btn-hint {
           color: $btn-hint-text-color;
           font-weight: $btn-hint-font-weight;
@@ -172,10 +176,9 @@ body {
 
     .player-name {
       color: $tag-text-color;
-      font-family: $default-font-family;
+      font-family: $default-secondary-font-family;
       font-weight: $tag-player-font-weight;
-
-      // font-size: $tag-player-font-size;
+      font-size: $tag-player-font-size;
       line-height: $tag-player-line-height;
       text-transform: uppercase;
     }
@@ -196,7 +199,7 @@ body {
       filter: saturate(0.75);
     }
 
-    .player-wrapper {
+    .player-bicon {
       .player-name {
         color: $player-name-text-color;
       }
@@ -206,27 +209,33 @@ body {
       }
     }
 
-    .form-control:focus{
-      box-shadow: none;
+    .form-control {
+      font-size: $tag-description-font-size;
+
+      &:focus{
+        box-shadow: none;
+      }
+    }
+
+    .small-margin {
+      @media (width >= 1199px){
+        margin: 0 7rem;
+      }
     }
 
     .form-control:-webkit-autofill{
       transition: background-color 5000s ease-in-out 0s;
       box-shadow: inset 0 0 20px 20px white;
     }
-    
+
     .pagination {
       padding-bottom: 1em;
 
       .page-item {
         .page-link {
-          font-size: 0.8rem;
+          font-size: $default-font-size;
           color: $primary-color;
           background-color: transparent;
-
-          @media (width >= 575px){
-            font-size: 1rem;
-          }
         }
 
         &.active {
@@ -236,13 +245,13 @@ body {
             border-color: $primary-color;
           }
         }
-        
+
       }
     }
 
     .swiper {
       padding-bottom: 20px;
-      
+
       .swiper-button-prev {
         color: $btn-swiper-color;
         inset: 25% auto 0 0 !important;
@@ -334,7 +343,7 @@ body {
     .body-text {
       font-family: $default-font-family;
       font-weight: 100;
-      font-size: 1.5rem;
+      font-size: $default-font-size;
       transform: unset;
     }
 
@@ -361,8 +370,8 @@ body {
     }
 
     .queue-text {
-      font-size: 1.2rem!important;
-      margin: 1rem;
+      // font-size: 1.2rem!important;
+      // margin: 1rem;
       text-align: justify;
     }
 
@@ -386,8 +395,7 @@ body {
 
         &__text {
           .queue-title {
-            font-size: 1.2rem!important;
-            margin: 0 1rem;
+            font-size: 1.5rem!important;
           }
         }
       }

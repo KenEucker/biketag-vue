@@ -64,7 +64,7 @@ const backgroundSrc = computed(
 
   p {
     font-weight: 900;
-    font-size: 1rem;
+    font-size: 1.35rem;
     font-family: $default-secondary-font-family;
     height: 100%;
     display: flex;
@@ -80,7 +80,7 @@ const backgroundSrc = computed(
 .biketag-label {
   font-family: $default-secondary-font-family;
   text-transform: uppercase;
-  max-width: 25em;
+  max-width: $btn-max-width;
   position: relative;
   margin: 0 auto;
 }

@@ -97,7 +97,7 @@ function update(e) {
 
   .checkbox {
     &__label {
-      font-size: 1rem;
+      // font-size: 1rem;
       top: 5px;
       left: 10%;
     }
@@ -126,8 +126,10 @@ function update(e) {
 }
 </style>
 <style lang="scss" scoped>
+@import '../assets/styles/style';
+
 .biketag-input {
-  max-width: 25em;
+  max-width: $btn-max-width;
   position: relative;
   margin: 0 auto;
 }

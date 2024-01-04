@@ -235,6 +235,7 @@ form {
 .player-agree {
   max-width: 50%;
   margin: auto;
+  font-family: $default-secondary-font-family;
 }
 
 .approve-button {

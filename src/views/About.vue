@@ -156,6 +156,7 @@ img {
     border: 1px solid;
     padding: 1rem;
     margin-bottom: 2rem;
+    font-size: $default-font-size;
   }
 
   &__hr {
