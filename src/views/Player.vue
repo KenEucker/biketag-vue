@@ -3,16 +3,24 @@
   <loading v-if="tagsAreLoading" v-model:active="tagsAreLoading" :is-full-page="true">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
-  <b-modal v-model="modal" title="BikeDex" hide-footer hide-header modal-class="trans-bck">
-    <div v-if="player" class="container mt-5">
-      <bike-dex :tags="player.tags" />
+  <b-modal
+    v-if="player && bikedex?.length"
+    v-model="modal"
+    title="BikeDex"
+    hide-footer
+    hide-header
+    modal-class="bikedex-modal"
+  >
+    <div class="container mt-5">
+      <bike-dex :tags="bikedex" />
     </div>
   </b-modal>
-  <div v-if="player" class="container">
+  <div v-if="player" class="container biketag-player">
     <div class="social mb-2">
-      <div class="mt-5 mr-2" @click="showModal">
+      <div class="mt-5 mr-2" @click="showBikeDex">
         <img
-          class="social__icon"
+          v-if="bikedex?.length"
+          class="bikedex-icon"
           src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktYm9vdHN0cmFwLXJlYm9vdCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS4xNjEgOGE2Ljg0IDYuODQgMCAxIDAgNi44NDItNi44NC41OC41OCAwIDEgMSAwLTEuMTYgOCA4IDAgMSAxLTYuNTU2IDMuNDEybC0uNjYzLS41NzdhLjU4LjU4IDAgMCAxIC4yMjctLjk5N2wyLjUyLS42OWEuNTguNTggMCAwIDEgLjcyOC42MzNsLS4zMzIgMi41OTJhLjU4LjU4IDAgMCAxLS45NTYuMzY0bC0uNjQzLS41NkE2LjgxMiA2LjgxMiAwIDAgMCAxLjE2IDh6Ii8+CiAgPHBhdGggZD0iTTYuNjQxIDExLjY3MVY4Ljg0M2gxLjU3bDEuNDk4IDIuODI4aDEuMzE0TDkuMzc3IDguNjY1Yy44OTctLjMgMS40MjctMS4xMDYgMS40MjctMi4xIDAtMS4zNy0uOTQzLTIuMjQ2LTIuNDU2LTIuMjQ2SDUuNXY3LjM1MmgxLjE0MXptMC0zLjc1VjUuMjc3aDEuNTdjLjg4MSAwIDEuNDE2LjQ5OSAxLjQxNiAxLjMyIDAgLjg0LS41MDQgMS4zMjQtMS4zODYgMS4zMjRoLTEuNnoiLz4KPC9zdmc+"
         />
       </div>
@@ -124,6 +132,7 @@ const playerName = ref(decodeURIComponent(encodeURIComponent(route.params.name))
 store.setAllAchievements()
 
 // computed
+const bikedex = computed(() => [])
 const getPlayers = computed(() => store.getPlayers)
 const player = computed(() => getPlayers.value?.find((p) => p.name === playerName.value))
 const achievements = computed(() => player.value?.achievements?.map(store.getBikeTagAchievement))
@@ -155,7 +164,7 @@ const startLoading = async () => {
     }, 500)
   }
 }
-const showModal = () => {
+const showBikeDex = () => {
   modal.value = true
   // console.log(modal)
 }
@@ -188,7 +197,7 @@ onMounted(async () => {
 <style lang="scss">
 @import '../assets/styles/style';
 
-.trans-bck {
+.bikedex-modal {
   .modal-content {
     background-color: transparent;
     border: unset;
@@ -201,8 +210,8 @@ onMounted(async () => {
   }
 }
 
-.player-wrapper {
-  right: 2rem;
+.player-bicon {
+  // right: 2rem;
 
   .player-bicon {
     width: 100%;
@@ -218,22 +227,38 @@ onMounted(async () => {
     flex-wrap: wrap;
   }
 
-  .player-wrapper {
-    margin: auto;
-  }
+  // .player-bicon {
+  //   margin: auto;
+  // }
 }
 </style>
 <style lang="scss" scoped>
 @import '../assets/styles/style';
 
+.achievements {
+  margin-left: 5%;
+
+  h3 {
+    margin-top: auto;
+    text-align: left;
+  }
+}
 .achievement-scroll {
   display: flex;
   overflow-x: scroll;
 }
 
+.bikedex-icon {
+  cursor: pointer;
+  width: 2rem;
+  margin-right: 1rem;
+}
+
 .social {
   display: flex;
   width: 100%;
+  align-items: center;
+  justify-content: center;
 
   &__cnt {
     &--left,

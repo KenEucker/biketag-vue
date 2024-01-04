@@ -1,11 +1,12 @@
 <template>
   <div
     v-if="_playerName?.length"
-    :class="'player-wrapper my-5 avatar-' + props.size"
+    :class="`player-bicon avatar-${props.size} my-5 `"
     role="button"
     @click="goPlayerPage"
   >
-    <div>
+    <span v-if="props.size === 'lg'" class="player-name p-1">{{ _playerName }}</span>
+    <div class="player-bicon__count">
       <svg class="svg">
         <clipPath id="badge-clip" clipPathUnits="objectBoundingBox">
           <path
@@ -19,9 +20,14 @@
         :class="`tag-count tag-count--color-${tagColorNumber(props.player.tags.length)}`"
         >{{ getTagCount }}</span
       >
+      <img
+        v-if="playerBiconUrl"
+        class="player-bicon__image"
+        :src="playerBiconUrl"
+        :alt="_playerName"
+      />
     </div>
-    <img v-if="playerBiconUrl" class="player-bicon" :src="playerBiconUrl" :alt="_playerName" />
-    <span class="player-name p-1">{{ _playerName }}</span>
+    <span v-if="props.size !== 'lg'" class="player-name p-1">{{ _playerName }}</span>
   </div>
 </template>
 
@@ -112,9 +118,13 @@ function tagColorNumber(count) {
 <style scoped lang="scss">
 @import '../assets/styles/style';
 
-.player-wrapper {
+.player-bicon {
   position: relative;
   padding-top: 2rem;
+
+  &__count {
+    position: relative;
+  }
 
   .player-name {
     z-index: 99;
@@ -173,13 +183,13 @@ function tagColorNumber(count) {
     font-size: 0.5em;
   }
 
-  .player-bicon {
+  .player-bicon__image {
     display: none;
   }
 }
 
 .avatar-sm {
-  .player-bicon {
+  .player-bicon__image {
     width: 8rem;
     height: 8rem;
     clip-path: circle(50%);
@@ -199,7 +209,7 @@ function tagColorNumber(count) {
 }
 
 .avatar-md {
-  .player-bicon {
+  .player-bicon__image {
     width: 10rem;
     height: 10rem;
     clip-path: circle(50%);
@@ -227,20 +237,16 @@ function tagColorNumber(count) {
 }
 
 .avatar-lg {
-  .player-bicon {
-    width: 14rem;
-    height: 14rem;
-    object-fit: cover;
-    border-radius: 100%;
+  .player-bicon__image {
+    width: 100%;
+    max-width: 75vw;
+    border-radius: 5%;
   }
 
   .player-name {
-    position: absolute;
-    top: -5%;
-    left: 0;
-    right: 0;
     transform: unset;
-    font-size: 2rem;
+    font-size: 5rem !important;
+    margin-bottom: 5%;
   }
 
   .tag-count {

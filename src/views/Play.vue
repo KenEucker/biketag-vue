@@ -250,7 +250,7 @@ onMounted(() => {
 
 #app {
   .queue-page {
-    .card.polaroid .player-wrapper .player-name {
+    .card.polaroid .player-bicon .player-name {
       font-weight: 100;
       font-size: 3rem;
       transform: unset;

@@ -43,11 +43,6 @@ const closePopup = () => {
   width: 100%;
   overflow-x: auto;
 
-  h3 {
-    margin-top: auto;
-    text-align: left;
-  }
-
   img {
     height: 5rem;
     cursor: pointer;

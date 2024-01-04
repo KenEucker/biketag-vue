@@ -50,8 +50,7 @@
                 key != 'passcode',
             )"
             :key="`${i}_label`"
-            class="mt-4 player-name"
-            style="font-size: 2.5rem"
+            class="mt-4 social-icon"
           >
             {{ profile?.user_metadata[social] }}
           </span>
@@ -362,7 +361,7 @@ hr {
   @media (width >= 600px) {
     flex-flow: row nowrap;
 
-    .player-name {
+    .social-icon {
       margin-top: 0;
     }
   }
@@ -394,7 +393,7 @@ hr {
     min-width: 150px;
   }
 
-  .player-name {
+  .social-icon {
     animation: fadein 2s;
   }
 }
