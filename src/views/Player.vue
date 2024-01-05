@@ -108,7 +108,7 @@ const router = useRouter()
 const route = useRoute()
 const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
 const perPage = ref(10)
-const tagsAreLoading = ref(true)
+const tagsAreLoading = ref(false)
 const tagsLoaded = ref([])
 const playerSocial = ref(null)
 const socialNetworkIcons = {
@@ -179,13 +179,11 @@ watch(
 )
 
 // mounted
-router.isReady().then(async () => {
-  console.log('player mounted', playerName.value)
-  tagsAreLoading.value = true
-  await store.setTags()
-  await store.setPlayers()
-  store.fetchPlayerProfile(playerName.value)
-  tagsAreLoading.value = false
+onMounted(async () => {
+  setTimeout(async () => {
+    console.log('player mounted', playerName.value)
+    store.fetchPlayerProfile(playerName.value)
+  })
 })
 </script>
 
