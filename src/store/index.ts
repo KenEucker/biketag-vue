@@ -295,13 +295,11 @@ export const useStore = defineStore('store', {
     },
     async setLeaderboardPlayersProfiles(cached = true) {
       const names = this.leaderboard.map((p) => p.name)
-      return client
-        .players({ names: names.concat('Ken'), cached }, gameOpts as any)
-        .then(async (d) => {
-          if (Array.isArray(d)) {
-            d.forEach(this.SET_PLAYER)
-          }
-        })
+      return client.players({ names, cached }, gameOpts as any).then(async (d) => {
+        if (Array.isArray(d)) {
+          d.forEach(this.SET_PLAYER)
+        }
+      })
     },
     setFormStepToJoin(d: any) {
       if (this.formStep === BiketagFormSteps.viewRound || d) {

@@ -108,7 +108,7 @@ const router = useRouter()
 const route = useRoute()
 const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
 const perPage = ref(10)
-const tagsAreLoading = ref(true)
+const tagsAreLoading = ref(false)
 const tagsLoaded = ref([])
 const playerSocial = ref(null)
 const socialNetworkIcons = {
@@ -128,7 +128,7 @@ const socialLinks = {
 const store = useStore()
 const modal = ref(false)
 const playerName = ref(decodeURIComponent(encodeURIComponent(route.params.name)))
-const player = ref(store.getPlayers.find((p) => p.name === playerName.value))
+const player = computed(() => store.getPlayers.find((p) => p.name === playerName.value))
 
 store.setAllAchievements()
 
@@ -180,13 +180,7 @@ watch(
 
 // mounted
 onMounted(async () => {
-  setTimeout(async () => {
-    tagsAreLoading.value = true
-    await store.setTags()
-    await store.setPlayers()
-    store.fetchPlayerProfile(playerName.value)
-    tagsAreLoading.value = false
-  }, 250)
+  store.fetchPlayerProfile(playerName.value)
 })
 </script>
 
