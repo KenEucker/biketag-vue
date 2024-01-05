@@ -951,13 +951,14 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
               const biketagAdminOpts = getBikeTagClientOpts(req, true)
 
               /// Create the player profile in sanity
-              const updatedPlayer = await createBikeTagPlayerProfile(
+              console.log('creating the player in sanity', { data, biketagAdminOpts })
+              const updatedPlayerResponse = await createBikeTagPlayerProfile(
                 data,
                 biketagAdminOpts.game,
                 new BikeTagClient(biketagAdminOpts),
               )
-              if (!updatedPlayer.success) {
-                console.error('Failed to create the player profile', updatedPlayer.data)
+              if (!updatedPlayerResponse.success) {
+                console.error('Failed to create the player profile', updatedPlayerResponse.data)
               }
 
               /// CONTINUE to the request for initializing the BikeTag profile
