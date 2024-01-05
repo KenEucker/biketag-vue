@@ -363,7 +363,7 @@ export const useStore = defineStore('store', {
           authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: { user_metadata: { name: profile.user_metadata.name } },
+        data: { user_metadata: { name: profile.user_metadata?.name } },
       })
 
       if (nameAssigned.status === 200) {
@@ -403,15 +403,16 @@ export const useStore = defineStore('store', {
       const existingPlayerIndex = this.players.findIndex((p) => p.name === name)
       if (!force && existingPlayerIndex !== -1) {
         const hasTags = this.players[existingPlayerIndex].tags?.length
+        const biconIsSet = this.players[existingPlayerIndex].bicon?.length
         const hasAchievements = this.players[existingPlayerIndex].achievements?.length
-        const mightAlreadyHaveBeenFetched = hasTags && hasAchievements
+        const mightAlreadyHaveBeenFetched = hasTags && (hasAchievements || biconIsSet)
+
         if (mightAlreadyHaveBeenFetched) {
-          console.log('player profile already fetched', name)
           return this.players[existingPlayerIndex]
         }
       }
 
-      console.log('fetching player profile', name)
+      // console.log('fetching player profile', name)
       const playerProfileResult = await client
         .plainRequest({
           method: 'GET',
@@ -425,9 +426,7 @@ export const useStore = defineStore('store', {
           data: err.response?.data,
         }))
 
-      console.log({ playerProfileResult })
       if (playerProfileResult.status !== 200) {
-        console.log('playerProfileResult.data', playerProfileResult.data)
         return existingPlayerIndex !== -1 ? this.players[existingPlayerIndex] : {}
       }
 
