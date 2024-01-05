@@ -86,7 +86,7 @@ onMounted(async () => {
           /// Always get more profile info
           if (
             store.getProfile?.sub !== auth0.user?.value?.sub ||
-            !store.getProfile?.user_metadata.name?.length
+            !store.getProfile?.user_metadata?.name?.length
           ) {
             await store.setProfile(auth0.user.value, token)
           }

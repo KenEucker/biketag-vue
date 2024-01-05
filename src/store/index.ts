@@ -199,8 +199,7 @@ export const useStore = defineStore('store', {
             biketagClientOptions.imgur.queuehash = game.queuehash
             client.config(biketagClientOptions)
 
-            this.SET_GAME(game)
-            return game
+            return this.SET_GAME(game)
           }
           return false
         })
@@ -296,13 +295,11 @@ export const useStore = defineStore('store', {
     },
     async setLeaderboardPlayersProfiles(cached = true) {
       const names = this.leaderboard.map((p) => p.name)
-      return client
-        .players({ names: names.concat('Ken'), cached }, gameOpts as any)
-        .then(async (d) => {
-          if (Array.isArray(d)) {
-            d.forEach(this.SET_PLAYER)
-          }
-        })
+      return client.players({ names, cached }, gameOpts as any).then(async (d) => {
+        if (Array.isArray(d)) {
+          d.forEach(this.SET_PLAYER)
+        }
+      })
     },
     setFormStepToJoin(d: any) {
       if (this.formStep === BiketagFormSteps.viewRound || d) {
@@ -363,7 +360,7 @@ export const useStore = defineStore('store', {
           authorization: `Bearer ${profile.token}`,
           'content-type': 'application/json',
         },
-        data: { user_metadata: { name: profile.user_metadata.name } },
+        data: { user_metadata: { name: profile.user_metadata?.name } },
       })
 
       if (nameAssigned.status === 200) {
@@ -402,16 +399,18 @@ export const useStore = defineStore('store', {
     async fetchPlayerProfile(name: any, force = false) {
       const existingPlayerIndex = this.players.findIndex((p) => p.name === name)
       if (!force && existingPlayerIndex !== -1) {
-        const hasTags = this.players[existingPlayerIndex].tags?.length
-        const hasAchievements = this.players[existingPlayerIndex].achievements?.length
-        const mightAlreadyHaveBeenFetched = hasTags && hasAchievements
+        const hasTags = !!this.players[existingPlayerIndex].tags?.length
+        const biconIsSet = !!this.players[existingPlayerIndex].bicon?.length
+        const hasSlug = !!this.players[existingPlayerIndex].slug?.length
+        const mightAlreadyHaveBeenFetched = hasTags && (hasSlug || biconIsSet)
+
+        console.log({ mightAlreadyHaveBeenFetched, player: this.players[existingPlayerIndex] })
         if (mightAlreadyHaveBeenFetched) {
-          console.log('player profile already fetched', name)
           return this.players[existingPlayerIndex]
         }
       }
 
-      console.log('fetching player profile', name)
+      // console.log('fetching player profile', name)
       const playerProfileResult = await client
         .plainRequest({
           method: 'GET',
@@ -425,9 +424,7 @@ export const useStore = defineStore('store', {
           data: err.response?.data,
         }))
 
-      console.log({ playerProfileResult })
       if (playerProfileResult.status !== 200) {
-        console.log('playerProfileResult.data', playerProfileResult.data)
         return existingPlayerIndex !== -1 ? this.players[existingPlayerIndex] : {}
       }
 
@@ -585,6 +582,8 @@ export const useStore = defineStore('store', {
         setProfileCookie(profile)
         debug('store::profile', profile)
       }
+
+      return this.profile
     },
     SET_GAME(game: any) {
       const oldState = this.game
@@ -593,6 +592,8 @@ export const useStore = defineStore('store', {
       if (oldState?.name !== game?.name) {
         debug('store::game', { game })
       }
+
+      return this.game
     },
     SET_ALL_GAMES(allGames: any) {
       const oldState = this.allGames
@@ -601,6 +602,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== allGames?.length) {
         debug('store::allGames', { allGames })
       }
+
+      return this.allGames
     },
     SET_CURRENT_TAG(tag: any) {
       const oldState = this.currentBikeTag
@@ -609,6 +612,8 @@ export const useStore = defineStore('store', {
       if (oldState?.tagnumber !== tag?.tagnumber) {
         debug('store::currentBikeTag', { tag })
       }
+
+      return this.currentBikeTag
     },
     SET_ACHIEVEMENTS(achievements: any) {
       const oldState = this.achievements
@@ -617,6 +622,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== achievements?.length) {
         debug('store::achievements', { achievements })
       }
+
+      return this.achievements
     },
     SET_TAGS(tags: any) {
       const oldState = this.tags
@@ -625,6 +632,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== tags?.length) {
         debug('store::tags', { tags })
       }
+
+      return this.tags
     },
     SET_LEADERBOARD(leaderboard: any) {
       const oldState = this.leaderboard
@@ -633,6 +642,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== leaderboard?.length) {
         debug('store::leaderboard', { leaderboard })
       }
+
+      return this.leaderboard
     },
     SET_PLAYER(player: any, existingPlayerIndex?: number) {
       if (player) {
@@ -662,6 +673,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== players?.length) {
         debug('store::players', { players })
       }
+
+      return this.players
     },
     SET_QUEUED_TAGS(queuedTags: any) {
       const oldState = this.tagsInRound
@@ -703,6 +716,8 @@ export const useStore = defineStore('store', {
           this.formStep = BiketagFormSteps.addFoundImage
         }
       }
+
+      return this.playerTag
     },
     SET_QUEUE_MYSTERY(data: any) {
       const oldState = this.playerTag
@@ -737,6 +752,8 @@ export const useStore = defineStore('store', {
           this.formStep = BiketagFormSteps.addMysteryImage
         }
       }
+
+      return this.playerTag
     },
     SET_QUEUED_SUBMITTED(data: any) {
       const oldState = this.playerTag
@@ -752,6 +769,8 @@ export const useStore = defineStore('store', {
         this.resetBikeTagCache()
         this.formStep = BiketagFormSteps.roundPosted
       }
+
+      return this.playerTag
     },
     SET_QUEUED_TAG(data?: any) {
       const oldState = this.playerTag
@@ -773,6 +792,8 @@ export const useStore = defineStore('store', {
       ) {
         debug('store::queuedTag', this.playerTag)
       }
+
+      return this.playerTag
     },
     SET_FORM_STEP_TO_JOIN(force: any) {
       const setQueudState = this.formStep !== BiketagFormSteps.roundJoined || force
@@ -786,6 +807,8 @@ export const useStore = defineStore('store', {
       if (oldState !== this.formStep) {
         debug('state::queue', BiketagFormSteps[this.formStep])
       }
+
+      return this.formStep
     },
     SET_QUEUED_TAG_STATE(tag?: any) {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
@@ -800,6 +823,8 @@ export const useStore = defineStore('store', {
       } else {
         this.formStep = BiketagFormSteps.addFoundImage
       }
+
+      return this.formStep
     },
     // RESET_FORM_STEP() {
     //   this.formStep =
@@ -810,14 +835,20 @@ export const useStore = defineStore('store', {
       console.log('RESET_FORM_STEP_TO_FOUND')
       this.formStep = BiketagFormSteps.addFoundImage
       // debug('state::queue', BiketagFormSteps[this.formStep])
+
+      return this.formStep
     },
     RESET_FORM_STEP_TO_MYSTERY() {
       this.formStep = BiketagFormSteps.addMysteryImage
       // debug('state::queue', BiketagFormSteps[this.formStep])
+
+      return this.formStep
     },
     SET_REGION_POLYGON(regionPolygon: any) {
       localStorage.setItem(`${gameName}::regionPolygon`, JSON.stringify(regionPolygon))
       this.regionPolyon = regionPolygon
+
+      return this.regionPolyon
     },
   },
   getters: {
