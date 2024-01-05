@@ -105,7 +105,7 @@ function checkForNewBikeTagPost() {
     debug('ui::new biketag posted!!', store.getCurrentBikeTag.tagnumber)
     if (store.getCurrentBikeTag?.playerId?.length && store.getProfile?.sub?.length) {
       const playerIdMatches = store.getCurrentBikeTag.playerId === store.getProfile.sub
-      const playerName = store.getProfile.name ?? store.getProfile.user_metadata?.name
+      const playerName = store.getProfile.user_metadata?.name
       const playerNameMatches = store.getCurrentBikeTag.mysteryPlayer === playerName
       const visitingPlayerWonMostRecent =
         playerIdMatches && ((!!playerName && playerNameMatches) || !playerName)

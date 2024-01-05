@@ -841,7 +841,7 @@ export const useStore = defineStore('store', {
       return state.profile?.sub
     },
     getPlayerName(state) {
-      return state.profile?.name ?? state.profile?.user_metadata?.name
+      return state.profile?.user_metadata?.name
     },
     getGameBoundary(state) {
       return state.game?.boundary

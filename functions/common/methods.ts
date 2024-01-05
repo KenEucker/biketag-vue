@@ -868,7 +868,7 @@ export const createBikeTagPlayerProfile = async (
 ) => {
   profile = {
     ...profile,
-    name: profile.name ?? profile.user_metadata.name,
+    name: profile.user_metadata.name ?? profile.name,
   }
   if (profile.name?.length) {
     biketag = biketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true))
@@ -918,7 +918,6 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
             /// Happy path
             // console.log('getting auth0 user by name', profile.sub, user_data, data)
             /// Verify that the user exists in Auth0
-            const name = data.name ?? data.user_metadata?.name
             const exists = (
               await axios.request({
                 method: 'GET',
@@ -928,7 +927,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
                   per_page: 1,
                   include_totals: false,
                   fields: 'user_metadata.name',
-                  q: `user_metadata.name:"${name}"`,
+                  q: `user_metadata.name:"${data.user_metadata?.name}"`,
                   search_engine: 'v3',
                 },
                 headers: authorizationHeaders,
@@ -1121,10 +1120,9 @@ export const getBikeTagPlayerProfile = async (
 ): Promise<any> => {
   adminBikeTag =
     adminBikeTag ?? new BikeTagClient(getBikeTagClientOpts(undefined, authorized, false))
-  const playerProfileResult = await adminBikeTag.getPlayer(
-    profile.name ?? profile.user_metadata?.name,
-    { source: 'sanity' },
-  )
+  const playerProfileResult = await adminBikeTag.getPlayer(profile.user_metadata?.name, {
+    source: 'sanity',
+  })
   const playerProfile = playerProfileResult.success ? playerProfileResult.data : {}
   const mergedProfile = { ...profile, ...playerProfile }
 
@@ -1615,7 +1613,7 @@ export const constructAmbassadorProfile = (
     },
   }
   return {
-    name: profile.name ?? user_metadata.name ?? defaults.name ?? '',
+    name: user_metadata.name ?? defaults.name ?? '',
     sub: profile.sub ?? defaults.sub ?? '',
     slug: profile.slug ?? defaults.slug ?? '',
     address1: profile.address1 ?? defaults.address1 ?? '',
@@ -1651,7 +1649,7 @@ export const constructPlayerProfile = (profile: any = {}, defaults: any = {}): B
     },
   }
   return {
-    name: profile.name ?? user_metadata.name ?? defaults.name ?? '',
+    name: user_metadata.name ?? defaults.name ?? '',
     sub: profile.sub ?? defaults.sub ?? '',
     slug: profile.slug ?? defaults.slug ?? '',
     email: profile.email ?? defaults.email ?? '',
