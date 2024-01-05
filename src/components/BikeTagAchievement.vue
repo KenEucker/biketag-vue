@@ -48,6 +48,7 @@ const closePopup = () => {
     cursor: pointer;
   }
 }
+
 .popup {
   position: absolute;
   display: flex;
