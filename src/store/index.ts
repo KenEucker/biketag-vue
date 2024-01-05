@@ -199,8 +199,7 @@ export const useStore = defineStore('store', {
             biketagClientOptions.imgur.queuehash = game.queuehash
             client.config(biketagClientOptions)
 
-            this.SET_GAME(game)
-            return game
+            return this.SET_GAME(game)
           }
           return false
         })
@@ -585,6 +584,8 @@ export const useStore = defineStore('store', {
         setProfileCookie(profile)
         debug('store::profile', profile)
       }
+
+      return this.profile
     },
     SET_GAME(game: any) {
       const oldState = this.game
@@ -593,6 +594,8 @@ export const useStore = defineStore('store', {
       if (oldState?.name !== game?.name) {
         debug('store::game', { game })
       }
+
+      return this.game
     },
     SET_ALL_GAMES(allGames: any) {
       const oldState = this.allGames
@@ -601,6 +604,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== allGames?.length) {
         debug('store::allGames', { allGames })
       }
+
+      return this.allGames
     },
     SET_CURRENT_TAG(tag: any) {
       const oldState = this.currentBikeTag
@@ -609,6 +614,8 @@ export const useStore = defineStore('store', {
       if (oldState?.tagnumber !== tag?.tagnumber) {
         debug('store::currentBikeTag', { tag })
       }
+
+      return this.currentBikeTag
     },
     SET_ACHIEVEMENTS(achievements: any) {
       const oldState = this.achievements
@@ -617,6 +624,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== achievements?.length) {
         debug('store::achievements', { achievements })
       }
+
+      return this.achievements
     },
     SET_TAGS(tags: any) {
       const oldState = this.tags
@@ -625,6 +634,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== tags?.length) {
         debug('store::tags', { tags })
       }
+
+      return this.tags
     },
     SET_LEADERBOARD(leaderboard: any) {
       const oldState = this.leaderboard
@@ -633,6 +644,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== leaderboard?.length) {
         debug('store::leaderboard', { leaderboard })
       }
+
+      return this.leaderboard
     },
     SET_PLAYER(player: any, existingPlayerIndex?: number) {
       if (player) {
@@ -662,6 +675,8 @@ export const useStore = defineStore('store', {
       if (oldState?.length !== players?.length) {
         debug('store::players', { players })
       }
+
+      return this.players
     },
     SET_QUEUED_TAGS(queuedTags: any) {
       const oldState = this.tagsInRound
@@ -703,6 +718,8 @@ export const useStore = defineStore('store', {
           this.formStep = BiketagFormSteps.addFoundImage
         }
       }
+
+      return this.playerTag
     },
     SET_QUEUE_MYSTERY(data: any) {
       const oldState = this.playerTag
@@ -737,6 +754,8 @@ export const useStore = defineStore('store', {
           this.formStep = BiketagFormSteps.addMysteryImage
         }
       }
+
+      return this.playerTag
     },
     SET_QUEUED_SUBMITTED(data: any) {
       const oldState = this.playerTag
@@ -752,6 +771,8 @@ export const useStore = defineStore('store', {
         this.resetBikeTagCache()
         this.formStep = BiketagFormSteps.roundPosted
       }
+
+      return this.playerTag
     },
     SET_QUEUED_TAG(data?: any) {
       const oldState = this.playerTag
@@ -773,6 +794,8 @@ export const useStore = defineStore('store', {
       ) {
         debug('store::queuedTag', this.playerTag)
       }
+
+      return this.playerTag
     },
     SET_FORM_STEP_TO_JOIN(force: any) {
       const setQueudState = this.formStep !== BiketagFormSteps.roundJoined || force
@@ -786,6 +809,8 @@ export const useStore = defineStore('store', {
       if (oldState !== this.formStep) {
         debug('state::queue', BiketagFormSteps[this.formStep])
       }
+
+      return this.formStep
     },
     SET_QUEUED_TAG_STATE(tag?: any) {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
@@ -800,6 +825,8 @@ export const useStore = defineStore('store', {
       } else {
         this.formStep = BiketagFormSteps.addFoundImage
       }
+
+      return this.formStep
     },
     // RESET_FORM_STEP() {
     //   this.formStep =
@@ -810,14 +837,20 @@ export const useStore = defineStore('store', {
       console.log('RESET_FORM_STEP_TO_FOUND')
       this.formStep = BiketagFormSteps.addFoundImage
       // debug('state::queue', BiketagFormSteps[this.formStep])
+
+      return this.formStep
     },
     RESET_FORM_STEP_TO_MYSTERY() {
       this.formStep = BiketagFormSteps.addMysteryImage
       // debug('state::queue', BiketagFormSteps[this.formStep])
+
+      return this.formStep
     },
     SET_REGION_POLYGON(regionPolygon: any) {
       localStorage.setItem(`${gameName}::regionPolygon`, JSON.stringify(regionPolygon))
       this.regionPolyon = regionPolygon
+
+      return this.regionPolyon
     },
   },
   getters: {

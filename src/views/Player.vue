@@ -181,6 +181,7 @@ watch(
 // mounted
 onMounted(async () => {
   nextTick(async () => {
+    console.log('player mounted', playerName.value)
     tagsAreLoading.value = true
     await store.setTags()
     await store.setPlayers()
