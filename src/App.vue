@@ -82,9 +82,13 @@ onMounted(async () => {
     const checkAuth = async () => {
       if (auth0.isAuthenticated.value) {
         if (auth0.idTokenClaims.value) {
-          if (store.getProfile?.sub !== auth0.user?.value?.sub) {
-            const token = auth0.idTokenClaims?.value?.__raw
-            await store.setProfile({ ...auth0.user.value, token })
+          const token = auth0.idTokenClaims?.value?.__raw
+          /// Always get more profile info
+          if (
+            store.getProfile?.sub !== auth0.user?.value?.sub ||
+            !store.getProfile?.user_metadata.name?.length
+          ) {
+            await store.setProfile(auth0.user.value, token)
           }
         }
       }
@@ -105,7 +109,7 @@ function checkForNewBikeTagPost() {
     debug('ui::new biketag posted!!', store.getCurrentBikeTag.tagnumber)
     if (store.getCurrentBikeTag?.playerId?.length && store.getProfile?.sub?.length) {
       const playerIdMatches = store.getCurrentBikeTag.playerId === store.getProfile.sub
-      const playerName = store.getProfile.name ?? store.getProfile.user_metadata?.name
+      const playerName = store.getProfile.user_metadata?.name
       const playerNameMatches = store.getCurrentBikeTag.mysteryPlayer === playerName
       const visitingPlayerWonMostRecent =
         playerIdMatches && ((!!playerName && playerNameMatches) || !playerName)

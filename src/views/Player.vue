@@ -125,45 +125,42 @@ const socialLinks = {
   reddit: 'http://reddit.com/u/',
   discord: '',
 }
-const modal = ref(false)
 const store = useStore()
+const modal = ref(false)
 const playerName = ref(decodeURIComponent(encodeURIComponent(route.params.name)))
+const player = ref(store.getPlayers.find((p) => p.name === playerName.value))
 
 store.setAllAchievements()
 
 // computed
 const bikedex = computed(() => [])
-const getPlayers = computed(() => store.getPlayers)
-const player = computed(() => getPlayers.value?.find((p) => p.name === playerName.value))
 const achievements = computed(() => player.value?.achievements?.map(store.getBikeTagAchievement))
 const tagsForList = computed(() => {
-  const tags = player.value?.tags
-  return tags
-    ? tags
-        .reverse()
-        .slice((currentPage.value - 1) * perPage.value, currentPage.value * perPage.value)
-    : []
+  const tags = player.value?.tags.toReversed()
+  const start = (currentPage.value - 1) * perPage.value
+  const end = currentPage.value * perPage.value
+  return tags.slice(start, end)
 })
 const totalCount = computed(() => player.value?.tags?.length)
 
 // methods
 const resetCurrentPage = () => {
-  startLoading()
+  // startLoading()
   currentPage.value = 1
 }
 const changePage = (event, pageNumber) => {
-  startLoading()
+  // startLoading()
   router.push('/player/' + encodeURIComponent(playerName.value) + '/' + pageNumber)
 }
-const startLoading = async () => {
-  tagsLoaded.value = []
-  tagsAreLoading.value = true
-  if (perPage.value <= 10) {
-    setTimeout(() => {
-      tagsAreLoading.value = false
-    }, 500)
-  }
-}
+// const startLoading = async () => {
+//   tagsLoaded.value = []
+//   tagsAreLoading.value = true
+//   if (perPage.value <= 10) {
+//     setTimeout(() => {
+//       tagsAreLoading.value = false
+//     }, 500)
+//   }
+// }
 const showBikeDex = () => {
   modal.value = true
   // console.log(modal)
@@ -180,9 +177,6 @@ watch(
     currentPage.value = Number(val)
   },
 )
-
-// created
-startLoading()
 
 // mounted
 onMounted(async () => {

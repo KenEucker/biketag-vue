@@ -50,7 +50,6 @@ const profileHandler: Handler = async (event) => {
 
   /// We can only provide profile data if the profile already exists (created by Auth0)
   if (profile?.sub?.length) {
-    console.log({ profile })
     /// If the profile sub (Auth0 field) exists (Authorized)
     await handleAuth0ProfileRequest(event, event.body, profile)
       .then(mergeProfilesIfSuccess())

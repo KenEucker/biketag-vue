@@ -158,10 +158,10 @@ export const useStore = defineStore('store', {
         // }
       }
     },
-    async setProfile(profile: any) {
+    async setProfile(profile: any, token?: string) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {
-        const token = profile.token
+        token = token ?? profile.token
         profile.token = undefined
 
         const response = await client
@@ -406,10 +406,12 @@ export const useStore = defineStore('store', {
         const hasAchievements = this.players[existingPlayerIndex].achievements?.length
         const mightAlreadyHaveBeenFetched = hasTags && hasAchievements
         if (mightAlreadyHaveBeenFetched) {
+          console.log('player profile already fetched', name)
           return this.players[existingPlayerIndex]
         }
       }
 
+      console.log('fetching player profile', name)
       const playerProfileResult = await client
         .plainRequest({
           method: 'GET',
@@ -423,8 +425,9 @@ export const useStore = defineStore('store', {
           data: err.response?.data,
         }))
 
+      console.log({ playerProfileResult })
       if (playerProfileResult.status !== 200) {
-        console.log(playerProfileResult.data)
+        console.log('playerProfileResult.data', playerProfileResult.data)
         return existingPlayerIndex !== -1 ? this.players[existingPlayerIndex] : {}
       }
 
@@ -841,7 +844,7 @@ export const useStore = defineStore('store', {
       return state.profile?.sub
     },
     getPlayerName(state) {
-      return state.profile?.name ?? state.profile?.user_metadata?.name
+      return state.profile?.user_metadata?.name
     },
     getGameBoundary(state) {
       return state.game?.boundary

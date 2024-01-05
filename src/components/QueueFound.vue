@@ -455,8 +455,8 @@ const calculateInBoundary = () => {
 nextTick(() => (showPopover.value = true))
 
 // watch
-watch(getPlayerName, () => {
-  player.value = getPlayerName.value
+watch(getPlayerName, (val) => {
+  player.value = val
 })
 
 // mounted

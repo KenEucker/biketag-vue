@@ -86,7 +86,9 @@ const approveHandler: Handler = async (event) => {
         errors.push(`tag could not be approved: ${nonAdminBiketagOpts.game}`)
       }
     } else {
-      console.error({ biketagOpts: nonAdminBiketagOpts })
+      console.error(`no game found: ${nonAdminBiketagOpts.game}`, {
+        biketagOpts: nonAdminBiketagOpts,
+      })
       errors.push(`no game found: ${nonAdminBiketagOpts.game}`)
     }
   } else {
