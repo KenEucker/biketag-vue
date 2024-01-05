@@ -27,7 +27,7 @@
       <player-bicon class="social__cnt--center" size="lg" :player="player" :no-link="true" />
       <div v-if="achievements?.length" class="achievements">
         <h3>Achievements</h3>
-        <div v-for="achievement in achievements" :key="achievement.key" class="achievement-scroll">
+        <div v-for="achievement in achievements" :key="achievement.key" class="achievement">
           <bike-tag-achievement :achievement="achievement" />
         </div>
       </div>
@@ -234,9 +234,10 @@ onMounted(async () => {
   }
 }
 
-.achievement-scroll {
+.achievement {
   display: flex;
   overflow-x: scroll;
+  display: inline-flex;
 }
 
 .bikedex-icon {
