@@ -27,7 +27,7 @@
       <player-bicon class="social__cnt--center" size="lg" :player="player" :no-link="true" />
       <div v-if="achievements?.length" class="achievements">
         <h3>Achievements</h3>
-        <div v-for="achievement in achievements" :key="achievement.key" class="achievement-scroll">
+        <div v-for="achievement in achievements" :key="achievement.key" class="achievement">
           <bike-tag-achievement :achievement="achievement" />
         </div>
       </div>
@@ -86,7 +86,7 @@
 </template>
 
 <script setup name="PlayerView">
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store'
 import 'vue-loading-overlay/dist/vue-loading.css'
@@ -109,7 +109,7 @@ const route = useRoute()
 const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
 const perPage = ref(10)
 const tagsAreLoading = ref(false)
-const tagsLoaded = ref([])
+// const tagsLoaded = ref([])
 const playerSocial = ref(null)
 const socialNetworkIcons = {
   reddit: Reddit,
@@ -230,12 +230,13 @@ onMounted(async () => {
 
   h3 {
     margin-top: auto;
-    text-align: left;
   }
 }
-.achievement-scroll {
+
+.achievement {
   display: flex;
   overflow-x: scroll;
+  display: inline-flex;
 }
 
 .bikedex-icon {

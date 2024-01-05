@@ -875,7 +875,7 @@ export const createBikeTagPlayerProfile = async (
     if (game?.length) {
       profile.games = profile.games ?? [game]
     }
-    // console.log('creating new BikeTag Profile', profile)
+    console.log('creating new BikeTag Profile', profile)
     return biketag.updatePlayer(profile, { source: 'sanity' })
   } else {
     console.error('profile name not set, cannot create profile', profile)
@@ -960,7 +960,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
                 new BikeTagClient(biketagAdminOpts),
               )
               if (!updatedPlayerResponse.success) {
-                console.error('Failed to create the player profile', updatedPlayerResponse.data)
+                console.error('Failed to create the player profile', updatedPlayerResponse)
               }
 
               /// CONTINUE to the request for initializing the BikeTag profile

@@ -48,6 +48,7 @@ const closePopup = () => {
     cursor: pointer;
   }
 }
+
 .popup {
   position: absolute;
   display: flex;
@@ -84,12 +85,6 @@ const closePopup = () => {
     color: white;
     margin: 2rem auto auto;
     font-size: 24px;
-  }
-}
-
-@media (width <= 767px) {
-  .biketag-achievement h3 {
-    text-align: center;
   }
 }
 </style>
