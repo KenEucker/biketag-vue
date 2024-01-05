@@ -86,7 +86,7 @@
 </template>
 
 <script setup name="PlayerView">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store'
 import 'vue-loading-overlay/dist/vue-loading.css'
@@ -180,11 +180,13 @@ watch(
 
 // mounted
 onMounted(async () => {
-  tagsAreLoading.value = true
-  await store.setTags()
-  await store.setPlayers()
-  store.fetchPlayerProfile(playerName.value)
-  tagsAreLoading.value = false
+  nextTick(async () => {
+    tagsAreLoading.value = true
+    await store.setTags()
+    await store.setPlayers()
+    store.fetchPlayerProfile(playerName.value)
+    tagsAreLoading.value = false
+  })
 })
 </script>
 
