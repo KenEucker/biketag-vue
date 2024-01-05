@@ -82,9 +82,13 @@ onMounted(async () => {
     const checkAuth = async () => {
       if (auth0.isAuthenticated.value) {
         if (auth0.idTokenClaims.value) {
-          if (store.getProfile?.sub !== auth0.user?.value?.sub) {
-            const token = auth0.idTokenClaims?.value?.__raw
-            await store.setProfile({ ...auth0.user.value, token })
+          const token = auth0.idTokenClaims?.value?.__raw
+          /// Always get more profile info
+          if (
+            store.getProfile?.sub !== auth0.user?.value?.sub ||
+            !store.getProfile?.user_metadata.name?.length
+          ) {
+            await store.setProfile(auth0.user.value, token)
           }
         }
       }

@@ -158,10 +158,10 @@ export const useStore = defineStore('store', {
         // }
       }
     },
-    async setProfile(profile: any) {
+    async setProfile(profile: any, token?: string) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {
-        const token = profile.token
+        token = token ?? profile.token
         profile.token = undefined
 
         const response = await client

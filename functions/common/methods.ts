@@ -877,6 +877,8 @@ export const createBikeTagPlayerProfile = async (
     }
     // console.log('creating new BikeTag Profile', profile)
     return biketag.updatePlayer(profile, { source: 'sanity' })
+  } else {
+    console.error('profile name not set, cannot create profile', profile)
   }
   return Promise.resolve({ data: null, success: false })
 }

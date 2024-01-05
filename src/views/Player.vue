@@ -138,7 +138,7 @@ const player = computed(() => getPlayers.value?.find((p) => p.name === playerNam
 const achievements = computed(() => player.value?.achievements?.map(store.getBikeTagAchievement))
 const tagsForList = computed(() => {
   const tags = player.value?.tags
-  return tags
+  return tags?.length
     ? tags
         .reverse()
         .slice((currentPage.value - 1) * perPage.value, currentPage.value * perPage.value)
@@ -148,11 +148,11 @@ const totalCount = computed(() => player.value?.tags?.length)
 
 // methods
 const resetCurrentPage = () => {
-  startLoading()
+  // startLoading()
   currentPage.value = 1
 }
 const changePage = (event, pageNumber) => {
-  startLoading()
+  // startLoading()
   router.push('/player/' + encodeURIComponent(playerName.value) + '/' + pageNumber)
 }
 const startLoading = async () => {
@@ -182,7 +182,7 @@ watch(
 )
 
 // created
-startLoading()
+// startLoading()
 
 // mounted
 onMounted(async () => {
