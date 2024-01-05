@@ -87,10 +87,4 @@ const closePopup = () => {
     font-size: 24px;
   }
 }
-
-@media (width <= 767px) {
-  .biketag-achievement h3 {
-    text-align: center;
-  }
-}
 </style>

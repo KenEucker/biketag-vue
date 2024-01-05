@@ -109,7 +109,7 @@ const route = useRoute()
 const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
 const perPage = ref(10)
 const tagsAreLoading = ref(false)
-const tagsLoaded = ref([])
+// const tagsLoaded = ref([])
 const playerSocial = ref(null)
 const socialNetworkIcons = {
   reddit: Reddit,
@@ -230,7 +230,6 @@ onMounted(async () => {
 
   h3 {
     margin-top: auto;
-    text-align: left;
   }
 }
 
