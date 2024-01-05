@@ -1123,9 +1123,12 @@ export const getBikeTagPlayerProfile = async (
 ): Promise<any> => {
   adminBikeTag =
     adminBikeTag ?? new BikeTagClient(getBikeTagClientOpts(undefined, authorized, false))
-  const playerProfileResult = await adminBikeTag.getPlayer(profile.user_metadata?.name, {
-    source: 'sanity',
-  })
+  const playerProfileResult = await adminBikeTag.getPlayer(
+    profile.user_metadata?.name ?? profile.name,
+    {
+      source: 'sanity',
+    },
+  )
   const playerProfile = playerProfileResult.success ? playerProfileResult.data : {}
   const mergedProfile = { ...profile, ...playerProfile }
 

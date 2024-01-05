@@ -406,10 +406,12 @@ export const useStore = defineStore('store', {
         const hasAchievements = this.players[existingPlayerIndex].achievements?.length
         const mightAlreadyHaveBeenFetched = hasTags && hasAchievements
         if (mightAlreadyHaveBeenFetched) {
+          console.log('player profile already fetched', name)
           return this.players[existingPlayerIndex]
         }
       }
 
+      console.log('fetching player profile', name)
       const playerProfileResult = await client
         .plainRequest({
           method: 'GET',
@@ -423,8 +425,9 @@ export const useStore = defineStore('store', {
           data: err.response?.data,
         }))
 
+      console.log({ playerProfileResult })
       if (playerProfileResult.status !== 200) {
-        console.log(playerProfileResult.data)
+        console.log('playerProfileResult.data', playerProfileResult.data)
         return existingPlayerIndex !== -1 ? this.players[existingPlayerIndex] : {}
       }
 
