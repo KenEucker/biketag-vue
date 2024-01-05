@@ -142,7 +142,6 @@ async function created() {
   /// Set it first thing
   store.SET_DATA_INITIALIZED()
   const game = await store.setGame()
-  console.log('game is is set')
   const _gameIsSet = game?.name?.length !== 0
 
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
@@ -154,7 +153,6 @@ async function created() {
     }
 
     initResults.push(await store.setCurrentBikeTag())
-    console.log('first is set')
     initResults.push(store.setTags())
     initResults.push(store.setPlayers())
     initResults.push(store.setLeaderboard())
