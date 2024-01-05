@@ -402,11 +402,12 @@ export const useStore = defineStore('store', {
     async fetchPlayerProfile(name: any, force = false) {
       const existingPlayerIndex = this.players.findIndex((p) => p.name === name)
       if (!force && existingPlayerIndex !== -1) {
-        const hasTags = this.players[existingPlayerIndex].tags?.length
-        const biconIsSet = this.players[existingPlayerIndex].bicon?.length
-        const hasAchievements = this.players[existingPlayerIndex].achievements?.length
-        const mightAlreadyHaveBeenFetched = hasTags && (hasAchievements || biconIsSet)
+        const hasTags = !!this.players[existingPlayerIndex].tags?.length
+        const biconIsSet = !!this.players[existingPlayerIndex].bicon?.length
+        const hasSlug = !!this.players[existingPlayerIndex].slug?.length
+        const mightAlreadyHaveBeenFetched = hasTags && (hasSlug || biconIsSet)
 
+        console.log({ mightAlreadyHaveBeenFetched, player: this.players[existingPlayerIndex] })
         if (mightAlreadyHaveBeenFetched) {
           return this.players[existingPlayerIndex]
         }

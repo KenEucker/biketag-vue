@@ -1,6 +1,6 @@
 {
   "name": "biketag-vue",
-  "version": "3.2.5-2",
+  "version": "3.2.5-3",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "lint": "npm run lint:js && npm run lint:style",
