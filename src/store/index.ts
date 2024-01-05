@@ -404,7 +404,6 @@ export const useStore = defineStore('store', {
         const hasSlug = !!this.players[existingPlayerIndex].slug?.length
         const mightAlreadyHaveBeenFetched = hasTags && (hasSlug || biconIsSet)
 
-        console.log({ mightAlreadyHaveBeenFetched, player: this.players[existingPlayerIndex] })
         if (mightAlreadyHaveBeenFetched) {
           return this.players[existingPlayerIndex]
         }
