@@ -82,7 +82,7 @@ export const useStore = defineStore('store', {
     async getRegionPolygon(region: any) {
       try {
         if (this.regionPolyon) return this.regionPolyon
-        else if (!region) {
+        else if (!region?.description?.length) {
           return
         }
 

@@ -442,7 +442,10 @@ const setImage = async (event) => {
             }
             isGpsDefault.value = false
           } else {
-            gps.value = getGame.value?.boundary
+            gps.value = {
+              lat: getGame.value?.boundary.lat,
+              lng: getGame.value?.boundary.lng,
+            }
             isGpsDefault.value = true
           }
           center.value = { ...gps.value }
