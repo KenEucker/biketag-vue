@@ -1375,6 +1375,7 @@ export const setNewBikeTagPost = async (
     /// Zero out the gps for the new location, as the GPS of a newly posted tag is the current/previous tag found location
     newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
     /// Update the current BikeTag with the winning tag found information
+    previousBikeTag.gps = winningBikeTagPost.gps
     previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
     previousBikeTag.foundTime = winningBikeTagPost.foundTime
     previousBikeTag.foundLocation = winningBikeTagPost.foundLocation

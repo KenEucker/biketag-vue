@@ -180,6 +180,7 @@ watch(
 
 // mounted
 onMounted(async () => {
+  await store.setPlayers() // ensure the players are set before fetching THIS player's additional profile info
   store.fetchPlayerProfile(playerName.value)
 })
 </script>

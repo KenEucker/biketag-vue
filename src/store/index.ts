@@ -82,7 +82,7 @@ export const useStore = defineStore('store', {
     async getRegionPolygon(region: any) {
       try {
         if (this.regionPolyon) return this.regionPolyon
-        else if (!region) {
+        else if (!region?.description?.length) {
           return
         }
 
@@ -297,7 +297,7 @@ export const useStore = defineStore('store', {
       const names = this.leaderboard.map((p) => p.name)
       return client.players({ names, cached }, gameOpts as any).then(async (d) => {
         if (Array.isArray(d)) {
-          d.forEach(this.SET_PLAYER)
+          d.forEach((p) => this.SET_PLAYER(p))
         }
       })
     },

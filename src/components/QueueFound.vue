@@ -91,9 +91,8 @@
           <template #title> Location: {{ getLocation }} </template>
           <p v-if="locationDisabled">{{ t('pages.round.image_first') }}</p>
           <bike-tag-map
-            v-if="isGps"
             variant="play/input"
-            :gps="gps"
+            :gps="isGps ? gps : getGame?.boundary?.lat ? getGame?.boundary : undefined"
             :start="center"
             @dragend="updateMarker"
           />
@@ -109,8 +108,16 @@
         <b-modal
           v-model="confirmInBoundary"
           class="confirm-modal"
-          :title="t('pages.round.missing_gps_alert.title')"
+          :title="t('pages.round.location_oustide_boundary_alert.title')"
           @ok="confirmedBoundary = true"
+        >
+          <p>{{ t('pages.round.location_oustide_boundary_alert.body') }}</p>
+        </b-modal>
+        <b-modal
+          v-model="confirmNoGPS"
+          class="confirm-modal"
+          :title="t('pages.round.missing_gps_alert.title')"
+          @ok="confirmedNoGPS = true"
         >
           <p>{{ t('pages.round.missing_gps_alert.body') }}</p>
         </b-modal>
@@ -176,6 +183,8 @@ const toast = inject('toast')
 const { t } = useI18n()
 const boundary = ref({})
 const isInBoundary = ref(false)
+const confirmNoGPS = ref(false)
+const confirmedNoGPS = ref(false)
 const confirmInBoundary = ref(false)
 const confirmedBoundary = ref(false)
 let auth0 = isAuthenticationEnabled() ? useAuth0() : undefined
@@ -204,6 +213,9 @@ const hideModal = () => (showModal.value = false)
 const onSubmit = async (e) => {
   e.preventDefault()
   uploadInProgress.value = true
+  const gpsIsDefault =
+    gps.value.lat === getGame.value?.boundary.lat && gps.value.lng === getGame.value?.boundary.lng
+
   /// Attempts to fix the tagnumber === #NaN issue
   if (!getCurrentBikeTag?.tagnumber) {
     await store.setTags()
@@ -213,11 +225,16 @@ const onSubmit = async (e) => {
 
   if (!location.value?.length) {
     toast.open({
-      message: 'Please add your Found Location',
+      message: 'Please add a Found Location description',
       type: 'error',
       duration: 10000,
       position: 'top',
     })
+    uploadInProgress.value = false
+    return
+  } else if (confirmedNoGPS.value === false && gpsIsDefault) {
+    confirmNoGPS.value = true
+    confirmedNoGPS.value = true
     uploadInProgress.value = false
     return
   }
@@ -295,7 +312,7 @@ const onSubmit = async (e) => {
     return
   }
   if (location.value?.length == 0) {
-    if (gps.value.lat == null) {
+    if (!gps.value.lat) {
       debug('location must be set')
       uploadInProgress.value = false
       return
@@ -319,11 +336,13 @@ const onSubmit = async (e) => {
     foundLocation: location.value,
     tagnumber: getCurrentBikeTag.value?.tagnumber ?? 0,
     game: getGameName.value,
-    gps: {
-      lat: gps.value.lat,
-      long: gps.value.lng,
-      alt: gps.value.alt,
-    },
+    gps: !gpsIsDefault
+      ? {
+          lat: gps.value.lat,
+          long: gps.value.lng,
+          alt: gps.value.alt,
+        }
+      : {},
     inBoundary: isInBoundary.value,
   }
   uploadInProgress.value = false
@@ -344,6 +363,7 @@ const changeLocation = (e) => {
 const setPlace = (e) => {
   gps.value['lat'] = round(e.geometry.location.lat())
   gps.value['lng'] = round(e.geometry.location.lng())
+  console.log('setPlace', { gps: gps.value })
   center.value = { ...gps.value }
   location.value = inputDOM.value.value.split(',')[0]
   if (isGpsDefault.value) {
@@ -353,6 +373,7 @@ const setPlace = (e) => {
 const updateMarker = (e) => {
   gps.value['lat'] = round(e.latLng.lat())
   gps.value['lng'] = round(e.latLng.lng())
+
   if (isGpsDefault.value) {
     isGpsDefault.value = false
   }
@@ -421,11 +442,17 @@ const setImage = async (event) => {
               lng: round(GPSData.longitude),
             }
             isGpsDefault.value = false
-          } else {
-            gps.value = getGame.value?.boundary
+            center.value = { ...gps.value }
+          } else if (getGame.value?.boundary.lat && getGame.value?.boundary.lng) {
+            gps.value = {
+              lat: getGame.value?.boundary.lat,
+              lng: getGame.value?.boundary.lng,
+            }
             isGpsDefault.value = true
+            center.value = { ...gps.value }
+          } else {
+            isGpsDefault.value = false
           }
-          center.value = { ...gps.value }
           location.value = ''
         }
       }
