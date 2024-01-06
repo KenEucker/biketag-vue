@@ -92,7 +92,7 @@
           <p v-if="locationDisabled">{{ t('pages.round.image_first') }}</p>
           <bike-tag-map
             variant="play/input"
-            :gps="isGps ? gps : getGame.boundary"
+            :gps="isGps ? gps : getGame?.boundary?.lat ? getGame?.boundary : undefined"
             :start="center"
             @dragend="updateMarker"
           />
@@ -363,6 +363,7 @@ const changeLocation = (e) => {
 const setPlace = (e) => {
   gps.value['lat'] = round(e.geometry.location.lat())
   gps.value['lng'] = round(e.geometry.location.lng())
+  console.log('setPlace', { gps: gps.value })
   center.value = { ...gps.value }
   location.value = inputDOM.value.value.split(',')[0]
   if (isGpsDefault.value) {
@@ -441,14 +442,17 @@ const setImage = async (event) => {
               lng: round(GPSData.longitude),
             }
             isGpsDefault.value = false
-          } else {
+            center.value = { ...gps.value }
+          } else if (getGame.value?.boundary.lat && getGame.value?.boundary.lng) {
             gps.value = {
               lat: getGame.value?.boundary.lat,
               lng: getGame.value?.boundary.lng,
             }
             isGpsDefault.value = true
+            center.value = { ...gps.value }
+          } else {
+            isGpsDefault.value = false
           }
-          center.value = { ...gps.value }
           location.value = ''
         }
       }

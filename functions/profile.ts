@@ -38,7 +38,7 @@ const profileHandler: Handler = async (event) => {
         const success = dataIsArray ? data?.length : !!data
         const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
 
-        console.log({ profileFound })
+        // console.log({ profileFound })
         if (profileFound) {
           body = await getBikeTagPlayerProfile(profileFound, authorized, true)
         } else {
