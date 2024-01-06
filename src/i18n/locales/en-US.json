@@ -134,9 +134,13 @@
       "reset_tag": "Reset tag submission",
       "user_agree": "By uploading content to BikeTag, you agree to the terms of use set by the BikeTag Project",
       "image_first": "Please upload your image first!",
-      "missing_gps_alert": {
+      "location_oustide_boundary_alert": {
         "title": "Confirm location outside the limits",
         "body": "The chosen location is outside the suggested game boundaries. Are you sure you want to continue?"
+      },
+      "missing_gps_alert": {
+        "title": "Confirm no GPS data?",
+        "body": "You have selected an image with no GPS data, and without moving the pin on the map we won't know where this tag is located. Please consider moving the pin on the map, or selecting a location from the autopopulated choices."
       }
     },
     "howto": {
