@@ -14,12 +14,14 @@
         </div>
         <div class="card-bottom">
           <div v-if="props.foundDescription?.length" class="description">
-            <span>{{ props.foundDescription }}</span>
+            <span v-dynamic-font="dynamicFontSettings">{{ props.foundDescription }}</span>
           </div>
           <div v-else class="description">
-            <span>#{{ _foundTagnumber }}</span>
-            <span class="found-at">[{{ t('components.biketag.found_at') }}]</span>
-            <span>
+            <span v-dynamic-font="dynamicFontSettings">#{{ _foundTagnumber }}</span>
+            <span v-dynamic-font="dynamicFontSettings" class="found-at"
+              >[{{ t('components.biketag.found_at') }}]</span
+            >
+            <span v-dynamic-font="dynamicFontSettings">
               {{
                 props.tag.foundLocation?.length
                   ? props.tag.foundLocation
@@ -72,7 +74,7 @@
         </div>
         <div class="card-bottom">
           <div class="description">
-            <span>{{ _mysteryDescription }}</span>
+            <span v-dynamic-font="dynamicFontSettings">{{ _mysteryDescription }}</span>
           </div>
           <div class="info-wrapper">
             <span
@@ -192,6 +194,7 @@ const noTagnumberLink = ref(false)
 const store = useStore()
 const router = useRouter()
 const { t } = useI18n()
+const dynamicFontSettings = { min: 20, max: 28 }
 
 // computed
 const getImgurImageSized = computed(() => store.getImgurImageSized)
@@ -364,7 +367,6 @@ onMounted(() => {
     position: relative;
     white-space: break-spaces;
     padding: 0.5rem;
-    line-height: 2em;
     text-transform: uppercase;
 
     .found-at {

@@ -1,0 +1,2 @@
+export { dynamicFontDirective } from './dynamicFont';
+

@@ -7,6 +7,7 @@ import VueSocials from 'vue-socials'
 import { useToast } from 'vue-toast-notification'
 import VueCookies from 'vue3-cookies'
 import App from './App.vue'
+import { dynamicFontDirective } from './directives'
 import router from './router'
 import { store } from './store/'
 
@@ -69,6 +70,10 @@ class BikeTagApp {
       debug('init::authentication', 'authentication disabled')
     }
   }
+
+  directives() {
+    this.app.directive('dynamic-font', dynamicFontDirective)
+  }
   components() {
     this.app.provide('toast', useToast())
     this.app.use(BootstrapVueNext)
@@ -93,6 +98,7 @@ class BikeTagApp {
     this.authentication()
     this.cookies()
     this.internationalization()
+    this.directives()
     this.components()
     this.router()
     this.mount()
