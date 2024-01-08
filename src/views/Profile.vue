@@ -157,7 +157,7 @@ import Discord from '@/assets/images/Discord.svg'
 import StyledHr from '@/assets/images/hr.svg'
 
 // components
-// import Player from '@/components/PlayerBicon.vue'
+// import Player from '@/components/BikeTagPlayer.vue'
 import Loading from 'vue-loading-overlay'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'

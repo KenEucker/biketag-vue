@@ -25,7 +25,7 @@ import { useRouter } from 'vue-router'
 import StyledHr from '@/assets/images/hr.svg'
 
 // componets
-import BikeTagButton from '@/components/BikeTagButton'
+import BikeTagButton from './BikeTagButton.vue'
 
 // props
 const props = defineProps({

@@ -1,5 +1,7 @@
-<h1 align="center" style="border-bottom: none;">biketag-vue</h1>
-<h3 align="center">The Official BikeTag App</h3>
+<h1 align=center>BikeTag-Vue</h1>
+<div align="center">
+<img alt="biketag-vue logo" src="https://raw.githubusercontent.com/keneucker/biketag-website/production/public/img/Tag-Logo-Stacked-V2-medium.png" height="auto" width="200" style="border-radius:25%;">
+</div>
 <p align="center">
   <a href="https://app.netlify.com/sites/biketag/deploys">
     <img alt="Netlify Status" src="https://api.netlify.com/api/v1/badges/fe7ffef3-ea39-4e5b-a5b8-3ff6f96f45e4/deploy-status">
@@ -22,9 +24,46 @@
   </a>
 </p>
 
-<div align="center">
-<img alt="biketag-vue logo" src="https://raw.githubusercontent.com/keneucker/biketag-website/production/public/img/Tag-Logo-Stacked-V2-medium.png" height="auto" width="200" style="border-radius:25%;">
-</div>
+<p align=center>The Official BikeTag component library for Vue 3.</p>
+
+## 🚀 Installation
+
+Install using your package manager of choice:
+
+```bash
+npm install biketag-vue
+```
+
+## 📺 Demo
+
+https://biketag.net/component-playground
+
+## ⚙️ Usage
+
+Import the component locally or define it globally and include the css file:
+
+```vue
+<template>
+  <bike-tag />
+</template>
+
+<script lang="ts" setup>
+import { BikeTag } from 'biketag-vue';
+import 'biketag-vue/dist/style.css';
+</script>
+```
+
+## 📃 Props
+
+| Name       | Type               | Default | Description                        |
+| ---------- | ------------------ | ------- | ---------------------------------- |
+| `v-model`  | `boolean/null`     |         | Standard two way input             |
+| `disabled` | `boolean`          | false   | Makes the component uninteractable |
+| `color`    | `string`           | #3ba13b | Color of the checkbox background   |
+| `label`    | `string/undefined` |         | Checkbox label                     |
+
+
+<h3 align="center">BikeTag Vue and The Official BikeTag App</h3>
 
 <div align="center">
 

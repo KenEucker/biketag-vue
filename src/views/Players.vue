@@ -38,7 +38,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '@/store/index'
 
 // components
-import PlayerBicon from '@/components/PlayerBicon.vue'
+import PlayerBicon from '@/components/BikeTagPlayer.vue'
 
 // data
 const router = useRouter()
