@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [vue(), dts()],
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'src/publish.ts'),
+      entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'BikeTag',
       fileName: 'biketag-vue',
     },
