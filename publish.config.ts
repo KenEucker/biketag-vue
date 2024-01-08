@@ -9,7 +9,7 @@ export default defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'src/publish.ts'),
       name: 'BikeTag',
-      fileName: 'biketag',
+      fileName: 'biketag-vue',
     },
     rollupOptions: {
       external: ['vue'],

@@ -29,6 +29,8 @@ jobs:
         run: npm run lint
       - name: Build
         run: npm run pub:build
+      - name: Expose build
+        run: npm run pub:expose
       - name: Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
