@@ -109,7 +109,7 @@
     "workbox-window": "^7.0.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=1"
   },
   "lint-staged": {
     "*.ts": [
