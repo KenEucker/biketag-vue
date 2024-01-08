@@ -11,7 +11,7 @@
     "lint:js": "eslint --ext .ts,.js,.vue src --fix",
     "lint:style": "stylelint \"./src/**/*.vue\" \"./src/**/*.scss\" --fix",
     "serve": "vite",
-    "pub:expose": "mv dist/publish.d.ts ./ publish.d.ts && mv dist/biketag-vue.umd.js ./biketag-vue.umd.js && mv dist/biketag-vue.mjs ./biketag-vue.mjs && mv dist/style.css ./style.css && mv dist/components ./components && mv dist/common ./common && mv dist/store ./store",
+    "pub:expose": "mv dist/publish.d.ts ./publish.d.ts && mv dist/biketag-vue.umd.js ./biketag-vue.umd.js && mv dist/biketag-vue.mjs ./biketag-vue.mjs && mv dist/style.css ./style.css && mv dist/components ./components && mv dist/common ./common && mv dist/store ./store",
     "pub:build": "vue-tsc && vite build --config publish.config.ts",
     "build": "vite build",
     "dev:rerun": "npm run dev:clear && npm run dev",
