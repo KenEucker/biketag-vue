@@ -1,0 +1,12 @@
+lib/
+src/coverage/
+webpack.config.js
+src/imgurClient/index.js
+_site/
+examples
+dist
+*.md
+biketag-vue.mjs
+biketag-vue.mjs.map
+biketag-vue.umd.js
+biketag-vue.umd.js.map

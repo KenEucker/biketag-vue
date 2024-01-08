@@ -14,6 +14,7 @@ import BikeTagMap from './components/BikeTagMap.vue'
 import BikeTagMenu from './components/BikeTagMenu.vue'
 import BikeTagPlayer from './components/BikeTagPlayer.vue'
 import BikeTagQueue from './components/BikeTagQueue.vue'
+import { useStore } from './store'
 
 export {
   BikeDex,
@@ -32,4 +33,6 @@ export {
   BikeTagMenu,
   BikeTagPlayer,
   BikeTagQueue,
+  useStore
 }
+
