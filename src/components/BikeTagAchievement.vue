@@ -12,7 +12,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup name="BikeTagAchievement">
 import { ref, computed } from 'vue'
 
 const props = defineProps({

@@ -98,7 +98,7 @@ import Discord from '@/assets/images/Discord.svg'
 
 // components
 import BikeTagAchievement from '@/components/BikeTagAchievement.vue'
-import PlayerBicon from '@/components/PlayerBicon.vue'
+import PlayerBicon from '@/components/BikeTagPlayer.vue'
 import BikeTag from '@/components/BikeTag.vue'
 import Loading from 'vue-loading-overlay'
 import BikeDex from '@/components/BikeDex.vue'

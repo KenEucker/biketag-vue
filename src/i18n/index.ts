@@ -9,6 +9,7 @@ const i18n = createI18n<[MessageSchema], 'en-US'>({
   legacy: false,
   messages: {
     'en-US': enUS,
+    // @ts-ignore
     'es-ES': esES,
   },
 })

@@ -87,8 +87,8 @@
 <script setup name="BikeTagQueue">
 import { inject, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
-import { BiketagFormSteps } from '@/common/types'
+import { useStore } from '../store/index'
+import { BiketagFormSteps } from '../common/types'
 import { useI18n } from 'vue-i18n'
 import VLazyImage from 'v-lazy-image'
 

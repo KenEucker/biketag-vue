@@ -15,7 +15,7 @@
 
 <script setup name="BikeTagButton">
 import { computed } from 'vue'
-import { variants } from '@/common/bikeTagButtonVariants'
+import { variants } from '../common/bikeTagButtonVariants'
 
 // props
 const props = defineProps({

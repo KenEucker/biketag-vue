@@ -1,0 +1,6 @@
+{
+  "branches": [
+    { "name": "production" },
+    { "name": "develop", "channel": "develop", "prerelease": true }
+  ]
+}

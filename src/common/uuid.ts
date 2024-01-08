@@ -618,7 +618,7 @@ export class DeviceUUID {
     }
   }
 
-  getBrowser(s: string | string[]) {
+  getBrowser(s: string) {
     switch (true) {
       case this._Browsers.Edge.test(s):
         this.Agent.isEdge = true
@@ -868,10 +868,12 @@ export class DeviceUUID {
         return 'OS X'
       case this._OS.iPad.test(string):
         this.Agent.isiPad = true
-        return string.match(this._OS.iPad)[0].replace('_', '.')
+        const iOsVersion = string.match(this._OS.iPad) ?? ''
+        return iOsVersion.length ? iOsVersion[0].replace('_', '.') : ''
       case this._OS.iPhone.test(string):
         this.Agent.isiPhone = true
-        return string.match(this._OS.iPhone)[0].replace('_', '.')
+        const iPhoneVersion = string.match(this._OS.iPhone) ?? ''
+        return iPhoneVersion.length ? iPhoneVersion[0].replace('_', '.') : ''
       case this._OS.Bada.test(string):
         this.Agent.isBada = true
         return 'Bada'
@@ -1059,7 +1061,7 @@ export class DeviceUUID {
   }
 
   testNginxGeoIP(headers: { [x: string]: any }) {
-    Object.keys(headers).forEach(function (key) {
+    Object.keys(headers).forEach( (key) => {
       if (/^GEOIP/i.test(key)) {
         this.Agent.geoIp[key] = headers[key]
       }
@@ -1094,14 +1096,18 @@ export class DeviceUUID {
 
   testTouchSupport() {
     this.Agent.isTouchScreen =
+      // @ts-ignore
       'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0
   }
 
   getLaguage() {
     this.Agent.language = (
       navigator.language ||
+      // @ts-ignore
       navigator.userLanguage ||
+      // @ts-ignore
       navigator.browserLanguage ||
+      // @ts-ignore
       navigator.systemLanguage ||
       ''
     ).toLowerCase()
@@ -1126,10 +1132,11 @@ export class DeviceUUID {
   reset() {
     for (const key in this.DefaultAgent) {
       if (this.DefaultAgent.hasOwnProperty(key)) {
+        // @ts-ignore
         this.Agent[key] = this.DefaultAgent[key]
       }
     }
-    return ua
+    return new DeviceUUID()
   }
 
   parse(source?: string) {

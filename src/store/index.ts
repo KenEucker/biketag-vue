@@ -1,5 +1,9 @@
-import { BiketagFormSteps, State } from '@/common/types'
+import BikeTagClient from 'biketag'
+import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
+import { createPinia, defineStore } from 'pinia'
+import { BikeTagDefaults, BiketagFormSteps, State } from '../common/types'
 import {
+  debug,
   encodeBikeTagString,
   getApiUrl,
   getBikeTagClientOpts,
@@ -12,16 +16,12 @@ import {
   getSanityImageUrl,
   getSupportedGames,
   setProfileCookie,
-} from '@/common/utils'
-import BikeTagClient from 'biketag'
-import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
-import { createPinia, defineStore } from 'pinia'
-import { debug } from '../common/utils'
+} from '../common/utils'
 
 const domain = getDomainInfo(window)
 const profile = getProfileFromCookie()
 const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
-const gameName = domain.subdomain ?? process.env.GAME_NAME ?? ''
+const gameName = domain.subdomain ?? process.env.GAME_NAME ?? BikeTagDefaults.gameName
 /// TODO: move these options to a method for FE use only
 const biketagClientOptions: any = {
   // biketag: {
@@ -33,10 +33,10 @@ const biketagClientOptions: any = {
   // },
   ...getBikeTagClientOpts(window),
 }
-const gameOpts = { source: 'sanity' }
+const gameOpts = { source: BikeTagDefaults.source }
 /// TODO: move these constants to common
-const defaultLogo = '/images/BikeTag.svg'
-const defaultJingle = 'media/biketag-jingle-1.mp3'
+const defaultLogo = BikeTagDefaults.logo
+const defaultJingle = BikeTagDefaults.jingle
 const sanityBaseCDNUrl = `${process.env.S_CURL}${biketagClientOptions.sanity?.projectId}/${biketagClientOptions.sanity?.dataset}/`
 
 debug('init::store', {

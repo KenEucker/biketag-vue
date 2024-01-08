@@ -6,37 +6,15 @@ import domtoimage from 'dom-to-image'
 import log from 'loglevel'
 import md5 from 'md5'
 import { useCookies } from 'vue3-cookies'
-import { BikeTagProfile, BiketagFormSteps } from '../../src/common/types'
+import {
+  BikeTagDefaults,
+  BikeTagProfile,
+  BiketagFormSteps,
+  DomainInfo,
+  deca,
+  special,
+} from '../../src/common/types'
 
-export type DomainInfo = {
-  host: string
-  subdomain: string | undefined
-  isSubdomain: boolean
-}
-
-const special = [
-  'zeroth',
-  'first',
-  'second',
-  'third',
-  'fourth',
-  'fifth',
-  'sixth',
-  'seventh',
-  'eighth',
-  'ninth',
-  'tenth',
-  'eleventh',
-  'twelfth',
-  'thirteenth',
-  'fourteenth',
-  'fifteenth',
-  'sixteenth',
-  'seventeenth',
-  'eighteenth',
-  'nineteenth',
-]
-const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet']
 export const stringifyNumber = (n: number): string => {
   if (n < 20) return special[n]
   if (n % 10 === 0) return deca[Math.floor(n / 10) - 2] + 'ieth'
@@ -331,7 +309,7 @@ export const getSanityImageResizedSize = (logo: string) => {
 export const getSanityImageUrl = (
   logo: string,
   size = '',
-  sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/',
+  sanityBaseCDNUrl = BikeTagDefaults.sanityBaseCDNUrl,
   squared = false,
 ) => {
   switch (size) {

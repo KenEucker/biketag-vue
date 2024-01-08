@@ -146,15 +146,15 @@
 
 <script setup name="BikeTagMenu">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/index'
-import { debug, isOnline, isAuthenticationEnabled } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
+import { useRouter, useRoute } from 'vue-router'
+import { debug, isOnline, isAuthenticationEnabled } from '../common/utils'
+import { useStore } from '../store/index'
 import { useI18n } from 'vue-i18n'
 
 // components
-import BikeTagButton from '@/components/BikeTagButton'
-import BikeTagQueue from '@/components/BikeTagQueue'
+import BikeTagButton from './BikeTagButton.vue'
+import BikeTagQueue from './BikeTagQueue.vue'
 
 // props
 const props = defineProps({

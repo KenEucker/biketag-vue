@@ -14,7 +14,7 @@ import { computed } from 'vue'
 import { useStore } from '@/store/index'
 
 // components
-import Player from '@/components/PlayerBicon.vue'
+import Player from '@/components/BikeTagPlayer.vue'
 
 // data
 const store = useStore()

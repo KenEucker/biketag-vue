@@ -6,6 +6,15 @@ export type DomainInfo = {
   isSubdomain: boolean
 }
 
+export const BikeTagDefaults = {
+  gameName: '',
+  source: 'sanity',
+  logo: '/images/BikeTag.svg',
+  jingle: 'media/biketag-jingle-1.mp3',
+  /// TODO: THIS IS BAD
+  sanityBaseCDNUrl: 'https://cdn.sanity.io/images/x37ikhvs/production/',
+}
+
 export const special = [
   'zeroth',
   'first',
