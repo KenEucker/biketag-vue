@@ -31,6 +31,5 @@ export {
   BikeTagMap,
   BikeTagMenu,
   BikeTagPlayer,
-  BikeTagQueue
+  BikeTagQueue,
 }
-

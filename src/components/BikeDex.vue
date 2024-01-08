@@ -1,5 +1,6 @@
 <template>
   <div class="deck">
+    Player's missed rounds
     <template v-for="(tag, i) in props.tags" :key="i">
       <div
         v-if="tag.foundImageUrl"
