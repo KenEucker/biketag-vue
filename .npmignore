@@ -22,13 +22,18 @@ test
 .prettierignore
 .prettierrc.json
 .releaserc.json
+.yarnrc.yml
 
 conduct.md
 contributing.md
 index.md
+index.html
+favicon.*
 tsconfig-server.json
 tsconfig.json
 tsconfig.node.json
 vite.config.ts
 publish.config.ts
-postcss.config.js
+postcss.config.json
+netlify.toml
+
