@@ -235,7 +235,6 @@ onMounted(async () => {
 }
 
 .achievement {
-  display: flex;
   overflow-x: scroll;
   display: inline-flex;
 }
