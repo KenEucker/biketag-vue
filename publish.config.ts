@@ -15,6 +15,10 @@ export default defineConfig({
     rollupOptions: {
       external: ['vue'],
       output: {
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'style.css') return 'biketag-vue.css'
+          return assetInfo.name!
+        },
         // disable warning on src/index.ts using both default and named export
         exports: 'named',
         globals: {
