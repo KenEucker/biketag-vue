@@ -79,6 +79,8 @@ export const getBikeTagClientOpts = (
   const domainInfo = getDomainInfo(request)
   const isAuthenticatedPOST = request?.method === 'POST' || authorized
   const isGET = !isAuthenticatedPOST && request?.method === 'GET'
+
+  /// The minimum to load a BikeTag Game in Read-Only mode
   const opts: any = {
     game:
       game?.name?.toLocaleLowerCase() ??
@@ -95,7 +97,9 @@ export const getBikeTagClientOpts = (
     },
   }
 
+  /// Credentials to make changes to the BikeTag Game
   if (authorized) {
+    /// Enables Imgur uploads and edits for non-admin sources
     opts.imgur = opts.imgur ?? {}
     opts.imgur.clientSecret = process.env.I_CSECRET
     opts.imgur.accessToken = process.env.I_TOKEN

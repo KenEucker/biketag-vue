@@ -63,7 +63,7 @@
 <script setup name="HomeView">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import 'vue-loading-overlay/dist/vue-loading.css'
 // import useSWRV from 'swrv'
 
@@ -82,7 +82,7 @@ const router = useRouter()
 const route = useRoute()
 let tagnumber = ref(route.params?.tagnumber ? parseInt(route.params.tagnumber) : 0)
 const tagIsLoading = ref(true)
-const store = useStore()
+const store = useBikeTagStore()
 const { t } = useI18n()
 
 // computed

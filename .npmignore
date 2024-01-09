@@ -20,6 +20,7 @@ test
 .stylelintrc.js
 .gitattributes
 .prettierignore
+.prettierrc.js
 .prettierrc.json
 .releaserc.json
 .yarnrc.yml
@@ -35,5 +36,6 @@ tsconfig.node.json
 vite.config.ts
 publish.config.ts
 postcss.config.json
+postcss.config.js
 netlify.toml
 

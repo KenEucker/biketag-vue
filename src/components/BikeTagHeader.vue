@@ -33,7 +33,7 @@
 <script setup name="BikeTagHeader">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { useI18n } from 'vue-i18n'
 
 // components
@@ -42,7 +42,7 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 // data
 const jingle = ref(null)
 const playingEaster = ref(false)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const { t } = useI18n()
 

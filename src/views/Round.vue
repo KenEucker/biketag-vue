@@ -27,7 +27,7 @@
 
 <script setup name="QueueBikeTagView">
 import { ref, computed, onMounted } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 // import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
@@ -48,7 +48,7 @@ const time = new Date()
 time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 const timer = ref(useTimer(time.getSeconds()))
 const uploadInProgress = ref(false)
-const store = useStore()
+const store = useBikeTagStore()
 const { t } = useI18n()
 
 const getFormStep = computed(() => store.getFormStep)
@@ -61,8 +61,8 @@ function isViewingQueue() {
 
 // created
 const created = async () => {
-  await store.setCurrentBikeTag()
-  await store.setQueuedTags()
+  await store.fetchCurrentBikeTag()
+  await store.fetchQueuedTags()
 }
 created()
 

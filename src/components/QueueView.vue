@@ -46,7 +46,7 @@
 <script setup name="QueueView">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'
@@ -63,7 +63,7 @@ SwiperCore.use([Pagination])
 
 // data
 const controlledSwiper = ref(null)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const { t } = useI18n()
 

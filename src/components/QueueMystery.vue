@@ -97,7 +97,7 @@
 <script setup name="QueueMysteryTag">
 import { ref, inject, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { ordinalSuffixOf } from '@/common/utils'
 import exifr from 'exifr'
 import { useI18n } from 'vue-i18n'
@@ -128,7 +128,7 @@ const noLongerNew = ref(false)
 const hint = ref(props.tag?.hint ?? '')
 const player = ref('')
 const mysteryTagRef = ref(null)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const toast = inject('toast')
 const { t } = useI18n()

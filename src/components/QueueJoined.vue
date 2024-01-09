@@ -18,7 +18,7 @@
 <script setup name="QueueJoined">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { useI18n } from 'vue-i18n'
 
 // components
@@ -35,7 +35,7 @@ const props = defineProps({
 })
 
 // data
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const { t } = useI18n()
 

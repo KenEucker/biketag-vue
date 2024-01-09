@@ -18,7 +18,7 @@
 import { computed } from 'vue'
 
 import StyledHr from '@/assets/images/hr.svg'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { useI18n } from 'vue-i18n'
 
 // props
@@ -39,7 +39,7 @@ const props = defineProps({
 
 // data
 const styledHr = StyledHr
-const store = useStore()
+const store = useBikeTagStore()
 const { t } = useI18n()
 
 // computed

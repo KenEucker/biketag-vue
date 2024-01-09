@@ -35,7 +35,7 @@
 <script setup name="PlayersView">
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 
 // components
 import PlayerBicon from '@/components/BikeTagPlayer.vue'
@@ -45,7 +45,7 @@ const router = useRouter()
 const route = useRoute()
 const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params?.currentPage) : 1)
 const perPage = ref(10)
-const store = useStore()
+const store = useBikeTagStore()
 
 // computed
 const getPlayers = computed(() => store.getPlayers)

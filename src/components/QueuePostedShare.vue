@@ -86,7 +86,7 @@
 <script setup name="QueueSubmit">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { Settings } from '@/common/types'
 
 // components
@@ -104,7 +104,7 @@ const showReddit = ref(false)
 const showTwitter = ref(false)
 const showInstagram = ref(false)
 const submitTag = ref(null)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const { t } = useI18n()
 const showConfetti = ref(false)

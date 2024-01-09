@@ -88,7 +88,7 @@
 <script setup name="PlayerView">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store'
+import { useBikeTagStore } from '@/store'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import Reddit from '@/assets/images/Reddit.svg'
 import Instagram from '@/assets/images/Instagram.svg'
@@ -125,12 +125,12 @@ const socialLinks = {
   reddit: 'http://reddit.com/u/',
   discord: '',
 }
-const store = useStore()
+const store = useBikeTagStore()
 const modal = ref(false)
 const playerName = ref(decodeURIComponent(encodeURIComponent(route.params.name)))
 const player = computed(() => store.getPlayers.find((p) => p.name === playerName.value))
 
-store.setAllAchievements()
+store.fetchAllAchievements()
 
 // computed
 const bikedex = computed(() => [])
@@ -180,7 +180,7 @@ watch(
 
 // mounted
 onMounted(async () => {
-  await store.setPlayers() // ensure the players are set before fetching THIS player's additional profile info
+  await store.fetchPlayers() // ensure the players are set before fetching THIS player's additional profile info
   store.fetchPlayerProfile(playerName.value)
 })
 </script>

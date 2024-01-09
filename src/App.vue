@@ -27,7 +27,7 @@
 <script setup name="App">
 import { ref, inject, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { debug, isAuthenticationEnabled } from './common/utils'
 import ConfettiExplosion from 'vue-confetti-explosion'
@@ -41,7 +41,7 @@ import { useI18n } from 'vue-i18n'
 // data
 const gameIsSet = ref(false)
 const showConfetti = ref(false)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const { t } = useI18n()
 const toast = inject('toast')
@@ -152,19 +152,19 @@ async function created() {
       gameIsSet.value = false
     }
 
-    initResults.push(await store.setCurrentBikeTag())
-    initResults.push(store.setTags())
-    initResults.push(store.setPlayers())
-    initResults.push(store.setLeaderboard())
+    initResults.push(await store.fetchCurrentBikeTag())
+    initResults.push(store.fetchTags())
+    initResults.push(store.fetchPlayers())
+    initResults.push(store.fetchLeaderboard())
     initResults.push(await store.fetchCredentials())
-    initResults.push(store.setQueuedTags())
-    initResults.push(store.setAllGames())
+    initResults.push(store.fetchQueuedTags())
+    initResults.push(store.fetchAllGames())
 
     await Promise.allSettled(initResults)
 
     checkForNewBikeTagPost()
   } else if (!_gameIsSet) {
-    await store.setAllGames()
+    await store.fetchAllGames()
     router.push('/landing')
   }
   debug(`view::data-init`, 'created')
