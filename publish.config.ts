@@ -13,7 +13,7 @@ export default defineConfig({
       fileName: (format) => `biketag-vue.${format}.js`,
     },
     rollupOptions: {
-      external: ['vue', 'boostrap-vue-next'],
+      external: ['vue'],
       output: {
         // disable warning on src/index.ts using both default and named export
         exports: 'named',
