@@ -1,7 +1,7 @@
 import BikeTagClient from 'biketag'
 import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
 import { createPinia, defineStore } from 'pinia'
-import { BikeTagDefaults, BiketagFormSteps, State } from '../common/types'
+import { BikeTagDefaults, BikeTagStoreState, BiketagQueueFormSteps } from '../common'
 import {
   debug,
   encodeBikeTagString,
@@ -48,15 +48,17 @@ debug(`init::${BikeTagDefaults.store}`, {
 
 /// TODO: create a helper for the instantiation of the biketag client (use singleton?)
 const client = new BikeTagClient(biketagClientOptions)
+/// TODO: move this to an init method
 let storedRegionPolygon: any = localStorage.getItem(`${gameName}::regionPolygon`)
 try {
   storedRegionPolygon = JSON.parse(storedRegionPolygon)
 } catch (e) {
   storedRegionPolygon = null
 }
-export const store = createPinia()
+export const biketagStore = createPinia()
+
 export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
-  state: (): State => ({
+  state: (): BikeTagStoreState => ({
     dataInitialized: false,
     gameName,
     gameNameProper: gameName[0].toUpperCase() + gameName.slice(1),
@@ -69,7 +71,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     players: [] as Player[],
     leaderboard: [] as Player[],
     html: '',
-    formStep: BiketagFormSteps.addFoundImage,
+    formStep: BiketagQueueFormSteps.addFoundImage,
     // queuedTag: getQueuedTagFromCookie() ?? ({} as Tag),
     playerTag: {} as Tag,
     profile,
@@ -77,6 +79,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     credentialsFetched: false,
     regionPolyon: storedRegionPolygon,
   }),
+
   actions: {
     // eslint-disable-next-line no-empty-pattern
     async getRegionPolygon(region: any) {
@@ -120,42 +123,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       } catch (e) {
         console.log('map cannot continue')
         console.error(e)
-      }
-    },
-    async fetchCredentials() {
-      if (!this.credentialsFetched) {
-        // console.log('fetching credentials')]
-        try {
-          await client.config(
-            { ...biketagClientOptions, ...getBikeTagClientOpts(window, true) },
-            false,
-            true,
-          )
-        } catch (e) {
-          console.error('error fetching credentials', e)
-        }
-        // const credentials = await client.fetchCredentials()
-        // await client.config(credentials, false, true)
-        this.credentialsFetched = true
-        // if (this.profile?.isBikeTagAmbassador) {
-        //   /// fetch auth token for admin purposes
-        //   const checkAuth = () => {
-        //     if (auth?.isAuthenticated) {
-        //       if (!this.getProfile?.nonce?.length) {
-        //         auth.getIdTokenClaims().then((claims) => {
-        //           if (claims) {
-        //             const token = claims.__raw
-        //             this.$store.dispatch('setProfile', { ...auth.user, token })
-        //           } else {
-        //             debug("what's this? no speaka da mda5hash, brah?")
-        //           }
-        //         })
-        //       }
-        //       return true
-        //     }
-        //     return false
-        //   }
-        // }
       }
     },
     async setProfile(profile: any, token?: string) {
@@ -210,6 +177,23 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       await this.fetchTags(false)
       await this.fetchCurrentBikeTag(false)
       await this.fetchQueuedTags(true)
+    },
+    async fetchCredentials() {
+      if (!this.credentialsFetched) {
+        // console.log('fetching credentials')
+        try {
+          await client.config(
+            { ...biketagClientOptions, ...getBikeTagClientOpts(window, true) },
+            false,
+            true,
+          )
+        } catch (e) {
+          console.error('error fetching credentials', e)
+        }
+        // const credentials = await client.fetchCredentials()
+        // await client.config(credentials, false, true)
+        this.credentialsFetched = true
+      }
     },
     fetchAllGames(cached = true) {
       const biketagClient = new BikeTagClient({ ...biketagClientOptions, game: undefined, cached })
@@ -338,13 +322,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return this.SET_PLAYER(playerProfile, existingPlayerIndex)
     },
     setFormStepToJoin(d: any) {
-      if (this.formStep === BiketagFormSteps.viewRound || d) {
+      if (this.formStep === BiketagQueueFormSteps.viewRound || d) {
         return this.SET_FORM_STEP_TO_JOIN(d)
       }
       return true
-    },
-    setDataInitialized() {
-      return this.SET_DATA_INITIALIZED()
     },
     async approveTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
@@ -529,46 +510,40 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     // async resetFormStep() {
     //   return this.RESET_FORM_STEP()
     // },
-    async resetFormStepToFound() {
-      await this.SET_QUEUED_TAG()
-      return this.RESET_FORM_STEP_TO_FOUND()
-    },
-    async resetFormStepToMystery() {
-      await this.SET_QUEUED_TAG({
-        foundImage: this.playerTag.foundImage,
-        foundImageUrl: this.playerTag.foundImageUrl,
-        foundLocation: this.playerTag.foundLocation,
-        foundPlayer: this.playerTag.foundPlayer,
-        playerId: this.playerTag.playerId,
-      })
-      return this.RESET_FORM_STEP_TO_MYSTERY()
-    },
-    async resetFormStepToPost() {
-      await this.SET_QUEUED_TAG({
-        foundImage: this.playerTag.foundImage,
-        foundImageUrl: this.playerTag.foundImageUrl,
-        foundLocation: this.playerTag.foundLocation,
-        foundPlayer: this.playerTag.foundPlayer,
-        mysteryImage: this.playerTag.foundImage,
-        playerId: this.playerTag.playerId,
-        mysteryImageUrl: this.playerTag.foundImageUrl,
-        hint: this.playerTag.hint,
-        mysteryPlayer: this.playerTag.mysteryPlayer,
-      })
-      // return this.RESET_FORM_STEP_TO_POST()
-      return undefined
-    },
-    async getAmbassadorPermission() {
-      return this.profile?.isBikeTagAmbassador
-    },
+    // async resetFormStepToFound() {
+    //   await this.SET_QUEUED_TAG()
+    //   return this.RESET_FORM_STEP_TO_FOUND()
+    // },
+    // async resetFormStepToMystery() {
+    //   await this.SET_QUEUED_TAG({
+    //     foundImage: this.playerTag.foundImage,
+    //     foundImageUrl: this.playerTag.foundImageUrl,
+    //     foundLocation: this.playerTag.foundLocation,
+    //     foundPlayer: this.playerTag.foundPlayer,
+    //     playerId: this.playerTag.playerId,
+    //   })
+    //   return this.RESET_FORM_STEP_TO_MYSTERY()
+    // },
+    // async resetFormStepToPost() {
+    //   await this.SET_QUEUED_TAG({
+    //     foundImage: this.playerTag.foundImage,
+    //     foundImageUrl: this.playerTag.foundImageUrl,
+    //     foundLocation: this.playerTag.foundLocation,
+    //     foundPlayer: this.playerTag.foundPlayer,
+    //     mysteryImage: this.playerTag.foundImage,
+    //     playerId: this.playerTag.playerId,
+    //     mysteryImageUrl: this.playerTag.foundImageUrl,
+    //     hint: this.playerTag.hint,
+    //     mysteryPlayer: this.playerTag.mysteryPlayer,
+    //   })
+    //   // return this.RESET_FORM_STEP_TO_POST()
+    //   return undefined
+    // },
 
     // ==================================================================
     // ======= mutations ================================================
     // ==================================================================
 
-    SET_DATA_INITIALIZED() {
-      this.dataInitialized = true
-    },
     SET_PROFILE(profile: any) {
       const oldState = this.profile
 
@@ -710,9 +685,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         this.resetBikeTagCache()
         console.log('SET_QUEUE_FOUND')
         if (oldState?.mysteryPlayer !== data?.foundPlayer) {
-          this.formStep = BiketagFormSteps.roundJoined
+          this.formStep = BiketagQueueFormSteps.roundJoined
         } else {
-          this.formStep = BiketagFormSteps.addFoundImage
+          this.formStep = BiketagQueueFormSteps.addFoundImage
         }
       }
 
@@ -746,9 +721,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           oldState?.discussionUrl !== data?.discussionUrl ||
           oldState?.mentionUrl !== data?.mentionUrl
         ) {
-          this.formStep = BiketagFormSteps.roundPosted
+          this.formStep = BiketagQueueFormSteps.roundPosted
         } else {
-          this.formStep = BiketagFormSteps.addMysteryImage
+          this.formStep = BiketagQueueFormSteps.addMysteryImage
         }
       }
 
@@ -766,7 +741,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       ) {
         debug(`${BikeTagDefaults.store}::submittedTag`, this.playerTag)
         this.resetBikeTagCache()
-        this.formStep = BiketagFormSteps.roundPosted
+        this.formStep = BiketagQueueFormSteps.roundPosted
       }
 
       return this.playerTag
@@ -795,16 +770,16 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return this.playerTag
     },
     SET_FORM_STEP_TO_JOIN(force: any) {
-      const setQueudState = this.formStep !== BiketagFormSteps.roundJoined || force
+      const setQueudState = this.formStep !== BiketagQueueFormSteps.roundJoined || force
       const oldState = this.formStep
       if (setQueudState && this.playerTag) {
         this.formStep = getQueuedTagState(this.playerTag)
       } else {
-        this.formStep = BiketagFormSteps.roundJoined
+        this.formStep = BiketagQueueFormSteps.roundJoined
       }
 
       if (oldState !== this.formStep) {
-        debug('state::queue', BiketagFormSteps[this.formStep])
+        debug('state::queue', BiketagQueueFormSteps[this.formStep])
       }
 
       return this.formStep
@@ -816,11 +791,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         (this.profile?.name && this.profile?.name === this.currentBikeTag?.mysteryPlayer) ||
         (this.profile?.sub && this.profile?.sub === this.currentBikeTag?.playerId)
       ) {
-        this.formStep = BiketagFormSteps.shareBikeTagPost
+        this.formStep = BiketagQueueFormSteps.shareBikeTagPost
       } else if (tag) {
         this.formStep = getQueuedTagState(tag)
       } else {
-        this.formStep = BiketagFormSteps.addFoundImage
+        this.formStep = BiketagQueueFormSteps.addFoundImage
       }
 
       return this.formStep
@@ -832,13 +807,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     // },
     RESET_FORM_STEP_TO_FOUND() {
       console.log('RESET_FORM_STEP_TO_FOUND')
-      this.formStep = BiketagFormSteps.addFoundImage
+      this.formStep = BiketagQueueFormSteps.addFoundImage
       // debug('state::queue', BiketagFormSteps[this.formStep])
 
       return this.formStep
     },
     RESET_FORM_STEP_TO_MYSTERY() {
-      this.formStep = BiketagFormSteps.addMysteryImage
+      this.formStep = BiketagQueueFormSteps.addMysteryImage
       // debug('state::queue', BiketagFormSteps[this.formStep])
 
       return this.formStep
@@ -850,6 +825,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return this.regionPolyon
     },
   },
+
   getters: {
     getAmbassadorId(state) {
       if (state.profile?.isBikeTagAmbassador) {
@@ -939,7 +915,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return state.leaderboard
     },
     getFormStep(state) {
-      return BiketagFormSteps[state.formStep]
+      return BiketagQueueFormSteps[state.formStep]
     },
     getPlayerTag(state) {
       return state.playerTag
@@ -949,9 +925,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     getProfile(state) {
       return state.profile
-    },
-    isDataInitialized(state) {
-      return state.dataInitialized
     },
     isBikeTagAmbassador(state) {
       return state.profile?.isBikeTagAmbassador

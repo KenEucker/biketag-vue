@@ -140,7 +140,6 @@ function checkForNewBikeTagPost() {
 async function created() {
   const initResults = []
   /// Set it first thing
-  store.SET_DATA_INITIALIZED()
   const game = await store.setGame()
   const _gameIsSet = game?.name?.length !== 0
 

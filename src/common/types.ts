@@ -1,46 +1,20 @@
-import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
+import {
+  Achievement,
+  Ambassador,
+  Game,
+  Player,
+  Region,
+  Setting,
+  Tag,
+} from 'biketag/lib/common/schema'
 
-export type { Achievement, Game, Player, Tag }
+export type { Achievement, Ambassador, Game, Player, Region, Setting, Tag }
 
 export type DomainInfo = {
   host: string
   subdomain: string | undefined
   isSubdomain: boolean
 }
-
-export const BikeTagDefaults = {
-  gameName: '',
-  source: 'sanity',
-  logo: '/images/BikeTag.svg',
-  jingle: 'media/biketag-jingle-1.mp3',
-  store: 'biketag',
-  /// TODO: THIS IS BAD
-  sanityBaseCDNUrl: 'https://cdn.sanity.io/images/x37ikhvs/production/',
-}
-
-export const special = [
-  'zeroth',
-  'first',
-  'second',
-  'third',
-  'fourth',
-  'fifth',
-  'sixth',
-  'seventh',
-  'eighth',
-  'ninth',
-  'tenth',
-  'eleventh',
-  'twelfth',
-  'thirteenth',
-  'fourteenth',
-  'fifteenth',
-  'sixteenth',
-  'seventeenth',
-  'eighteenth',
-  'nineteenth',
-]
-export const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet']
 
 export interface ProfileMeta {
   name: string
@@ -56,7 +30,6 @@ export interface ProfileMeta {
     skipSteps: boolean
   }
 }
-
 export interface AmbassadorMeta extends ProfileMeta {
   credentials: {
     imgur: {
@@ -99,7 +72,7 @@ export interface AmbassadorProfile extends Profile {
   zipcode: string
 }
 export type BikeTagProfile = Partial<Profile> & Partial<AmbassadorProfile>
-export interface State {
+export interface BikeTagStoreState {
   dataInitialized: boolean
   game: Game
   allGames: Game[]
@@ -116,11 +89,11 @@ export interface State {
   formStep: number
   playerTag: Tag
   credentialsFetched: boolean
-  mostRecentlyViewedTagnumber: BiketagFormSteps
+  mostRecentlyViewedTagnumber: BiketagQueueFormSteps
   regionPolyon: any
 }
 
-export enum BiketagFormSteps {
+export enum BiketagQueueFormSteps {
   viewRound = 0.5,
   addFoundImage = 1,
   roundJoined = 1.5,
@@ -130,7 +103,7 @@ export enum BiketagFormSteps {
   shareBikeTagPost = 3.5,
 }
 
-export enum Settings {
+export enum BikeTagSettingsKeys {
   AutoPost = 'queue::autoPost',
   Jingle = 'easter::jingle',
   SupportsReddit = 'social::reddit',

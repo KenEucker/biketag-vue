@@ -95,7 +95,7 @@ Below you will find some of the primary settings for testing all features of the
 ```sh
 #.env
 # Used for internal authentication
-SUPER_ADMIN=admin@email.com
+ADMIN_EMAIL=admin@email.com
 HOST_KEY=anythingyouwantititobe
 ACCESS_TOKEN=BIKETAGACCESSTOKEN
 # Used for uploading new BikeTag posts

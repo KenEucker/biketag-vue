@@ -88,7 +88,7 @@
 import { inject, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBikeTagStore } from '../store/index'
-import { BiketagFormSteps } from '../common/types'
+import { BiketagQueueFormSteps } from '../common/types'
 import { useI18n } from 'vue-i18n'
 import VLazyImage from 'v-lazy-image'
 
@@ -137,7 +137,7 @@ const showNumber = computed(() => (props.size !== 's' ? props.showNumber : false
 
 // methods
 function canReset() {
-  return getQueuedTagState.value !== BiketagFormSteps.roundPosted
+  return getQueuedTagState.value !== BiketagQueueFormSteps.roundPosted
 }
 async function resetToFound() {
   await store.fetchCredentials()

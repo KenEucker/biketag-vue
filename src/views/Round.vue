@@ -17,7 +17,9 @@
       </p>
     </div>
     <span class="tag-number">
-      #{{ getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.addFoundImage ? 1 : 0) }}
+      #{{
+        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagQueueFormSteps.addFoundImage ? 1 : 0)
+      }}
     </span>
     <div>
       <queue-view />
@@ -28,7 +30,7 @@
 <script setup name="QueueBikeTagView">
 import { ref, computed, onMounted } from 'vue'
 import { useBikeTagStore } from '@/store/index'
-import { BiketagFormSteps } from '@/common/types'
+import { BiketagQueueFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 // import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 
@@ -56,7 +58,7 @@ const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getQueuedTags = computed(() => store.getQueuedTags)
 
 function isViewingQueue() {
-  return getFormStep.value === BiketagFormSteps[BiketagFormSteps.viewRound]
+  return getFormStep.value === BiketagQueueFormSteps[BiketagQueueFormSteps.viewRound]
 }
 
 // created

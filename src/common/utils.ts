@@ -9,11 +9,11 @@ import { useCookies } from 'vue3-cookies'
 import {
   BikeTagDefaults,
   BikeTagProfile,
-  BiketagFormSteps,
+  BiketagQueueFormSteps,
   DomainInfo,
   deca,
   special,
-} from '../../src/common/types'
+} from '../../src/common'
 
 export const stringifyNumber = (n: number): string => {
   if (n < 20) return special[n]
@@ -263,16 +263,16 @@ export const GetQueryString = (win: Window, name: string): string | null => {
   return null
 }
 
-export const getQueuedTagState = (queuedTag: Tag): BiketagFormSteps => {
+export const getQueuedTagState = (queuedTag: Tag): BiketagQueueFormSteps => {
   const mysteryImageSet = queuedTag.mysteryImageUrl?.length > 0
   const foundImageSet = queuedTag.foundImageUrl?.length > 0
-  let queuedTagState = BiketagFormSteps.addFoundImage
+  let queuedTagState = BiketagQueueFormSteps.addFoundImage
   if (mysteryImageSet && foundImageSet) {
-    queuedTagState = BiketagFormSteps.roundPosted
+    queuedTagState = BiketagQueueFormSteps.roundPosted
   } else {
     queuedTagState = foundImageSet
-      ? BiketagFormSteps.addMysteryImage
-      : BiketagFormSteps.addFoundImage
+      ? BiketagQueueFormSteps.addMysteryImage
+      : BiketagQueueFormSteps.addFoundImage
   }
 
   return queuedTagState

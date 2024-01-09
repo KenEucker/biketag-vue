@@ -9,7 +9,7 @@ import VueCookies from 'vue3-cookies'
 import App from './App.vue'
 import { dynamicFontDirective } from './directives'
 import router from './router'
-import { store } from './store'
+import { biketagStore } from './store'
 
 // eslint-disable-next-line
 // @ts-ignore
@@ -50,7 +50,7 @@ class BikeTagApp {
     this.app.use(VueCookies)
   }
   router() {
-    this.app.use(router).use(store)
+    this.app.use(router).use(biketagStore)
   }
   authentication() {
     if (isAuthenticationEnabled()) {
