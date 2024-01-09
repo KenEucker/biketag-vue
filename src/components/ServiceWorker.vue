@@ -11,7 +11,7 @@
 
 <script setup name="ServiceWorker">
 import { computed } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { getSanityImageResizedSize } from '@/common/utils'
 import { debug } from '@/common/utils'
@@ -26,7 +26,7 @@ const props = defineProps({
 
 // data
 // const emit = defineEmits(['manifestLoaded'])
-const store = useStore()
+const store = useBikeTagStore()
 const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
   immediate: true,
   onRegistered(r) {

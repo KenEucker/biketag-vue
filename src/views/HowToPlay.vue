@@ -119,7 +119,7 @@ import SwiperCore, { Autoplay, Navigation, Pagination } from 'swiper'
 // Import Swiper styles
 import 'swiper/css/bundle'
 import { ref, computed } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { debug } from '@/common/utils'
 
 // components
@@ -132,7 +132,7 @@ SwiperCore.use([Autoplay, Navigation, Pagination])
 
 // data
 const playingEaster = ref(false)
-const store = useStore()
+const store = useBikeTagStore()
 const { t } = useI18n()
 
 // computed

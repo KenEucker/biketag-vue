@@ -1,7 +1,7 @@
 <script setup name="QueuePosted">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { debug } from '@/common/utils'
 
 // components
@@ -11,7 +11,7 @@ import { useI18n } from 'vue-i18n'
 // data
 const emit = defineEmits(['submit'])
 const submitTagRef = ref(null)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const { t } = useI18n()
 const postToReddit = ref(false)

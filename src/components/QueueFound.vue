@@ -136,7 +136,7 @@
 
 <script setup name="QueueFoundTag">
 import { ref, inject, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { debug, isPointInPolygon, isAuthenticationEnabled, isGmapsEnabled } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
@@ -178,7 +178,7 @@ const location = ref('')
 const player = ref('')
 const passcode = ref(Date.now().toString()) // don't let them just get away with it
 const foundTagRef = ref(null)
-const store = useStore()
+const store = useBikeTagStore()
 const toast = inject('toast')
 const { t } = useI18n()
 const boundary = ref({})
@@ -218,9 +218,9 @@ const onSubmit = async (e) => {
 
   /// Attempts to fix the tagnumber === #NaN issue
   if (!getCurrentBikeTag?.tagnumber) {
-    await store.setTags()
-    await store.setCurrentBikeTag()
-    await store.setQueuedTags()
+    await store.fetchTags()
+    await store.fetchCurrentBikeTag()
+    await store.fetchQueuedTags()
   }
 
   if (!location.value?.length) {

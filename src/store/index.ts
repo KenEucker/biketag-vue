@@ -39,7 +39,7 @@ const defaultLogo = BikeTagDefaults.logo
 const defaultJingle = BikeTagDefaults.jingle
 const sanityBaseCDNUrl = `${process.env.S_CURL}${biketagClientOptions.sanity?.projectId}/${biketagClientOptions.sanity?.dataset}/`
 
-debug('init::store', {
+debug(`init::${BikeTagDefaults.store}`, {
   subdomain: domain.subdomain,
   domain,
   gameName,
@@ -55,7 +55,7 @@ try {
   storedRegionPolygon = null
 }
 export const store = createPinia()
-export const useStore = defineStore('store', {
+export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
   state: (): State => ({
     dataInitialized: false,
     gameName,
@@ -207,11 +207,11 @@ export const useStore = defineStore('store', {
     },
     async resetBikeTagCache() {
       /// TODO: add a check for stale cache before unnecessarily resetting
-      await this.setTags(false)
-      await this.setCurrentBikeTag(false)
-      await this.setQueuedTags(true)
+      await this.fetchTags(false)
+      await this.fetchCurrentBikeTag(false)
+      await this.fetchQueuedTags(true)
     },
-    setAllGames(cached = true) {
+    fetchAllGames(cached = true) {
       const biketagClient = new BikeTagClient({ ...biketagClientOptions, game: undefined, cached })
       return biketagClient
         .getGame(
@@ -230,21 +230,21 @@ export const useStore = defineStore('store', {
           return false
         })
     },
-    setAllAchievements(cached = true) {
+    fetchAllAchievements(cached = true) {
       return client.getAchievements({ cached }).then((r) => this.SET_ACHIEVEMENTS(r.data))
     },
-    setCurrentBikeTag(cached = true) {
+    fetchCurrentBikeTag(cached = true) {
       return client.getTag({ cached }).then((r) => {
         return this.SET_CURRENT_TAG(r.data)
       })
     },
-    setTags(cached = true) {
+    fetchTags(cached = true) {
       return client.tags({ cached }).then(this.SET_TAGS)
     },
-    setQueuedTag(d: any) {
+    fetchQueuedTag(d: any) {
       return this.SET_QUEUED_TAG(d)
     },
-    async setQueuedTags(withCredentials = false) {
+    async fetchQueuedTags(withCredentials = false) {
       if (this.currentBikeTag?.tagnumber > 0) {
         if (withCredentials) {
           await this.fetchCredentials()
@@ -287,19 +287,55 @@ export const useStore = defineStore('store', {
 
       return false
     },
-    setPlayers(cached = true) {
+    fetchPlayers(cached = true) {
       return client.players({ cached }).then(this.SET_PLAYERS)
     },
-    setLeaderboard(cached = true) {
+    fetchLeaderboard(cached = true) {
       return client.players({ sort: 'top', limit: 10, cached }).then(this.SET_LEADERBOARD)
     },
-    async setLeaderboardPlayersProfiles(cached = true) {
+    async fetchLeaderboardPlayersProfiles(cached = true) {
       const names = this.leaderboard.map((p) => p.name)
       return client.players({ names, cached }, gameOpts as any).then(async (d) => {
         if (Array.isArray(d)) {
           d.forEach((p) => this.SET_PLAYER(p))
         }
       })
+    },
+    // eslint-disable-next-line no-empty-pattern
+    async fetchPlayerProfile(name: any, force = false) {
+      const existingPlayerIndex = this.players.findIndex((p) => p.name === name)
+      if (!force && existingPlayerIndex !== -1) {
+        const hasTags = !!this.players[existingPlayerIndex].tags?.length
+        const biconIsSet = !!this.players[existingPlayerIndex].bicon?.length
+        const hasSlug = !!this.players[existingPlayerIndex].slug?.length
+        const mightAlreadyHaveBeenFetched = hasTags && (hasSlug || biconIsSet)
+
+        if (mightAlreadyHaveBeenFetched) {
+          return this.players[existingPlayerIndex]
+        }
+      }
+
+      // console.log('fetching player profile', name)
+      const playerProfileResult = await client
+        .plainRequest({
+          method: 'GET',
+          url: getApiUrl('profile'),
+          params: {
+            name,
+          },
+        })
+        .catch((err) => ({
+          status: err.response?.status,
+          data: err.response?.data,
+        }))
+
+      if (playerProfileResult.status !== 200) {
+        return existingPlayerIndex !== -1 ? this.players[existingPlayerIndex] : {}
+      }
+
+      const playerProfile = playerProfileResult.data
+
+      return this.SET_PLAYER(playerProfile, existingPlayerIndex)
     },
     setFormStepToJoin(d: any) {
       if (this.formStep === BiketagFormSteps.viewRound || d) {
@@ -342,7 +378,7 @@ export const useStore = defineStore('store', {
         d.hash = this.game.queuehash
         return client.deleteTag(d).then((t) => {
           if (t.success) {
-            debug('store::tag dequeued', d)
+            debug(`${BikeTagDefaults.store}::tag dequeued`, d)
           } else {
             debug('error::dequeue BikeTag failed', t)
             return t.error ? t.error : Array.isArray(t.data) ? t.data.join(' - ') : t.data
@@ -395,42 +431,6 @@ export const useStore = defineStore('store', {
         },
       })
     },
-    // eslint-disable-next-line no-empty-pattern
-    async fetchPlayerProfile(name: any, force = false) {
-      const existingPlayerIndex = this.players.findIndex((p) => p.name === name)
-      if (!force && existingPlayerIndex !== -1) {
-        const hasTags = !!this.players[existingPlayerIndex].tags?.length
-        const biconIsSet = !!this.players[existingPlayerIndex].bicon?.length
-        const hasSlug = !!this.players[existingPlayerIndex].slug?.length
-        const mightAlreadyHaveBeenFetched = hasTags && (hasSlug || biconIsSet)
-
-        if (mightAlreadyHaveBeenFetched) {
-          return this.players[existingPlayerIndex]
-        }
-      }
-
-      // console.log('fetching player profile', name)
-      const playerProfileResult = await client
-        .plainRequest({
-          method: 'GET',
-          url: getApiUrl('profile'),
-          params: {
-            name,
-          },
-        })
-        .catch((err) => ({
-          status: err.response?.status,
-          data: err.response?.data,
-        }))
-
-      if (playerProfileResult.status !== 200) {
-        return existingPlayerIndex !== -1 ? this.players[existingPlayerIndex] : {}
-      }
-
-      const playerProfile = playerProfileResult.data
-
-      return this.SET_PLAYER(playerProfile, existingPlayerIndex)
-    },
     getBikeTagAchievement(name: string) {
       return this.achievements.find((a) => a.name === name)
     },
@@ -444,7 +444,7 @@ export const useStore = defineStore('store', {
         queuedTag.hash = this.game.queuehash
         return client.deleteTag(queuedTag).then(async (t) => {
           if (t.success) {
-            debug('store::found tag dequeued', this.playerTag)
+            debug(`${BikeTagDefaults.store}::found tag dequeued`, this.playerTag)
             await this.SET_QUEUED_TAG({})
             await this.RESET_FORM_STEP_TO_FOUND()
 
@@ -466,7 +466,7 @@ export const useStore = defineStore('store', {
         queuedMysteryTag.hash = this.game.queuehash
         return client.deleteTag(queuedMysteryTag).then(async (t) => {
           if (t.success) {
-            debug('store::mystery tag dequeued')
+            debug(`${BikeTagDefaults.store}::mystery tag dequeued`)
             await this.SET_QUEUED_TAG(queuedFoundTag)
             await this.RESET_FORM_STEP_TO_MYSTERY()
 
@@ -579,7 +579,7 @@ export const useStore = defineStore('store', {
       ) {
         this.profile = profile
         setProfileCookie(profile)
-        debug('store::profile', profile)
+        debug(`${BikeTagDefaults.store}::profile`, profile)
       }
 
       return this.profile
@@ -589,7 +589,7 @@ export const useStore = defineStore('store', {
       this.game = game
 
       if (oldState?.name !== game?.name) {
-        debug('store::game', { game })
+        debug(`${BikeTagDefaults.store}::game`, { game })
       }
 
       return this.game
@@ -599,7 +599,7 @@ export const useStore = defineStore('store', {
       this.allGames = allGames
 
       if (oldState?.length !== allGames?.length) {
-        debug('store::allGames', { allGames })
+        debug(`${BikeTagDefaults.store}::allGames`, { allGames })
       }
 
       return this.allGames
@@ -609,7 +609,7 @@ export const useStore = defineStore('store', {
       this.currentBikeTag = tag
 
       if (oldState?.tagnumber !== tag?.tagnumber) {
-        debug('store::currentBikeTag', { tag })
+        debug(`${BikeTagDefaults.store}::currentBikeTag`, { tag })
       }
 
       return this.currentBikeTag
@@ -619,7 +619,7 @@ export const useStore = defineStore('store', {
       this.achievements = achievements
 
       if (oldState?.length !== achievements?.length) {
-        debug('store::achievements', { achievements })
+        debug(`${BikeTagDefaults.store}::achievements`, { achievements })
       }
 
       return this.achievements
@@ -629,7 +629,7 @@ export const useStore = defineStore('store', {
       this.tags = tags
 
       if (oldState?.length !== tags?.length) {
-        debug('store::tags', { tags })
+        debug(`${BikeTagDefaults.store}::tags`, { tags })
       }
 
       return this.tags
@@ -639,7 +639,7 @@ export const useStore = defineStore('store', {
       this.leaderboard = leaderboard
 
       if (oldState?.length !== leaderboard?.length) {
-        debug('store::leaderboard', { leaderboard })
+        debug(`${BikeTagDefaults.store}::leaderboard`, { leaderboard })
       }
 
       return this.leaderboard
@@ -660,7 +660,7 @@ export const useStore = defineStore('store', {
               ? existingPlayer.games
               : player.games
           this.players[existingPlayerIndex] = player
-          debug('store::player:' + player.name, { player })
+          debug(`${BikeTagDefaults.store}::player: ${player.name}`, { player })
         }
       }
       return player
@@ -670,7 +670,7 @@ export const useStore = defineStore('store', {
       this.players = players
 
       if (oldState?.length !== players?.length) {
-        debug('store::players', { players })
+        debug(`${BikeTagDefaults.store}::players`, { players })
       }
 
       return this.players
@@ -680,7 +680,7 @@ export const useStore = defineStore('store', {
       this.tagsInRound = queuedTags
 
       if (oldState?.length !== queuedTags?.length || queuedTags.length === 0) {
-        debug('store::queuedTags', { queuedTags })
+        debug(`${BikeTagDefaults.store}::queuedTags`, { queuedTags })
       }
 
       return this.tagsInRound
@@ -706,7 +706,7 @@ export const useStore = defineStore('store', {
         /// In case of a reset to this step
         oldState?.mysteryPlayer !== data?.foundPlayer
       ) {
-        debug('store::queuedFoundTag', this.playerTag)
+        debug(`${BikeTagDefaults.store}::queuedFoundTag`, this.playerTag)
         this.resetBikeTagCache()
         console.log('SET_QUEUE_FOUND')
         if (oldState?.mysteryPlayer !== data?.foundPlayer) {
@@ -740,7 +740,7 @@ export const useStore = defineStore('store', {
         oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
-        debug('store::queuedMysteryTag', this.playerTag)
+        debug(`${BikeTagDefaults.store}::queuedMysteryTag`, this.playerTag)
         this.resetBikeTagCache()
         if (
           oldState?.discussionUrl !== data?.discussionUrl ||
@@ -764,7 +764,7 @@ export const useStore = defineStore('store', {
         oldState?.discussionUrl !== data?.discussionUrl ||
         oldState?.mentionUrl !== data?.mentionUrl
       ) {
-        debug('store::submittedTag', this.playerTag)
+        debug(`${BikeTagDefaults.store}::submittedTag`, this.playerTag)
         this.resetBikeTagCache()
         this.formStep = BiketagFormSteps.roundPosted
       }
@@ -789,7 +789,7 @@ export const useStore = defineStore('store', {
         oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
-        debug('store::queuedTag', this.playerTag)
+        debug(`${BikeTagDefaults.store}::queuedTag`, this.playerTag)
       }
 
       return this.playerTag

@@ -86,7 +86,7 @@
 <script setup name="BikeTagFooter">
 import { ref, computed, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import HintIcon from '@/assets/images/hint-icon.svg'
 import CloseRounded from '@/assets/images/close-rounded.svg'
 import { useI18n } from 'vue-i18n'
@@ -116,7 +116,7 @@ const hintIcon = HintIcon
 const closeRounded = CloseRounded
 const hintPopover = ref(null)
 const hintButton = ref(null)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const { t } = useI18n()
 const downloadingTag = ref(false)

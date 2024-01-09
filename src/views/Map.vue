@@ -16,7 +16,7 @@
 <script setup name="MapView">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 // import StyledHr from '@/assets/images/hr.svg'
 // import Pin from '@/assets/images/pin.svg'
 
@@ -28,7 +28,7 @@ import BikeTagMap from '@/components/BikeTagMap.vue'
 // data
 // const styledHr = StyledHr
 // const pin = Pin
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 
 // computed

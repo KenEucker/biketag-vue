@@ -100,7 +100,7 @@
 
 <script setup name="QueueBikeTagView">
 import { ref, inject, computed, watchEffect, onMounted } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { BiketagFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
@@ -135,7 +135,7 @@ const uploadInProgress = ref(false)
 const queueError = ref(null)
 const lineSvg = LineSvg
 const arrowSvg = ArrowSvg
-const store = useStore()
+const store = useBikeTagStore()
 const toast = inject('toast')
 const { t } = useI18n()
 
@@ -174,9 +174,9 @@ async function onQueueSubmit(newTagSubmission) {
 
   if (success === true) {
     /// Get a clean cache
-    await store.setTags(true)
+    await store.fetchTags(true)
     /// Update the queue
-    await store.setQueuedTags(true)
+    await store.fetchQueuedTags(true)
 
     formData.set('game', getGameName.value)
     formData.set('tag', JSON.stringify(getPlayerTag.value))
@@ -226,8 +226,8 @@ async function onQueueSubmit(newTagSubmission) {
 
 // created
 const created = async () => {
-  await store.setCurrentBikeTag()
-  await store.setQueuedTags(true)
+  await store.fetchCurrentBikeTag()
+  await store.fetchQueuedTags(true)
 }
 created()
 

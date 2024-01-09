@@ -1,5 +1,7 @@
 import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
 
+export type { Achievement, Game, Player, Tag }
+
 export type DomainInfo = {
   host: string
   subdomain: string | undefined
@@ -11,6 +13,7 @@ export const BikeTagDefaults = {
   source: 'sanity',
   logo: '/images/BikeTag.svg',
   jingle: 'media/biketag-jingle-1.mp3',
+  store: 'biketag',
   /// TODO: THIS IS BAD
   sanityBaseCDNUrl: 'https://cdn.sanity.io/images/x37ikhvs/production/',
 }

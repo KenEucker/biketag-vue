@@ -146,7 +146,7 @@
 
 <script setup name="ProfileView">
 import { ref, inject, computed, onMounted, nextTick } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import Reddit from '@/assets/images/Reddit.svg'
@@ -176,7 +176,7 @@ const socialNetworkIcons = ref([
 const showModal = ref(false)
 const requestedName = ref()
 const styledHr = StyledHr
-const store = useStore()
+const store = useBikeTagStore()
 const { idTokenClaims, user } = useAuth0()
 const toast = inject('toast')
 const credentialsRefs = ref({})

@@ -11,15 +11,15 @@
 
 <script setup name="LeaderboardView">
 import { computed } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 
 // components
 import Player from '@/components/BikeTagPlayer.vue'
 
 // data
-const store = useStore()
+const store = useBikeTagStore()
 
-store.setLeaderboardPlayersProfiles()
+store.fetchLeaderboardPlayersProfiles()
 
 // computed
 const playersList = computed(() => store.getLeaderboard)

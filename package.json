@@ -140,16 +140,13 @@
     "vuejs"
   ],
   "types": "./index.d.ts",
-  "main": "./biketag-vue.umd.js",
-  "module": "./biketag-vue.mjs",
+  "module": "./biketag-vue.es.js",
   "exports": {
     ".": {
-      "import": "./biketag-vue.mjs",
-      "require": "./biketag-vue.umd.js"
+      "import": "./biketag-vue.es.js"
     },
     "./style.css": {
-      "import": "./style.css",
-      "require": "./style.css"
+      "import": "./style.css"
     }
   }
 }

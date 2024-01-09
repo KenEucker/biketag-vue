@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup name="LoginView">
 import { inject, computed } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { isAuthenticationEnabled } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
@@ -11,7 +11,7 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 import { useI18n } from 'vue-i18n'
 
 // data
-const store = useStore()
+const store = useBikeTagStore()
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 const toast = inject('toast')
 const { isAuthenticated, loginWithRedirect, idTokenClaims, user } = useAuth0()

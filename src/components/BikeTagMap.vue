@@ -65,7 +65,7 @@
 
 <script setup name="BikeTagMap">
 import { ref, computed, onMounted } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import { isGmapsEnabled } from '@/common/utils'
 import Pin from '@/assets/images/pin.svg'
 
@@ -91,7 +91,7 @@ const props = defineProps({
 // data
 const emit = defineEmits(['dragend'])
 const data = ref({})
-const store = useStore()
+const store = useBikeTagStore()
 
 switch (props.variant) {
   case 'boundary':

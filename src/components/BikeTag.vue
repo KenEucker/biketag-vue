@@ -97,93 +97,54 @@
   </b-row>
 </template>
 
-<script setup name="BikeTag">
-import { ref, computed, onMounted } from 'vue'
+<script setup name="BikeTag" lang="ts">
+import { ref, computed, onMounted, withDefaults } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '@/store/index'
-import { getTagDate } from '@/common/utils'
+import { useBikeTagStore } from '@/store/index'
+import { getTagDate, Tag } from '@/common'
 import { useI18n } from 'vue-i18n'
+
+export interface BikeTagProps {
+  tag: Tag & { inBoundary: boolean }
+  showHint?: boolean
+  showPostedDate?: boolean
+  showMysteryPostedDateTime?: boolean
+  showFoundPostedDateTime?: boolean
+  sizedMysteryImage?: boolean
+  sizedFoundImage?: boolean
+  showPlayer?: boolean
+  reverse?: boolean
+  showInBoundary?: boolean
+  tagnumber?: number
+  foundTagnumber?: number
+  size?: string
+  imageSize?: string
+  foundImageUrl?: string
+  mysteryImageUrl?: string
+  foundDescription?: string
+  mysteryDescription?: string
+}
 
 // componets
 import ExpandableImage from '@/components/ExpandableImage.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
 // props
-const props = defineProps({
-  tag: {
-    type: Object,
-    default: () => {
-      return {}
-    },
-  },
-  size: {
-    type: String,
-    default: 'm',
-  },
-  showHint: {
-    type: Boolean,
-    default: false,
-  },
-  showPostedDate: {
-    type: Boolean,
-    default: true,
-  },
-  showMysteryPostedDateTime: {
-    type: Boolean,
-    default: true,
-  },
-  showFoundPostedDateTime: {
-    type: Boolean,
-    default: true,
-  },
-  sizedMysteryImage: {
-    type: Boolean,
-    default: true,
-  },
-  sizedFoundImage: {
-    type: Boolean,
-    default: true,
-  },
-  imageSize: {
-    type: String,
-    default: null,
-  },
-  tagnumber: {
-    type: Number,
-    default: 0,
-  },
-  foundTagnumber: {
-    type: Number,
-    default: 0,
-  },
-  foundImageUrl: {
-    type: String,
-    default: null,
-  },
-  mysteryImageUrl: {
-    type: String,
-    default: null,
-  },
-  showPlayer: {
-    type: Boolean,
-    default: true,
-  },
-  foundDescription: {
-    type: String,
-    default: null,
-  },
-  mysteryDescription: {
-    type: String,
-    default: null,
-  },
-  reverse: {
-    type: Boolean,
-    default: false,
-  },
-  showInBoundary: {
-    type: Boolean,
-    default: false,
-  },
+const props = withDefaults(defineProps<BikeTagProps>(), {
+  showPostedDate: true,
+  showMysteryPostedDateTime: true,
+  showFoundPostedDateTime: true,
+  sizedMysteryImage: true,
+  sizedFoundImage: true,
+  showPlayer: true,
+  tagnumber: 0,
+  foundTagnumber: 0,
+  size: 'm',
+  imageSize: 'm',
+  foundImageUrl: '',
+  mysteryImageUrl: '',
+  foundDescription: '',
+  mysteryDescription: '',
 })
 
 // data
@@ -191,13 +152,12 @@ const emit = defineEmits(['load'])
 const mysteryImageLoaded = ref(false)
 const foundImageLoaded = ref(false)
 const noTagnumberLink = ref(false)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const { t } = useI18n()
 const dynamicFontSettings = { min: 20, max: 28 }
 
 // computed
-const getImgurImageSized = computed(() => store.getImgurImageSized)
 const _tagnumber = computed(() => (props.tagnumber ? props.tagnumber : props.tag?.tagnumber))
 const _getHint = computed(() => (props.tag?.hint ? props.tag.hint : t('pages.play.nohint')))
 const _foundTagnumber = computed(() =>
@@ -206,29 +166,29 @@ const _foundTagnumber = computed(() =>
 const _foundImageUrl = computed(() => {
   return props.foundImageUrl
     ? props.foundImageUrl.length === 0
-      ? null
+      ? ''
       : props.foundImageUrl
     : props.tag?.foundImageUrl
 })
 const _mysteryImageUrl = computed(() => {
   return props.mysteryImageUrl
     ? props.mysteryImageUrl.length === 0
-      ? null
+      ? ''
       : props.mysteryImageUrl
     : props.tag?.mysteryImageUrl
 })
 const getFoundImageSrc = computed(() => {
   return props.imageSize
-    ? getImgurImageSized.value(_foundImageUrl.value, props.imageSize)
+    ? store.getImgurImageSized(_foundImageUrl.value, props.imageSize)
     : props.sizedFoundImage
-      ? getImgurImageSized.value(_foundImageUrl.value)
+      ? store.getImgurImageSized(_foundImageUrl.value)
       : _foundImageUrl.value
 })
 const getMysteryImageSrc = computed(() => {
   return props.imageSize
-    ? getImgurImageSized.value(_mysteryImageUrl.value, props.imageSize)
+    ? store.getImgurImageSized(_mysteryImageUrl.value, props.imageSize)
     : props.sizedMysteryImage
-      ? getImgurImageSized.value(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
+      ? store.getImgurImageSized(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
       : _mysteryImageUrl.value
 })
 const _mysteryDescription = computed(() => {
@@ -247,7 +207,7 @@ const tagInBoundary = computed(() => {
 })
 
 // methods
-const getPostedDate = (timestamp, timeOnly = false) => {
+const getPostedDate = (timestamp: number, timeOnly = false) => {
   if (!timestamp) {
     return ''
   }
@@ -257,7 +217,7 @@ const getPostedDate = (timestamp, timeOnly = false) => {
 
   return `${timeOnly ? ' @ ' : t('components.biketag.posted_on')} ${datetime}`
 }
-const tagImageLoaded = (type) => {
+const tagImageLoaded = (type: string) => {
   if (type === 'mystery') {
     mysteryImageLoaded.value = true
   } else if (type === 'found') {
@@ -276,7 +236,7 @@ const goTagPage = () => {
     router.push('/' + encodeURIComponent(_tagnumber.value))
   }
 }
-const goPlayerPage = (player) => {
+const goPlayerPage = (player: string) => {
   router.push('/player/' + encodeURIComponent(player))
 }
 

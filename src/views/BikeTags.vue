@@ -42,7 +42,7 @@
 <script setup name="BikeTagsView">
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 import 'vue-loading-overlay/dist/vue-loading.css'
 
 // components
@@ -56,7 +56,7 @@ const currentPage = ref(route.params?.currentPage.length ? parseInt(route.params
 const perPage = ref(10)
 const tagsAreLoading = ref(true)
 const tagsLoaded = ref([])
-const store = useStore()
+const store = useBikeTagStore()
 
 // computed
 const getTags = computed(() => store.getTags)

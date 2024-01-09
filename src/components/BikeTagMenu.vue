@@ -149,7 +149,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { useRouter, useRoute } from 'vue-router'
 import { debug, isOnline, isAuthenticationEnabled } from '../common/utils'
-import { useStore } from '../store/index'
+import { useBikeTagStore } from '../store/index'
 import { useI18n } from 'vue-i18n'
 
 // components
@@ -176,7 +176,7 @@ const lastScrollPosition = ref(0)
 const scrollOffset = ref(40)
 const buttonCollapse = ref(null)
 const navList = ref(null)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()

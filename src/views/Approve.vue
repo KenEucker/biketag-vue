@@ -37,7 +37,7 @@
 
 <script setup name="ApproveBikeTagView">
 import { ref, inject, computed, onMounted } from 'vue'
-import { useStore } from '@/store/index'
+import { useBikeTagStore } from '@/store/index'
 // import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 import { useAuth0 } from '@auth0/auth0-vue'
@@ -64,7 +64,7 @@ const uploadInProgress = ref(false)
 const approveSuccess = ref(false)
 const { idTokenClaims } = useAuth0()
 const queueError = ref(null)
-const store = useStore()
+const store = useBikeTagStore()
 const router = useRouter()
 const toast = inject('toast')
 const { t } = useI18n()
@@ -105,7 +105,7 @@ async function onApproveSubmit(newTagSubmission) {
 
   if (success === true) {
     /// Update the queue
-    store.setQueuedTags(true)
+    store.fetchQueuedTags(true)
 
     formData.set('game', getGameName.value)
     formData.set('tag', JSON.stringify(getPlayerTag.value))
@@ -157,7 +157,7 @@ async function onApproveSubmit(newTagSubmission) {
 
 // mounted
 onMounted(async () => {
-  await store.setQueuedTags(true)
+  await store.fetchQueuedTags(true)
   await store.fetchCredentials()
 
   /// TODO: do we need to?
