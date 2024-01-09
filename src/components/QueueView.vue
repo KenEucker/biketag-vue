@@ -50,7 +50,7 @@ import { useBikeTagStore } from '@/store/index'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'
-import { BiketagFormSteps } from '@/common/types'
+import { BiketagQueueFormSteps } from '@/common/types'
 
 // components
 import { Swiper, SwiperSlide } from 'swiper/vue'
@@ -82,7 +82,9 @@ const goNextQueueStepButtonText = computed(
           : t('pages.round.join_queue')
     } #${getCurrentBikeTag.value?.tagnumber ?? 1}!`,
 )
-const showGoNextButton = computed(() => getQueuedTagState.value !== BiketagFormSteps.roundPosted)
+const showGoNextButton = computed(
+  () => getQueuedTagState.value !== BiketagQueueFormSteps.roundPosted,
+)
 
 // methods
 function goNextQueueStep() {

@@ -87,7 +87,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBikeTagStore } from '@/store/index'
-import { Settings } from '@/common/types'
+import { BikeTagSettingsKeys } from '@/common/types'
 
 // components
 import Markdown from 'vue3-markdown-it'

@@ -16,7 +16,7 @@ import BikeTagHeader from './components/BikeTagHeader.vue'
 // import BikeTagMenu from './components/BikeTagMenu.vue'
 // import BikeTagPlayer from './components/BikeTagPlayer.vue'
 // import BikeTagQueue from './components/BikeTagQueue.vue'
-import { useBikeTagStore } from './store'
+import { biketagStore, useBikeTagStore } from './store'
 
 export {
   // ExpandableImage
@@ -37,6 +37,7 @@ export {
   // BikeTagMenu,
   // BikeTagPlayer,
   // BikeTagQueue,
+  biketagStore,
   useBikeTagStore
 }
 

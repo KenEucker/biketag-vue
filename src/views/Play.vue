@@ -14,34 +14,37 @@
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
     <span
-      v-if="!uploadInProgress && getFormStep !== BiketagFormSteps[BiketagFormSteps.queueJoined]"
+      v-if="
+        !uploadInProgress &&
+        getFormStep !== BiketagQueueFormSteps[BiketagQueueFormSteps.queueJoined]
+      "
       class="tag-number"
       >#{{
-        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagFormSteps.queueFound ? 1 : 0)
+        getCurrentBikeTag?.tagnumber + (getFormStep > BiketagQueueFormSteps.queueFound ? 1 : 0)
       }}</span
     >
     <bike-tag-queue :only-mine="true" :show-number="false" />
     <div
-      v-if="BiketagFormSteps[getFormStep] >= 1 && BiketagFormSteps[getFormStep] < 4"
+      v-if="BiketagQueueFormSteps[getFormStep] >= 1 && BiketagQueueFormSteps[getFormStep] < 4"
       class="step"
     >
       <bike-tag-button
-        :variant="BiketagFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'"
+        :variant="BiketagQueueFormSteps[getFormStep] == 1 ? 'circle-clean' : 'empty'"
         text="1"
       />
       <img
-        v-if="BiketagFormSteps[getFormStep] == 1.5"
+        v-if="BiketagQueueFormSteps[getFormStep] == 1.5"
         class="step__arrow"
         :src="arrowSvg"
         alt="next"
       />
       <span v-else class="step__line" :style="`background-image: url(${lineSvg})`" />
       <bike-tag-button
-        :variant="BiketagFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'"
+        :variant="BiketagQueueFormSteps[getFormStep] == 2 ? 'circle-clean' : 'empty'"
         text="2"
       />
       <img
-        v-if="BiketagFormSteps[getFormStep] == 2.5"
+        v-if="BiketagQueueFormSteps[getFormStep] == 2.5"
         class="step__arrow"
         :src="arrowSvg"
         alt="next"
@@ -49,7 +52,7 @@
       <span class="step__line" :style="`background-image: url(${lineSvg})`" />
       <bike-tag-button
         :variant="
-          BiketagFormSteps[getFormStep] >= 3 && BiketagFormSteps[getFormStep] <= 4
+          BiketagQueueFormSteps[getFormStep] >= 3 && BiketagQueueFormSteps[getFormStep] <= 4
             ? 'circle-clean'
             : 'empty'
         "
@@ -58,22 +61,24 @@
     </div>
 
     <div v-if="!uploadInProgress" class="mb-5">
-      <div v-if="getFormStep === BiketagFormSteps[BiketagFormSteps.addFoundImage]">
+      <div v-if="getFormStep === BiketagQueueFormSteps[BiketagQueueFormSteps.addFoundImage]">
         <queue-found :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.roundJoined]">
+      <div v-else-if="getFormStep === BiketagQueueFormSteps[BiketagQueueFormSteps.roundJoined]">
         <queue-joined :tag="getPlayerTag" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.addMysteryImage]">
+      <div v-else-if="getFormStep === BiketagQueueFormSteps[BiketagQueueFormSteps.addMysteryImage]">
         <queue-mystery :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.addNewBikeTag]">
+      <div v-else-if="getFormStep === BiketagQueueFormSteps[BiketagQueueFormSteps.addNewBikeTag]">
         <queue-submit :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.roundPosted]">
+      <div v-else-if="getFormStep === BiketagQueueFormSteps[BiketagQueueFormSteps.roundPosted]">
         <queue-posted :tag="getPlayerTag" @submit="onQueueSubmit" />
       </div>
-      <div v-else-if="getFormStep === BiketagFormSteps[BiketagFormSteps.shareBikeTagPost]">
+      <div
+        v-else-if="getFormStep === BiketagQueueFormSteps[BiketagQueueFormSteps.shareBikeTagPost]"
+      >
         <queue-posted-share :tag="getPlayerTag" />
       </div>
       <span v-if="isSubmittingData()" class="player-agree">
@@ -101,7 +106,7 @@
 <script setup name="QueueBikeTagView">
 import { ref, inject, computed, watchEffect, onMounted } from 'vue'
 import { useBikeTagStore } from '@/store/index'
-import { BiketagFormSteps } from '@/common/types'
+import { BiketagQueueFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
@@ -147,12 +152,13 @@ const getGameName = computed(() => store.getGameName)
 const getPlayerId = computed(() => store.getPlayerId)
 
 // methods
-const isViewingQueue = () => getFormStep.value === BiketagFormSteps[BiketagFormSteps.viewPosted]
+const isViewingQueue = () =>
+  getFormStep.value === BiketagQueueFormSteps[BiketagQueueFormSteps.viewPosted]
 const isSubmittingData = () =>
   !(
-    getFormStep.value === BiketagFormSteps[BiketagFormSteps.queueJoined] ||
-    getFormStep.value === BiketagFormSteps[BiketagFormSteps.queuePosted] ||
-    getFormStep.value === BiketagFormSteps[BiketagFormSteps.queuePostedShare]
+    getFormStep.value === BiketagQueueFormSteps[BiketagQueueFormSteps.queueJoined] ||
+    getFormStep.value === BiketagQueueFormSteps[BiketagQueueFormSteps.queuePosted] ||
+    getFormStep.value === BiketagQueueFormSteps[BiketagQueueFormSteps.queuePostedShare]
   )
 async function onQueueSubmit(newTagSubmission) {
   const { tag, formAction, formData, storeAction } = newTagSubmission

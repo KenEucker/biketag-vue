@@ -111,7 +111,7 @@
 <script setup name="QueueSubmit">
 import { ref, computed, onMounted } from 'vue'
 import { useBikeTagStore } from '@/store/index'
-import { Settings } from '@/common/types'
+import { BikeTagSettingsKeys } from '@/common/types'
 
 // components
 import Markdown from 'vue3-markdown-it'
@@ -136,9 +136,9 @@ const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getPlayerId = computed(() => store.getPlayerId)
 const getGameNameProper = computed(() => store.getGameNameProper)
 const getGame = computed(() => store.getGame)
-const supportsReddit = computed(() => !!getGame.value?.settings[Settings.SupportsReddit])
-const supportsTwitter = computed(() => !!getGame.value?.settings[Settings.SupportsTwitter])
-const supportsInstagram = computed(() => !!getGame.value?.settings[Settings.SupportsInstagram])
+const supportsReddit = computed(() => !!getGame.value?.settings[BikeTagSettingsKeys.SupportsReddit])
+const supportsTwitter = computed(() => !!getGame.value?.settings[BikeTagSettingsKeys.SupportsTwitter])
+const supportsInstagram = computed(() => !!getGame.value?.settings[BikeTagSettingsKeys.SupportsInstagram])
 const redditPostText = computed(
   () => `
 [#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://biketag.org/${getPlayerTag.value.tagnumber})
