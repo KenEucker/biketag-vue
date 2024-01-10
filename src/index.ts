@@ -18,6 +18,7 @@ import BikeTagButton from './components/BikeTagButton.vue'
 // import BikeTagGames from './components/BikeTagGames.vue'
 import BikeTagHeader from './components/BikeTagHeader.vue'
 // import BikeTagInput from './components/BikeTagInput.vue'
+import { BikeTagCredentials } from 'biketag'
 import BikeTagLabel from './components/BikeTagLabel.vue'
 // import BikeTagLoader from './components/BikeTagLoader.vue'
 // import BikeTagMap from './components/BikeTagMap.vue'
@@ -30,8 +31,13 @@ export interface BikeTagPlugin {
   useBikeTagStore: () => BikeTagStore
 }
 
+export type createBikeTagOptions = Partial<BikeTagCredentials> & {
+  includeComponents?: boolean
+  includeDirectives?: boolean
+}
+
 const createBikeTag = (
-  options = {
+  options: createBikeTagOptions = {
     includeComponents: true,
     includeDirectives: true,
   },
@@ -44,6 +50,7 @@ const createBikeTag = (
         .component('BikeTagBlurb', BikeTagBlurb)
         .component('BikeTagHeader', BikeTagHeader)
         .component('BikeTagButton', BikeTagButton)
+        .component('BikeTagLabel', BikeTagLabel)
     }
     if (options.includeDirectives) {
       app.directive('dynamic-font', dynamicFontDirective)

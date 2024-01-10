@@ -64,7 +64,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
   state: (): BikeTagStoreState => ({
     dataLoaded: false,
     gameName,
-    gameNameProper: gameName[0].toUpperCase() + gameName.slice(1),
+    gameNameProper: gameName?.length ? gameName[0].toUpperCase() + gameName.slice(1) : '',
     game: {} as Game,
     allGames: [] as Game[],
     achievements: [] as Achievement[],
@@ -160,18 +160,23 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return this.SET_PROFILE(profile)
     },
-    async setGame(gameName?: string) {
-      gameName = gameName || this.gameName
-      if (this.game.name !== gameName || this.game?.mainhash) {
+    async setGame(newGameName?: string) {
+      newGameName = newGameName ?? this.gameName
+      if (this.game?.name !== newGameName || !this.game?.mainhash) {
         this.dataLoaded = false
-        return client.game(gameName, biketagGameOpts as any).then(async (d) => {
-          if (d) {
-            const game = d as Game
+        return client.getGame({ game: newGameName }, biketagGameOpts as any).then(async (r) => {
+          if (r.success) {
+            const game = r.data as Game
             biketagClientOpts.imgur.hash = game.mainhash
             biketagClientOpts.imgur.queuehash = game.queuehash
             client.config(biketagClientOpts)
 
             return this.SET_GAME(game)
+          } else {
+            const cachedGame = this.allGames.find((g) => g.name === newGameName)
+            if (cachedGame) {
+              return this.SET_GAME(cachedGame)
+            }
           }
           return false
         })
@@ -883,7 +888,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return `https://biketag.org/${BikeTagDefaults.jingle}`
     },
     getGameTitle(state) {
-      return `${state.gameName.toUpperCase()}.BIKETAG`
+      return `${state.gameName?.toUpperCase()}.BIKETAG`
     },
     getGameName(state) {
       return state.gameName
