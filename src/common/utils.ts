@@ -337,9 +337,15 @@ export const getSanityImageUrl = (
 }
 
 export const getApiUrl = (path = '') => {
+  if (!window) {
+    return process.env.CONTEXT === 'dev'
+      ? `http://localhost:7200/.netlify/functions/${path}`
+      : `/api/${path}`
+  }
+
   const url =
     process.env.CONTEXT === 'dev'
-      ? `${window.location.protocol}//${window.location.hostname}:7200/.netlify/functions/${path}`
+      ? `${window?.location?.protocol}//${window?.location?.hostname}:7200/.netlify/functions/${path}`
       : `/api/${path}`
 
   return url
@@ -412,3 +418,13 @@ export const isOnline = async (checkExternally = false) => {
 
 export const isAuthenticationEnabled = () => !!process.env.A_DOMAIN?.length
 export const isGmapsEnabled = () => !!process.env.G_AKEY?.length
+
+export const dequeueErrorNotify = (toast: any) => (error: string) => {
+  return toast.open({
+    message: `dequeue tag error: ${error}`,
+    type: 'error',
+    duration: 10000,
+    timeout: false,
+    position: 'bottom',
+  })
+}

@@ -1,15 +1,16 @@
 import i18n from '@/i18n'
 import BootstrapVueNext from 'bootstrap-vue-next'
 import mitt from 'mitt'
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import VueGoogleMaps from 'vue-google-maps-community-fork'
 import VueSocials from 'vue-socials'
 import { useToast } from 'vue-toast-notification'
 import VueCookies from 'vue3-cookies'
+import { createBikeTag } from '.'
 import App from './App.vue'
 import { dynamicFontDirective } from './directives'
 import router from './router'
-import { biketagStore } from './store'
 
 // eslint-disable-next-line
 // @ts-ignore
@@ -50,7 +51,12 @@ class BikeTagApp {
     this.app.use(VueCookies)
   }
   router() {
-    this.app.use(router).use(biketagStore)
+    this.app.use(router)
+  }
+  store() {
+    this.app
+      .use(createPinia())
+      .use(createBikeTag({ includeComponents: false, includeDirectives: false }))
   }
   authentication() {
     if (isAuthenticationEnabled()) {
@@ -101,6 +107,7 @@ class BikeTagApp {
     this.directives()
     this.components()
     this.router()
+    this.store()
     this.mount()
   }
 }

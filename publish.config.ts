@@ -9,11 +9,11 @@ export default defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'BikeTag',
-      formats: ['es'],
+      formats: ['es', 'umd'],
       fileName: (format) => `biketag-vue.${format}.js`,
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', 'vue-router', 'pinia', 'biketag'],
       output: {
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === 'style.css') return 'biketag-vue.css'

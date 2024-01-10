@@ -1,6 +1,6 @@
 import BikeTagClient from 'biketag'
 import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
-import { createPinia, defineStore } from 'pinia'
+import { defineStore } from 'pinia'
 import { BikeTagDefaults, BikeTagStoreState, BiketagQueueFormSteps } from '../common'
 import {
   debug,
@@ -18,48 +18,51 @@ import {
   setProfileCookie,
 } from '../common/utils'
 
-const domain = getDomainInfo(window)
-const profile = getProfileFromCookie()
-const mostRecentlyViewedTagnumber = getMostRecentlyViewedBikeTagTagnumber(0)
-const gameName = domain.subdomain ?? process.env.GAME_NAME ?? BikeTagDefaults.gameName
-/// TODO: move these options to a method for FE use only
-const biketagClientOptions: any = {
-  // biketag: {
-  cached: true,
-  host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.org/api`,
-  // game: gameName,
-  clientKey: getBikeTagHash(window.location.hostname),
-  // clientToken: process.env.ACCESS_TOKEN,
-  // },
-  ...getBikeTagClientOpts(window),
-}
-const gameOpts = { source: BikeTagDefaults.source }
-/// TODO: move these constants to common
-const defaultLogo = BikeTagDefaults.logo
-const defaultJingle = BikeTagDefaults.jingle
-const sanityBaseCDNUrl = `${process.env.S_CURL}${biketagClientOptions.sanity?.projectId}/${biketagClientOptions.sanity?.dataset}/`
+let client: BikeTagClient
+let gameName: string
+let biketagClientOpts: any
+let biketagGameOpts: any
+let storedRegionPolygon: any
+let bikeTagInitialized = false
 
-debug(`init::${BikeTagDefaults.store}`, {
-  subdomain: domain.subdomain,
-  domain,
-  gameName,
-  profile,
-})
+export const initBikeTagStore = () => {
+  if (!bikeTagInitialized) {
+    bikeTagInitialized = true
+    biketagGameOpts = { source: BikeTagDefaults.gameSource }
 
-/// TODO: create a helper for the instantiation of the biketag client (use singleton?)
-const client = new BikeTagClient(biketagClientOptions)
-/// TODO: move this to an init method
-let storedRegionPolygon: any = localStorage.getItem(`${gameName}::regionPolygon`)
-try {
-  storedRegionPolygon = JSON.parse(storedRegionPolygon)
-} catch (e) {
-  storedRegionPolygon = null
+    const domain = getDomainInfo(window)
+    gameName = domain.subdomain ?? process.env.GAME_NAME ?? BikeTagDefaults.gameName
+    biketagClientOpts = {
+      // biketag: {
+      cached: true,
+      host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.org/api`,
+      // game: gameName,
+      clientKey: getBikeTagHash(window?.location?.hostname),
+      // clientToken: process.env.ACCESS_TOKEN,
+      // },
+      ...getBikeTagClientOpts(window),
+    }
+
+    debug(`init::${BikeTagDefaults.store}`, {
+      subdomain: domain.subdomain,
+      domain,
+      gameName,
+    })
+
+    /// TODO: create a helper for the instantiation of the biketag client (use singleton?)
+    client = new BikeTagClient(biketagClientOpts)
+    storedRegionPolygon = localStorage.getItem(`${gameName}::regionPolygon`)
+    try {
+      storedRegionPolygon = JSON.parse(storedRegionPolygon)
+    } catch (e) {
+      storedRegionPolygon = null
+    }
+  }
 }
-export const biketagStore = createPinia()
 
 export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
   state: (): BikeTagStoreState => ({
-    dataInitialized: false,
+    dataLoaded: false,
     gameName,
     gameNameProper: gameName[0].toUpperCase() + gameName.slice(1),
     game: {} as Game,
@@ -74,8 +77,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     formStep: BiketagQueueFormSteps.addFoundImage,
     // queuedTag: getQueuedTagFromCookie() ?? ({} as Tag),
     playerTag: {} as Tag,
-    profile,
-    mostRecentlyViewedTagnumber,
+    profile: getProfileFromCookie(),
+    mostRecentlyViewedTagnumber: getMostRecentlyViewedBikeTagTagnumber(0),
     credentialsFetched: false,
     regionPolyon: storedRegionPolygon,
   }),
@@ -157,14 +160,16 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return this.SET_PROFILE(profile)
     },
-    async setGame() {
-      if (!this.game?.mainhash) {
-        return client.game(this.gameName, gameOpts as any).then(async (d) => {
+    async setGame(gameName?: string) {
+      gameName = gameName || this.gameName
+      if (this.game.name !== gameName || this.game?.mainhash) {
+        this.dataLoaded = false
+        return client.game(gameName, biketagGameOpts as any).then(async (d) => {
           if (d) {
             const game = d as Game
-            biketagClientOptions.imgur.hash = game.mainhash
-            biketagClientOptions.imgur.queuehash = game.queuehash
-            client.config(biketagClientOptions)
+            biketagClientOpts.imgur.hash = game.mainhash
+            biketagClientOpts.imgur.queuehash = game.queuehash
+            client.config(biketagClientOpts)
 
             return this.SET_GAME(game)
           }
@@ -183,7 +188,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         // console.log('fetching credentials')
         try {
           await client.config(
-            { ...biketagClientOptions, ...getBikeTagClientOpts(window, true) },
+            { ...biketagClientOpts, ...getBikeTagClientOpts(window, true) },
             false,
             true,
           )
@@ -196,12 +201,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
     },
     fetchAllGames(cached = true) {
-      const biketagClient = new BikeTagClient({ ...biketagClientOptions, game: undefined, cached })
+      this.dataLoaded = false
+      const biketagClient = new BikeTagClient({ ...biketagClientOpts, game: undefined, cached })
       return biketagClient
         .getGame(
           { game: '' },
           {
-            source: 'sanity',
+            source: BikeTagDefaults.gameSource,
           },
         )
         .then((d) => {
@@ -279,7 +285,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     async fetchLeaderboardPlayersProfiles(cached = true) {
       const names = this.leaderboard.map((p) => p.name)
-      return client.players({ names, cached }, gameOpts as any).then(async (d) => {
+      return client.players({ names, cached }, biketagGameOpts as any).then(async (d) => {
         if (Array.isArray(d)) {
           d.forEach((p) => this.SET_PLAYER(p))
         }
@@ -562,6 +568,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     SET_GAME(game: any) {
       const oldState = this.game
       this.game = game
+      this.dataLoaded = true
 
       if (oldState?.name !== game?.name) {
         debug(`${BikeTagDefaults.store}::game`, { game })
@@ -572,6 +579,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     SET_ALL_GAMES(allGames: any) {
       const oldState = this.allGames
       this.allGames = allGames
+      this.dataLoaded = true
 
       if (oldState?.length !== allGames?.length) {
         debug(`${BikeTagDefaults.store}::allGames`, { allGames })
@@ -837,6 +845,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     getQueuedTagState: (state) => {
       return getQueuedTagState(state.playerTag)
     },
+    getDataLoaded(state) {
+      return state.dataLoaded
+    },
     getGame(state) {
       return state.game
     },
@@ -869,7 +880,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         }
       }
 
-      return `https://biketag.org/${defaultJingle}`
+      return `https://biketag.org/${BikeTagDefaults.jingle}`
     },
     getGameTitle(state) {
       return `${state.gameName.toUpperCase()}.BIKETAG`
@@ -885,12 +896,12 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         logo = logo ? logo : state.game?.logo?.length ? state.game?.logo : undefined
 
         if (!logo) {
-          return defaultLogo
+          return BikeTagDefaults.logo
         }
 
         return logo.indexOf('imgur.com') !== -1
           ? logo
-          : getSanityImageUrl(logo, size, sanityBaseCDNUrl, squared)
+          : getSanityImageUrl(logo, size, BikeTagDefaults.sanityBaseCDNUrl, squared)
       }
     },
     getCurrentHint(state) {
@@ -931,3 +942,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
   },
 })
+
+/// TODO: check to see if we can automatically call initBikeTagStore
+export interface BikeTagStore extends ReturnType<typeof useBikeTagStore> {}

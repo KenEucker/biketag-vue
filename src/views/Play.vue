@@ -23,7 +23,11 @@
         getCurrentBikeTag?.tagnumber + (getFormStep > BiketagQueueFormSteps.queueFound ? 1 : 0)
       }}</span
     >
-    <bike-tag-queue :only-mine="true" :show-number="false" />
+    <bike-tag-queue
+      :only-mine="true"
+      :show-number="false"
+      @dequeue-error="dequeueErrorNotify(toast)"
+    />
     <div
       v-if="BiketagQueueFormSteps[getFormStep] >= 1 && BiketagQueueFormSteps[getFormStep] < 4"
       class="step"
@@ -108,7 +112,7 @@ import { ref, inject, computed, watchEffect, onMounted } from 'vue'
 import { useBikeTagStore } from '@/store/index'
 import { BiketagQueueFormSteps } from '@/common/types'
 import { useTimer } from 'vue-timer-hook'
-import { sendNetlifyForm, sendNetlifyError } from '@/common/utils'
+import { sendNetlifyForm, sendNetlifyError, dequeueErrorNotify } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
 import LineSvg from '@/assets/images/line.svg'
 import ArrowSvg from '@/assets/images/arrow.svg'
