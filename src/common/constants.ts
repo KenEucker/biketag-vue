@@ -39,7 +39,7 @@ export const BikeTagEnv = {
   /* Bugs Configuration */
   B_AKEY: process.env.B_AKEY ?? null,
   /* BikeTag Configuration */
-  GAME_NAME: process.env.GAME_NAME ?? 'null',
+  GAME_NAME: process.env.GAME_NAME ?? null,
   GAME_SOURCE: process.env.GAME_SOURCE ?? null,
   HOST: process.env.HOST ?? BikeTagDefaults.host,
   HOST_KEY: process.env.HOST_KEY ?? BikeTagDefaults.hostKey,

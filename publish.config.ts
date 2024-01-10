@@ -23,6 +23,9 @@ export default defineConfig({
         exports: 'named',
         globals: {
           vue: 'Vue',
+          pinia: 'pinia',
+          biketag: 'BikeTagClient',
+          'vue-router': 'vueRouter',
         },
       },
     },
