@@ -18,7 +18,7 @@ import BikeTagButton from './components/BikeTagButton.vue'
 // import BikeTagGames from './components/BikeTagGames.vue'
 import BikeTagHeader from './components/BikeTagHeader.vue'
 // import BikeTagInput from './components/BikeTagInput.vue'
-// import BikeTagLabel from './components/BikeTagLabel.vue'
+import BikeTagLabel from './components/BikeTagLabel.vue'
 // import BikeTagLoader from './components/BikeTagLoader.vue'
 // import BikeTagMap from './components/BikeTagMap.vue'
 // import BikeTagMenu from './components/BikeTagMenu.vue'
@@ -66,15 +66,15 @@ export {
   // BikeTagFooter,
   // BikeTagGames,
   BikeTagHeader,
-  Types,
-  createBikeTag,
   // BikeTagInput,
-  // BikeTagLabel,
+  BikeTagLabel,
   // BikeTagLoader,
   // BikeTagMap,
   // BikeTagMenu,
   // BikeTagPlayer,
   // BikeTagQueue,
+  Types,
+  createBikeTag,
   getBikeTagClientOpts,
   initBikeTagStore,
   useBikeTagStore
