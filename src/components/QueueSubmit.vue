@@ -137,8 +137,12 @@ const getPlayerId = computed(() => store.getPlayerId)
 const getGameNameProper = computed(() => store.getGameNameProper)
 const getGame = computed(() => store.getGame)
 const supportsReddit = computed(() => !!getGame.value?.settings[BikeTagSettingsKeys.SupportsReddit])
-const supportsTwitter = computed(() => !!getGame.value?.settings[BikeTagSettingsKeys.SupportsTwitter])
-const supportsInstagram = computed(() => !!getGame.value?.settings[BikeTagSettingsKeys.SupportsInstagram])
+const supportsTwitter = computed(
+  () => !!getGame.value?.settings[BikeTagSettingsKeys.SupportsTwitter],
+)
+const supportsInstagram = computed(
+  () => !!getGame.value?.settings[BikeTagSettingsKeys.SupportsInstagram],
+)
 const redditPostText = computed(
   () => `
 [#${getPlayerTag.value.tagnumber} tag by ${getPlayerTag.value.foundPlayer}](https://biketag.org/${getPlayerTag.value.tagnumber})

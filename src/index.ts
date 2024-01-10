@@ -77,6 +77,5 @@ export {
   createBikeTag,
   getBikeTagClientOpts,
   initBikeTagStore,
-  useBikeTagStore
+  useBikeTagStore,
 }
-
