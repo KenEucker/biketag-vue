@@ -73,7 +73,7 @@ export interface AmbassadorProfile extends Profile {
 }
 export type BikeTagProfile = Partial<Profile> & Partial<AmbassadorProfile>
 export interface BikeTagStoreState {
-  dataInitialized: boolean
+  dataLoaded: boolean
   game: Game
   allGames: Game[]
   achievements: Achievement[]

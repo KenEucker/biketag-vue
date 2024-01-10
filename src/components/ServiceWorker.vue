@@ -35,7 +35,7 @@ const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
         setInterval(async () => {
           debug('Checking for sw update')
           await r.update()
-        }, 20000 /* 20s for testing purposes */)
+        }, 1000 /* 20s for testing purposes */)
     } else {
       debug('app::service worker registered', r?.active)
     }

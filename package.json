@@ -11,7 +11,7 @@
     "lint:js": "eslint --ext .ts,.js,.vue src --fix",
     "lint:style": "stylelint \"./src/**/*.vue\" \"./src/**/*.scss\" --fix",
     "serve": "vite",
-    "pub:expose": "mv dist/index.d.ts ./index.d.ts && mv dist/biketag-vue.* ./ && mv dist/components ./components && mv dist/common ./common && mv dist/store ./store",
+    "pub:expose": "mv dist/index.d.ts ./index.d.ts && mv dist/biketag-vue.* ./ && mv dist/components ./components && mv dist/common ./common && mv dist/store ./store && mv dist/directives ./directives",
     "pub:clear": "rm -f ./index.d.ts ./biketag-vue.es.js ./biketag-vue.css && rm -rf dist ./components ./common ./store",
     "pub:build": "vue-tsc && vite build --config publish.config.ts",
     "build": "vite build",
@@ -64,7 +64,10 @@
     "vue3-markdown-it": "^1.0.10"
   },
   "peerDependencies": {
-    "vue": "^3.0.0"
+    "biketag": "^3.0.0",
+    "pinia": "^2.0.0",
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.1.0",
@@ -144,10 +147,12 @@
   "exports": {
     ".": {
       "import": "./biketag-vue.es.js",
+      "require": "./biketag-vue.umd.js",
       "types": "./index.d.ts"
     },
     "./biketag-vue.css": {
-      "import": "./biketag-vue.css"
+      "import": "./biketag-vue.css",
+      "require": "./biketag-vue.css"
     }
   }
 }

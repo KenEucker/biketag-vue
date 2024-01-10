@@ -26,7 +26,12 @@
             />
             <b-popover :target="`marker_${i}`" triggers="hover focus" placement="top">
               <template #title> {{ `#${i}` }} by {{ tag.mysteryPlayer }}</template>
-              <bike-tag-queue class="world-map__popover" :tag="tag" :show-number="false" />
+              <bike-tag-queue
+                class="world-map__popover"
+                :tag="tag"
+                :show-number="false"
+                @dequeue-error="dequeueErrorNotify(toast)"
+              />
             </b-popover>
           </template>
         </template>
@@ -64,10 +69,11 @@
 </template>
 
 <script setup name="BikeTagMap">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useBikeTagStore } from '@/store/index'
-import { isGmapsEnabled } from '@/common/utils'
+import { isGmapsEnabled, dequeueErrorNotify } from '@/common/utils'
 import Pin from '@/assets/images/pin.svg'
+const toast = inject('toast')
 
 // components
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
@@ -91,6 +97,7 @@ const props = defineProps({
 // data
 const emit = defineEmits(['dragend'])
 const data = ref({})
+
 const store = useBikeTagStore()
 
 switch (props.variant) {

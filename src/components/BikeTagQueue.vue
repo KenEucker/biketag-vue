@@ -123,8 +123,8 @@ const props = defineProps({
 // data
 const store = useBikeTagStore()
 const router = useRouter()
-const toast = inject('toast')
 const { t } = useI18n()
+const emit = defineEmits(['dequeue-error'])
 
 // computed
 const getQueuedTags = computed(() => store.getQueuedTags)
@@ -143,13 +143,8 @@ async function resetToFound() {
   await store.fetchCredentials()
   return store.dequeueFoundTag().then((dequeueSuccessful) => {
     if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-      return toast.open({
-        message: `dequeue tag error: ${dequeueSuccessful}`,
-        type: 'error',
-        duration: 10000,
-        timeout: false,
-        position: 'bottom',
-      })
+      /// TODO: this notification needs to be removed before publishing v3.0.0
+      return emit('dequeue-error', dequeueSuccessful)
     } else {
       nextTick(() => {
         router.go()
@@ -161,13 +156,7 @@ async function resetToMystery() {
   await store.fetchCredentials()
   return store.dequeueMysteryTag().then((dequeueSuccessful) => {
     if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-      return toast.open({
-        message: `dequeue tag error: ${dequeueSuccessful}`,
-        type: 'error',
-        duration: 10000,
-        timeout: false,
-        position: 'bottom',
-      })
+      return emit('dequeue-error', dequeueSuccessful)
     } else {
       nextTick(() => {
         router.go()

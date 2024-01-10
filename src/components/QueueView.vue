@@ -1,6 +1,10 @@
 <template>
   <div class="container align-center">
-    <bike-tag-queue :pagination-ref="controlledSwiper" size="m" />
+    <bike-tag-queue
+      :pagination-ref="controlledSwiper"
+      size="m"
+      @dequeue-error="dequeueErrorNotify(toast)"
+    />
   </div>
   <div class="container queue-view">
     <swiper
@@ -44,13 +48,13 @@
 </template>
 
 <script setup name="QueueView">
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBikeTagStore } from '@/store/index'
 import SwiperCore, { Controller, Pagination } from 'swiper'
 import 'swiper/css/bundle'
-import { stringifyNumber } from '@/common/utils'
-import { BiketagQueueFormSteps } from '@/common/types'
+import { stringifyNumber, BiketagQueueFormSteps, dequeueErrorNotify } from '@/common'
+const toast = inject('toast')
 
 // components
 import { Swiper, SwiperSlide } from 'swiper/vue'
