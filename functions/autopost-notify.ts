@@ -54,7 +54,7 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   }
 
   /// Set to admin credentials
-  nonAdminBiketag.config(adminBiketagOpts)
+  await nonAdminBiketag.config(adminBiketagOpts, true, true)
   const notificationsSent = await sendNewBikeTagNotifications(
     game,
     previousTag,
