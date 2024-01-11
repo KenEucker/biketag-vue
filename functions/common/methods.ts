@@ -1313,7 +1313,7 @@ export const sendNewBikeTagNotifications = async (
     )
   }
 
-  console.log('emailing', { thisGamesAmbassadors })
+  // console.log('emailing', { thisGamesAmbassadors })
   notificationPromises.push(
     sendEmailsToAmbassadors(
       'biketag-auto-posted',
@@ -1341,7 +1341,6 @@ export const sendNewBikeTagNotifications = async (
         }
       },
     ).then((results) => {
-      console.log('email results', { results })
       return results.accepted.concat(results.rejected)
     }),
   )
