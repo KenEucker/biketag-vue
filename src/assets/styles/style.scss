@@ -462,4 +462,8 @@ body {
   }
 }
 
+.leaflet-top, .leaflet-bottom {
+  z-index: 900 !important;
+}
+
 // }

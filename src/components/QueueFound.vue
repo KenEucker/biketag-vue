@@ -371,12 +371,13 @@ const setPlace = (e) => {
   }
 }
 const updateMarker = (e) => {
-  gps.value['lat'] = round(e.latLng.lat())
-  gps.value['lng'] = round(e.latLng.lng())
+  gps.value['lat'] = round(e.lat)
+  gps.value['lng'] = round(e.lng)
 
   if (isGpsDefault.value) {
     isGpsDefault.value = false
   }
+  center.value = { ...gps.value }
 }
 const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
 const setImage = async (event) => {
