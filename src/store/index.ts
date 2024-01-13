@@ -40,7 +40,7 @@ export const initBikeTagStore = () => {
       clientKey: getBikeTagHash(window?.location?.hostname),
       // clientToken: process.env.ACCESS_TOKEN,
       // },
-      ...getBikeTagClientOpts(window),
+      ...getBikeTagClientOpts(window, process.env.BIKETAG_AUTHED === 'true'),
     }
 
     debug(`init::${BikeTagDefaults.store}`, {
