@@ -1,6 +1,6 @@
 <template>
-  <div v-if="isGmapsEnabled()" :class="props.variant">
-    <GMapMap
+  <div :class="props.variant">
+    <!-- <GMapMap
       v-if="props.variant === 'play/input'"
       :center="props.start"
       :zoom="18"
@@ -13,8 +13,8 @@
         :clickeable="true"
         @dragend="emitDragend"
       />
-    </GMapMap>
-    <div v-else-if="props.variant === 'biketags'" class="game-map">
+    </GMapMap> -->
+    <!-- <div v-else-if="props.variant === 'biketags'" class="game-map">
       <GMapMap :center="data.center" :zoom="10" map-type-id="roadmap">
         <template v-for="(tag, i) in getTags" :key="i">
           <template v-if="tag.gps.lat && tag.gps.long">
@@ -36,8 +36,8 @@
           </template>
         </template>
       </GMapMap>
-    </div>
-    <div v-else-if="props.variant === 'worldwide'" class="world-map">
+    </div> -->
+    <!-- <div v-else-if="props.variant === 'worldwide'" class="world-map">
       <GMapMap :center="data.center" :zoom="4" map-type-id="roadmap">
         <GMapMarker
           v-for="(game, i) in getMarkers"
@@ -46,8 +46,11 @@
           :position="game.point"
         />
       </GMapMap>
+    </div> -->
+    <div>
+      <div ref="mapContainer" class="leaflet-map"></div>
     </div>
-    <GMapMap
+    <!-- <GMapMap
       v-else
       class="map"
       :click="true"
@@ -64,19 +67,98 @@
         />
       </template>
       <GMapPolygon v-else :options="data.options" :paths="data.paths" />
-    </GMapMap>
+    </GMapMap> -->
   </div>
 </template>
 
 <script setup name="BikeTagMap">
-import { ref, computed, onMounted, inject } from 'vue'
-import { useBikeTagStore } from '@/store/index'
-import { isGmapsEnabled, dequeueErrorNotify } from '@/common/utils'
-import Pin from '@/assets/images/pin.svg'
-const toast = inject('toast')
+import { watch } from 'vue'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
 
-// components
-import BikeTagQueue from '@/components/BikeTagQueue.vue'
+// computed
+const getAllGames = computed(() => store.getAllGames)
+const getLogoUrl = computed(() => store.getLogoUrl)
+const getGame = computed(() => store.getGame)
+const getTags = computed(() => store.getTags)
+const getMarkers = computed(() =>
+  getAllGames.value
+    .filter((game) => game.boundary.lat != undefined) // add gps location to all games
+    .map((game) => ({ point: game.boundary, logo: game.logo })),
+)
+
+const mapContainer = ref(null)
+
+const LeafIcon = L.Icon.extend({
+  options: {
+    iconSize: ['auto', 50],
+    iconAnchor: [0, 50],
+  },
+})
+
+const MarkerIcon = L.Icon.extend({
+  options: {
+    iconSize: ['auto', 50],
+    iconAnchor: [30, 50],
+  },
+})
+
+let map
+
+const addMarkers = () => {
+  for (let i = 0; i < getMarkers.value.length; i++) {
+    const marker = L.marker(getMarkers.value[i].point, {
+      icon: new LeafIcon({ iconUrl: getLogoUrl.value('', getMarkers.value[i].logo) }),
+    }).addTo(map)
+  }
+}
+
+const addPolygons = (paths) => {
+  const polygon = L.geoJSON(paths, {
+    style: function () {
+      return { color: 'red' }
+    },
+  }).addTo(map)
+  map.fitBounds(polygon.getBounds())
+}
+
+onMounted(async () => {
+  map = L.map(mapContainer.value).setView([36.966428, -95.844032], 4)
+  L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+    maxZoom: 19,
+    subdomains: ['mt0'],
+  }).addTo(map)
+  if (props.variant == 'play/input') {
+    const marker = L.marker(props.start, {
+      icon: new MarkerIcon({ iconUrl: Pin }),
+      draggable: true,
+    }).addTo(map)
+    map.setView(props.start, 18)
+    marker.on('dragend', (e) => {
+      emitDragend(e.target._latlng)
+    })
+  } else if (props.variant == 'worldwide') {
+    if (getMarkers.value.length > 0) {
+      addMarkers()
+    } else {
+      watch(
+        () => getMarkers.value,
+        () => {
+          addMarkers()
+        },
+      )
+    }
+  } else if (props.variant == 'boundary') {
+    const regionData = await store.getRegionPolygon(getGame.value.region)
+    if (regionData) {
+      addPolygons(regionData?.geojson)
+    }
+  }
+})
+
+import { ref, computed, onMounted } from 'vue'
+import { useBikeTagStore } from '@/store/index'
+import Pin from '@/assets/images/pin.svg'
 
 // props
 const props = defineProps({
@@ -135,45 +217,21 @@ switch (props.variant) {
     break
 }
 
-// computed
-const getAllGames = computed(() => store.getAllGames)
-const getLogoUrl = computed(() => store.getLogoUrl)
-const getGame = computed(() => store.getGame)
-const getTags = computed(() => store.getTags)
-const getMarkers = computed(() =>
-  getAllGames.value
-    .filter((game) => game.boundary.lat != undefined) // add gps location to all games
-    .map((game) => ({ point: game.boundary, logo: game.logo })),
-)
-
 // methods
 function emitDragend(e) {
   emit('dragend', e)
 }
 
 // created
-async function created() {
-  if (props.variant == 'boundary') {
-    const regionData = await store.getRegionPolygon(getGame.value.region)
-    if (regionData) {
-      data.value.center['lat'] = regionData.lat ? parseFloat(regionData.lat) : 0
-      data.value.center['lng'] = regionData.lon ? parseFloat(regionData.lon) : 0
-      data.value.multipolygon = regionData?.geojson?.type === 'MultiPolygon'
-      if (data.value.multipolygon) {
-        data.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
-          return v.map((u) => {
-            return { lng: u[0], lat: u[1] }
-          })
-        })
-      } else {
-        data.value.paths = regionData?.geojson?.coordinates[0].map((v) => {
-          return { lng: v[0], lat: v[1] }
-        })
-      }
-    }
-  }
-}
-created()
+// async function created() {
+//   if (props.variant == 'boundary') {
+//     // const regionData = await store.getRegionPolygon(getGame.value.region)
+//     // if (regionData) {
+//     //   addPolygons(regionData?.geojson?.coordinates[0])
+//     // }
+//   }
+// }
+// created()
 
 // mounted
 onMounted(() => {
@@ -220,6 +278,10 @@ onMounted(() => {
 </style>
 <style lang="scss" scoped>
 @import '../assets/styles/style';
+
+.leaflet-map {
+  height: 500px;
+}
 
 .world-map,
 .game-map {
