@@ -32,6 +32,10 @@ const props = defineProps({
 // data
 const emit = defineEmits(['dragend'])
 const store = useBikeTagStore()
+const worldZoom = 3
+const cityZoom = 10
+const tagsZoom = 20
+const centerNorthAmerica = [40, -45]
 let map
 
 // computed
@@ -47,11 +51,11 @@ const getMarkers = computed(() =>
       }))
     : getAllGames.value
         .filter((game) => !!game.boundary.lat) // add gps location to all games
-        .map((game) => ({ point: game.boundary, logo: getLogoUrl(game.logo) })),
+        .map((game) => ({ point: game.boundary, logo: getLogoUrl.value('', game.logo) })),
 )
 
 const mapContainer = ref(null)
-const gameCenter = ref([36.966428, -95.844032])
+const gameCenter = ref(centerNorthAmerica)
 
 const LeafIcon = L.Icon.extend({
   options: {
@@ -78,7 +82,13 @@ const addMarkers = () => {
 const addPolygons = (paths) => {
   const polygon = L.geoJSON(paths, {
     style: function () {
-      return { color: 'red' }
+      return {
+        fillColor: 'blue',
+        weight: 2,
+        opacity: 0.7,
+        color: 'white', //Outline color
+        fillOpacity: 0.2,
+      }
     },
   }).addTo(map)
   map.fitBounds(polygon.getBounds())
@@ -92,23 +102,24 @@ onMounted(async () => {
         getGame.value.boundary?.long ?? getGame.value.boundary?.lng ?? 0,
       ]
     : gameCenter.value
-  map = L.map(mapContainer.value).setView(gameCenter.value, 4)
+  map = L.map(mapContainer.value).setView(gameCenter.value, worldZoom)
   L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-    maxZoom: 19,
+    maxZoom: 20,
     subdomains: ['mt0'],
   }).addTo(map)
+
   if (props.variant == 'play/input') {
     const marker = L.marker(props.start, {
       icon: new MarkerIcon({ iconUrl: Pin }),
       draggable: true,
     }).addTo(map)
     L.control.locate().addTo(map)
-    map.setView(props.start, 18)
+    map.setView(props.start, tagsZoom)
     marker.on('dragend', (e) => {
-      emitDragend(e.target._latlng)
+      emit('dragend', e.target._latlng)
     })
   } else if (props.variant == 'worldwide') {
-    console.log('getMarkers', getMarkers.value)
+    map.setView(centerNorthAmerica, worldZoom)
     if (getMarkers.value.length > 0) {
       addMarkers()
     } else {
@@ -126,29 +137,12 @@ onMounted(async () => {
     }
   } else if (props.variant === 'biketags') {
     if (getMarkers.value.length > 0) {
-      map.setView(gameCenter.value, 10)
+      map.setView(gameCenter.value, cityZoom)
+      L.control.locate().addTo(map)
       addMarkers()
     }
   }
 })
-
-// created
-switch (props.variant) {
-  case 'boundary':
-    break
-  case 'play/input':
-    break
-  case 'biketags':
-    break
-  case 'worldwide':
-  default:
-    break
-}
-
-// methods
-function emitDragend(e) {
-  emit('dragend', e)
-}
 </script>
 
 <style lang="scss">
