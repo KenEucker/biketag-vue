@@ -64,7 +64,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBikeTagStore } from '@/store/index'
-import 'vue-loading-overlay/dist/vue-loading.css'
+import 'vue-loading-overlay/dist/css/index.css'
 // import useSWRV from 'swrv'
 
 // components

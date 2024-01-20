@@ -148,7 +148,7 @@
 import { ref, inject, computed, onMounted, nextTick } from 'vue'
 import { useBikeTagStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
-import 'vue-loading-overlay/dist/vue-loading.css'
+import 'vue-loading-overlay/dist/css/index.css'
 import Reddit from '@/assets/images/Reddit.svg'
 import Instagram from '@/assets/images/Instagram.svg'
 import Twitter from '@/assets/images/Twitter.svg'

@@ -89,7 +89,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBikeTagStore } from '@/store'
-import 'vue-loading-overlay/dist/vue-loading.css'
+import 'vue-loading-overlay/dist/css/index.css'
 import Reddit from '@/assets/images/Reddit.svg'
 import Instagram from '@/assets/images/Instagram.svg'
 import Twitter from '@/assets/images/Twitter.svg'
