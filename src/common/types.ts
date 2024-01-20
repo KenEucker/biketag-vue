@@ -84,7 +84,6 @@ export interface BikeTagStoreState {
   tagsInRound: Tag[]
   players: Player[]
   leaderboard: Player[]
-  html: string
   profile: BikeTagProfile
   formStep: number
   playerTag: Tag

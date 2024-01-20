@@ -73,7 +73,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     tagsInRound: [] as Tag[],
     players: [] as Player[],
     leaderboard: [] as Player[],
-    html: '',
     formStep: BiketagQueueFormSteps.addFoundImage,
     // queuedTag: getQueuedTagFromCookie() ?? ({} as Tag),
     playerTag: {} as Tag,
@@ -889,6 +888,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     getGameTitle(state) {
       return `${state.gameName?.toUpperCase()}.BIKETAG`
+    },
+    getDefaultLogo() {
+      return BikeTagDefaults.logo
     },
     getGameName(state) {
       return state.gameName
