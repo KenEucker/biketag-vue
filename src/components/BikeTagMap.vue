@@ -10,6 +10,8 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useBikeTagStore } from '@/store/index'
 import Pin from '@/assets/images/pin.svg'
+import 'leaflet.locatecontrol'
+import 'leaflet.locatecontrol/dist/L.Control.Locate.min.css'
 
 // props
 const props = defineProps({
@@ -100,6 +102,7 @@ onMounted(async () => {
       icon: new MarkerIcon({ iconUrl: Pin }),
       draggable: true,
     }).addTo(map)
+    L.control.locate().addTo(map)
     map.setView(props.start, 18)
     marker.on('dragend', (e) => {
       emitDragend(e.target._latlng)
