@@ -8,7 +8,7 @@
   </div>
   <div class="container queue-view">
     <swiper
-      :modules="[Controller]"
+      :modules="[Controller, Pagination]"
       :pagination="{}"
       :effect="'coverflow'"
       :grab-cursor="true"
@@ -51,7 +51,7 @@
 import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBikeTagStore } from '@/store/index'
-import SwiperCore, { Controller, Pagination } from 'swiper'
+import { Controller, Pagination } from 'swiper/modules'
 import 'swiper/css/bundle'
 import { stringifyNumber, BiketagQueueFormSteps, dequeueErrorNotify } from '@/common'
 const toast = inject('toast')
@@ -62,8 +62,6 @@ import BikeTag from '@/components/BikeTag.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import { useI18n } from 'vue-i18n'
-
-SwiperCore.use([Pagination])
 
 // data
 const controlledSwiper = ref(null)
