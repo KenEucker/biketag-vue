@@ -10,14 +10,12 @@
     <meta property="og:image" :content="logo" />
   </Head>
   <div :class="isWhiteBackground">
-    <template v-if="isNotLanding">
-      <div :class="`spacer-top ${isWhiteBackground}`"></div>
-      <bike-tag-menu variant="top" />
-    </template>
+    <div :class="`spacer-top ${isWhiteBackground}`"></div>
+    <bike-tag-menu variant="top" />
     <confetti-explosion v-if="showConfetti" />
     <service-worker />
     <router-view />
-    <!-- <template v-if="isNotLanding">
+    <!-- <template v-if="!isNotLanding">
       <bike-tag-menu variant="bottom" />
       <div class="spacer-bottom"></div>
     </template> -->

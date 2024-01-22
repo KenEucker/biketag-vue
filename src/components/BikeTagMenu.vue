@@ -217,7 +217,7 @@ function onScroll() {
 async function resetBikeTagApp() {
   if (await isOnline()) {
     store.resetBikeTagCache()
-    router.push({ path: '/' })
+    router.push({ name: 'Home' })
   } else {
     router.push('/')
   }
@@ -241,7 +241,8 @@ function closeCollapsible() {
   // navList.value.classList.remove('show')
 }
 function goWorldwide() {
-  window.location = 'http://biketag.org/'
+  // window.location = 'http://biketag.org/'
+  router.push({ name: 'Landing' })
   // router.push('/worldwide')
 }
 function goApprovePage() {
@@ -278,7 +279,7 @@ function goHowPage() {
 }
 function goHomePage() {
   closeCollapsible()
-  router.push('/')
+  router.push({ name: 'Home' })
 }
 function goRoundPage() {
   router.push('/round')

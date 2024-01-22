@@ -134,8 +134,9 @@ const goRoundPage = () => {
   router.push('/round')
 }
 const goWorldwide = () => {
-  window.location = 'http://biketag.org/'
+  // window.location = 'http://biketag.org/'
   // router.push('/worldwide')
+  router.push({ name: 'Landing' })
 }
 const closePopover = () => {
   hintPopover.value.hide({ type: 'click' })

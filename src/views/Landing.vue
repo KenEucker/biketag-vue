@@ -1,42 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <header class="biketag-header">
-    <nav class="navbar">
-      <div class="navbar-brand" @click="toSection('mg-top')">
-        <img src="@/assets/images/biketag-logo.svg" class="logo" alt="BikeTag  Logo" />
-      </div>
-
-      <!-- Hamburger Menu -->
-      <button
-        ref="buttonCollapse"
-        class="navbar-toggler"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbar-supported-content"
-        aria-controls="navbar-supported-content"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <img class="hamburger-image" src="/images/Hamburger.svg" alt="Menu" />
-      </button>
-
-      <div
-        id="navbar-supported-content"
-        ref="navList"
-        class="collapse navbar-collapse"
-        @click="closeMenu"
-      >
-        <ul class="m-auto navbar-nav mb-lg-0">
-          <li class="nav-item" @click="toSection('What is BikeTag?')">What is BikeTag?</li>
-          <li class="nav-item" @click="toSection('BikeTag Ambassador program')">
-            {{ $t('BikeTag Ambassadors') }}
-          </li>
-          <li class="nav-item" @click="toSection('Open-Source')">
-            {{ $t('Open-Source Project') }}
-          </li>
-        </ul>
-      </div>
-    </nav>
-  </header>
   <div id="mg-top"></div>
   <main>
     <bike-tag-blurb
@@ -161,6 +124,19 @@
     </div>
     <p><i>© 2023 The BikeTag Project. All Rights Reserved. </i></p>
   </footer>
+  <!-- <header class="biketag-header">
+    <div>
+      <ul class="m-auto navbar-nav mb-lg-0">
+        <li class="nav-item" @click="toSection('What is BikeTag?')">What is BikeTag?</li>
+        <li class="nav-item" @click="toSection('BikeTag Ambassador program')">
+          {{ $t('BikeTag Ambassadors') }}
+        </li>
+        <li class="nav-item" @click="toSection('Open-Source')">
+          {{ $t('Open-Source Project') }}
+        </li>
+      </ul>
+    </div>
+  </header> -->
 </template>
 
 <script setup name="LandingView">
