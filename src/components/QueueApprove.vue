@@ -9,7 +9,7 @@
     <p class="queue-text">{{ $t('pages.round.approve_text') }}</p>
     <bike-tag-queue :pagination-ref="controlledSwiper" :show-number="true" size="m" />
     <swiper
-      :modules="[Controller]"
+      :modules="[Controller, Pagination]"
       :pagination="{}"
       :effect="'coverflow'"
       :grab-cursor="true"
@@ -108,7 +108,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBikeTagStore } from '@/store/index'
-import SwiperCore, { Controller, Pagination } from 'swiper'
+import { Controller, Pagination } from 'swiper/modules'
 import 'swiper/css/bundle'
 import { stringifyNumber } from '@/common/utils'
 import { useI18n } from 'vue-i18n'
@@ -118,8 +118,6 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
-
-SwiperCore.use([Pagination])
 
 // data
 const emit = defineEmits(['submit'])

@@ -1,15 +1,15 @@
 import { Handler } from '@netlify/functions'
 import { BikeTagClient } from 'biketag'
-import { Game } from 'biketag/lib/common/schema'
+import { Game } from 'biketag/dist/common/schema'
 import request from 'request'
 import { HttpStatusCode } from './common/constants'
 import {
-  acceptCorsHeaders,
-  getActiveQueueForGame,
-  getBikeTagClientOpts,
-  getPayloadOpts,
-  getProfileAuthorization,
-  setNewBikeTagPost,
+    acceptCorsHeaders,
+    getActiveQueueForGame,
+    getBikeTagClientOpts,
+    getPayloadOpts,
+    getProfileAuthorization,
+    setNewBikeTagPost,
 } from './common/methods'
 
 const approveHandler: Handler = async (event) => {

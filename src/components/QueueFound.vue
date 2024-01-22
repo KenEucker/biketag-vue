@@ -87,7 +87,7 @@
             placeholder="Enter a location"
           />
         </bike-tag-input>
-        <b-popover target="found" :show="showPopover" triggers="click" placement="top">
+        <b-popover target="found" triggers="click focus" placement="top">
           <template #title> Location: {{ getLocation }} </template>
           <p v-if="locationDisabled">{{ t('pages.round.image_first') }}</p>
           <bike-tag-map
@@ -170,7 +170,6 @@ const locationDisabled = ref(true)
 const center = ref({ lat: 0, lng: 0 })
 const gps = ref({ lat: null, lng: null })
 const isGpsDefault = ref(true)
-const showPopover = ref(false)
 const inputDOM = ref(null)
 const showModal = ref(false)
 const uploadInProgress = ref(false)
@@ -371,12 +370,13 @@ const setPlace = (e) => {
   }
 }
 const updateMarker = (e) => {
-  gps.value['lat'] = round(e.latLng.lat())
-  gps.value['lng'] = round(e.latLng.lng())
+  gps.value['lat'] = round(e.lat)
+  gps.value['lng'] = round(e.lng)
 
   if (isGpsDefault.value) {
     isGpsDefault.value = false
   }
+  center.value = { ...gps.value }
 }
 const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
 const setImage = async (event) => {
@@ -479,8 +479,6 @@ const calculateInBoundary = () => {
   return !isInBoundary.value && !confirmedBoundary.value
 }
 
-nextTick(() => (showPopover.value = true))
-
 // watch
 watch(getPlayerName, (val) => {
   player.value = val
@@ -494,8 +492,6 @@ onMounted(function () {
       boundary.value = regionData.geojson
     }
 
-    // setTimeout(() => nextTick(() => (showPopover.value = false)), 100)
-    showPopover.value = false
     player.value = getPlayerName.value
     uploadInProgress.value = false
   })

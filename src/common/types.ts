@@ -6,7 +6,7 @@ import {
   Region,
   Setting,
   Tag,
-} from 'biketag/lib/common/schema'
+} from 'biketag/dist/common/schema'
 
 export type { Achievement, Ambassador, Game, Player, Region, Setting, Tag }
 
@@ -84,7 +84,6 @@ export interface BikeTagStoreState {
   tagsInRound: Tag[]
   players: Player[]
   leaderboard: Player[]
-  html: string
   profile: BikeTagProfile
   formStep: number
   playerTag: Tag

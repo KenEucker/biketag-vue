@@ -1,6 +1,7 @@
 <template>
   <div class="container mt-5">
     <swiper
+      :modules="[Autoplay, Navigation, Pagination]"
       :autoplay="{ delay: 12500 }"
       :pagination="{ clickable: true }"
       :slides-per-view="1"
@@ -115,7 +116,7 @@
 
 <script setup name="HowToView">
 // import Swiper core and required components
-import SwiperCore, { Autoplay, Navigation, Pagination } from 'swiper'
+import { Autoplay, Navigation, Pagination } from 'swiper/modules'
 // Import Swiper styles
 import 'swiper/css/bundle'
 import { ref, computed } from 'vue'
@@ -126,9 +127,6 @@ import { debug } from '@/common/utils'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 import { useI18n } from 'vue-i18n'
-
-// install Swiper components
-SwiperCore.use([Autoplay, Navigation, Pagination])
 
 // data
 const playingEaster = ref(false)

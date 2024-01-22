@@ -140,10 +140,12 @@ function checkForNewBikeTagPost() {
 async function created() {
   const initResults = []
   /// Set it first thing
-  const game = await store.setGame()
-  const _gameIsSet = game?.name?.length !== 0
-
+  const _gameIsSet = store.gameName?.length !== 0
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
+    const game = await store.setGame().catch((err) => {
+      debug('view::data-init', err)
+      router.push('/landing')
+    })
     gameIsSet.value = true
 
     if (!game) {

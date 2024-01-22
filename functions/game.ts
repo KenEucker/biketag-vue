@@ -1,6 +1,6 @@
 import { builder, Handler } from '@netlify/functions'
 import { BikeTagClient } from 'biketag'
-import { getGamePayload } from 'biketag/lib/common/payloads'
+import { getGamePayload } from 'biketag/dist/common/payloads'
 import request from 'request'
 import { getBikeTagClientOpts, getPayloadOpts } from './common/methods'
 

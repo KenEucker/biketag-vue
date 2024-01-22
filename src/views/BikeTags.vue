@@ -43,7 +43,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBikeTagStore } from '@/store/index'
-import 'vue-loading-overlay/dist/vue-loading.css'
+import 'vue-loading-overlay/dist/css/index.css'
 
 // components
 import BikeTag from '@/components/BikeTag.vue'

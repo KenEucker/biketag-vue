@@ -1,5 +1,5 @@
 import BikeTagClient from 'biketag'
-import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
+import { Achievement, Game, Player, Tag } from 'biketag/dist/common/schema'
 import { defineStore } from 'pinia'
 import { BikeTagDefaults, BikeTagStoreState, BiketagQueueFormSteps } from '../common'
 import {
@@ -40,7 +40,7 @@ export const initBikeTagStore = () => {
       clientKey: getBikeTagHash(window?.location?.hostname),
       // clientToken: process.env.ACCESS_TOKEN,
       // },
-      ...getBikeTagClientOpts(window),
+      ...getBikeTagClientOpts(window, process.env.BIKETAG_AUTHED === 'true'),
     }
 
     debug(`init::${BikeTagDefaults.store}`, {
@@ -73,7 +73,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     tagsInRound: [] as Tag[],
     players: [] as Player[],
     leaderboard: [] as Player[],
-    html: '',
     formStep: BiketagQueueFormSteps.addFoundImage,
     // queuedTag: getQueuedTagFromCookie() ?? ({} as Tag),
     playerTag: {} as Tag,
@@ -889,6 +888,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     getGameTitle(state) {
       return `${state.gameName?.toUpperCase()}.BIKETAG`
+    },
+    getDefaultLogo() {
+      return BikeTagDefaults.logo
     },
     getGameName(state) {
       return state.gameName
