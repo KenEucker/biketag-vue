@@ -4,7 +4,7 @@
     <div class="play-screen__label-group-top">
       <bike-tag-header />
     </div>
-    <loading v-if="tagIsLoading" v-model:active="tagIsLoading" :is-full-page="false">
+    <loading v-show="tagIsLoading" v-model:active="tagIsLoading" :is-full-page="false">
       <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
     </loading>
     <div class="container" :class="`${tagIsLoading ? 'tag-hidden' : ''}`">

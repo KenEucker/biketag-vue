@@ -1,3 +1,19 @@
+import About from '@/views/About.vue'
+import Approve from '@/views/Approve.vue'
+import BikeTags from '@/views/BikeTags.vue'
+import Home from '@/views/Home.vue'
+import HowToPlay from '@/views/HowToPlay.vue'
+import Landing from '@/views/Landing.vue'
+import Leaderboard from '@/views/Leaderboard.vue'
+import Login from '@/views/Login.vue'
+import Logout from '@/views/Logout.vue'
+import Map from '@/views/Map.vue'
+import Play from '@/views/Play.vue'
+import Player from '@/views/Player.vue'
+import Players from '@/views/Players.vue'
+import Profile from '@/views/Profile.vue'
+import Round from '@/views/Round.vue'
+import Worldwide from '@/views/Worldwide.vue'
 import { authGuard } from '@auth0/auth0-vue'
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router'
 import { debug, isAuthenticationEnabled } from '../common/utils'
@@ -6,72 +22,72 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Landing',
-    component: () => import('@/views/Landing.vue'),
+    component: () => Landing,
   },
   {
     path: '/:tagnumber?',
     name: 'Home',
-    component: () => import('@/views/Home.vue'),
+    component: () => Home,
   },
   {
     path: '/biketags/:currentPage?',
     name: 'BikeTags',
-    component: () => import('@/views/BikeTags.vue'),
+    component: () => BikeTags,
   },
   {
     path: '/players/:currentPage?',
     name: 'Players',
-    component: () => import('@/views/Players.vue'),
+    component: () => Players,
   },
   {
     path: '/player/:name/:currentPage?',
     name: 'Player',
-    component: () => import('@/views/Player.vue'),
+    component: () => Player,
   },
   {
     path: '/play',
     name: 'Play',
-    component: () => import('@/views/Play.vue'),
+    component: () => Play,
   },
   {
     path: '/round',
     name: 'Round',
-    component: () => import('@/views/Round.vue'),
+    component: () => Round,
   },
   {
     path: '/howtoplay',
     name: 'How',
-    component: () => import('@/views/HowToPlay.vue'),
+    component: () => HowToPlay,
   },
   {
     path: '/leaderboard',
     name: 'Leaderboard',
-    component: () => import('@/views/Leaderboard.vue'),
+    component: () => Leaderboard,
   },
   {
     path: '/about',
     name: 'About',
-    component: () => import('@/views/About.vue'),
+    component: () => About,
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/Login.vue'),
+    component: () => Login,
   },
   {
     path: '/logout',
     name: 'Logout',
-    component: () => import('@/views/Logout.vue'),
+    component: () => Logout,
   },
   {
     path: '/worldwide',
     name: 'Worldwide',
-    component: () => import('@/views/Worldwide.vue'),
+    component: () => Worldwide,
   },
   {
     path: '/map',
     name: 'Map',
-    component: () => import('@/views/Map.vue'),
+    component: () => Map,
   },
 ]
 
@@ -83,13 +99,13 @@ if (isAuthenticationEnabled()) {
       path: '/profile',
       name: 'Profile',
       beforeEnter: authGuard,
-      component: () => import('@/views/Profile.vue'),
+      component: () => Profile,
     },
     {
       path: '/approve',
       name: 'Approve',
       beforeEnter: authGuard,
-      component: () => import('@/views/Approve.vue'),
+      component: () => Approve,
     },
   ]
 }

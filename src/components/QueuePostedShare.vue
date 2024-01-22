@@ -35,7 +35,7 @@
             />
           </template>
           <div class="reddit-post">
-            <Markdown v-if="supportsReddit && showReddit" :source="redditPostText" linkify="true" />
+            <!-- <Markdown v-if="supportsReddit && showReddit" :source="redditPostText" linkify="true" /> -->
             <pre v-if="!showReddit">{{ redditPostText }}</pre>
           </div>
         </b-tab>
@@ -62,11 +62,11 @@
             />
           </template>
           <div class="instagram-post">
-            <Markdown
+            <!-- <Markdown
               v-if="supportsInstagram && showInstagram"
               :source="instagramPostText"
               linkify="true"
-            />
+            /> -->
             <pre v-if="!showInstagram">{{ instagramPostText }}</pre>
           </div>
         </b-tab>
