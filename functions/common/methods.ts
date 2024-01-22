@@ -613,7 +613,7 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     text = liquid.parseAndRenderSync(textTemplate, locals)
     // }
   } catch (e) {
-    console.log({ e })
+    console.error('sendEmail error', { e })
   }
 
   if (!html.length) {
@@ -1138,7 +1138,6 @@ export const getBikeTagPlayerProfile = async (
       source: 'sanity',
     },
   )
-  console.log({ playerName, playerProfileResult })
   const playerProfile = playerProfileResult.success ? playerProfileResult.data : {}
   const mergedProfile = { ...profile, ...playerProfile }
 

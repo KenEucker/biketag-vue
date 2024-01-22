@@ -45,7 +45,8 @@ export const BikeTagEnv = {
   HOST_KEY: process.env.HOST_KEY ?? BikeTagDefaults.hostKey,
   BIKETAG_AUTHED: process.env.B_AUTHED ?? process.env.BIKETAG_AUTHED ?? null,
   /* Google Configuration */
-  G_AKEY: process.env.G_AKEY ?? process.env.GOOGLE_ACCESS_TOKEN ?? null,
+  G_AKEY:
+    process.env.G_AKEY ?? process.env.GOOGLE_ACCESS_TOKEN ?? process.env.GOOGLE_API_KEY ?? null,
   G_CID: process.env.G_CID ?? process.env.GOOGLE_CLIENT_ID ?? null,
   G_CSECRET: process.env.G_CSECRET ?? process.env.GOOGLE_CLIENT_SECRET ?? null,
   G_EMAIL: process.env.G_EMAIL ?? process.env.GOOGLE_EMAIL_ADDRESS ?? null,
