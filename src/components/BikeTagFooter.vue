@@ -134,7 +134,7 @@ const goRoundPage = () => {
   router.push('/round')
 }
 const goWorldwide = () => {
-  // window.location = 'http://biketag.org/'
+  // window.location = 'https://biketag.org/'
   // router.push('/worldwide')
   router.push({ name: 'Landing' })
 }

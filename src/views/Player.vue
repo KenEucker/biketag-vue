@@ -119,10 +119,10 @@ const socialNetworkIcons = {
   discord: Discord,
 }
 const socialLinks = {
-  imgur: 'http://imgur.com/user/',
-  instagram: 'http://instagram.com/',
-  twitter: 'http://twitter.com/',
-  reddit: 'http://reddit.com/u/',
+  imgur: 'https://imgur.com/user/',
+  instagram: 'https://instagram.com/',
+  twitter: 'https://twitter.com/',
+  reddit: 'https://reddit.com/u/',
   discord: '',
 }
 const store = useBikeTagStore()

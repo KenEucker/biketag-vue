@@ -241,7 +241,7 @@ function closeCollapsible() {
   // navList.value.classList.remove('show')
 }
 function goWorldwide() {
-  // window.location = 'http://biketag.org/'
+  // window.location = 'https://biketag.org/'
   router.push({ name: 'Landing' })
   // router.push('/worldwide')
 }
