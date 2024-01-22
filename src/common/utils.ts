@@ -1,6 +1,6 @@
 import { DeviceUUID } from '@/common/uuid'
 import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
-import { Game, Tag } from 'biketag/lib/common/schema'
+import { Game, Tag } from 'biketag/dist/common/schema'
 import CryptoJS from 'crypto-js'
 import domtoimage from 'dom-to-image'
 import log from 'loglevel'

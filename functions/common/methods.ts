@@ -2,7 +2,7 @@ import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
 import BikeTagClient from 'biketag'
-import { Ambassador, Game, Player, Tag } from 'biketag/lib/common/schema'
+import { Ambassador, Game, Player, Tag } from 'biketag/dist/common/schema'
 import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
 import { readFileSync } from 'fs'
@@ -94,6 +94,10 @@ export const getBikeTagClientOpts = (
       hash: game?.mainhash,
       queuehash: game?.queuehash,
       archivehash: game?.archivehash,
+    },
+    sanity: {
+      projectId: process.env.S_PID,
+      dataset: process.env.S_DSET,
     },
   }
 
@@ -1127,12 +1131,14 @@ export const getBikeTagPlayerProfile = async (
 ): Promise<any> => {
   adminBikeTag =
     adminBikeTag ?? new BikeTagClient(getBikeTagClientOpts(undefined, authorized, false))
+  const playerName = profile.user_metadata?.name ?? profile.name
   const playerProfileResult = await adminBikeTag.getPlayer(
-    profile.user_metadata?.name ?? profile.name,
+    { name: playerName },
     {
       source: 'sanity',
     },
   )
+  console.log({ playerName, playerProfileResult })
   const playerProfile = playerProfileResult.success ? playerProfileResult.data : {}
   const mergedProfile = { ...profile, ...playerProfile }
 

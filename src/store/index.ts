@@ -1,5 +1,5 @@
 import BikeTagClient from 'biketag'
-import { Achievement, Game, Player, Tag } from 'biketag/lib/common/schema'
+import { Achievement, Game, Player, Tag } from 'biketag/dist/common/schema'
 import { defineStore } from 'pinia'
 import { BikeTagDefaults, BikeTagStoreState, BiketagQueueFormSteps } from '../common'
 import {

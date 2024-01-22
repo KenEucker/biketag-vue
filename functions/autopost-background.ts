@@ -1,13 +1,13 @@
 import { Handler } from '@netlify/functions'
 import BikeTagClient from 'biketag'
-import { Game } from 'biketag/lib/common/schema'
+import { Game } from 'biketag/dist/common/schema'
 import request from 'request'
 import { HttpStatusCode } from './common/constants'
 import {
-  getActiveQueueForGame,
-  getBikeTagClientOpts,
-  getWinningTagForCurrentRound,
-  setNewBikeTagPost,
+    getActiveQueueForGame,
+    getBikeTagClientOpts,
+    getWinningTagForCurrentRound,
+    setNewBikeTagPost,
 } from './common/methods'
 import { BackgroundProcessResults } from './common/types'
 
