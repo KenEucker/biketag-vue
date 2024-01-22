@@ -11,7 +11,9 @@
   <div class="queue-page">
     <div v-if="approveSuccess">
       You successfully posted a new round of BikeTag {{ getGameNameProper }}!
-      <bike-tag-button @click="router.push('/')"> Go to the Home Page </bike-tag-button>
+      <bike-tag-button @click="router.push({ name: 'Home' })">
+        Go to the Home Page
+      </bike-tag-button>
     </div>
     <queue-approve v-else-if="!uploadInProgress" @submit="onApproveSubmit" />
     <div v-else class="loading-message">

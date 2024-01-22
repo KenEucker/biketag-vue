@@ -260,8 +260,9 @@ async function onSubmit() {
 }
 
 // mounted
-onMounted(() => {
-  if (!getProfile.value) router.push('/')
+onMounted(async () => {
+  if (!getProfile.value) await router.push({ name: 'Home' })
+
   profile.value = getProfile.value
   profile.value.user_metadata = profile.value.user_metadata ?? { social: {} }
   profile.value.user_metadata.options = profile.value.user_metadata.options ?? {

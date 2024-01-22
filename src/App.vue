@@ -146,11 +146,12 @@ async function created() {
     })
     gameIsSet.value = true
 
+    initResults.push(await store.fetchCurrentBikeTag())
+
     if (game) {
-      router.push({ name: 'Home' })
+      await router.push({ name: 'Home' })
     }
 
-    initResults.push(await store.fetchCurrentBikeTag())
     initResults.push(store.fetchTags())
     initResults.push(store.fetchPlayers())
     initResults.push(store.fetchLeaderboard())
