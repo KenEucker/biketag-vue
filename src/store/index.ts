@@ -887,7 +887,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return `https://biketag.org/${BikeTagDefaults.jingle}`
     },
     getGameTitle(state) {
-      return `${state.gameName?.toUpperCase()}.BIKETAG`
+      const gamePrefix = state.gameName?.length ? `${state.gameName?.toUpperCase()}.` : ''
+      const gamePostfix = state.gameName?.length ? '' : '.ORG'
+      return `${gamePrefix}BIKETAG${gamePostfix}`
     },
     getDefaultLogo() {
       return BikeTagDefaults.logo
