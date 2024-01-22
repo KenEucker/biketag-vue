@@ -144,13 +144,12 @@ async function created() {
   if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
     const game = await store.setGame().catch((err) => {
       debug('view::data-init', err)
-      router.push('/landing')
+      // router.push('/landing')
     })
     gameIsSet.value = true
 
-    if (!game) {
-      router.push('/landing')
-      gameIsSet.value = false
+    if (game) {
+      router.push({ name: 'Home' })
     }
 
     initResults.push(await store.fetchCurrentBikeTag())
@@ -166,7 +165,6 @@ async function created() {
     checkForNewBikeTagPost()
   } else if (!_gameIsSet) {
     await store.fetchAllGames()
-    router.push('/landing')
   }
   debug(`view::data-init`, 'created')
 }

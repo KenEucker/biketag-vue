@@ -4,7 +4,7 @@ import { debug, isAuthenticationEnabled } from '../common/utils'
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/landing',
+    path: '/',
     name: 'Landing',
     component: () => import('@/views/Landing.vue'),
   },
