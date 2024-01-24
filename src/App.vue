@@ -138,18 +138,25 @@ function checkForNewBikeTagPost() {
 async function created() {
   const initResults = []
   /// Set it first thing
+  await router.isReady()
   const _gameIsSet = store.gameName?.length !== 0
-  if (_gameIsSet && router.currentRoute.value.name !== 'landing') {
+  const routeIsRoot = router.currentRoute.value.path === '/'
+  const routeIsLanding = router.currentRoute.value.name === 'Landing'
+
+  if (_gameIsSet && (!routeIsLanding || routeIsRoot)) {
     const game = await store.setGame().catch((err) => {
       debug('view::data-init', err)
       // router.push('/landing')
     })
     gameIsSet.value = true
+    const routeIsHome = routeIsRoot ? true : router.currentRoute.value?.name === 'Home'
 
     initResults.push(await store.fetchCurrentBikeTag())
 
-    if (game) {
-      await router.push({ name: 'Home' })
+    if (game && routeIsHome) {
+      const tagnumber = parseInt(router.currentRoute.value.path.split('/')[1]) ?? undefined
+      const params = { tagnumber }
+      await router.push({ name: 'Home', params })
     }
 
     initResults.push(store.fetchTags())

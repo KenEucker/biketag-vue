@@ -87,7 +87,7 @@
             placeholder="Enter a location"
           />
         </bike-tag-input>
-        <b-popover target="found" triggers="click focus" placement="top">
+        <b-popover target="found" :hide="!showMap" placement="top">
           <template #title> Location: {{ getLocation }} </template>
           <p v-if="locationDisabled">{{ t('pages.round.image_first') }}</p>
           <bike-tag-map
@@ -172,6 +172,7 @@ const gps = ref({ lat: null, lng: null })
 const isGpsDefault = ref(true)
 const inputDOM = ref(null)
 const showModal = ref(false)
+const showMap = ref(false)
 const uploadInProgress = ref(false)
 const location = ref('')
 const player = ref('')
@@ -442,6 +443,7 @@ const setImage = async (event) => {
               lng: round(GPSData.longitude),
             }
             isGpsDefault.value = false
+            showMap.value = true
             center.value = { ...gps.value }
           } else if (getGame.value?.boundary.lat && getGame.value?.boundary.lng) {
             gps.value = {
@@ -451,6 +453,7 @@ const setImage = async (event) => {
             isGpsDefault.value = true
             center.value = { ...gps.value }
           } else {
+            showMap.value = true
             isGpsDefault.value = false
           }
           location.value = ''

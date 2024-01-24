@@ -34,7 +34,7 @@ const emit = defineEmits(['dragend'])
 const store = useBikeTagStore()
 const worldZoom = 3
 const cityZoom = 10
-const tagsZoom = 20
+const playZoom = 15
 const centerNorthAmerica = [40, -45]
 let map
 
@@ -114,7 +114,7 @@ onMounted(async () => {
       draggable: true,
     }).addTo(map)
     L.control.locate().addTo(map)
-    map.setView(props.start, tagsZoom)
+    map.setView(props.start, playZoom)
     marker.on('dragend', (e) => {
       emit('dragend', e.target._latlng)
     })

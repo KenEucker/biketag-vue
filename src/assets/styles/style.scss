@@ -12,6 +12,8 @@ body {
 
 .popover {
   z-index: 99;
+  max-width: 60vw;
+  min-width: 400px;
 }
 
 #app {

@@ -31,8 +31,8 @@ export default defineConfig({
     EnvironmentPlugin(BikeTagEnv),
     VitePWA({
       srcDir: 'src',
-      filename: 'worker.ts',
-      strategies: 'injectManifest',
+      // filename: 'worker.ts',
+      strategies: 'generateSW',
       registerType: 'autoUpdate',
       includeAssets: ['**/*'],
       // includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.png'],

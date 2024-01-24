@@ -217,10 +217,9 @@ function onScroll() {
 async function resetBikeTagApp() {
   if (await isOnline()) {
     store.resetBikeTagCache()
-    router.push({ name: 'Home' })
-  } else {
-    router.push('/')
   }
+
+  router.push({ name: 'Home' })
 }
 function login() {
   closeCollapsible()
