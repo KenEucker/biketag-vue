@@ -159,6 +159,7 @@ async function onApproveSubmit(newTagSubmission) {
 
 // mounted
 onMounted(async () => {
+  await store.isReady()
   await store.fetchQueuedTags(true)
   await store.fetchCredentials()
 

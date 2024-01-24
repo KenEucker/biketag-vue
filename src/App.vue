@@ -136,7 +136,6 @@ function checkForNewBikeTagPost() {
 
 // created
 async function created() {
-  const initResults = []
   /// Set it first thing
   await router.isReady()
   const _gameIsSet = store.gameName?.length !== 0
@@ -151,8 +150,6 @@ async function created() {
     gameIsSet.value = true
     const routeIsHome = routeIsRoot ? true : router.currentRoute.value?.name === 'Home'
 
-    initResults.push(await store.fetchCurrentBikeTag())
-
     if (game && routeIsHome) {
       const tagnumber =
         router.currentRoute.value.path.length > 1
@@ -161,15 +158,7 @@ async function created() {
       const params = { tagnumber }
       await router.push({ name: 'Home', params })
     }
-
-    initResults.push(store.fetchTags())
-    initResults.push(store.fetchPlayers())
-    initResults.push(store.fetchLeaderboard())
-    initResults.push(await store.fetchCredentials())
-    initResults.push(store.fetchQueuedTags())
-    initResults.push(store.fetchAllGames())
-
-    await Promise.allSettled(initResults)
+    await store.FetchAllData({ currentBikeTagSync: true, credentialsSync: true })
 
     checkForNewBikeTagPost()
   } else if (!_gameIsSet) {

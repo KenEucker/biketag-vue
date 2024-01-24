@@ -49,7 +49,6 @@ const props = defineProps({
 const time = new Date()
 time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 const timer = ref(useTimer(time.getSeconds()))
-const uploadInProgress = ref(false)
 const store = useBikeTagStore()
 const { t } = useI18n()
 
@@ -61,16 +60,11 @@ function isViewingQueue() {
   return getFormStep.value === BiketagQueueFormSteps[BiketagQueueFormSteps.viewRound]
 }
 
-// created
-const created = async () => {
+// mounted
+onMounted(async () => {
+  await store.isReady()
   await store.fetchCurrentBikeTag()
   await store.fetchQueuedTags()
-}
-created()
-
-// mounted
-onMounted(() => {
-  uploadInProgress.value = false
 })
 </script>
 

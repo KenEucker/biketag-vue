@@ -236,6 +236,7 @@ async function onQueueSubmit(newTagSubmission) {
 
 // created
 const created = async () => {
+  await store.isReady()
   await store.fetchCurrentBikeTag()
   await store.fetchQueuedTags(true)
 }

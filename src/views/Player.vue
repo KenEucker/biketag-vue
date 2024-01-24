@@ -16,7 +16,7 @@
     </div>
   </b-modal>
   <div v-if="player" class="container biketag-player">
-    <div class="social mb-2">
+    <div class="mb-2 social">
       <div class="mt-5 mr-2" @click="showBikeDex">
         <img
           v-if="bikedex?.length"
@@ -67,7 +67,7 @@
         </div>
       </div>
       <b-form-group>
-        <select v-model="perPage" class="form-select mb-2 m-auto" @change="resetCurrentPage">
+        <select v-model="perPage" class="m-auto mb-2 form-select" @change="resetCurrentPage">
           <option v-for="i in 3" :key="Math.pow(10, i)" :value="Math.pow(10, i)">
             {{ Math.pow(10, i) }}
           </option>
@@ -130,8 +130,6 @@ const modal = ref(false)
 const playerName = ref(decodeURIComponent(encodeURIComponent(route.params.name)))
 const player = computed(() => store.getPlayers.find((p) => p.name === playerName.value))
 
-store.fetchAllAchievements()
-
 // computed
 const bikedex = computed(() => [])
 const achievements = computed(() => player.value?.achievements?.map(store.getBikeTagAchievement))
@@ -180,6 +178,8 @@ watch(
 
 // mounted
 onMounted(async () => {
+  await store.isReady()
+  store.fetchAllAchievements()
   await store.fetchPlayers() // ensure the players are set before fetching THIS player's additional profile info
   store.fetchPlayerProfile(playerName.value)
 })
