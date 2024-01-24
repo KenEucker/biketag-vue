@@ -154,7 +154,10 @@ async function created() {
     initResults.push(await store.fetchCurrentBikeTag())
 
     if (game && routeIsHome) {
-      const tagnumber = parseInt(router.currentRoute.value.path.split('/')[1]) ?? undefined
+      const tagnumber =
+        router.currentRoute.value.path.length > 1
+          ? parseInt(router.currentRoute.value.path.split('/')[1])
+          : undefined
       const params = { tagnumber }
       await router.push({ name: 'Home', params })
     }
