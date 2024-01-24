@@ -62,7 +62,8 @@ export const initBikeTagStore = () => {
 
 export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
   state: (): BikeTagStoreState => ({
-    dataLoaded: false,
+    fetchingData: false,
+    dataFetched: false,
     gameName,
     gameNameProper: gameName?.length ? gameName[0].toUpperCase() + gameName.slice(1) : '',
     game: {} as Game,
@@ -83,6 +84,22 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
   }),
 
   actions: {
+    async isReady() {
+      if (this.dataFetched) {
+        return Promise.resolve() // Data is already loaded, resolve immediately
+      }
+
+      return new Promise((resolve) => {
+        const checkIsDataLoaded = () => {
+          if (this.dataFetched) {
+            clearInterval(intervalId) // Stop checking when isDataLoaded becomes true
+            resolve(true)
+          }
+        }
+        const intervalId = setInterval(checkIsDataLoaded, 100) // Check every 100 milliseconds (adjust as needed)
+        checkIsDataLoaded() // Check immediately
+      })
+    },
     // eslint-disable-next-line no-empty-pattern
     async getRegionPolygon(region: any) {
       try {
@@ -162,7 +179,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async setGame(newGameName?: string) {
       newGameName = newGameName ?? this.gameName
       if (this.game?.name !== newGameName || !this.game?.mainhash) {
-        this.dataLoaded = false
+        this.fetchingData = false
         return client.getGame({ game: newGameName }, biketagGameOpts as any).then(async (r) => {
           if (r.success) {
             const game = r.data as Game
@@ -204,8 +221,65 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         this.credentialsFetched = true
       }
     },
+    async FetchAllData(
+      opts: {
+        currentBikeTagSync?: boolean
+        skipCurrentBikeTag?: boolean
+        tagsSync?: boolean
+        skipTags?: boolean
+        playersSync?: boolean
+        skipPlayers?: boolean
+        leaderboardSync?: boolean
+        skipLeaderboard?: boolean
+        credentialsSync?: boolean
+        skipCredentials?: boolean
+        queuedTagsSync?: boolean
+        skipQueuedTags?: boolean
+        allGamesSync?: boolean
+        skipAllGames?: boolean
+      } = {},
+    ) {
+      const initResults: any[] = []
+      this.fetchingData = true
+
+      if (!opts.skipCurrentBikeTag) {
+        if (opts.currentBikeTagSync) initResults.push(await this.fetchCurrentBikeTag())
+        else initResults.push(this.fetchCurrentBikeTag())
+      }
+      if (!opts.skipTags) {
+        if (opts.tagsSync) initResults.push(await this.fetchTags())
+        else initResults.push(this.fetchTags())
+      }
+      if (!opts.skipPlayers) {
+        if (opts.playersSync) initResults.push(await this.fetchPlayers())
+        else initResults.push(this.fetchPlayers())
+      }
+      if (!opts.skipLeaderboard) {
+        if (opts.leaderboardSync) initResults.push(await this.fetchLeaderboard())
+        else initResults.push(this.fetchLeaderboard())
+      }
+      if (!opts.skipCredentials) {
+        if (opts.credentialsSync) initResults.push(await this.fetchCredentials())
+        else initResults.push(await this.fetchCredentials())
+      }
+      if (!opts.skipQueuedTags) {
+        if (opts.queuedTagsSync) initResults.push(await this.fetchQueuedTags())
+        else initResults.push(this.fetchQueuedTags())
+      }
+      if (!opts.skipAllGames) {
+        if (opts.allGamesSync) initResults.push(await this.fetchAllGames())
+        else initResults.push(this.fetchAllGames())
+      }
+
+      Promise.allSettled(initResults).then((results) => {
+        this.dataFetched = true
+        this.fetchingData = false
+      })
+
+      return initResults
+    },
     fetchAllGames(cached = true) {
-      this.dataLoaded = false
+      this.fetchingData = false
       const biketagClient = new BikeTagClient({ ...biketagClientOpts, game: undefined, cached })
       return biketagClient
         .getGame(
@@ -572,7 +646,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     SET_GAME(game: any) {
       const oldState = this.game
       this.game = game
-      this.dataLoaded = true
+      this.fetchingData = true
 
       if (oldState?.name !== game?.name) {
         debug(`${BikeTagDefaults.store}::game`, { game })
@@ -583,7 +657,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     SET_ALL_GAMES(allGames: any) {
       const oldState = this.allGames
       this.allGames = allGames
-      this.dataLoaded = true
+      this.fetchingData = true
 
       if (oldState?.length !== allGames?.length) {
         debug(`${BikeTagDefaults.store}::allGames`, { allGames })
@@ -848,9 +922,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     getImgurImageSized: () => getImgurImageSized,
     getQueuedTagState: (state) => {
       return getQueuedTagState(state.playerTag)
-    },
-    getDataLoaded(state) {
-      return state.dataLoaded
     },
     getGame(state) {
       return state.game

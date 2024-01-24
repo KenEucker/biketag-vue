@@ -2,7 +2,7 @@
 <template>
   <div class="container">
     <div class="player-list">
-      <div v-for="player in playersList" :key="player.name" class="p-lg-1 p-md-1 mb-1">
+      <div v-for="player in playersList" :key="player.name" class="mb-1 p-lg-1 p-md-1">
         <player size="md" :player="player" />
       </div>
     </div>
@@ -19,7 +19,7 @@ import Player from '@/components/BikeTagPlayer.vue'
 // data
 const store = useBikeTagStore()
 
-store.fetchLeaderboardPlayersProfiles()
+store.isReady().then(() => store.fetchLeaderboardPlayersProfiles())
 
 // computed
 const playersList = computed(() => store.getLeaderboard)
