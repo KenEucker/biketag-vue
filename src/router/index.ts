@@ -22,72 +22,72 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Landing',
-    component: Landing,
+    component: () => Landing,
   },
   {
     path: '/:tagnumber?',
     name: 'Home',
-    component: Home,
+    component: () => Home,
   },
   {
     path: '/biketags/:currentPage?',
     name: 'BikeTags',
-    component: BikeTags,
+    component: () => BikeTags,
   },
   {
     path: '/players/:currentPage?',
     name: 'Players',
-    component: Players,
+    component: () => Players,
   },
   {
     path: '/player/:name/:currentPage?',
     name: 'Player',
-    component: Player,
+    component: () => Player,
   },
   {
     path: '/play',
     name: 'Play',
-    component: Play,
+    component: () => Play,
   },
   {
     path: '/round',
     name: 'Round',
-    component: Round,
+    component: () => Round,
   },
   {
     path: '/howtoplay',
     name: 'How',
-    component: HowToPlay,
+    component: () => HowToPlay,
   },
   {
     path: '/leaderboard',
     name: 'Leaderboard',
-    component: Leaderboard,
+    component: () => Leaderboard,
   },
   {
     path: '/about',
     name: 'About',
-    component: About,
+    component: () => About,
   },
   {
     path: '/login',
     name: 'Login',
-    component: Login,
+    component: () => Login,
   },
   {
     path: '/logout',
     name: 'Logout',
-    component: Logout,
+    component: () => Logout,
   },
   {
     path: '/worldwide',
     name: 'Worldwide',
-    component: Worldwide,
+    component: () => Worldwide,
   },
   {
     path: '/map',
     name: 'Map',
-    component: Map,
+    component: () => Map,
   },
 ]
 
@@ -99,13 +99,13 @@ if (isAuthenticationEnabled()) {
       path: '/profile',
       name: 'Profile',
       beforeEnter: authGuard,
-      component: Profile,
+      component: () => Profile,
     },
     {
       path: '/approve',
       name: 'Approve',
       beforeEnter: authGuard,
-      component: Approve,
+      component: () => Approve,
     },
   ]
 }
