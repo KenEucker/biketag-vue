@@ -80,20 +80,15 @@ import { useI18n } from 'vue-i18n'
 // data
 const router = useRouter()
 const route = useRoute()
-let tagnumber = ref(route.params?.tagnumber ? parseInt(route.params.tagnumber) : 0)
 const tagIsLoading = ref(true)
 const store = useBikeTagStore()
 const { t } = useI18n()
+const tagnumber = computed(() => (route.params?.tagnumber ? parseInt(route.params.tagnumber) : 0))
 
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getImgurImageSized = computed(() => store.getImgurImageSized)
 const getTags = computed(() => store.getTags)
-
-/// Support legacy webHashHistory urls
-if (tagnumber.value === 0 && window.location.hash.indexOf('#/') === 0) {
-  tagnumber.value = parseInt(window.location.hash.split('#/')[1])
-}
 
 const tag = computed(() => {
   if (tagnumber.value !== 0) {
@@ -108,21 +103,26 @@ function tagImageLoaded() {
   tagIsLoading.value = false
 }
 function goNextSingle() {
-  tagnumber.value++
   if (tagnumber.value === getCurrentBikeTag.value.tagnumber) {
-    tagnumber.value = 0
+    router.push('/')
   } else {
-    router.push(`/${tagnumber.value}`)
+    router.push(`/${tagnumber.value + 1}`)
   }
 }
 function goPreviousSingle() {
-  tagnumber.value = tagnumber.value > 0 ? tagnumber.value : getCurrentBikeTag.value.tagnumber
-  tagnumber.value--
-  router.push(`/${tagnumber.value}`)
+  const newTagnumber = tagnumber.value > 0 ? tagnumber.value : getCurrentBikeTag.value.tagnumber
+  router.push(`/${newTagnumber - 1}`)
 }
 
 // mounted
-onMounted(() => (tagIsLoading.value = tagnumber.value === 0))
+onMounted(async () => {
+  await router.isReady()
+  /// Support legacy webHashHistory urls
+  if (tagnumber.value === 0 && window.location.hash.indexOf('#/') === 0) {
+    tagnumber.value = parseInt(window.location.hash.split('#/')[1])
+  }
+  tagIsLoading.value = tagnumber.value === 0
+})
 </script>
 
 <style lang="scss">
