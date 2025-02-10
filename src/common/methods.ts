@@ -1,5 +1,5 @@
 import { DeviceUUID } from '@/common/uuid'
-import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
+import { booleanPointInPolygon, buffer, multiPolygon, point, polygon, simplify } from '@turf/turf'
 import { Game, Tag } from 'biketag/dist/common/schema'
 import CryptoJS from 'crypto-js'
 import domtoimage from 'dom-to-image'
@@ -384,10 +384,22 @@ export const debug = (message: string, context?: any) => {
 
 export const feetToKm = (feets: number) => feets * 0.0003048
 
+export const expandPolygon = (geojson: any, expandDistanceInFeet: number = 100) => {
+  console.log({ geojson, expandDistanceInFeet })
+  const expanded = simplify(
+    buffer(geojson.geojson, feetToKm(expandDistanceInFeet), { units: 'kilometers' }),
+    {
+      tolerance: 0.005,
+    },
+  )
+
+  return { geojson: expanded.geometry }
+}
+
 export const isPointInPolygon = (
   geojson: any,
   gps: { lng: number; lat: number },
-  distanceOffInFeet: number,
+  distanceOffInFeet: number = 1000,
 ) => {
   const distanceOffInKilometers = feetToKm(distanceOffInFeet)
 

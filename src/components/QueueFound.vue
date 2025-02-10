@@ -466,7 +466,11 @@ const setImage = async (event) => {
 const calculateInBoundary = () => {
   // If the boundary is set
   if (boundary.value.type) {
-    isInBoundary.value = isPointInPolygon(boundary.value, gps.value, getGame.value.region?.radius ?? 1000)
+    isInBoundary.value = isPointInPolygon(
+      boundary.value,
+      gps.value,
+      // getGame.value.region?.radius ?? 1000,
+    )
 
     if (!isInBoundary.value) {
       confirmInBoundary.value = true

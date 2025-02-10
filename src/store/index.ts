@@ -7,6 +7,7 @@ import {
   BiketagQueueFormSteps,
   debug,
   encodeBikeTagString,
+  expandPolygon,
   getApiUrl,
   getBikeTagClientOpts,
   getBikeTagHash,
@@ -142,8 +143,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             }
             return 0
           })
-          this.SET_REGION_POLYGON(sortedResults[0])
-          return sortedResults[0]
+          console.log('region.radius ', region)
+          const regionMap = region.radius
+            ? expandPolygon(sortedResults[0], region.radius)
+            : sortedResults[0]
+          this.SET_REGION_POLYGON(regionMap)
+
+          return regionMap
         } else {
           console.log('map cannot continue, region not set properly')
         }
@@ -916,6 +922,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return this.formStep
     },
     SET_REGION_POLYGON(regionPolygon: any) {
+      console.log({ regionPolygon })
       localStorage.setItem(`${gameName}::regionPolygon`, JSON.stringify(regionPolygon))
       this.regionPolyon = regionPolygon
 
@@ -1035,4 +1042,4 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 })
 
 /// TODO: check to see if we can automatically call initBikeTagStore
-export interface BikeTagStore extends ReturnType<typeof useBikeTagStore> { }
+export interface BikeTagStore extends ReturnType<typeof useBikeTagStore> {}
