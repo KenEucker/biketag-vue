@@ -78,6 +78,8 @@ export interface BikeTagStoreState {
   game: Game
   allGames: Game[]
   achievements: Achievement[]
+  gameSource: string
+  imageSource: 'aws' | 'imgur' | 'sanity'
   gameName: string
   gameNameProper: string
   currentBikeTag: Tag

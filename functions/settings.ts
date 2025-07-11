@@ -1,7 +1,7 @@
 import { builder, Handler } from '@netlify/functions'
+import type { Game } from 'biketag'
 import { BikeTagClient } from 'biketag'
 import { getSettingsPayload } from 'biketag/dist/common/payloads'
-import { Game } from 'biketag/dist/common/schema'
 import request from 'request'
 import { getBikeTagClientOpts, getPayloadOpts } from './common'
 
@@ -27,6 +27,7 @@ const setttingsHandler: Handler = async (event) => {
   const settingsResponse = await biketag.getSettings(biketagPayload as getSettingsPayload, {
     source: 'sanity',
   })
+  console.log({settingsResponse})
   const { success, data } = settingsResponse
 
   return {

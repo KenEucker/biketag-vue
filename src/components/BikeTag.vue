@@ -98,11 +98,11 @@
 </template>
 
 <script setup name="BikeTag" lang="ts">
-import { ref, computed, onMounted, withDefaults } from 'vue'
-import { useRouter } from 'vue-router'
-import { useBikeTagStore } from '@/store/index'
 import { getTagDate, Tag } from '@/common'
+import { useBikeTagStore } from '@/store/index'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 export interface BikeTagProps {
   tag: Tag & { inBoundary: boolean }
@@ -126,8 +126,8 @@ export interface BikeTagProps {
 }
 
 // componets
-import ExpandableImage from '@/components/ExpandableImage.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import ExpandableImage from '@/components/ExpandableImage.vue'
 
 // props
 const props = withDefaults(defineProps<BikeTagProps>(), {
@@ -179,16 +179,16 @@ const _mysteryImageUrl = computed(() => {
 })
 const getFoundImageSrc = computed(() => {
   return props.imageSize
-    ? store.getImgurImageSized(_foundImageUrl.value, props.imageSize)
+    ? store.getImageSized(_foundImageUrl.value, props.imageSize)
     : props.sizedFoundImage
-      ? store.getImgurImageSized(_foundImageUrl.value)
+      ? store.getImageSized(_foundImageUrl.value)
       : _foundImageUrl.value
 })
 const getMysteryImageSrc = computed(() => {
   return props.imageSize
-    ? store.getImgurImageSized(_mysteryImageUrl.value, props.imageSize)
+    ? store.getImageSized(_mysteryImageUrl.value, props.imageSize)
     : props.sizedMysteryImage
-      ? store.getImgurImageSized(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
+      ? store.getImageSized(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
       : _mysteryImageUrl.value
 })
 const _mysteryDescription = computed(() => {

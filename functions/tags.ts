@@ -1,11 +1,21 @@
-import { builder, Handler } from '@netlify/functions'
+import { Handler } from '@netlify/functions'
+import type { Game } from 'biketag'
 import { BikeTagClient } from 'biketag'
 import { getTagsPayload } from 'biketag/dist/common/payloads'
-import { Game } from 'biketag/dist/common/schema'
 import request from 'request'
-import { getBikeTagClientOpts, getPayloadOpts } from './common'
+import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode } from './common'
 
 const tagsHandler: Handler = async (event) => {
+  // ✅ Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    /// TODO: check request host
+    const headers = acceptCorsHeaders()
+    return {
+      statusCode: HttpStatusCode.Ok,
+      headers,
+    }
+  }
+
   const biketagOpts = getBikeTagClientOpts(
     {
       ...event,
@@ -34,6 +44,6 @@ const tagsHandler: Handler = async (event) => {
   }
 }
 
-const handler = builder(tagsHandler)
+const handler = tagsHandler
 
 export { handler }

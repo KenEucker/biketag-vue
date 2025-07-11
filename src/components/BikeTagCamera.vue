@@ -249,9 +249,9 @@ onMounted(function () {
     position: absolute;
     bottom: 0;
     border-radius: 11px 11px 30px 30px;
-    background-image: radial-gradient(#e1dfe2 60%, transparent 60%),
-      radial-gradient(#e1dfe2 60%, transparent 60%), linear-gradient(90deg, #e1dfe2, #eae8eb),
-      linear-gradient(90deg, #eae8eb, #e1dfe2),
+    background-image:
+      radial-gradient(#e1dfe2 60%, transparent 60%), radial-gradient(#e1dfe2 60%, transparent 60%),
+      linear-gradient(90deg, #e1dfe2, #eae8eb), linear-gradient(90deg, #eae8eb, #e1dfe2),
       linear-gradient(90deg, #85817e, rgb(47 43 43 / 0%) 5% 95%, #696461),
       linear-gradient(#4e4a49, #100c0d), linear-gradient(#312f32, #2a2a27, #363233);
     background-size:
@@ -282,7 +282,8 @@ onMounted(function () {
       margin-right: auto;
       margin-top: 60px;
       border-radius: 3px;
-      background-image: linear-gradient(90deg, #474548 90%, #343233 90%),
+      background-image:
+        linear-gradient(90deg, #474548 90%, #343233 90%),
         linear-gradient(90deg, #0e090d 10%, #4a4849 10%),
         linear-gradient(#4c4a4d 4%, #161214 9% 20%, #484445 30% 55%, #1a1617 80% 93%, #b0afad 99%);
       background-size:
@@ -338,7 +339,8 @@ onMounted(function () {
       left: 0;
       right: 0;
       border-radius: 0 0 10px 10px;
-      background-image: radial-gradient(#353334, #4c4849 40%, transparent 70%),
+      background-image:
+        radial-gradient(#353334, #4c4849 40%, transparent 70%),
         radial-gradient(#29272a, #464445 40%, transparent 70%),
         linear-gradient(#8b8786 10%, #5e5a5b 20% 65%, #969291);
       background-size:
@@ -391,7 +393,8 @@ onMounted(function () {
     margin-left: auto;
     margin-right: auto;
     border-radius: 35px 35px 0 0;
-    background-image: linear-gradient(
+    background-image:
+      linear-gradient(
         90deg,
         rgb(243 243 243 / 75%),
         rgb(243 243 243 / 0%) 15% 85%,
@@ -417,8 +420,8 @@ onMounted(function () {
       right: 0;
       margin-left: auto;
       margin-right: auto;
-      background-image: radial-gradient(transparent, #000),
-        radial-gradient(rgb(51 53 54 / 40%), transparent),
+      background-image:
+        radial-gradient(transparent, #000), radial-gradient(rgb(51 53 54 / 40%), transparent),
         radial-gradient(
           #2a282b 0% 27%,
           /* dark body 4 */ #070508 27.5% 28%,
@@ -555,7 +558,8 @@ onMounted(function () {
         -5px 8px 8px #aba6aa,
         0.25px 1px 1px 5px #3e3a38 inset,
         0 -6px 1px 1px #f6f6f8 inset;
-      background-image: linear-gradient(#edecea, #f6f6f8),
+      background-image:
+        linear-gradient(#edecea, #f6f6f8),
         linear-gradient(
           90deg,
           rgb(247 246 244 / 0%) 3% /*transparent*/,
@@ -668,7 +672,8 @@ onMounted(function () {
         left: 18px;
         top: 18px;
         border-radius: 20px;
-        background-image: radial-gradient(rgb(236 234 237 / 30%) 50%, transparent 60%),
+        background-image:
+          radial-gradient(rgb(236 234 237 / 30%) 50%, transparent 60%),
           radial-gradient(rgb(193 189 186 / 30%) 50%, transparent 60%),
           radial-gradient(#5b5758 45%, #302c2d, #131112);
         background-size:
@@ -728,7 +733,8 @@ onMounted(function () {
       border-radius: 20px;
       left: 135px;
       top: 70px;
-      background-image: radial-gradient(#080607, transparent 50%),
+      background-image:
+        radial-gradient(#080607, transparent 50%),
         radial-gradient(#0b090a, #211f20, #131112, #383637, #100e0f, #383637, #100e0f);
       background-size: 60%, 100%;
       background-position:

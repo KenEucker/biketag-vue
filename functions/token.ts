@@ -5,8 +5,9 @@ import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadAuthorization } from
 import { HttpStatusCode } from './common/constants'
 
 const tokenHandler: Handler = async (event) => {
-  /// Bailout on OPTIONS requests
   const headers = acceptCorsHeaders()
+
+  // Preflight CORS
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: HttpStatusCode.NoContent,
@@ -15,8 +16,9 @@ const tokenHandler: Handler = async (event) => {
   }
 
   const authorization = await getPayloadAuthorization(event)
-  let body = 'missing authorization header'
+
   let statusCode = HttpStatusCode.Unauthorized
+  let body: string | object = 'missing authorization header'
 
   if (authorization) {
     const adminBiketagOpts = getBikeTagClientOpts(
@@ -29,17 +31,35 @@ const tokenHandler: Handler = async (event) => {
     )
 
     const adminBiketag = new BikeTagClient(adminBiketagOpts)
-    const credentials = await adminBiketag.fetchCredentials(authorization)
-    body = JSON.stringify(credentials)
-    statusCode = HttpStatusCode.Ok
-  } else {
-    body = 'invalid authorization'
+
+    try {
+      const parsed = JSON.parse(event.body || '{}')
+
+      if (typeof parsed?.key === 'string') {
+        // Signed URL request
+        const signedUrlResponse = await adminBiketag.fetchSignedUrl({
+          ...parsed,
+          source: 'aws',
+        })
+
+        statusCode = HttpStatusCode.Ok
+        body = signedUrlResponse
+      } else {
+        // Fallback to legacy: return all credentials
+        const credentials = await adminBiketag.fetchCredentials(authorization)
+        statusCode = HttpStatusCode.Ok
+        body = credentials
+      }
+    } catch (err: any) {
+      statusCode = HttpStatusCode.InternalServerError
+      body = err.message || 'Unexpected error'
+    }
   }
 
   return {
     headers,
-    body,
     statusCode,
+    body: typeof body === 'string' ? body : JSON.stringify(body),
   }
 }
 

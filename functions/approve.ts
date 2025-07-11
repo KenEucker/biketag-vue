@@ -10,7 +10,7 @@ import {
   getProfileAuthorization,
   setNewBikeTagPost,
 } from './common'
-import { HttpStatusCode } from './common/constants'
+import { ErrorMessage, HttpStatusCode } from './common/constants'
 
 const approveHandler: Handler = async (event) => {
   /// Bailout on OPTIONS requests
@@ -25,7 +25,7 @@ const approveHandler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
       headers,
-      body: 'method not allowed',
+      body: ErrorMessage.MethodNotAllowed,
       statusCode: HttpStatusCode.MethodNotAllowed,
     }
   }

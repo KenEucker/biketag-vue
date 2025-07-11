@@ -1,9 +1,9 @@
 import { builder, Handler } from '@netlify/functions'
 import axios from 'axios'
+import type { Game } from 'biketag'
 import { BikeTagClient } from 'biketag'
-import { Game } from 'biketag/dist/common/schema'
 import request from 'request'
-import { getDomainInfo, getImgurImageSized } from '../src/common'
+import { getDomainInfo, getImageSized } from '../src/common'
 import { getBikeTagClientOpts, getPayloadOpts } from './common'
 import { HttpStatusCode } from './common/constants'
 
@@ -36,7 +36,8 @@ const currentTagHandler = async (event) => {
     const domainInfo = getDomainInfo(event)
     const host = 'i.imgur.com'
     data.host = domainInfo.host
-    data.imageUri = getImgurImageSized(data.mysteryImageUrl, biketagPayload.size)
+    /// TODO: check the imageSource and send appropriate string
+    data.imageUri = getImageSized('imgur', data.mysteryImageUrl, biketagPayload.size)
 
     if (biketagPayload.data) {
       return {

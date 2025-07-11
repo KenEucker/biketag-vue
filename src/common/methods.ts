@@ -39,6 +39,62 @@ export const ordinalSuffixOf = (n: number) => {
 }
 export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 
+export const getImageSized = (
+  imageSourceOrUrl: 'aws' | 'imgur' | 'sanity' | string = '',
+  imageUrlOrSize?: string,
+  size: 's' | 'm' | 'l' | 'o' | undefined = 'm',
+): string => {
+  const sizeMap: Record<string, 'small' | 'medium' | 'original'> = {
+    s: 'small',
+    m: 'medium',
+    l: 'original',
+    o: 'original',
+  }
+
+  let imageSource: 'aws' | 'imgur' | 'sanity' = 'imgur'
+  let imageUrl: string
+
+  // Handle case where imageSource was omitted
+  if (!['aws', 'imgur', 'sanity'].includes(imageSourceOrUrl)) {
+    imageUrl = imageSourceOrUrl
+    if (imageUrlOrSize !== undefined) {
+      size = imageUrlOrSize as typeof size
+    }
+  } else {
+    imageSource = imageSourceOrUrl as 'aws' | 'imgur' | 'sanity'
+    imageUrl = imageUrlOrSize || ''
+  }
+
+  const resolvedSize = sizeMap[size] || 'original'
+
+  // Short-circuit based on image URL
+  if (/imgur\.com/.test(imageUrl)) {
+    return getImgurImageSized(imageUrl, size)
+  }
+
+  if (/digitaloceanspaces\.com/.test(imageUrl)) {
+    return getS3ImageSized(imageUrl, resolvedSize)
+  }
+
+  // Fallback based on declared or defaulted source
+  switch (imageSource) {
+    case 'aws':
+      return getS3ImageSized(imageUrl, resolvedSize)
+    case 'imgur':
+    default:
+      return getImgurImageSized(imageUrl, size)
+  }
+}
+
+export const getS3ImageSized = (
+  imageUrl: string = '',
+  size: 'small' | 'medium' | 'original' = 'original',
+): string => {
+  if (!imageUrl || size === 'original') return imageUrl
+
+  return imageUrl.replace(/(_small|_medium)?(\.\w+)$/, `_${size}$2`)
+}
+
 export const getImgurImageSized = (imgurUrl = '', size = 'm') => {
   return imgurUrl
     .replace('.jpg', `${size}.jpg`)
@@ -364,8 +420,8 @@ export const getApiUrl = (path = '') => {
 
   const url =
     process.env.CONTEXT === 'dev'
-      ? `${window?.location?.protocol}//${window?.location?.hostname}:7200/.netlify/functions/${path}`
-      : `/api/${path}`
+      ? `${window?.location?.protocol}//${window?.location?.hostname}:7200/.netlify/functions${path.length ? '/' + path : ''}`
+      : `/api${path.length ? '/' + path : ''}`
 
   return url
 }

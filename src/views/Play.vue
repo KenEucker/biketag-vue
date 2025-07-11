@@ -200,7 +200,7 @@ async function onQueueSubmit(newTagSubmission) {
   }
 
   const alreadyUploaded = localStorage.getItem(
-    `${getGameName.value}-${getCurrentBikeTag.value.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`,
+    `${getGameName.value}-${getCurrentBikeTag.value?.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`,
   )
   if (alreadyUploaded) {
     const alreadyUploadedTime = parseInt(alreadyUploaded)
@@ -264,7 +264,7 @@ async function onQueueSubmit(newTagSubmission) {
     }
 
     localStorage.setItem(
-      `${getGameName.value}-${getCurrentBikeTag.value.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`,
+      `${getGameName.value}-${getCurrentBikeTag.value?.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`,
       new Date().getTime(),
     )
 

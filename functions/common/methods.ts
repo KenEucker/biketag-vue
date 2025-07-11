@@ -1,9 +1,11 @@
 import { AtpAgent } from '@atproto/api'
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
+import type { Ambassador, Game, Tag } from 'biketag'
 import BikeTagClient from 'biketag'
-import { Ambassador, Game, Tag } from 'biketag/dist/common/schema'
 import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
 import { readFileSync } from 'fs'
@@ -17,7 +19,7 @@ import qs from 'qs'
 import request from 'request'
 import {
   getDomainInfo,
-  getImgurImageSized,
+  getImageSized,
   getTagDate,
   getTagDateISOFromTimezone,
   isAuthenticationEnabled,
@@ -29,10 +31,12 @@ import { BackgroundProcessResults, activeQueue } from './types'
 const ajv = new Ajv()
 export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 
-export const getApiUrl = (game = '', path = ''): string =>
-  process.env.CONTEXT === 'dev'
+export const getApiUrl = (game = '', path = ''): string => {
+
+  return process.env.CONTEXT === 'dev'
     ? `http://${game.length ? `${game}.` : ''}${process.env.HOST}:7200/.netlify/functions/${path}`
     : `https://${game.length ? `${game}.` : ''}${process.env.HOST}/api/${path}`
+}
 
 export const isRequestAllowed = (
   req: any,
@@ -1225,7 +1229,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
   const link = `${host}/${winningTagnumber}`
   const gameLinkFacet = getStartAndEndBytesOfStringWithinString(heading, game.name)
-  const imageUrl = getImgurImageSized(winningTag.mysteryImageUrl, 'l')
+  const imageUrl = getImageSized('imgur', winningTag.mysteryImageUrl, 'l')
 
   try {
     if (process.env.BSKY_USER && process.env.BSKY_PASS) {
@@ -1305,8 +1309,9 @@ export const sendBikeTagPostNotificationToWebhook = (
   const mysteryAltText = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
   const foundAltText = `BikeTag #${currentNumber} found by ${currentTag.foundPlayer}`
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
-  const mysteryImageUrl = getImgurImageSized(winningTag.mysteryImageUrl, 'l')
-  const foundImageUrl = getImgurImageSized(currentTag.foundImageUrl, 'l')
+  /// TODO: check the imageSource and send appropriate string
+  const mysteryImageUrl = getImageSized('imgur', winningTag.mysteryImageUrl, 'l')
+  const foundImageUrl = getImageSized('imgur', currentTag.foundImageUrl, 'l')
 
   console.log('sending notification webhook timestamp', {
     timestamp,
@@ -1851,4 +1856,28 @@ export const getEnvironmentVariable = (key: string) => {
   if (process.env[key]) {
     return decompress(process.env[key], { inputEncoding: 'Base64' })
   }
+}
+
+export const getUploadUrl = async ({
+  bucket,
+  region,
+  key,
+  contentType = 'image/jpeg',
+  expiresIn = 60, // seconds
+}: {
+  bucket: string
+  region: string
+  key: string
+  contentType?: string
+  expiresIn?: number
+}): Promise<string> => {
+  const client = new S3Client({ region })
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    ContentType: contentType,
+    ACL: 'public-read', // optional, depending on your CDN setup
+  })
+
+  return await getSignedUrl(client, command, { expiresIn })
 }

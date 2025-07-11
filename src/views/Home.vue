@@ -24,7 +24,7 @@
         <div v-if="getCurrentBikeTag" class="rel play-screen">
           <expandable-image
             class="play-screen__image"
-            :source="getImgurImageSized(getCurrentBikeTag?.mysteryImageUrl, 'l')"
+            :source="getImageSized(getCurrentBikeTag?.mysteryImageUrl, 'l')"
             :full-source="getCurrentBikeTag?.mysteryImageUrl"
             :alt="getCurrentBikeTag?.hint"
             @loaded="tagImageLoaded"
@@ -87,7 +87,7 @@ const tagnumber = computed(() => (route.params?.tagnumber ? parseInt(route.param
 
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-const getImgurImageSized = computed(() => store.getImgurImageSized)
+const getImageSized = computed(() => store.getImageSized)
 const getTags = computed(() => store.getTags)
 
 const tag = computed(() => {
@@ -122,6 +122,9 @@ onMounted(async () => {
     tagnumber.value = parseInt(window.location.hash.split('#/')[1])
   }
   tagIsLoading.value = tagnumber.value === 0
+
+  await store.isReady()
+  tagIsLoading.value = tagIsLoading.value && getCurrentBikeTag.value?.tagnumber === 0
 })
 </script>
 

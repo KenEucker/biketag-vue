@@ -2,8 +2,8 @@
   <div v-if="props.tag" :class="`bike-pagination container ${props.size}`">
     <div class="bike-pagination-bullet">
       <span v-if="showNumber"> {{ props.tag.tagnumber }} by {{ props.tag.mysteryPlayer }} </span>
-      <v-lazy-image :src="getImgurImageSized(props.tag.mysteryImageUrl, props.size)" />
-      <v-lazy-image :src="getImgurImageSized(props.tag.foundImageUrl, props.size)" />
+      <v-lazy-image :src="getImageSized(props.tag.mysteryImageUrl, props.size)" />
+      <v-lazy-image :src="getImageSized(props.tag.foundImageUrl, props.size)" />
     </div>
   </div>
   <div v-else-if="getCurrentBikeTag" class="container">
@@ -11,7 +11,7 @@
       <b-button id="current-mystery-popover" class="navigation">
         <v-lazy-image
           class="img-fluid"
-          :src="getImgurImageSized(getCurrentBikeTag.mysteryImageUrl, 's')"
+          :src="getImageSized(getCurrentBikeTag.mysteryImageUrl, 's')"
         />
       </b-button>
       <b-popover
@@ -25,10 +25,7 @@
       </b-popover>
 
       <b-button v-if="getPlayerTag.foundImageUrl" id="queued-found-popover" class="navigation">
-        <v-lazy-image
-          class="img-fluid"
-          :src="getImgurImageSized(getPlayerTag.foundImageUrl, 's')"
-        />
+        <v-lazy-image class="img-fluid" :src="getImageSized(getPlayerTag.foundImageUrl, 's')" />
       </b-button>
       <b-popover
         v-if="getPlayerTag.foundImageUrl?.length > 0"
@@ -51,10 +48,7 @@
         id="queued-mystery-popover"
         class="navigation"
       >
-        <v-lazy-image
-          class="img-fluid"
-          :src="getImgurImageSized(getPlayerTag.mysteryImageUrl, 's')"
-        />
+        <v-lazy-image class="img-fluid" :src="getImageSized(getPlayerTag.mysteryImageUrl, 's')" />
       </b-button>
       <b-popover
         v-if="getPlayerTag.mysteryImageUrl?.length > 0"
@@ -75,7 +69,7 @@
     <div v-if="!props.onlyMine" :class="`bike-pagination ${props.size}`">
       <div v-for="index in showLimit" :key="index" class="bike-pagination-bullet">
         <v-lazy-image
-          :src="getImgurImageSized(getQueuedTags[index - 1]?.foundImageUrl)"
+          :src="getImageSized(getQueuedTags[index - 1]?.foundImageUrl)"
           @click="paginationClick(index - 1)"
         />
         <span v-if="showNumber">{{ index }}</span>
@@ -85,12 +79,12 @@
 </template>
 
 <script setup name="BikeTagQueue">
-import { inject, computed, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { useBikeTagStore } from '../store/index'
-import { BiketagQueueFormSteps } from '../common/types'
-import { useI18n } from 'vue-i18n'
 import VLazyImage from 'v-lazy-image'
+import { computed, inject, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { BiketagQueueFormSteps } from '../common/types'
+import { useBikeTagStore } from '../store/index'
 
 // props
 const props = defineProps({
@@ -131,7 +125,7 @@ const getQueuedTags = computed(() => store.getQueuedTags)
 const showLimit = computed(() => (props.limit ? props.limit : store.getQueuedTags?.length))
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getPlayerTag = computed(() => store.getPlayerTag)
-const getImgurImageSized = computed(() => store.getImgurImageSized)
+const getImageSized = computed(() => store.getImageSized)
 const getQueuedTagState = computed(() => store.getQueuedTagState)
 const showNumber = computed(() => (props.size !== 's' ? props.showNumber : false))
 
