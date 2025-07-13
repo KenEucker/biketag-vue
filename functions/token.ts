@@ -1,13 +1,13 @@
 import { Handler } from '@netlify/functions'
-import { BikeTagClient } from 'biketag'
+import { BikeTagClient, Game } from 'biketag'
 import request from 'request'
 import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadAuthorization } from './common'
 import { HttpStatusCode } from './common/constants'
 
 const tokenHandler: Handler = async (event) => {
+  console.log('token request')
   const headers = acceptCorsHeaders()
 
-  // Preflight CORS
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: HttpStatusCode.NoContent,
@@ -15,12 +15,14 @@ const tokenHandler: Handler = async (event) => {
     }
   }
 
-  const authorization = await getPayloadAuthorization(event)
-
+  const authProfile = await getPayloadAuthorization(event)
   let statusCode = HttpStatusCode.Unauthorized
-  let body: string | object = 'missing authorization header'
+  let body: string = 'Missing or invalid authorization'
 
-  if (authorization) {
+  if (authProfile && authProfile.valid && authProfile.token) {
+    const decodedPayload = authProfile.valid // this is your `{ client_id }` payload
+    const clientId = decodedPayload.client_id
+
     const adminBiketagOpts = getBikeTagClientOpts(
       {
         ...event,
@@ -29,37 +31,70 @@ const tokenHandler: Handler = async (event) => {
       true,
       true,
     )
+    
+    const nonAdminBiketagOpts = getBikeTagClientOpts(
+      {
+        ...event,
+        method: event.httpMethod,
+      } as unknown as request.Request,
+      true,
+    )
 
-    const adminBiketag = new BikeTagClient(adminBiketagOpts)
+    const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
 
     try {
-      const parsed = JSON.parse(event.body || '{}')
+      const gameResponse = await nonAdminBiketag.getGame(adminBiketagOpts.game, { source: 'sanity' })
+      adminBiketagOpts.aws.region = gameResponse.data?.awsRegion
+      const adminBiketag = new BikeTagClient(adminBiketagOpts)
 
-      if (typeof parsed?.key === 'string') {
-        // Signed URL request
-        const signedUrlResponse = await adminBiketag.fetchSignedUrl({
-          ...parsed,
-          source: 'aws',
-        })
+      const payload = new URLSearchParams(decodeURIComponent(event.body ?? ''))
+      const key = payload.get('key')
+      const game = payload.get('game')
+      const contentType = payload.get('contentType')
 
-        statusCode = HttpStatusCode.Ok
-        body = signedUrlResponse
+      if (key && game && contentType) {
+        const contentKeyMatch = `queue/${adminBiketagOpts.game}-tag`
+        if (!key.startsWith(contentKeyMatch)) {
+          console.warn('[token] Key prefix mismatch', { key, contentKeyMatch })
+          throw new Error('Invalid key prefix')
+        }
+
+        const signedUrlResponse = await adminBiketag.fetchSignedUrl(
+          {
+            key,
+            bucket: `${game}-biketag`,
+            contentType,
+            game,
+          },
+          {
+            source: 'aws',
+          },
+        )
+
+        if (signedUrlResponse.success) {
+          statusCode = HttpStatusCode.Ok
+          body = signedUrlResponse.data
+        } else {
+          body = signedUrlResponse.error
+          statusCode = signedUrlResponse.status
+        }
       } else {
-        // Fallback to legacy: return all credentials
-        const credentials = await adminBiketag.fetchCredentials(authorization)
-        statusCode = HttpStatusCode.Ok
-        body = credentials
+        statusCode = 400
+        body = 'Missing or invalid key combination'
       }
     } catch (err: any) {
+      console.error('[token] Unexpected error', err)
       statusCode = HttpStatusCode.InternalServerError
       body = err.message || 'Unexpected error'
     }
+  } else {
+    console.warn('[token] Unauthorized request', { authProfile })
   }
 
   return {
     headers,
     statusCode,
-    body: typeof body === 'string' ? body : JSON.stringify(body),
+    body,
   }
 }
 

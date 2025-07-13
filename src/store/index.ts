@@ -9,7 +9,6 @@ import {
   encodeBikeTagString,
   getApiUrl,
   getBikeTagClientOpts,
-  getBikeTagHash,
   getDomainInfo,
   getImageSized,
   getMostRecentlyViewedBikeTagTagnumber,
@@ -39,15 +38,13 @@ export const initBikeTagStore = () => {
     const domain = getDomainInfo(window)
     gameName = domain.subdomain ?? process.env.GAME_NAME ?? BikeTagDefaults.gameName
     biketagClientOpts = {
-      // biketag: {
       cached: true,
       host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.org/api`,
       // game: gameName,
-      clientKey: getBikeTagHash(window?.location?.hostname),
-      // clientToken: process.env.ACCESS_TOKEN,
-      // },
+      clientKey: process.env.B_KEY,
       ...getBikeTagClientOpts(window, process.env.BIKETAG_AUTHED === 'true'),
     }
+
 
     debug(`init::${BikeTagDefaults.store}`, {
       subdomain: domain.subdomain,
@@ -197,18 +194,20 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.getGame({ game: newGameName }, biketagGameOpts as any).then(async (r) => {
           if (r.success) {
             const game = r.data as Game
-            biketagClientOpts.imgur.hash = game.mainhash
-            biketagClientOpts.imgur.queuehash = game.queuehash
-            biketagClientOpts.aws.region = game.awsRegion
 
             if (game.settings['data::aws'] && game.settings['data::aws'] === 'true') {
               this.imageSource = 'aws'
             } else if (game.settings['data::imgur'] && game.settings['data::imgur'] === 'true') {
               this.imageSource = 'imgur'
             }
+            /// TODO: split these up based on the imageSource?
+            biketagClientOpts.imgur.hash = game.mainhash
+            biketagClientOpts.imgur.queuehash = game.queuehash
+            biketagClientOpts.aws.region = game.awsRegion
 
             // TODO: set the default source to something else, now
-            client.config(biketagClientOpts, true, true)
+            const configuredClient = client.config(biketagClientOpts, true, true)
+            console.log({configuredClient, imageSource: this.imageSource})
 
             return this.SET_GAME(game)
           } else {
@@ -236,6 +235,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             false,
             true,
           )
+          client.fetchCredentials()
         } catch (e) {
           console.error('error fetching credentials', e)
         }
@@ -573,7 +573,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = this.profile.sub
 
-        return client.queueTag(d).then((t) => {
+        console.log('calling queueTag', d)
+        return client.queueTag(d, { source: this.imageSource }).then((t) => {
           if (t.success) {
             this.SET_QUEUE_FOUND(t.data)
           } else {

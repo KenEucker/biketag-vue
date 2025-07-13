@@ -29,10 +29,8 @@ import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
-export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 
 export const getApiUrl = (game = '', path = ''): string => {
-
   return process.env.CONTEXT === 'dev'
     ? `http://${game.length ? `${game}.` : ''}${process.env.HOST}:7200/.netlify/functions/${path}`
     : `https://${game.length ? `${game}.` : ''}${process.env.HOST}/api/${path}`
@@ -94,7 +92,11 @@ export const getBikeTagClientOpts = (
       domainInfo.subdomain ??
       process.env.GAME_NAME,
     cached: isGET || !isAuthenticatedPOST,
-    accessToken: process.env.ACCESS_TOKEN,
+    // biketag: {
+    clientKey: process.env.B_KEY,
+    // },
+    aws: {
+    },
     imgur: {
       clientId: process.env.I_CID,
       hash: game?.mainhash,
@@ -122,6 +124,12 @@ export const getBikeTagClientOpts = (
     /// TODO: comes from sanity game settings
     // opts.reddit.username = process.env.R_UNAME
     // opts.reddit.password = process.env.R_PASS
+
+    /// Enables aws uploads and edits
+    opts.aws = {  
+      accessKeyId: process.env.BE_S3_ACCESS_ID,
+      secretAccessKey: process.env.BE_S3_ACCESS_KEY,
+    }
 
     opts.sanity = opts.sanity ?? {}
     opts.sanity.projectId = process.env.S_PID
@@ -418,6 +426,7 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
   let authorizationString = event.headers.authorization
   const basic = 'Basic '
   const bearer = 'Bearer '
+  const jwt = 'JWT '
   const client = 'Client-ID '
   let authProfile
 
@@ -428,7 +437,9 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
         ? 'client'
         : authorizationString?.indexOf(bearer) === 0
           ? 'bearer'
-          : null
+          : authorizationString?.indexOf(jwt) === 0
+            ? 'jwt'
+            : null
 
   const getBasicAuthProfile = (authorizationString: string) => {
     /// Basic Auth: "Basic [name]::[password]""
@@ -477,6 +488,21 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
     }
   }
 
+  const getBikeTAgAuthorization = async (token: string): Promise<{ client_id: string } | null> => {
+    try {
+      const jwtSecretKey = !process.env.HOST_KEY ? null : crypto.createHash('sha256').update(process.env.HOST_KEY).digest()
+      if (jwtSecretKey) {
+        const { payload } = await jose.jwtVerify(token, jwtSecretKey)
+        return payload as { client_id: string }
+      } else {
+        throw new Error('jwtSecretKey invalid')
+      }
+    } catch (err) {
+      console.error('JWT verification failed:', err)
+      return null
+    }
+  }
+
   switch (authorizationType) {
     case 'basic':
       authorizationString = authorizationString.substring(basic.length)
@@ -494,15 +520,22 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
       authorizationString = authorizationString.substring(bearer.length)
       authProfile = await getAuth0AuthProfile(authorizationString)
       break
+    case 'jwt':
+      authorizationString = authorizationString.substring(jwt.length)
+      authProfile = {
+        token: authorizationString,
+        valid: await getBikeTAgAuthorization(authorizationString),
+      }
+      break
     default:
       authProfile = authorizationString?.length ? ErrorMessage.AuthTypeNotSupported : null
       break
   }
 
   /// DEBUG: uncomment to check incoming authorization credentials
-  if (process.env.DEBUG_A) {
+  if (process.env.DEBUG_A === 'true') {
     console.log({
-      orign: event.headers.authorization,
+      original: event.headers.authorization,
       authorizationType,
       authorizationString,
       authProfile,
@@ -1126,8 +1159,9 @@ export const getBikeTagAuth0Profile = async (
     page: 0,
     per_page: 1,
     include_totals: false,
-    fields: `${restrictUserMeta ? 'user_metadata.social,user_metadata.options' : 'user_metadata'}${authorized ? ',sub,user_metadata.name,user_metadata.passcode' : ''
-      }`,
+    fields: `${restrictUserMeta ? 'user_metadata.social,user_metadata.options' : 'user_metadata'}${
+      authorized ? ',sub,user_metadata.name,user_metadata.passcode' : ''
+    }`,
     q: `user_metadata.name:"${name}"`,
     search_engine: 'v3',
   }
@@ -1256,19 +1290,19 @@ export const sendBikeTagPostNotificationToBlueSky = async (
         createdAt: timestamp,
         facets: gameLinkFacet.length
           ? [
-            {
-              index: {
-                byteStart: gameLinkFacet[0],
-                byteEnd: gameLinkFacet[1],
-              },
-              features: [
-                {
-                  $type: 'app.bsky.richtext.facet#link',
-                  uri: link,
+              {
+                index: {
+                  byteStart: gameLinkFacet[0],
+                  byteEnd: gameLinkFacet[1],
                 },
-              ],
-            },
-          ]
+                features: [
+                  {
+                    $type: 'app.bsky.richtext.facet#link',
+                    uri: link,
+                  },
+                ],
+              },
+            ]
           : [],
         embed: {
           $type: 'app.bsky.embed.external',
@@ -1485,7 +1519,11 @@ export const sendNewBikeTagNotifications = async (
     console.log('skipping posting of social notifications')
   }
 
-  if (!skipEmails && (!game.settings['emails::disable'] || game.settings['emails::disable'].split(',').indexOf('new-biketag-notification') === -1)) {
+  if (
+    !skipEmails &&
+    (!game.settings['emails::disable'] ||
+      game.settings['emails::disable'].split(',').indexOf('new-biketag-notification') === -1)
+  ) {
     // console.log('emailing', { thisGamesAmbassadors })
     notificationPromises.push(
       sendEmailsToAmbassadors(
@@ -1518,7 +1556,9 @@ export const sendNewBikeTagNotifications = async (
       }),
     )
   } else {
-    console.log('Sending of emails is disabled for email:biketag-auto-posted', { emailsDisabled: game.settings['emails::disable'] })
+    console.log('Sending of emails is disabled for email:biketag-auto-posted', {
+      emailsDisabled: game.settings['emails::disable'],
+    })
   }
 
   return notificationPromises
@@ -1856,28 +1896,4 @@ export const getEnvironmentVariable = (key: string) => {
   if (process.env[key]) {
     return decompress(process.env[key], { inputEncoding: 'Base64' })
   }
-}
-
-export const getUploadUrl = async ({
-  bucket,
-  region,
-  key,
-  contentType = 'image/jpeg',
-  expiresIn = 60, // seconds
-}: {
-  bucket: string
-  region: string
-  key: string
-  contentType?: string
-  expiresIn?: number
-}): Promise<string> => {
-  const client = new S3Client({ region })
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: key,
-    ContentType: contentType,
-    ACL: 'public-read', // optional, depending on your CDN setup
-  })
-
-  return await getSignedUrl(client, command, { expiresIn })
 }

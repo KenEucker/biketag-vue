@@ -97,7 +97,7 @@ Below you will find some of the primary settings for testing all features of the
 # Used for internal authentication
 ADMIN_EMAIL=admin@email.com
 HOST_KEY=anythingyouwantititobe
-ACCESS_TOKEN=BIKETAGACCESSTOKEN
+CLIENT_KEY=BIKETAGACCESSKEY
 # Used for uploading new BikeTag posts
 IMGUR_CLIENT_ID=IMGURCLIENTID
 IMGUR_CLIENT_SECRET=IMGURCLIENTSECRET

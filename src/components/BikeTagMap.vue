@@ -5,13 +5,13 @@
 </template>
 
 <script setup name="BikeTagMap">
-import { ref, computed, onMounted, watch } from 'vue'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-import { useBikeTagStore } from '@/store/index'
 import Pin from '@/assets/images/pin.svg'
+import { useBikeTagStore } from '@/store/index'
+import L from 'leaflet'
 import 'leaflet.locatecontrol'
 import 'leaflet.locatecontrol/dist/L.Control.Locate.min.css'
+import 'leaflet/dist/leaflet.css'
+import { computed, onMounted, ref, watch } from 'vue'
 
 // props
 const props = defineProps({

@@ -37,12 +37,11 @@ export const ordinalSuffixOf = (n: number) => {
   }
   return n + 'th'
 }
-export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 
 export const getImageSized = (
   imageSourceOrUrl: 'aws' | 'imgur' | 'sanity' | string = '',
   imageUrlOrSize?: string,
-  size: 's' | 'm' | 'l' | 'o' | undefined = 'm',
+  size: 's' | 'm' | 'l' | 'o' | undefined = 'm'
 ): string => {
   const sizeMap: Record<string, 'small' | 'medium' | 'original'> = {
     s: 'small',
@@ -88,11 +87,14 @@ export const getImageSized = (
 
 export const getS3ImageSized = (
   imageUrl: string = '',
-  size: 'small' | 'medium' | 'original' = 'original',
+  size: 'small' | 'medium' | 'original' = 'original'
 ): string => {
   if (!imageUrl || size === 'original') return imageUrl
 
-  return imageUrl.replace(/(_small|_medium)?(\.\w+)$/, `_${size}$2`)
+  return imageUrl.replace(
+    /(_small|_medium)?(\.\w+)$/,
+    `_${size}$2`
+  )
 }
 
 export const getImgurImageSized = (imgurUrl = '', size = 'm') => {
@@ -158,10 +160,10 @@ export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
   const domainInfo = getDomainInfo(win)
   return {
     game: domainInfo.subdomain ?? process.env.GAME_NAME,
-    accessToken: process.env.ACCESS_TOKEN,
+    clientKey: process.env.B_KEY,
     imgur: {
       clientId: process.env.I_CID,
-      clientSecret: process.env.I_CSECRET,
+      // clientSecret: process.env.I_CSECRET,
       accessToken: process.env.I_TOKEN,
       rapidApiKey: process.env.RA_FE_KEY,
       refreshToken: withToken ? process.env.I_RTOKEN : undefined,
@@ -185,6 +187,7 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
     try {
       const existingProfileDecodedString = CryptoJS.AES.decrypt(
         existingProfileString,
+        /// TODO: this shouldn't be found in the frontend!
         process.env.HOST_KEY ?? 'BikeTag',
       )
       const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
@@ -234,6 +237,7 @@ export const setProfileCookie = (
     if (profile) {
       const encryptedProfileString = CryptoJS.AES.encrypt(
         JSON.stringify(profile),
+        /// TODO: this shouldn't be found in the frontend!
         process.env.HOST_KEY ?? 'BikeTag',
       ).toString()
       cookies.set(profileCookieKey, encryptedProfileString)
@@ -249,6 +253,7 @@ export const setProfileCookie = (
 }
 
 export const encodeBikeTagString = (basic: string): string => {
+  /// TODO: this shouldn't be found in the frontend!
   return CryptoJS.AES.encrypt(basic, process.env.HOST_KEY ?? 'BikeTag').toString()
 }
 

@@ -1,63 +1,81 @@
-import { builder, Handler } from '@netlify/functions'
-import { BikeTagClient } from 'biketag'
-import request from 'request'
-import { getBikeTagClientOpts, getBikeTagHash, getPayloadOpts } from './common'
-import { HttpStatusCode } from './common/constants'
+import { Handler } from '@netlify/functions'
+import crypto from 'crypto'
+import { SignJWT } from 'jose'
+import { acceptCorsHeaders, getPayloadOpts, HttpStatusCode } from './common'
+
+// Utility: create consistent key for JWT signing
+const getJwtSecretKey = () =>
+  crypto
+    .createHash('sha256')
+    .update(process.env.HOST_KEY || '')
+    .digest()
 
 const authorizeHandler: Handler = async (event) => {
-  const {
-    client_id: clientKey,
-    client_secret: clientToken,
-    access_token: accessToken,
-    grant_type: grantType,
-  } = getPayloadOpts(event)
-  const self = new URL(`http://${event.headers.host}`).hostname
-  const controlCheck = getBikeTagHash(self)
-  let body = 'missing client key and token information'
-  let statusCode = HttpStatusCode.Unauthorized
+  const headers = acceptCorsHeaders()
 
-  console.log({ clientKey, clientToken, accessToken, grantType, controlCheck, self })
-  if (clientKey?.length > 0 && clientToken?.length > 0 && accessToken?.length > 0) {
-    if (getBikeTagHash(clientKey) === clientToken && clientToken === controlCheck) {
-      const nonAdminBiketagOpts = getBikeTagClientOpts(
-        {
-          ...event,
-          method: event.httpMethod,
-        } as unknown as request.Request,
-        true,
-      )
-      const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
-      const config = nonAdminBiketag.config()
-      const isValidAccessToken =
-        config.biketag.accessToken === accessToken ||
-        config.imgur?.refreshToken === accessToken ||
-        config.sanity?.token === accessToken
-
-      if (isValidAccessToken) {
-        switch (grantType) {
-          case 'refresh_token':
-            body = getBikeTagHash(`${clientKey}${clientToken}${accessToken}`)
-            statusCode = HttpStatusCode.Ok
-            break
-          default:
-            body = 'grant type not supported'
-            statusCode = HttpStatusCode.MethodNotAllowed
-            break
-        }
-      } else {
-        body = 'credentials do not pass control check'
-      }
-    } else {
-      body = 'invalid access token'
+  // ✅ Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    /// TODO: check request host
+    return {
+      statusCode: HttpStatusCode.Ok,
+      headers,
     }
   }
 
+  const {
+    client_id: clientId,
+    client_assertion: clientAssertion,
+    grant_type: grantType,
+  } = getPayloadOpts(event)
+
+  const selfHost = new URL(`http://${event.headers.host}`).hostname
+
+  // Additional strict check: ensure that `Host` header matches `client_id`
+  if (selfHost !== clientId) {
+    return {
+      statusCode: HttpStatusCode.Unauthorized,
+      body: 'Host mismatch',
+    }
+  }
+
+  const expectedAssertion = crypto
+    .createHash('sha256')
+    .update(`${clientId}${process.env.HOST_KEY || ''}`)
+    .digest('hex')
+
+  let statusCode = HttpStatusCode.Unauthorized
+  let body = 'Missing or invalid payload'
+
+  if (clientId && clientAssertion && grantType === 'biketag_origin_assertion') {
+    if (clientAssertion === expectedAssertion) {
+
+      try {
+        const jwtKey = getJwtSecretKey()
+
+        const jwt = await new SignJWT({ client_id: clientId })
+          .setProtectedHeader({ alg: 'HS256' })
+          .setIssuedAt()
+          .setExpirationTime('3h')
+          .sign(jwtKey)
+
+        statusCode = HttpStatusCode.Ok
+        body = jwt
+      } catch (err) {
+        statusCode = HttpStatusCode.InternalServerError
+        body = 'Error generating token'
+      }
+    } else {
+      body = 'Invalid client assertion'
+    }
+  } else {
+    body = 'Invalid request payload or grant_type'
+  }
+
   return {
+    headers,
     statusCode,
     body,
   }
 }
 
-const handler = builder(authorizeHandler)
-
-export { handler }
+export { authorizeHandler as handler }
