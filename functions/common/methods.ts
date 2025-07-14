@@ -343,12 +343,12 @@ export interface IdentityContext {
 
 /// For netlify identity JWT decoding
 const validateJWT = (verifier: JwtVerifier, options: any) => {
-  return (handler: any) => async (event: Event, context: any, cb: any) => {
+  return (handler: any) => async (req: Request, context: any, cb: any) => {
     let claims
     let accessToken
 
     try {
-      accessToken = getTokenFromHeader(event.headers.authorization as string)
+      accessToken = getTokenFromHeader(req.headers.get('authorization') as string)
       claims = await verifier.verifyAccessToken(accessToken)
     } catch (err) {
       if (typeof options.handleError !== 'undefined' && options.handleError !== null) {
@@ -425,8 +425,8 @@ export const getProfileAuthorization = async (event: any): Promise<any> => {
   return profile
 }
 
-export const getPayloadAuthorization = async (event: any): Promise<any> => {
-  let authorizationString = event.headers.authorization
+export const getPayloadAuthorization = async (req: any): Promise<any> => {
+  let authorizationString = req.headers.get('authorization')
   const basic = 'Basic '
   const bearer = 'Bearer '
   const jwt = 'JWT '
@@ -538,7 +538,7 @@ export const getPayloadAuthorization = async (event: any): Promise<any> => {
   /// DEBUG: uncomment to check incoming authorization credentials
   if (process.env.DEBUG_A === 'true') {
     console.log({
-      original: event.headers.authorization,
+      original: authorizationString,
       authorizationType,
       authorizationString,
       authProfile,
