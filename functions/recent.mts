@@ -90,6 +90,13 @@ export default async (req: Request) => {
       time: 'day',
     })
     const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+    if (imageSource === 'aws') {
+      nonAdminBiketag.config({
+        aws: {
+          region: game.awsRegion
+        }
+      }, false, true)
+    }
     const recentResponse = await nonAdminBiketag.getTags(biketagPayload as getTagsPayload, {
       source: imageSource,
     })

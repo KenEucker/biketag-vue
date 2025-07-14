@@ -27,6 +27,13 @@ export default async (req: Request) => {
     game: biketagOpts.game,
   })
   const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  if (imageSource === 'aws') {
+    biketag.config({
+      aws: {
+        region: game.awsRegion
+      }
+    }, false, true)
+  }
   const tagsResponse = await biketag.getTags(biketagPayload as getTagsPayload, {
     source: imageSource,
   })
