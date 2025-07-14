@@ -11,10 +11,10 @@ export default async (req: Request) => {
   /// Bailout on OPTIONS requests
   const headers = acceptCorsHeaders()
   if (req.method === 'OPTIONS') {
-    return {
-      statusCode: HttpStatusCode.NoContent,
+    return new Response(undefined, {
+      status: HttpStatusCode.NoContent,
       headers,
-    }
+    })
   }
   /// If all else fails
   let body: any = ErrorMessage.MissingAuthHeader

@@ -8,10 +8,10 @@ export default async (req: Request) => {
   if (req.method === 'OPTIONS') {
     /// TODO: check request host
     const headers = acceptCorsHeaders()
-    return {
-      statusCode: HttpStatusCode.Ok,
+    return new Response(undefined, {
+      status: HttpStatusCode.Ok,
       headers,
-    }
+    })
   }
 
   const biketagOpts = getBikeTagClientOpts(req, true)

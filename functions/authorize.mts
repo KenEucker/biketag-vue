@@ -15,10 +15,10 @@ export default async (req: Request) => {
   // ✅ Handle CORS preflight
   if (req.method === 'OPTIONS') {
     /// TODO: check request host
-    return {
-      statusCode: HttpStatusCode.Ok,
+    return new Response(undefined, {
+      status: HttpStatusCode.Ok,
       headers,
-    }
+    })
   }
 
   const {
@@ -31,10 +31,10 @@ export default async (req: Request) => {
 
   // Additional strict check: ensure that `Host` header matches `client_id`
   if (selfHost !== clientId) {
-    return {
-      statusCode: HttpStatusCode.Unauthorized,
-      body: 'Host mismatch',
-    }
+    return new Response('Host mismatch', {
+      headers,
+      status: HttpStatusCode.Unauthorized,
+    })
   }
 
   const expectedAssertion = crypto
@@ -47,7 +47,6 @@ export default async (req: Request) => {
 
   if (clientId && clientAssertion && grantType === 'biketag_origin_assertion') {
     if (clientAssertion === expectedAssertion) {
-
       try {
         const jwtKey = getJwtSecretKey()
 
@@ -75,4 +74,3 @@ export default async (req: Request) => {
     status,
   })
 }
-

@@ -13,18 +13,17 @@ export default async (req: Request) => {
   /// Bailout on OPTIONS requests
   const headers = acceptCorsHeaders()
   if (req.method === 'OPTIONS') {
-    return {
-      statusCode: HttpStatusCode.NoContent,
+    return new Response(undefined, {
+      status: HttpStatusCode.NoContent,
       headers,
-    }
+    })
   }
 
   if (req.method !== 'POST') {
-    return {
+    return new Response(ErrorMessage.MethodNotAllowed, {
       headers,
-      body: ErrorMessage.MethodNotAllowed,
-      statusCode: HttpStatusCode.MethodNotAllowed,
-    }
+      status: HttpStatusCode.MethodNotAllowed,
+    })
   }
 
   /// Retrieves the authorization and profile data, if present

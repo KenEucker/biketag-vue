@@ -7,14 +7,14 @@ export default async (req: Request) => {
   const headers = acceptCorsHeaders()
 
   if (req.method === 'OPTIONS') {
-    return {
-      statusCode: HttpStatusCode.NoContent,
+     return new Response(undefined, {
+      status: HttpStatusCode.NoContent,
       headers,
-    }
+    })
   }
 
   const authProfile = await getPayloadAuthorization(req)
-  let statusCode = HttpStatusCode.Unauthorized
+  let status = HttpStatusCode.Unauthorized
   let body: string = 'Missing or invalid authorization'
 
   if (authProfile && authProfile.valid && authProfile.token) {
@@ -61,29 +61,28 @@ export default async (req: Request) => {
         )
 
         if (signedUrlResponse.success) {
-          statusCode = HttpStatusCode.Ok
+          status = HttpStatusCode.Ok
           body = signedUrlResponse.data
         } else {
           body = signedUrlResponse.error
-          statusCode = signedUrlResponse.status
+          status = signedUrlResponse.status
         }
       } else {
-        statusCode = 400
+        status = 400
         body = 'Missing or invalid key combination'
       }
     } catch (err: any) {
       console.error('[token] Unexpected error', err)
-      statusCode = HttpStatusCode.InternalServerError
+      status = HttpStatusCode.InternalServerError
       body = err.message || 'Unexpected error'
     }
   } else {
     console.warn('[token] Unauthorized request', { authProfile })
   }
-
-  return {
+  
+  return new Response(body, {
     headers,
-    statusCode,
-    body,
-  }
+    status,
+  })
 }
 
