@@ -20,8 +20,8 @@ export default async (req: Request) => {
     source: 'imgur',
   })
   const { success, data } = queueResponse
-  return {
-    statusCode: queueResponse.status,
-    body: JSON.stringify(success ? data : queueResponse),
-  }
+  
+  return new Response(JSON.stringify(success ? data : queueResponse), {
+    status: queueResponse.status,
+  })
 }

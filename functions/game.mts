@@ -11,8 +11,7 @@ export default async (req: Request) => {
   const gameResponse = await biketag.getGame(biketagPayload as getGamePayload, { source: 'sanity' })
   const { success, data } = gameResponse
 
-  return {
-    statusCode: gameResponse.status,
-    body: JSON.stringify(success ? data : gameResponse),
-  }
+  return new Response(JSON.stringify(success ? data : gameResponse), {
+    status: gameResponse.status,
+  })
 }

@@ -21,8 +21,7 @@ export default async (req: Request) => {
   })
   const { success, data } = playersResponse
 
-  return {
-    statusCode: playersResponse.status,
-    body: JSON.stringify(success ? data : playersResponse),
-  }
+  return new Response(JSON.stringify(success ? data : playersResponse), {
+    status: playersResponse.status,
+  })
 }

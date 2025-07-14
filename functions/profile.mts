@@ -18,7 +18,7 @@ export default async (req: Request) => {
   }
   /// If all else fails
   let body: any = ErrorMessage.MissingAuthHeader
-  let statusCode: number = HttpStatusCode.Unauthorized
+  let status: number = HttpStatusCode.Unauthorized
 
   /// Retrieves the authorization and profile data, if present
   const profile = await getProfileAuthorization(req)
@@ -26,11 +26,11 @@ export default async (req: Request) => {
   const mergeProfilesIfSuccess =
     (authorized = true) =>
     async (results) => {
-      statusCode = results.statusCode ?? results.status
+      status = results.statusCode ?? results.status
       const data = results.data ?? results.body
       body = data
 
-      if (statusCode === HttpStatusCode.Ok) {
+      if (status === HttpStatusCode.Ok) {
         const dataIsArray = Array.isArray(data)
         const dataIsString = typeof data === 'string'
         const success = dataIsArray ? data?.length : !!data
@@ -41,7 +41,7 @@ export default async (req: Request) => {
           body = await getBikeTagPlayerProfile(profileFound, authorized, true)
         } else {
           body = ErrorMessage.ProfileNotFound
-          statusCode = HttpStatusCode.NotFound
+          status = HttpStatusCode.NotFound
         }
       }
     }
@@ -52,7 +52,7 @@ export default async (req: Request) => {
     await handleAuth0ProfileRequest(req, profile)
       .then(mergeProfilesIfSuccess())
       .catch(function (error) {
-        statusCode = HttpStatusCode.InternalServerError
+        status = HttpStatusCode.InternalServerError
         body = error.message
       })
   } else if (req.method === 'GET' && profile?.name) {
@@ -61,7 +61,7 @@ export default async (req: Request) => {
     await getBikeTagAuth0Profile(profile.name, true, profile.passcode)
       .then(mergeProfilesIfSuccess())
       .catch(function (error) {
-        statusCode = HttpStatusCode.InternalServerError
+        status = HttpStatusCode.InternalServerError
         body = error.message
       })
   } else if (req.method === 'GET' && !profile) {
@@ -71,27 +71,26 @@ export default async (req: Request) => {
       await getBikeTagPlayerProfile({ name: queryStringParameters.get('name') }, true, true)
         .then((profile) => {
           if (profile) {
-            statusCode = HttpStatusCode.Ok
+            status = HttpStatusCode.Ok
             body = profile
           }
         })
         .catch(function (error) {
-          statusCode = HttpStatusCode.InternalServerError
+          status = HttpStatusCode.InternalServerError
           body = error.message
         })
     } else {
       body = ErrorMessage.InvalidRequestData
-      statusCode = HttpStatusCode.BadRequest
+      status = HttpStatusCode.BadRequest
     }
   }
 
-  if (statusCode !== HttpStatusCode.Ok) {
-    console.log(statusCode + ' ' + ErrorMessage.ProfileNotRetrieved, body)
+  if (status !== HttpStatusCode.Ok) {
+    console.log(status + ' ' + ErrorMessage.ProfileNotRetrieved, body)
   }
 
-  return {
-    statusCode,
+  return new Response(body, {
+    status,
     headers,
-    body,
-  }
+  })
 }

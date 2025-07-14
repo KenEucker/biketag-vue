@@ -22,8 +22,7 @@ export default async (req: Request) => {
      source: 'imgur',
    })
    const { success, data } = statsResponse
-   return {
-     statusCode: statsResponse.status,
-     body: JSON.stringify(success ? data : statsResponse),
-   }
+    return new Response(JSON.stringify(success ? data : statsResponse), {
+     status: statsResponse.status
+   })
 }

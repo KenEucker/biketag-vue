@@ -1,8 +1,7 @@
-import type { Game } from 'biketag'
-import { BikeTagClient } from 'biketag'
+import { BikeTagClient, Game } from 'biketag'
 import { getBikeTagClientOpts, getPayloadOpts } from './common'
 // @ts-ignore
-import { getSettingsPayload } from 'biketag/dist/common/payloads'
+import { getAchievementsPayload } from 'biketag/dist/common/payloads'
 
 export default async (req: Request) => {
   const biketagOpts = getBikeTagClientOpts(req, true)
@@ -17,15 +16,16 @@ export default async (req: Request) => {
     },
     game: biketagOpts.game,
   })
-  const settingsResponse = await biketag.getSettings(biketagPayload as getSettingsPayload, {
-    source: 'sanity',
-  })
-  console.log({settingsResponse})
-  const { success, data } = settingsResponse
+  const achievementsResponse = await biketag.getAchievements(
+    biketagPayload as getAchievementsPayload,
+    {
+      source: 'imgur',
+    },
+  )
+  const { success, data } = achievementsResponse
 
-  return {
-    statusCode: settingsResponse.status,
-    body: JSON.stringify(success ? data : settingsResponse),
-  }
+  return new Response(JSON.stringify(success ? data : achievementsResponse), {
+    status: achievementsResponse.status,
+  })
 }
 

@@ -4,12 +4,10 @@ import { getBikeTagClientOpts, getPayloadOpts } from './common'
 import { getTagsPayload } from 'biketag/dist/common/payloads'
 
 export default async (req: Request) => {
-  const response = {
-    statusCode: 500,
-    body: '',
-  }
   const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
+  let status = 500, body = ''
+
   if (!nonAdminBiketagOpts.game?.length) {
     // const adminBiketagOpts = getBikeTagClientOpts(
     //   {
@@ -78,8 +76,8 @@ export default async (req: Request) => {
       .filter((r) => r.status === 'fulfilled' && r.value?.length)
       .map((d: any) => d.value)
 
-    response.statusCode = 200
-    response.body = JSON.stringify(recentTags)
+    status = 200
+    body = JSON.stringify(recentTags)
   } else {
     const game = (await nonAdminBiketag.game(nonAdminBiketagOpts.game, {
       source: 'sanity',
@@ -94,9 +92,12 @@ export default async (req: Request) => {
       source: 'imgur',
     })
     if (recentResponse.success) {
-      response.statusCode = recentResponse.status
-      response.body = JSON.stringify(recentResponse.success ? recentResponse.data : recentResponse)
+      status = recentResponse.status
+      body = JSON.stringify(recentResponse.success ? recentResponse.data : recentResponse)
     }
   }
-  return response
+  
+  return new Response(body, {
+    status,
+  })
 }

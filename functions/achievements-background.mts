@@ -80,15 +80,13 @@ export default async (req: Request) => {
 
   if (results.length) {
     console.log('achievements assigning attempted', { results })
-    return {
-      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
-      body: JSON.stringify(results),
-    }
+    return new Response(JSON.stringify(results), {
+      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+    })
   } else {
     console.log('nothing to report')
-    return {
-      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
-      body: '',
-    }
+    return new Response('', {
+      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+    })
   }
 }

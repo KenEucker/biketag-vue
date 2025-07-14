@@ -42,7 +42,7 @@ export default async (req: Request) => {
     .update(`${clientId}${process.env.HOST_KEY || ''}`)
     .digest('hex')
 
-  let statusCode = HttpStatusCode.Unauthorized
+  let status = HttpStatusCode.Unauthorized
   let body = 'Missing or invalid payload'
 
   if (clientId && clientAssertion && grantType === 'biketag_origin_assertion') {
@@ -57,10 +57,10 @@ export default async (req: Request) => {
           .setExpirationTime('3h')
           .sign(jwtKey)
 
-        statusCode = HttpStatusCode.Ok
+        status = HttpStatusCode.Ok
         body = jwt
       } catch (err) {
-        statusCode = HttpStatusCode.InternalServerError
+        status = HttpStatusCode.InternalServerError
         body = 'Error generating token'
       }
     } else {
@@ -70,10 +70,9 @@ export default async (req: Request) => {
     body = 'Invalid request payload or grant_type'
   }
 
-  return {
+  return new Response(body, {
     headers,
-    statusCode,
-    body,
-  }
+    status,
+  })
 }
 

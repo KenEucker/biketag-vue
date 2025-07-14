@@ -44,24 +44,22 @@ export default async (req: Request) => {
             responseType: 'arraybuffer',
             headers: {
               host,
+              'Content-Type': `image/jpg`
             },
           })
         ).data,
         'utf-8',
-      ).toString('base64')
+      )
 
-      return {
-        statusCode: 200,
-        isBase64Encoded: true,
-        body,
-      }
+      return new Response(body, {
+        status: 200,
+      })
     } catch (error) {
       console.error('Error fetching image:', error)
     }
   }
 
-  return {
-    statusCode: currentTagResponse.status,
-    body: currentTagResponse.error,
-  }
+  return new Response(currentTagResponse.error, {
+    status: currentTagResponse.status,
+  })
 }

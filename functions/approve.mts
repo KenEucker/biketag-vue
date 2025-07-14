@@ -90,28 +90,24 @@ export default async (req: Request) => {
       errors.push(`no game found: ${nonAdminBiketagOpts.game}`)
     }
   } else {
-    return {
+    return new Response("you don't have permission to do that", {
       headers,
-      statusCode: HttpStatusCode.Unauthorized,
-      body: "you don't have permission to do that",
-    }
+      status: HttpStatusCode.Unauthorized,
+    })
   }
 
   if (results.length) {
     // console.log({ results })
-    return {
+    return new Response(JSON.stringify(results), {
       headers,
-      statusCode: errors[0] ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted,
-      body: JSON.stringify(results),
-    }
+      status: errors[0] ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted,
+    })
   } else {
     // console.log({ results, errors })
-    return {
+    return new Response(JSON.stringify(errors), {
       headers,
-      statusCode: errors.length ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
-      body: '',
-      errors,
-    }
+      status: errors.length ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+    })
   }
 }
 
