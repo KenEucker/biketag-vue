@@ -31,6 +31,7 @@ export default async (req: Request) => {
 
   // Additional strict check: ensure that `Host` header matches `client_id`
   if (selfHost !== clientId) {
+    console.log('[token] host mismatch', {clientId, selfHost})
     return new Response('Host mismatch', {
       headers,
       status: HttpStatusCode.Unauthorized,
