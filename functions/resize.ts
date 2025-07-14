@@ -1,10 +1,12 @@
 import { builder, Handler } from '@netlify/functions'
 import axios from 'axios'
 import sharp from 'sharp'
+import { getPayloadOpts } from './common/methods'
 
 const resizeHandler: Handler = async (event) => {
-  const { url, width, format = 'webp' } = event.queryStringParameters || {}
+  const { url, width, format = 'webp' } = getPayloadOpts(event)
 
+  console.log({ url, width, format })
   if (!url || !width) {
     return {
       statusCode: 400,
@@ -51,3 +53,4 @@ const resizeHandler: Handler = async (event) => {
 const handler = builder(resizeHandler)
 
 export { handler }
+
