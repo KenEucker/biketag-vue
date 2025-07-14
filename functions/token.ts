@@ -1,21 +1,19 @@
-import { Handler } from '@netlify/functions'
 import { BikeTagClient, Game } from 'biketag'
-import request from 'request'
 import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadAuthorization } from './common'
 import { HttpStatusCode } from './common/constants'
 
-const tokenHandler: Handler = async (event) => {
+export default async (req: Request) => {
   console.log('token request')
   const headers = acceptCorsHeaders()
 
-  if (event.httpMethod === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       statusCode: HttpStatusCode.NoContent,
       headers,
     }
   }
 
-  const authProfile = await getPayloadAuthorization(event)
+  const authProfile = await getPayloadAuthorization(req)
   let statusCode = HttpStatusCode.Unauthorized
   let body: string = 'Missing or invalid authorization'
 
@@ -24,21 +22,12 @@ const tokenHandler: Handler = async (event) => {
     const clientId = decodedPayload.client_id
 
     const adminBiketagOpts = getBikeTagClientOpts(
-      {
-        ...event,
-        method: event.httpMethod,
-      } as unknown as request.Request,
+      req,
       true,
       true,
     )
     
-    const nonAdminBiketagOpts = getBikeTagClientOpts(
-      {
-        ...event,
-        method: event.httpMethod,
-      } as unknown as request.Request,
-      true,
-    )
+    const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
 
     const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
 
@@ -47,7 +36,7 @@ const tokenHandler: Handler = async (event) => {
       adminBiketagOpts.aws.region = gameResponse.data?.awsRegion
       const adminBiketag = new BikeTagClient(adminBiketagOpts)
 
-      const payload = new URLSearchParams(decodeURIComponent(event.body ?? ''))
+      const payload = new URLSearchParams(decodeURIComponent(await req.text() ?? ''))
       const key = payload.get('key')
       const game = payload.get('game')
       const contentType = payload.get('contentType')
@@ -98,4 +87,3 @@ const tokenHandler: Handler = async (event) => {
   }
 }
 
-export { tokenHandler as handler }

@@ -1,7 +1,4 @@
-import { Handler } from '@netlify/functions'
-import BikeTagClient from 'biketag'
-import { Game } from 'biketag/dist/common/schema'
-import request from 'request'
+import BikeTagClient, { Game } from 'biketag'
 import {
   getActiveQueueForGame,
   getBikeTagClientOpts,
@@ -23,7 +20,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
   console.log('Running autoPostNewBikeTags')
 
   const adminBiketagOpts = getBikeTagClientOpts(
-    { method: 'get' } as unknown as request.Request,
+    { method: 'get' } as unknown as Request,
     true,
     true,
   )
@@ -114,7 +111,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
   }
 }
 
-const autoPostHandler: Handler = async () => {
+export default async () => {
   const { results, errors } = await autoPostNewBikeTags()
 
   if (results.length) {
@@ -131,7 +128,3 @@ const autoPostHandler: Handler = async () => {
     }
   }
 }
-
-const handler = autoPostHandler
-
-export { handler }

@@ -1,26 +1,23 @@
-import { Handler } from '@netlify/functions'
-import BikeTagClient from 'biketag'
-import { Game } from 'biketag/dist/common/schema'
-import { getBikeTagClientOpts, getPayloadOpts, isRequestAllowed, sendNewBikeTagNotifications } from './common'
+import BikeTagClient, { Game } from 'biketag'
+import { BackgroundProcessResults, getBikeTagClientOpts, getPayloadOpts, isRequestAllowed, sendNewBikeTagNotifications } from './common'
 import { HttpStatusCode } from './common/constants'
-import { BackgroundProcessResults } from './common/types'
 
-export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProcessResults> => {
-  if (!isRequestAllowed(event, true, true, false, 'post')) {
+export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<BackgroundProcessResults> => {
+  if (!isRequestAllowed(req, true, true, false, 'post')) {
     return {
       results: ['unauthorized'],
       errors: true,
     }
   }
 
-  const payloadOpts = getPayloadOpts(event, {
+  const payloadOpts = await getPayloadOpts(req, {
     skipEmails: false,
     force: false,
   })
   const errors = false
   let results: any = []
-  const nonAdminBiketagOpts = getBikeTagClientOpts(event, true)
-  const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
+  const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
+  const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
   const game = (await nonAdminBiketag.game(
     { game: nonAdminBiketagOpts.game },
@@ -80,8 +77,8 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   }
 }
 
-const autoPostNotifyHandler: Handler = async (event) => {
-  const { results, errors } = await autoNotifyNewBikeTagPosted(event)
+export default async (req: Request) => {
+  const { results, errors } = await autoNotifyNewBikeTagPosted(req)
 
   if (results.length) {
     console.log('notifications sent', { results })
@@ -97,7 +94,3 @@ const autoPostNotifyHandler: Handler = async (event) => {
     }
   }
 }
-
-const handler = autoPostNotifyHandler
-
-export { handler }

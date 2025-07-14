@@ -1,6 +1,4 @@
-import { Handler } from '@netlify/functions'
-import BikeTagClient from 'biketag'
-import { Achievement, Game, Player, Tag } from 'biketag/dist/common/schema'
+import BikeTagClient, { Achievement, Game, Player, Tag } from 'biketag'
 import { getSupportedGames } from '../src/common'
 import { getBikeTagClientOpts } from './common'
 import { HttpStatusCode } from './common/constants'
@@ -77,7 +75,7 @@ export const assignAchievements = async (): Promise<BackgroundProcessResults> =>
   }
 }
 
-const assignAchievementsHandler: Handler = async () => {
+export default async (req: Request) => {
   const { results, errors } = await assignAchievements()
 
   if (results.length) {
@@ -94,7 +92,3 @@ const assignAchievementsHandler: Handler = async () => {
     }
   }
 }
-
-const handler = assignAchievementsHandler
-
-export { handler }

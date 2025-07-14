@@ -1,6 +1,4 @@
-import { BikeTagClient } from 'biketag'
-import { Ambassador, Game, Tag } from 'biketag/dist/common/schema'
-import request from 'request'
+import { Ambassador, BikeTagClient, Game, Tag } from 'biketag'
 import { getBannedIPs, stringifyNumber } from '../src/common'
 import {
   defaultLogo,
@@ -11,8 +9,8 @@ import {
 } from './common'
 import { HttpStatusCode } from './common/constants'
 
-export const handler = async (event) => {
-  const body = JSON.parse(event.body)
+export default async (req: Request) => {
+  const body = await req.json()
   const payload = body.payload
   let success = false
 
@@ -47,19 +45,13 @@ export const handler = async (event) => {
     if (gameName) {
       if (formName !== 'add-found-tag' || formName !== 'add-mystery-tag') {
         const nonAdminBiketagOpts = getBikeTagClientOpts(
-          {
-            ...event,
-            method: event.httpMethod,
-          } as unknown as request.Request,
+          req,
           true,
           false,
           { name: gameName.toLowerCase() } as Game,
         )
         const adminBiketagOpts = getBikeTagClientOpts(
-          {
-            ...event,
-            method: event.httpMethod,
-          } as unknown as request.Request,
+          req,
           true,
           true,
           { name: gameName.toLowerCase() } as Game,

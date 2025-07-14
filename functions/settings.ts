@@ -1,24 +1,17 @@
-import { builder, Handler } from '@netlify/functions'
 import type { Game } from 'biketag'
 import { BikeTagClient } from 'biketag'
-import { getSettingsPayload } from 'biketag/dist/common/payloads'
-import request from 'request'
 import { getBikeTagClientOpts, getPayloadOpts } from './common'
+// @ts-ignore
+import { getSettingsPayload } from 'biketag/dist/common/payloads'
 
-const setttingsHandler: Handler = async (event) => {
-  const biketagOpts = getBikeTagClientOpts(
-    {
-      ...event,
-      method: event.httpMethod,
-    } as unknown as request.Request,
-    true,
-  )
+export default async (req: Request) => {
+  const biketagOpts = getBikeTagClientOpts(req, true)
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game(biketagOpts.game, {
     source: 'sanity',
     concise: true,
   })) as unknown as Game
-  const biketagPayload = getPayloadOpts(event, {
+  const biketagPayload = await getPayloadOpts(req, {
     imgur: {
       hash: game.mainhash,
     },
@@ -36,6 +29,3 @@ const setttingsHandler: Handler = async (event) => {
   }
 }
 
-const handler = builder(setttingsHandler)
-
-export { handler }

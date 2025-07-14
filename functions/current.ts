@@ -1,26 +1,17 @@
-import { builder, Handler } from '@netlify/functions'
 import axios from 'axios'
-import type { Game } from 'biketag'
-import { BikeTagClient } from 'biketag'
-import request from 'request'
+import { BikeTagClient, Game } from 'biketag'
 import { getDomainInfo, getImageSized } from '../src/common'
 import { getBikeTagClientOpts, getPayloadOpts } from './common'
 import { HttpStatusCode } from './common/constants'
 
-const currentTagHandler = async (event) => {
-  const biketagOpts = getBikeTagClientOpts(
-    {
-      ...event,
-      method: event.httpMethod,
-    } as unknown as request.Request,
-    true,
-  )
+export default async (req: Request) => {
+  const biketagOpts = getBikeTagClientOpts(req, true)
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game(biketagOpts.game, {
     source: 'sanity',
     concise: true,
   })) as unknown as Game
-  const biketagPayload = getPayloadOpts(event, {
+  const biketagPayload = await getPayloadOpts(req, {
     imgur: {
       hash: game.mainhash,
     },
@@ -33,7 +24,7 @@ const currentTagHandler = async (event) => {
   if (currentTagResponse.success) {
     const currentTag = currentTagResponse.data
     const data: any = currentTag
-    const domainInfo = getDomainInfo(event)
+    const domainInfo = getDomainInfo(req)
     const host = 'i.imgur.com'
     data.host = domainInfo.host
     /// TODO: check the imageSource and send appropriate string
@@ -74,7 +65,3 @@ const currentTagHandler = async (event) => {
     body: currentTagResponse.error,
   }
 }
-
-const handler = builder(currentTagHandler as Handler)
-
-export { handler }

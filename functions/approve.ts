@@ -1,7 +1,4 @@
-import { Handler } from '@netlify/functions'
-import { BikeTagClient } from 'biketag'
-import { Game } from 'biketag/dist/common/schema'
-import request from 'request'
+import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
   getActiveQueueForGame,
@@ -12,17 +9,17 @@ import {
 } from './common'
 import { ErrorMessage, HttpStatusCode } from './common/constants'
 
-const approveHandler: Handler = async (event) => {
+export default async (req: Request) => {
   /// Bailout on OPTIONS requests
   const headers = acceptCorsHeaders()
-  if (event.httpMethod === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       statusCode: HttpStatusCode.NoContent,
       headers,
     }
   }
 
-  if (event.httpMethod !== 'POST') {
+  if (req.method !== 'POST') {
     return {
       headers,
       body: ErrorMessage.MethodNotAllowed,
@@ -31,8 +28,8 @@ const approveHandler: Handler = async (event) => {
   }
 
   /// Retrieves the authorization and profile data, if present
-  const profile = await getProfileAuthorization(event)
-  const approvePayload = getPayloadOpts(event)
+  const profile = await getProfileAuthorization(req)
+  const approvePayload = await getPayloadOpts(req)
   let results: any[] = []
   let errors: any[] = []
 
@@ -41,14 +38,14 @@ const approveHandler: Handler = async (event) => {
     const { playerId, tagnumber } = approvePayload.tag
     console.log('ambassador approving tag attempted')
 
-    const nonAdminBiketagOpts = getBikeTagClientOpts(event as unknown as request.Request, true)
+    const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
     const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
     const game = (await nonAdminBiketag.game(undefined, { source: 'sanity' })) as Game
 
     if (game) {
       const currentBikeTag = (await nonAdminBiketag.getTag()).data
       const adminBiketagOpts = getBikeTagClientOpts(
-        event as unknown as request.Request,
+        req,
         true,
         true,
         game,
@@ -118,4 +115,3 @@ const approveHandler: Handler = async (event) => {
   }
 }
 
-export { approveHandler as handler }

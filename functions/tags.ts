@@ -1,13 +1,11 @@
-import { Handler } from '@netlify/functions'
-import type { Game } from 'biketag'
-import { BikeTagClient } from 'biketag'
-import { getTagsPayload } from 'biketag/dist/common/payloads'
-import request from 'request'
+import { BikeTagClient, Game } from 'biketag'
 import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode } from './common'
+// @ts-ignore
+import { getTagsPayload } from 'biketag/dist/common/payloads'
 
-const tagsHandler: Handler = async (event) => {
+export default async (req: Request) => {
   // ✅ Handle CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     /// TODO: check request host
     const headers = acceptCorsHeaders()
     return {
@@ -16,19 +14,13 @@ const tagsHandler: Handler = async (event) => {
     }
   }
 
-  const biketagOpts = getBikeTagClientOpts(
-    {
-      ...event,
-      method: event.httpMethod,
-    } as unknown as request.Request,
-    true,
-  )
+  const biketagOpts = getBikeTagClientOpts(req, true)
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game(biketagOpts.game, {
     source: 'sanity',
     concise: true,
   })) as unknown as Game
-  const biketagPayload = getPayloadOpts(event, {
+  const biketagPayload = await getPayloadOpts(event, {
     imgur: {
       hash: game.mainhash,
     },
@@ -44,6 +36,3 @@ const tagsHandler: Handler = async (event) => {
   }
 }
 
-const handler = tagsHandler
-
-export { handler }

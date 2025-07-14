@@ -1,4 +1,3 @@
-import { Handler } from '@netlify/functions'
 import crypto from 'crypto'
 import { SignJWT } from 'jose'
 import { acceptCorsHeaders, getPayloadOpts, HttpStatusCode } from './common'
@@ -10,11 +9,11 @@ const getJwtSecretKey = () =>
     .update(process.env.HOST_KEY || '')
     .digest()
 
-const authorizeHandler: Handler = async (event) => {
+export default async (req: Request) => {
   const headers = acceptCorsHeaders()
 
   // ✅ Handle CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     /// TODO: check request host
     return {
       statusCode: HttpStatusCode.Ok,
@@ -26,9 +25,9 @@ const authorizeHandler: Handler = async (event) => {
     client_id: clientId,
     client_assertion: clientAssertion,
     grant_type: grantType,
-  } = getPayloadOpts(event)
+  } = await getPayloadOpts(req)
 
-  const selfHost = new URL(`http://${event.headers.host}`).hostname
+  const selfHost = new URL(`http://${req.headers?.get('host')}`).hostname
 
   // Additional strict check: ensure that `Host` header matches `client_id`
   if (selfHost !== clientId) {
@@ -78,4 +77,3 @@ const authorizeHandler: Handler = async (event) => {
   }
 }
 
-export { authorizeHandler as handler }

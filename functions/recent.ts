@@ -1,28 +1,20 @@
-import { builder, Handler } from '@netlify/functions'
-import { BikeTagClient } from 'biketag'
-import { getTagsPayload } from 'biketag/dist/common/payloads'
-import { Game } from 'biketag/dist/common/schema'
-import request from 'request'
+import { BikeTagClient, Game } from 'biketag'
 import { getBikeTagClientOpts, getPayloadOpts } from './common'
+// @ts-ignore
+import { getTagsPayload } from 'biketag/dist/common/payloads'
 
-const recentHandler: Handler = async (event) => {
+export default async (req: Request) => {
   const response = {
     statusCode: 500,
     body: '',
   }
-  const nonAdminBiketagOpts = getBikeTagClientOpts(
-    {
-      ...event,
-      method: event.httpMethod,
-    } as unknown as request.Request,
-    true,
-  )
+  const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
   if (!nonAdminBiketagOpts.game?.length) {
     // const adminBiketagOpts = getBikeTagClientOpts(
     //   {
-    //     ...event,
-    //     method: event.httpMethod,
+    //     ...req,
+    //     method: req.method,
     //   } as unknown as request.Request,
     //   true,
     //   true,
@@ -69,7 +61,7 @@ const recentHandler: Handler = async (event) => {
     const recentResponses: any = []
     for (let i = 0; i < featuredGames.length; i++) {
       const game = featuredGames[i]
-      const biketagPayload = getPayloadOpts(event, {
+      const biketagPayload = await getPayloadOpts(req, {
         hash: game.mainhash,
         game: 'none',
         time: 'day',
@@ -93,7 +85,7 @@ const recentHandler: Handler = async (event) => {
       source: 'sanity',
       concise: true,
     })) as unknown as Game
-    const biketagPayload = getPayloadOpts(event, {
+    const biketagPayload = await getPayloadOpts(req, {
       hash: game.mainhash,
       game: 'none',
       time: 'day',
@@ -108,7 +100,3 @@ const recentHandler: Handler = async (event) => {
   }
   return response
 }
-
-const handler = builder(recentHandler)
-
-export { handler }

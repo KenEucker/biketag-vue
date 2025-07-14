@@ -45,7 +45,7 @@ export const isRequestAllowed = (
 ): boolean => {
   if (restrictMethod?.length) {
     const restrictMethods = typeof restrictMethod === 'string' ? [restrictMethod] : restrictMethod
-    if (restrictMethods!.indexOf(req.httpMethod.toLowerCase()) === -1) {
+    if (restrictMethods!.indexOf(req.method.toLowerCase()) === -1) {
       return false
     }
   }
@@ -67,14 +67,14 @@ export const isRequestAllowed = (
       return false
     }
 
-    return req.headers.referrer.includes(process.env.HOST)
+    return req.headers?.get('referrer')?.includes(process.env.HOST)
   }
 
   return false
 }
 
 export const getBikeTagClientOpts = (
-  req?: request.Request,
+  req?: Request,
   authorized?: boolean,
   admin?: boolean,
   game?: Game,
@@ -159,25 +159,28 @@ export const getBikeTagClientOpts = (
   return opts
 }
 
-export const parseQuery = (query = '') => {
-  const params: any = new URLSearchParams(query) ?? []
+export const parseQuery = (req: Request) => {
+  const params: any = new URL(req.url).searchParams ?? []
   return Object.fromEntries(params)
 }
 
-export const parseBody = (body = '') => {
+export const parseBody = async (req: Request) => {
   let parsed = {}
   try {
-    parsed = JSON.parse(body)
+    parsed = await req.json()
+    if (!parsed) {
+      parsed = parseQuery(req)
+    }
   } catch (e) {
-    parsed = parseQuery(body)
+    parsed = parseQuery(req)
   }
 
   return parsed
 }
 
-export const getPayloadOpts = (event: any, base = {}): any => {
-  const parsedQuery = parseQuery(event.rawQuery)
-  const parsedBody = parseBody(event.body)
+export const getPayloadOpts = async (req: any, base = {}): Promise<any> => {
+  const parsedQuery = parseQuery(req)
+  const parsedBody = await parseBody(req)
   return {
     ...base,
     ...parsedQuery,
@@ -383,7 +386,7 @@ export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTa
       getBikeTagClientOpts(
         {
           method: 'get',
-        } as unknown as request.Request,
+        } as any,
         true,
         true,
       )
@@ -785,7 +788,7 @@ export const archiveAndClearQueue = async (
   adminBiketag =
     adminBiketag ??
     new BikeTagClient(
-      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, true, true),
+      getBikeTagClientOpts({ method: 'get' } as any, true, true),
     )
   if (!game) {
     const gameResponse = await adminBiketag.getGame(
@@ -902,7 +905,7 @@ export const getActiveQueueForGame = async (
         getBikeTagClientOpts(
           {
             method: 'get',
-          } as unknown as request.Request,
+          } as any,
           true,
           true,
           game,
@@ -966,18 +969,19 @@ export const createBikeTagPlayerProfile = async (
   return Promise.resolve({ data: null, success: false })
 }
 
-export const handleAuth0ProfileRequest = async (req, request, profile): Promise<any> => {
+export const handleAuth0ProfileRequest = async (req: Request, profile): Promise<any> => {
   let body = ''
   let statusCode = HttpStatusCode.Continue
   let options = {}
   const authorizationHeaders = await auth0Headers()
-  const method = req.method ?? req.httpMethod
+  const method = req.method ?? req.method
 
   switch (method) {
     case 'PUT':
       /// CREATE a new BikeTag profile fields (role, name)
       try {
-        const data: any = JSON.parse(request)
+        const data = await req.json()
+        const userMetadata = data.user_metadata
         /// If the request is valid for an update
         if (isValidJson(data, 'profile.role')) {
           /// Happy path
@@ -1012,7 +1016,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
                   per_page: 1,
                   include_totals: false,
                   fields: 'user_metadata.name',
-                  q: `user_metadata.name:"${data.user_metadata?.name}"`,
+                  q: `user_metadata.name:"${userMetadata?.name}"`,
                   search_engine: 'v3',
                 },
                 headers: authorizationHeaders,
@@ -1075,7 +1079,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
     case 'PATCH':
       /// UPDATE a BikeTag profile
       try {
-        const data: any = JSON.parse(request)
+        const data: any = await req.json()
         /// WAIT WHY was this added? this needs to be in the request.
         // delete data.user_metadata?.name
         const profileType = profile.isBikeTagAmbassador
@@ -1547,7 +1551,7 @@ export const sendNewBikeTagNotifications = async (
             btaDashboardButton: 'BikeTag Ambassador dashboard',
             host,
             game: game.name,
-            redditLink: `https://reddit.com/r/${game.subreddit?.length ? game.subreddit : 'biketag'}`,
+            // redditLink: `https://reddit.com/r/${game.subreddit?.length ? game.subreddit : 'biketag'}`,
             blueskyLink: `https://bsky.app/profile/${game.bluesky?.length ? game.bluesky : 'biketag.bsky.social'}`,
           }
         },
