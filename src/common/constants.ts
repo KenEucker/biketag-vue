@@ -42,7 +42,7 @@ export const BikeTagEnv = {
   GAME_SOURCE: process.env.GAME_SOURCE ?? null,
   HOST: process.env.HOST ?? BikeTagDefaults.host,
   HOST_KEY: process.env.HOST_KEY ?? BikeTagDefaults.hostKey,
-  BIKETAG_AUTHED: process.env.B_AUTHED ?? process.env.BIKETAG_AUTHED ?? null,
+  BIKETAG_AUTHED: process.env.BIKETAG_AUTHED ?? null,
   /* Google Configuration */
   G_AKEY:
     process.env.G_AKEY ?? process.env.GOOGLE_ACCESS_TOKEN ?? process.env.GOOGLE_API_KEY ?? null,
@@ -73,9 +73,9 @@ export const BikeTagEnv = {
   S_PID: process.env.S_PID ?? process.env.SANITY_PROJECT_ID,
   // S_TOKEN: process.env.S_TOKEN ?? process.env.SANITY_ACCESS_TOKEN ?? null,
   /* AWS S3 Configuration */
-  RELOAD_SW: process.env.RELOAD_SW ?? false,
-  S3_AID: process.env.FE_S3_AID ?? process.env.FE_S3_ACCESS_ID ?? null,
-  S3_AKEY: process.env.FE_S3_AKEY ?? process.env.FE_S3_ACCESS_KEY ?? null,
+  RELOAD_SW: process.env.RELOAD_SW ?? 'false',
+  FE_S3_AID: process.env.FE_S3_AID ?? process.env.FE_S3_ACCESS_ID ?? null,
+  FE_S3_AKEY: process.env.FE_S3_AKEY ?? process.env.FE_S3_ACCESS_KEY ?? null,
   IMGUR_DELAY_NOTICE: process.env.IMGUR_DELAY_NOTICE ?? null,
   IMGUR_DELAY: process.env.IMGUR_DELAY ?? null,
 }

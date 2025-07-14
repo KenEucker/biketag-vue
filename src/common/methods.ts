@@ -173,8 +173,8 @@ export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
       dataset: BikeTagEnv.S_DSET,
     },
     aws: {
-      accessKeyId: BikeTagEnv.S3_AID,
-      secretAccessKey: BikeTagEnv.S3_AKEY,
+      accessKeyId: BikeTagEnv.FE_S3_AID,
+      secretAccessKey: BikeTagEnv.FE_S3_AKEY,
     },
   }
 }
