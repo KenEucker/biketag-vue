@@ -53,6 +53,7 @@
     "public-ip": "^7.0.1",
     "qs": "^6.11.2",
     "register-service-worker": "^1.7.2",
+    "sharp": "^0.34.3",
     "swiper": "^11.0.5",
     "v-lazy-image": "^2.1.1",
     "vue": "^3.0.0",
