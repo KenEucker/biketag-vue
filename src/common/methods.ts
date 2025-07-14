@@ -5,11 +5,11 @@ import { Game, Tag } from 'biketag/dist/common/schema'
 import CryptoJS from 'crypto-js'
 import domtoimage from 'dom-to-image'
 import log from 'loglevel'
-import md5 from 'md5'
 import moment from 'moment-timezone'
 import { useCookies } from 'vue3-cookies'
 import {
   BikeTagDefaults,
+  BikeTagEnv,
   BikeTagProfile,
   BiketagQueueFormSteps,
   DomainInfo,
@@ -109,7 +109,7 @@ export const getImgurImageSized = (imgurUrl = '', size = 'm') => {
 
 export const getDomainInfo = (req: any): DomainInfo => {
   const nonSubdomainHosts = [
-    `${process.env.HOST ?? 'biketag.local'}`,
+    `${BikeTagEnv.HOST ?? 'biketag.local'}`,
     'biketag.dev',
     '0.0.0.0',
     'localhost',
@@ -159,22 +159,22 @@ export const getTagDateISOFromTimezone = (time: number, tz?: string) => {
 export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
   const domainInfo = getDomainInfo(win)
   return {
-    game: domainInfo.subdomain ?? process.env.GAME_NAME,
-    clientKey: process.env.B_KEY,
+    game: domainInfo.subdomain ?? BikeTagEnv.GAME_NAME,
+    clientKey: BikeTagEnv.B_KEY,
     imgur: {
-      clientId: process.env.I_CID,
-      // clientSecret: process.env.I_CSECRET,
-      accessToken: process.env.I_TOKEN,
-      rapidApiKey: process.env.RA_FE_KEY,
-      refreshToken: withToken ? process.env.I_RTOKEN : undefined,
+      clientId: BikeTagEnv.I_CID,
+      // clientSecret: BikeTagEnv.I_CSECRET,
+      accessToken: BikeTagEnv.I_TOKEN,
+      rapidApiKey: BikeTagEnv.RA_FE_KEY,
+      refreshToken: withToken ? BikeTagEnv.I_RTOKEN : undefined,
     },
     sanity: {
-      projectId: process.env.S_PID,
-      dataset: process.env.S_DSET,
+      projectId: BikeTagEnv.S_PID,
+      dataset: BikeTagEnv.S_DSET,
     },
     aws: {
-      accessKeyId: process.env.S3_AID,
-      secretAccessKey: process.env.S3_AKEY,
+      accessKeyId: BikeTagEnv.S3_AID,
+      secretAccessKey: BikeTagEnv.S3_AKEY,
     },
   }
 }
@@ -188,7 +188,7 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
       const existingProfileDecodedString = CryptoJS.AES.decrypt(
         existingProfileString,
         /// TODO: this shouldn't be found in the frontend!
-        process.env.HOST_KEY ?? 'BikeTag',
+        BikeTagEnv.HOST_KEY ?? 'BikeTag',
       )
       const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
       return existingProfile
@@ -238,7 +238,7 @@ export const setProfileCookie = (
       const encryptedProfileString = CryptoJS.AES.encrypt(
         JSON.stringify(profile),
         /// TODO: this shouldn't be found in the frontend!
-        process.env.HOST_KEY ?? 'BikeTag',
+        BikeTagEnv.HOST_KEY ?? 'BikeTag',
       ).toString()
       cookies.set(profileCookieKey, encryptedProfileString)
     } else {
@@ -254,7 +254,7 @@ export const setProfileCookie = (
 
 export const encodeBikeTagString = (basic: string): string => {
   /// TODO: this shouldn't be found in the frontend!
-  return CryptoJS.AES.encrypt(basic, process.env.HOST_KEY ?? 'BikeTag').toString()
+  return CryptoJS.AES.encrypt(basic, BikeTagEnv.HOST_KEY ?? 'BikeTag').toString()
 }
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
@@ -418,13 +418,13 @@ export const getSanityImageUrl = (
 
 export const getApiUrl = (path = '') => {
   if (!window) {
-    return process.env.CONTEXT === 'dev'
+    return BikeTagEnv.CONTEXT === 'dev'
       ? `http://localhost:7200/.netlify/functions/${path}`
       : `/api/${path}`
   }
 
   const url =
-    process.env.CONTEXT === 'dev'
+    BikeTagEnv.CONTEXT === 'dev'
       ? `${window?.location?.protocol}//${window?.location?.hostname}:7200/.netlify/functions${path.length ? '/' + path : ''}`
       : `/api${path.length ? '/' + path : ''}`
 
@@ -496,8 +496,8 @@ export const isOnline = async (checkExternally = false) => {
     .catch(() => false)
 }
 
-export const isAuthenticationEnabled = () => !!process.env.A_DOMAIN?.length
-export const isGmapsEnabled = () => !!process.env.G_AKEY?.length
+export const isAuthenticationEnabled = () => !!BikeTagEnv.A_DOMAIN?.length
+export const isGmapsEnabled = () => !!BikeTagEnv.G_AKEY?.length
 
 export const dequeueErrorNotify = (toast: any) => (error: string) => {
   return toast.open({
@@ -511,8 +511,8 @@ export const dequeueErrorNotify = (toast: any) => (error: string) => {
 
 export const getBannedIPs = () => {
   const sanityInstance = sanityClient({
-    projectId: process.env.S_PID,
-    dataset: process.env.S_DSET,
+    projectId: BikeTagEnv.S_PID,
+    dataset: BikeTagEnv.S_DSET,
     apiVersion: '2021-06-07',
     useCdn: true,
   })

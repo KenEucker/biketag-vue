@@ -3,6 +3,7 @@ import { Achievement, Game, Player, Tag } from 'biketag/dist/common/schema'
 import { defineStore } from 'pinia'
 import {
   BikeTagDefaults,
+  BikeTagEnv,
   BikeTagStoreState,
   BiketagQueueFormSteps,
   debug,
@@ -36,13 +37,12 @@ export const initBikeTagStore = () => {
     biketagGameOpts = { source: BikeTagDefaults.gameSource }
 
     const domain = getDomainInfo(window)
-    gameName = domain.subdomain ?? process.env.GAME_NAME ?? BikeTagDefaults.gameName
+    gameName = domain.subdomain ?? BikeTagEnv.GAME_NAME ?? BikeTagDefaults.gameName
     biketagClientOpts = {
       cached: true,
-      host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.org/api`,
+      host: BikeTagEnv.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.${BikeTagEnv.HOST}.org/api`,
       // game: gameName,
-      clientKey: process.env.B_KEY,
-      ...getBikeTagClientOpts(window, process.env.BIKETAG_AUTHED === 'true'),
+      ...getBikeTagClientOpts(window, BikeTagEnv.BIKETAG_AUTHED === 'true'),
     }
 
 
@@ -1052,8 +1052,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     getGameNotices(state) {
       return {
-        imgurDelayNotice: process.env.IMGUR_DELAY_NOTICE,
-        imgurDelay: process.env.IMGUR_DELAY,
+        imgurDelayNotice: BikeTagEnv.IMGUR_DELAY_NOTICE,
+        imgurDelay: BikeTagEnv.IMGUR_DELAY,
       }
     },
     isBikeTagAmbassador(state) {
