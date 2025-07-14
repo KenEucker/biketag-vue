@@ -40,7 +40,7 @@ export const initBikeTagStore = () => {
     gameName = domain.subdomain ?? BikeTagEnv.GAME_NAME ?? BikeTagDefaults.gameName
     biketagClientOpts = {
       cached: true,
-      host: BikeTagEnv.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.${BikeTagEnv.HOST}.org/api`,
+      host: BikeTagEnv.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.${BikeTagEnv.HOST}/api`,
       // game: gameName,
       ...getBikeTagClientOpts(window, BikeTagEnv.BIKETAG_AUTHED === 'true'),
     }
