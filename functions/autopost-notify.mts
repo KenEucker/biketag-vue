@@ -24,9 +24,10 @@ export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<Backgrou
     { source: 'sanity' },
   )) as Game
 
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
   const twoMostRecentTags = await nonAdminBiketag.getTags(
     { game: game.slug, limit: 2 },
-    { source: 'imgur' },
+    { source: imageSource },
   )
   if (twoMostRecentTags.data?.length !== 2) {
     const errorMessage = 'Could not retrieve two most recent tags.'

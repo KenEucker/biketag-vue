@@ -19,7 +19,10 @@ export default async (req: Request) => {
     size: '',
     data: false,
   })
-  const currentTagResponse = await biketag.getTag(biketagPayload)
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const currentTagResponse = await biketag.getTag(biketagPayload, {
+    source: imageSource,
+  })
 
   if (currentTagResponse.success) {
     const currentTag = currentTagResponse.data

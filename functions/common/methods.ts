@@ -325,10 +325,6 @@ export const isValidJson = (data, type = 'none') => {
   return validate(data)
 }
 
-interface Event {
-  headers: Record<string, unknown>
-}
-
 export interface IdentityContext {
   /**
    * The token that was provided.
@@ -375,7 +371,7 @@ const validateJWT = (verifier: JwtVerifier, options: any) => {
     context.identityContext = ctx
 
     // Continue.
-    return handler(event, context, cb)
+    return handler(req, context, cb)
   }
 }
 
@@ -399,12 +395,12 @@ export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTa
   return thisGamesAmbassadors
 }
 
-export const getProfileAuthorization = async (event: any): Promise<any> => {
-  const authorization = await getPayloadAuthorization(event)
+export const getProfileAuthorization = async (req: Request): Promise<any> => {
+  const authorization = await getPayloadAuthorization(req)
   let profile: any = authorization
 
   if (authorization && profile) {
-    const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
+    const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
     const adminBiketag = new BikeTagClient(adminBiketagOpts)
     const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag)) as Ambassador[]
     if (!thisGamesAmbassadors?.length) {
@@ -895,8 +891,9 @@ export const getActiveQueueForGame = async (
       : 0
   /// TODO: check for the right ambassador here
   const approvingAmbassadorIsApproved = approvingAmbassador?.length
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
 
-  console.log({ autoPostSetting, game })
+  console.log({ autoPostSetting, game, imageSource })
   if ((autoPostSetting && game.queuehash?.length) || approvingAmbassadorIsApproved) {
     /************** GET WINNING QUEUE *****************/
     adminBikeTag =
@@ -912,7 +909,7 @@ export const getActiveQueueForGame = async (
         ),
       )
     const getQueueResponse = await adminBikeTag.getQueue(undefined, {
-      source: 'imgur',
+      source: imageSource,
     })
     queuedTags = getQueueResponse.success ? getQueueResponse.data : []
     if (queuedTags?.length) {
@@ -1267,7 +1264,8 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
   const link = `${host}/${winningTagnumber}`
   const gameLinkFacet = getStartAndEndBytesOfStringWithinString(heading, game.name)
-  const imageUrl = getImageSized('imgur', winningTag.mysteryImageUrl, 'l')
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const imageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
 
   try {
     if (process.env.BSKY_USER && process.env.BSKY_PASS) {
@@ -1347,9 +1345,9 @@ export const sendBikeTagPostNotificationToWebhook = (
   const mysteryAltText = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
   const foundAltText = `BikeTag #${currentNumber} found by ${currentTag.foundPlayer}`
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
-  /// TODO: check the imageSource and send appropriate string
-  const mysteryImageUrl = getImageSized('imgur', winningTag.mysteryImageUrl, 'l')
-  const foundImageUrl = getImageSized('imgur', currentTag.foundImageUrl, 'l')
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const mysteryImageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
+  const foundImageUrl = getImageSized(imageSource, currentTag.foundImageUrl, 'l')
 
   console.log('sending notification webhook timestamp', {
     timestamp,

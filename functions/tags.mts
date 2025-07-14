@@ -20,14 +20,15 @@ export default async (req: Request) => {
     source: 'sanity',
     concise: true,
   })) as unknown as Game
-  const biketagPayload = await getPayloadOpts(event, {
+  const biketagPayload = await getPayloadOpts(req, {
     imgur: {
       hash: game.mainhash,
     },
     game: biketagOpts.game,
   })
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
   const tagsResponse = await biketag.getTags(biketagPayload as getTagsPayload, {
-    source: 'imgur',
+    source: imageSource,
   })
   const { success, data } = tagsResponse
   return {

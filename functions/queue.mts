@@ -16,8 +16,9 @@ export default async (req: Request) => {
     },
     game: biketagOpts.game,
   })
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
   const queueResponse = await biketag.getQueue(biketagPayload as getQueuePayload, {
-    source: 'imgur',
+    source: imageSource,
   })
   const { success, data } = queueResponse
   

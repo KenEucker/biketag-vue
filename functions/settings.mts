@@ -20,7 +20,6 @@ export default async (req: Request) => {
   const settingsResponse = await biketag.getSettings(biketagPayload as getSettingsPayload, {
     source: 'sanity',
   })
-  console.log({settingsResponse})
   const { success, data } = settingsResponse
 
   return new Response(JSON.stringify(success ? data : settingsResponse), {

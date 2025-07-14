@@ -32,7 +32,8 @@ export const autoClearQueue = async (req: Request): Promise<BackgroundProcessRes
 
   const adminBiketagOpts = getBikeTagClientOpts(req, true, true, game)
   const adminBiketag = new BikeTagClient(adminBiketagOpts)
-  const { data: mostRecentTag } = await adminBiketag.getTag(undefined, { source: 'imgur' })
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const { data: mostRecentTag } = await adminBiketag.getTag(undefined, { source: imageSource })
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
   if (twentyFourHoursAgo > mostRecentTag.mysteryTime * 1000 && !forceClear) {
@@ -46,7 +47,7 @@ export const autoClearQueue = async (req: Request): Promise<BackgroundProcessRes
   }
 
   if (clearAll) {
-    const allTags = (await nonAdminBiketag.getQueue({ game: adminBiketagOpts.game })).data
+    const allTags = (await nonAdminBiketag.getQueue({ game: adminBiketagOpts.game }, { source: imageSource })).data
 
     if (allTags.length) {
       console.log('all tags found', { game, allTags })

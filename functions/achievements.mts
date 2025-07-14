@@ -16,10 +16,11 @@ export default async (req: Request) => {
     },
     game: biketagOpts.game,
   })
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
   const achievementsResponse = await biketag.getAchievements(
     biketagPayload as getAchievementsPayload,
     {
-      source: 'imgur',
+      source: imageSource,
     },
   )
   const { success, data } = achievementsResponse
