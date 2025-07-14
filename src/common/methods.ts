@@ -1,5 +1,5 @@
 import { DeviceUUID } from '@/common/uuid'
-import sanityClient from '@sanity/client'
+import { createClient } from '@sanity/client'
 import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
 import { Game, Tag } from 'biketag/dist/common/schema'
 import CryptoJS from 'crypto-js'
@@ -510,7 +510,7 @@ export const dequeueErrorNotify = (toast: any) => (error: string) => {
 }
 
 export const getBannedIPs = () => {
-  const sanityInstance = sanityClient({
+  const sanityInstance = createClient({
     projectId: BikeTagEnv.S_PID,
     dataset: BikeTagEnv.S_DSET,
     apiVersion: '2021-06-07',
