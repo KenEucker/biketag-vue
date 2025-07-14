@@ -4,10 +4,11 @@ import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode
 import { getTagsPayload } from 'biketag/dist/common/payloads'
 
 export default async (req: Request) => {
+  const headers = acceptCorsHeaders()
+
   // ✅ Handle CORS preflight
   if (req.method === 'OPTIONS') {
     /// TODO: check request host
-    const headers = acceptCorsHeaders()
     return new Response(undefined, {
       status: HttpStatusCode.Ok,
       headers,
@@ -38,9 +39,9 @@ export default async (req: Request) => {
     source: imageSource,
   })
   const { success, data } = tagsResponse
-  return {
-    statusCode: tagsResponse.status,
-    body: JSON.stringify(success ? data : tagsResponse),
-  }
+  return new Response(JSON.stringify(success ? data : tagsResponse), {
+    status: tagsResponse.status,
+    headers,
+  })
 }
 

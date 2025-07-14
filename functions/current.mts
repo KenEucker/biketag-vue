@@ -1,10 +1,19 @@
 import axios from 'axios'
 import { BikeTagClient, Game } from 'biketag'
 import { getDomainInfo, getImageSized } from '../src/common'
-import { getBikeTagClientOpts, getPayloadOpts } from './common'
+import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts } from './common'
 import { HttpStatusCode } from './common/constants'
 
 export default async (req: Request) => {
+  const headers = acceptCorsHeaders()
+  // ✅ Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    /// TODO: check request host
+    return new Response(undefined, {
+      status: HttpStatusCode.Ok,
+      headers,
+    })
+  }
   const biketagOpts = getBikeTagClientOpts(req, true)
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game(biketagOpts.game, {
@@ -34,10 +43,10 @@ export default async (req: Request) => {
     data.imageUri = getImageSized('imgur', data.mysteryImageUrl, biketagPayload.size)
 
     if (biketagPayload.data) {
-      return {
-        statusCode: HttpStatusCode.Ok,
-        body: JSON.stringify(data),
-      }
+      return new Response(JSON.stringify(data), {
+        status: HttpStatusCode.Ok,
+        headers,
+      })
     }
 
     try {
@@ -56,6 +65,7 @@ export default async (req: Request) => {
 
       return new Response(body, {
         status: 200,
+        headers,
       })
     } catch (error) {
       console.error('Error fetching image:', error)
@@ -64,5 +74,6 @@ export default async (req: Request) => {
 
   return new Response(currentTagResponse.error, {
     status: currentTagResponse.status,
+    headers,
   })
 }

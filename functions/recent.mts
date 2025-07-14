@@ -1,9 +1,18 @@
 import { BikeTagClient, Game } from 'biketag'
-import { getBikeTagClientOpts, getPayloadOpts } from './common'
+import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode } from './common'
 // @ts-ignore
 import { getTagsPayload } from 'biketag/dist/common/payloads'
 
 export default async (req: Request) => {
+  const headers = acceptCorsHeaders()
+  // ✅ Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    /// TODO: check request host
+    return new Response(undefined, {
+      status: HttpStatusCode.Ok,
+      headers,
+    })
+  }
   const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
   let status = 500, body = ''
@@ -108,5 +117,6 @@ export default async (req: Request) => {
   
   return new Response(body, {
     status,
+    headers,
   })
 }
