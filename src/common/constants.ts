@@ -1,6 +1,5 @@
 export const BikeTagDefaults = {
   appId: 'com.app.biketag',
-  accessToken: '8b4e2b86a724bf3f39d6766de6e67212',
   admingEmail: 'biketag@biketag.org',
   gameName: '',
   host: 'biketag.org',

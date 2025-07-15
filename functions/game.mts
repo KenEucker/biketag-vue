@@ -1,7 +1,5 @@
 import { BikeTagClient } from 'biketag'
 import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode } from './common'
-// @ts-ignore
-import type { getGamePayload } from 'biketag/dist/common/payloads'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -16,7 +14,7 @@ export default async (req: Request) => {
   const biketagOpts = getBikeTagClientOpts(req, true)
   const biketagPayload = await getPayloadOpts(req, { game: biketagOpts.game })
   const biketag = new BikeTagClient(biketagOpts)
-  const gameResponse = await biketag.getGame(biketagPayload as getGamePayload, { source: 'sanity' })
+  const gameResponse = await biketag.getGame(biketagPayload, { source: 'sanity' })
   const { success, data } = gameResponse
 
   return new Response(JSON.stringify(success ? data : gameResponse), {

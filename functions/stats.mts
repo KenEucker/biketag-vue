@@ -1,7 +1,5 @@
 import { BikeTagClient, Game } from 'biketag'
 import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode } from './common'
-// @ts-ignore
-import { getStatsPayload } from 'biketag/dist/common/payloads'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -39,7 +37,7 @@ export default async (req: Request) => {
       true,
     )
   }
-  const statsResponse = await biketag.getStats(biketagPayload as getStatsPayload, {
+  const statsResponse = await biketag.getStats(biketagPayload, {
     source: imageSource,
   })
   const { success, data } = statsResponse

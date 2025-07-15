@@ -1,7 +1,5 @@
 import { BikeTagClient, Game } from 'biketag'
 import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode } from './common'
-// @ts-ignore
-import { getTagsPayload } from 'biketag/dist/common/payloads'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -35,7 +33,7 @@ export default async (req: Request) => {
       }
     }, false, true)
   }
-  const tagsResponse = await biketag.getTags(biketagPayload as getTagsPayload, {
+  const tagsResponse = await biketag.getTags(biketagPayload, {
     source: imageSource,
   })
   const { success, data } = tagsResponse

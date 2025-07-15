@@ -1,7 +1,5 @@
 import { BikeTagClient, Game } from 'biketag'
 import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode } from './common'
-// @ts-ignore
-import { getTagsPayload } from 'biketag/dist/common/payloads'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -76,7 +74,7 @@ export default async (req: Request) => {
         cached: true,
       })
       recentResponses.push(
-        nonAdminBiketag.getTags(biketagPayload as getTagsPayload, {
+        nonAdminBiketag.getTags(biketagPayload, {
           source: imageSource,
           cached: true,
         }),
@@ -106,7 +104,7 @@ export default async (req: Request) => {
         }
       }, false, true)
     }
-    const recentResponse = await nonAdminBiketag.getTags(biketagPayload as getTagsPayload, {
+    const recentResponse = await nonAdminBiketag.getTags(biketagPayload, {
       source: imageSource,
     })
     if (recentResponse.success) {

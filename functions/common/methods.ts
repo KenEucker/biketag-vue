@@ -341,11 +341,11 @@ export interface IdentityContext {
 const validateJWT = (verifier: JwtVerifier, options: any) => {
   return (handler: any) => async (req: Request, context: any, cb: any) => {
     let claims
-    let accessToken
+    let clientToken
 
     try {
-      accessToken = getTokenFromHeader(req.headers.get('authorization') as string)
-      claims = await verifier.verifyAccessToken(accessToken)
+      clientToken = getTokenFromHeader(req.headers.get('authorization') as string)
+      claims = await verifier.verifyAccessToken(clientToken)
     } catch (err) {
       if (typeof options.handleError !== 'undefined' && options.handleError !== null) {
         return options.handleError(err)
@@ -365,7 +365,7 @@ const validateJWT = (verifier: JwtVerifier, options: any) => {
 
     // Expose the identity in the client context.
     const ctx: IdentityContext = {
-      token: accessToken,
+      token: clientToken,
       claims,
     }
     context.identityContext = ctx
@@ -918,13 +918,17 @@ export const getActiveQueueForGame = async (
       if (completedTags.length) {
         const now = Date.now()
         const tagAutoPostTimer = 1000 * 60 * autoPostSetting
-        console.log({ now, tagAutoPostTimer })
+        if (process.env.DEBUG_A === 'true') {
+          console.log({ now, tagAutoPostTimer })
+        }
         timedOutTags = completedTags.filter((t) => {
-          console.log({
-            diff: now - t.mysteryTime * 1000,
-            mysteryTime: t.mysteryTime,
-            timedOut: now - t.mysteryTime * 1000 > tagAutoPostTimer,
-          })
+          if (process.env.DEBUG_A === 'true') {
+            console.log({
+              diff: now - t.mysteryTime * 1000,
+              mysteryTime: t.mysteryTime,
+              timedOut: now - t.mysteryTime * 1000 > tagAutoPostTimer,
+            })
+          }
           return now - t.mysteryTime * 1000 > tagAutoPostTimer
         })
 
@@ -1349,11 +1353,13 @@ export const sendBikeTagPostNotificationToWebhook = (
   const mysteryImageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
   const foundImageUrl = getImageSized(imageSource, currentTag.foundImageUrl, 'l')
 
-  console.log('sending notification webhook timestamp', {
-    timestamp,
-    foundTime: currentTag.foundTime,
-    tz: game.region.tz,
-  })
+  if (process.env.DEBUG_A === 'true') {
+    console.log('sending notification webhook timestamp', {
+      timestamp,
+      foundTime: currentTag.foundTime,
+      tz: game.region.tz,
+    })
+  }
 
   let data = {}
   switch (type) {
@@ -1605,7 +1611,9 @@ export const setNewBikeTagPost = async (
     // console.log('updating current BikeTag with the winning tag found information', previousBikeTag)
     const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag)
 
-    console.log({ currentBikeTagUpdateResult })
+    if (process.env.DEBUG_A === 'true') {
+      console.log({ currentBikeTagUpdateResult })
+    }
     if (currentBikeTagUpdateResult.success) {
       results.push({
         message: 'current BikeTag updated',
@@ -1624,7 +1632,9 @@ export const setNewBikeTagPost = async (
 
     /************** SET NEW BIKETAG POST FROM QUEUE *****************/
     const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost)
-    console.log({ newBikeTagUpdateResult })
+    if (process.env.DEBUG_A === 'true') {
+      console.log({ newBikeTagUpdateResult })
+    }
     if (newBikeTagUpdateResult.success) {
       results.push({
         message: 'new BikeTag posted',

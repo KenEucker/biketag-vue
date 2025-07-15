@@ -161,7 +161,7 @@ async function onApproveSubmit(newTagSubmission) {
 onMounted(async () => {
   await store.isReady()
   await store.fetchQueuedTags(true)
-  await store.fetchCredentials()
+  // await store.fetchCredentials()
 
   /// TODO: do we need to?
   // /// Get the user credentials for BikeTag Ambassador functions

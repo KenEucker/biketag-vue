@@ -28,7 +28,7 @@ function goViewRound() {
   router.push('/round')
 }
 async function submitTag(defaultShareSettings) {
-  await store.fetchCredentials()
+  // await store.fetchCredentials()
   const formAction = submitTagRef.value.getAttribute('action')
   const formData = new FormData(submitTagRef.value)
   const submittedTag = getPlayerTag.value

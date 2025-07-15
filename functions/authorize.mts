@@ -28,6 +28,14 @@ export default async (req: Request) => {
   } = await getPayloadOpts(req)
 
   const selfHost = new URL(`http://${req.headers?.get('host')}`).hostname
+  if (process.env.DEBUG_A) {
+    console.log({
+      clientId,
+      clientAssertion,
+      grantType,
+      selfHost,
+    })
+  }
 
   // Additional strict check: ensure that `Host` header matches `client_id`
   if (selfHost !== clientId) {
@@ -45,6 +53,13 @@ export default async (req: Request) => {
 
   let status = HttpStatusCode.Unauthorized
   let body = 'Missing or invalid payload'
+
+  if (process.env.DEBUG_A) {
+    console.log({
+      assertionCorrect: clientAssertion === expectedAssertion,
+      expectedAssertion,
+    })
+  }
 
   if (clientId && clientAssertion && grantType === 'biketag_origin_assertion') {
     if (clientAssertion === expectedAssertion) {

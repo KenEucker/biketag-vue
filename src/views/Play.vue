@@ -304,9 +304,9 @@ async function onQueueSubmit(newTagSubmission) {
 
 // created
 const created = async () => {
-  await store.isReady()
-  await store.fetchCurrentBikeTag()
-  await store.fetchQueuedTags(true)
+  // await store.isReady()
+  // await store.fetchCurrentBikeTag()
+  // await store.fetchQueuedTags()
 
   if (getProfile.value?.nonce && !getPlayerName.value?.length) {
     toast.open({

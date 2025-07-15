@@ -189,7 +189,7 @@ function onSubmit(e) {
   })
 }
 const setImage = async (event) => {
-  store.fetchCredentials()
+  // store.fetchCredentials()
 
   const input = event.target
   if (input.files) {

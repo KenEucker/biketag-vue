@@ -380,7 +380,7 @@ const updateMarker = (e) => {
 }
 const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
 const setImage = async (event) => {
-  store.fetchCredentials()
+  // store.fetchCredentials()
   const input = event.target
   if (input.files) {
     locationDisabled.value = false

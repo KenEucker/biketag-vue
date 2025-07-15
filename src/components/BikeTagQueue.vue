@@ -134,7 +134,7 @@ function canReset() {
   return getQueuedTagState.value !== BiketagQueueFormSteps.roundPosted
 }
 async function resetToFound() {
-  await store.fetchCredentials()
+  // await store.fetchCredentials()
   return store.dequeueFoundTag().then((dequeueSuccessful) => {
     if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
       /// TODO: this notification needs to be removed before publishing v3.0.0
@@ -147,7 +147,7 @@ async function resetToFound() {
   })
 }
 async function resetToMystery() {
-  await store.fetchCredentials()
+  // await store.fetchCredentials()
   return store.dequeueMysteryTag().then((dequeueSuccessful) => {
     if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
       return emit('dequeue-error', dequeueSuccessful)

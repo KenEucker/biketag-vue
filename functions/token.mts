@@ -3,7 +3,6 @@ import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadAuthorization } from
 import { HttpStatusCode } from './common/constants'
 
 export default async (req: Request) => {
-  console.log('token request')
   const headers = acceptCorsHeaders()
 
   if (req.method === 'OPTIONS') {

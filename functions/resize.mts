@@ -8,7 +8,6 @@ export default async (req: Request) => {
   headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
   let body, status = 200
 
-  console.log({ url, width, format })
   if (!url) {
     status = 400
     body = 'Missing required query params: url'
