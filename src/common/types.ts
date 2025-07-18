@@ -92,7 +92,7 @@ export interface BikeTagStoreState {
   playerTag: Tag
   credentialsFetched: boolean
   mostRecentlyViewedTagnumber: BiketagQueueFormSteps
-  regionPolyon: any
+  regionPolygon: any
   token: string
 }
 

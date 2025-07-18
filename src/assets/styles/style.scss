@@ -329,92 +329,97 @@ body {
     }
 
     header {
+      background-color: #e5e5e5;
       position: fixed;
       width: 100%;
       top: 0;
       left: 0;
       z-index: 999;
-    
+      box-shadow:
+        0 3px 6px rgb(0 0 0 / 16%),
+        0 3px 6px rgb(0 0 0 / 23%);
+      transition: transform 0.5s ease-out;
+
       nav {
         .show {
           height: calc(100vh - 82px);
-    
+
           ul {
             height: inherit;
             overflow: auto;
           }
-    
+
           @media (min-width: $breakpoint-desktop) {
             height: auto;
           }
         }
-    
+
         .profile-icon {
           max-width: 25vw;
           height: auto;
         }
-    
+
         @media (width >= 990px) {
           .profile-icon {
             max-width: 10vh;
           }
         }
-    
+
         .navbar-brand {
           margin: 0;
           margin-left: 1rem;
-    
+
           // font-size: 1rem;
-    
+
           @media (min-width: $breakpoint-desktop) {
             margin: 0 2rem;
           }
-    
-          .logo {
-            max-width: 10rem;
-            height: 3.5rem;
-          }
         }
-    
+
         .navbar-collapse {
           flex-grow: unset;
-    
+
           @media (min-width: $breakpoint-desktop) {
             overflow: auto;
           }
-    
+
           ul > li {
             @media (width >= 992px) {
               margin: 1rem;
             }
           }
         }
-    
+
         .navbar-toggler {
           //   margin-right: 1rem;
           margin: 0.5rem 1rem;
         }
-    
+
+        .logo {
+          max-width: 10rem;
+          height: 3.5rem;
+        }
+
         .hamburger-image {
           width: auto;
           height: 2.5rem;
         }
-    
+
         .game-title {
           color: black;
           font-family: $default-secondary-font-family;
-    
+
           @media (width <= 990px) {
             display: none;
           }
         }
-    
+
         .nav-item {
           font-family: $default-secondary-font-family;
           text-transform: uppercase;
           font-size: 2.5rem;
           cursor: pointer;
-    
+
           @media (width <= 990px) {
             box-shadow:
               0 1px 3px rgb(0 0 0 / 12%),
@@ -424,7 +429,7 @@ body {
             font-size: 1.5rem;
           }
         }
-    
+
         .back-arrow {
           margin-left: 1rem;
           margin-right: 1.5rem;
@@ -592,116 +597,6 @@ body {
   transform: translateY(-100%);
 }
 
-header {
-  background-color: #e5e5e5;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  left: 0;
-  z-index: 999;
-  box-shadow:
-    0 3px 6px rgb(0 0 0 / 16%),
-    0 3px 6px rgb(0 0 0 / 23%);
-  transition: transform 0.5s ease-out;
-
-  nav {
-    .show {
-      height: calc(100vh - 82px);
-
-      ul {
-        height: inherit;
-        overflow: auto;
-      }
-
-      @media (min-width: $breakpoint-desktop) {
-        height: auto;
-      }
-    }
-
-    .profile-icon {
-      max-width: 25vw;
-      height: auto;
-    }
-
-    @media (width >= 990px) {
-      .profile-icon {
-        max-width: 10vh;
-      }
-    }
-
-    .navbar-brand {
-      margin: 0;
-      margin-left: 1rem;
-
-      // font-size: 1rem;
-
-      @media (min-width: $breakpoint-desktop) {
-        margin: 0 2rem;
-      }
-    }
-
-    .navbar-collapse {
-      flex-grow: unset;
-
-      @media (min-width: $breakpoint-desktop) {
-        overflow: auto;
-      }
-
-      ul > li {
-        @media (width >= 992px) {
-          margin: 1rem;
-        }
-      }
-    }
-
-    .navbar-toggler {
-      //   margin-right: 1rem;
-      margin: 0.5rem 1rem;
-    }
-
-    .logo {
-      max-width: 10rem;
-      height: 3.5rem;
-    }
-
-    .hamburger-image {
-      width: auto;
-      height: 2.5rem;
-    }
-
-    .game-title {
-      color: black;
-      font-family: $default-secondary-font-family;
-
-      @media (width <= 990px) {
-        display: none;
-      }
-    }
-
-    .nav-item {
-      font-family: $default-secondary-font-family;
-      text-transform: uppercase;
-      font-size: 2.5rem;
-      cursor: pointer;
-
-      @media (width <= 990px) {
-        box-shadow:
-          0 1px 3px rgb(0 0 0 / 12%),
-          0 1px 2px rgb(0 0 0 / 24%);
-        border-bottom: 1px solid black;
-        padding: 1rem 0;
-        font-size: 1.5rem;
-      }
-    }
-
-    .back-arrow {
-      margin-left: 1rem;
-      margin-right: 1.5rem;
-      cursor: pointer;
-    }
-  }
-}
-
 .navbar {
   padding-bottom: 0 !important;
   padding-top: 0 !important;
@@ -750,8 +645,6 @@ header {
     color: white;
   }
 }
-
-
 
 .navigation {
   width: 5rem;

@@ -89,7 +89,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     token: getTokenFromCookie(),
     mostRecentlyViewedTagnumber: getMostRecentlyViewedBikeTagTagnumber(0),
     credentialsFetched: false,
-    regionPolyon: storedRegionPolygon,
+    regionPolygon: storedRegionPolygon,
   }),
 
   actions: {
@@ -112,7 +112,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     // eslint-disable-next-line no-empty-pattern
     async getRegionPolygon(region: any) {
       try {
-        if (this.regionPolyon) return this.regionPolyon
+        if (this.regionPolygon) return this.regionPolygon
         else if (!region?.description?.length) {
           return
         }
@@ -811,7 +811,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (
         oldState?.foundImageUrl !== data?.foundImageUrl ||
         oldState?.foundImage !== data?.foundImage ||
-        oldState?.foundLocation !== data?.foundImageUrl ||
+        oldState?.foundLocation !== data?.foundLocation ||
         oldState?.foundPlayer !== data?.foundPlayer ||
         oldState?.tagnumber !== data?.tagnumber ||
         /// In case of a reset to this step
@@ -959,9 +959,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     SET_REGION_POLYGON(regionPolygon: any) {
       localStorage.setItem(`${gameName}::regionPolygon`, JSON.stringify(regionPolygon))
-      this.regionPolyon = regionPolygon
+      this.regionPolygon = regionPolygon
 
-      return this.regionPolyon
+      return this.regionPolygon
     },
   },
 

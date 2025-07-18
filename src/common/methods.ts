@@ -263,7 +263,7 @@ export const encodeBikeTagString = (basic: string): string => {
   return CryptoJS.AES.encrypt(basic, BikeTagEnv.B_KEY ?? 'BikeTag').toString()
 }
 
-export const decodeBikeTagString = (encoded: string): string => {
+export const decodeBikeTagString = (encoded: string): any => {
   const decodedString = CryptoJS.AES.decrypt(encoded, BikeTagEnv.B_KEY ?? 'BikeTag')
   return JSON.parse(decodedString.toString(CryptoJS.enc.Utf8))
 }
@@ -432,7 +432,7 @@ export const getSanityImageUrl = (
 }
 
 export const getApiUrl = (path = '') => {
-  if (!window) {
+  if (typeof window === 'undefined') {
     return BikeTagEnv.CONTEXT === 'dev'
       ? `http://localhost:7200/.netlify/functions/${path}`
       : `/api/${path}`
