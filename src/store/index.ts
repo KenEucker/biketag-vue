@@ -368,6 +368,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               this.SET_QUEUED_TAG_STATE(playerQueuedTag)
             } else {
               this.SET_QUEUED_TAG()
+              this.SET_QUEUED_TAG_STATE()
             }
 
             return this.SET_QUEUED_TAGS(currentBikeTagQueue)
@@ -883,10 +884,12 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     SET_QUEUED_TAG(data?: any) {
       const oldState = this.playerTag
-      this.playerTag = BikeTagClient.createTagObject(data ?? {}, data ? {} : this.playerTag)
       // setQueuedTagInCookie(data ? this.queuedTag : undefined)
 
-      if (
+      if (!data) {
+        this.playerTag = {} as Tag
+      }
+      else if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
         oldState?.mysteryImage !== data?.mysteryImage ||
         oldState?.hint !== data?.hint ||
@@ -899,6 +902,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
+        this.playerTag = BikeTagClient.createTagObject(data ?? {}, data ? {} : this.playerTag)
         debug(`${BikeTagDefaults.store}::queuedTag`, this.playerTag)
       }
 

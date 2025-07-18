@@ -823,7 +823,7 @@ export const archiveAndClearQueue = async (
   const results: any = []
   let errors = false
   adminBiketag =
-    adminBiketag ?? new BikeTagClient(getBikeTagClientOpts({ method: 'get' } as any, true, true))
+    adminBiketag ?? new BikeTagClient(getBikeTagClientOpts({ method: 'get' } as Request, true, true))
   if (!game) {
     const gameResponse = await adminBiketag.getGame(
       { game: queuedTags[0].game },
