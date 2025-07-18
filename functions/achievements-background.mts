@@ -5,7 +5,7 @@ import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'
 
 export const assignAchievements = async (): Promise<BackgroundProcessResults> => {
-  if (process.env.SKIP_AUTOPOST_FUNCTION) {
+  if (process.env.SKIP_ACHIEVEMENTS_FUNCTION === "true") {
     return Promise.resolve({
       results: ['function skipped'],
       errors: false,

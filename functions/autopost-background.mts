@@ -9,7 +9,7 @@ import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'
 
 export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> => {
-  if (process.env.SKIP_AUTOPOST_FUNCTION) {
+  if (process.env.SKIP_AUTOPOST_FUNCTION === "true") {
     return Promise.resolve({
       results: ['function skipped'],
       errors: false,
