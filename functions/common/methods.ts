@@ -25,6 +25,7 @@ import {
   isAuthenticationEnabled,
 } from '../../src/common'
 import { BikeTagProfile } from '../../src/common/types'
+import authorize from '../authorize.mts'
 import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue } from './types'
 
@@ -95,8 +96,7 @@ export const getBikeTagClientOpts = (
     // biketag: {
     clientKey: process.env.B_KEY,
     // },
-    aws: {
-    },
+    aws: {},
     imgur: {
       clientId: process.env.I_CID,
       hash: game?.mainhash,
@@ -126,7 +126,7 @@ export const getBikeTagClientOpts = (
     // opts.reddit.password = process.env.R_PASS
 
     /// Enables aws uploads and edits
-    opts.aws = {  
+    opts.aws = {
       accessKeyId: process.env.BE_S3_ACCESS_ID,
       secretAccessKey: process.env.BE_S3_ACCESS_KEY,
     }
@@ -397,9 +397,9 @@ export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTa
 
 export const getProfileAuthorization = async (req: Request): Promise<any> => {
   const authorization = await getPayloadAuthorization(req)
-  let profile: any = authorization
+  let profile: any = authorization?.isValid ? authorization.profile : null
 
-  if (authorization && profile) {
+  if (authorization?.isValid && profile) {
     const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
     const adminBiketag = new BikeTagClient(adminBiketagOpts)
     const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag)) as Ambassador[]
@@ -421,46 +421,48 @@ export const getProfileAuthorization = async (req: Request): Promise<any> => {
   return profile
 }
 
-export const getPayloadAuthorization = async (req: any): Promise<any> => {
+export const getPayloadAuthorization = async (
+  req: any,
+): Promise<{
+  type: 'jwt' | 'basic' | 'client' | 'bearer' | null
+  token?: string
+  isValid: boolean
+  reason?: 'expired' | 'invalid' | null
+  profile?: any
+}> => {
   let authorizationString = req.headers.get('authorization')
   const basic = 'Basic '
   const bearer = 'Bearer '
   const jwt = 'JWT '
   const client = 'Client-ID '
-  let authProfile
+  let authProfile: any = {}
 
-  const authorizationType: string | null =
-    authorizationString?.indexOf(basic) === 0
-      ? 'basic'
-      : authorizationString?.indexOf(client) === 0
-        ? 'client'
-        : authorizationString?.indexOf(bearer) === 0
-          ? 'bearer'
-          : authorizationString?.indexOf(jwt) === 0
-            ? 'jwt'
-            : null
+  const authorizationType: string | null = authorizationString?.startsWith(basic)
+    ? 'basic'
+    : authorizationString?.startsWith(client)
+      ? 'client'
+      : authorizationString?.startsWith(bearer)
+        ? 'bearer'
+        : authorizationString?.startsWith(jwt)
+          ? 'jwt'
+          : null
 
-  const getBasicAuthProfile = (authorizationString: string) => {
-    /// Basic Auth: "Basic [name]::[password]""
-    // console.log('basic', { authorizationString })
-    const namePasscodeString = CryptoJS.AES.decrypt(authorizationString, process.env.HOST_KEY ?? '')
-    const decryptedPasscode = namePasscodeString.toString(CryptoJS.enc.Utf8)
-    if (decryptedPasscode) {
-      const namePasscodeSplit = decryptedPasscode.split('::')
-
-      return {
-        name: namePasscodeSplit[0],
-        passcode: namePasscodeSplit[1],
+  const getBasicAuthProfile = (authStr: string) => {
+    try {
+      const decrypted = CryptoJS.AES.decrypt(authStr, process.env.HOST_KEY ?? '')
+      const decoded = decrypted.toString(CryptoJS.enc.Utf8)
+      if (decoded) {
+        const [name, passcode] = decoded.split('::')
+        return { name, passcode }
       }
+    } catch (e) {
+      // console.error({ authorizationBasicValidationError: e })
     }
-    return {
-      name: null,
-      passcode: null,
-    }
+
+    return { name: null, passcode: null }
   }
 
-  const getNetlifyAuthProfile = async (authorizationString: string) => {
-    // console.log('netlify', { authorizationString })
+  const getNetlifyAuthProfile = async (authStr: string) => {
     try {
       const verifierOpts = { issuer: '', audience: '' }
       const verifier = new JwtVerifier(verifierOpts)
@@ -471,72 +473,111 @@ export const getPayloadAuthorization = async (req: any): Promise<any> => {
     return null
   }
 
-  const getAuth0AuthProfile = async (authorizationString: string) => {
+  const getAuth0AuthProfile = async (authStr: string) => {
     try {
       const JWKS = jose.createRemoteJWKSet(
         new URL(`https://${process.env.A_DOMAIN}/.well-known/jwks.json`),
       )
-
-      const { payload } = await jose.jwtVerify(authorizationString, JWKS)
+      const { payload } = await jose.jwtVerify(authStr, JWKS)
       return payload
-    } catch (e) {
-      /// Swallow error
+    } catch (e: any) {
       if (e.code === 'ERR_JWT_EXPIRED') return null
-
-      return authorizationString
+      return authStr
     }
   }
 
-  const getBikeTAgAuthorization = async (token: string): Promise<{ client_id: string } | null> => {
+  const getBikeTagAuthorization = async (
+    token: string,
+  ): Promise<{
+    isValid: boolean
+    reason: 'expired' | 'invalid' | null
+    profile: { client_id: string; p_id: string } | null
+  }> => {
+    const jwtSecretKey = process.env.HOST_KEY
+      ? crypto.createHash('sha256').update(process.env.HOST_KEY).digest()
+      : null
+
+    if (!jwtSecretKey) {
+      console.error('JWT verification failed: HOST_KEY missing')
+      return { isValid: false, reason: 'invalid', profile: null }
+    }
+
     try {
-      const jwtSecretKey = !process.env.HOST_KEY ? null : crypto.createHash('sha256').update(process.env.HOST_KEY).digest()
-      if (jwtSecretKey) {
-        const { payload } = await jose.jwtVerify(token, jwtSecretKey)
-        return payload as { client_id: string }
-      } else {
-        throw new Error('jwtSecretKey invalid')
+      const { payload } = await jose.jwtVerify(token, jwtSecretKey)
+      return {
+        isValid: true,
+        reason: null,
+        profile: payload as { client_id: string; p_id: string },
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('JWT verification failed:', err)
-      return null
+      const reason = err.code === 'ERR_JWT_EXPIRED' ? 'expired' : 'invalid'
+      return { isValid: false, reason, payload: null }
     }
   }
 
   switch (authorizationType) {
     case 'basic':
       authorizationString = authorizationString.substring(basic.length)
-      authProfile = await getBasicAuthProfile(authorizationString)
+      const basicProfile = await getBasicAuthProfile(authorizationString)
+      authProfile = {
+        type: 'basic',
+        isValid: !!basicProfile.name && !!basicProfile.passcode,
+        profile: basicProfile,
+      }
       break
     case 'netlify':
       authorizationString = authorizationString.substring(client.length)
-      authProfile = await getNetlifyAuthProfile(authorizationString)
+      const netlifyProfile = await getNetlifyAuthProfile(authorizationString)
+      authProfile = {
+        type: 'netlify',
+        isValid: !!netlifyProfile,
+        profile: netlifyProfile,
+      }
       break
     case 'client':
       authorizationString = authorizationString.substring(client.length)
-      authProfile = await getAuth0AuthProfile(authorizationString)
+      const clientProfile = await getAuth0AuthProfile(authorizationString)
+      authProfile = {
+        type: 'client',
+        isValid: !!clientProfile,
+        profile: clientProfile,
+      }
       break
     case 'bearer':
       authorizationString = authorizationString.substring(bearer.length)
-      authProfile = await getAuth0AuthProfile(authorizationString)
+      const bearerProfile = await getAuth0AuthProfile(authorizationString)
+      authProfile = {
+        type: 'bearer',
+        isValid: !!bearerProfile,
+        profile: bearerProfile,
+      }
       break
     case 'jwt':
       authorizationString = authorizationString.substring(jwt.length)
+      const result = await getBikeTagAuthorization(authorizationString)
       authProfile = {
+        type: 'jwt',
         token: authorizationString,
-        valid: await getBikeTAgAuthorization(authorizationString),
+        isValid: result.isValid,
+        reason: result.reason,
+        profile: result.profile,
       }
       break
     default:
-      authProfile = authorizationString?.length ? ErrorMessage.AuthTypeNotSupported : null
+      authProfile = {
+        type: null,
+        isValid: false,
+        reason: 'unsupported',
+        profile: authorizationString?.length ? ErrorMessage.AuthTypeNotSupported : null,
+      }
       break
   }
 
-  /// DEBUG: uncomment to check incoming authorization credentials
   if (process.env.DEBUG_A === 'true') {
     console.log({
-      original: authorizationString,
+      originalAuthorization: req.headers.get('authorization'),
       authorizationType,
-      authorizationString,
       authProfile,
     })
   }
@@ -782,10 +823,7 @@ export const archiveAndClearQueue = async (
   const results: any = []
   let errors = false
   adminBiketag =
-    adminBiketag ??
-    new BikeTagClient(
-      getBikeTagClientOpts({ method: 'get' } as any, true, true),
-    )
+    adminBiketag ?? new BikeTagClient(getBikeTagClientOpts({ method: 'get' } as any, true, true))
   if (!game) {
     const gameResponse = await adminBiketag.getGame(
       { game: queuedTags[0].game },
@@ -1773,13 +1811,15 @@ export const auth0Headers = async () => {
   return {}
 }
 
-export const acceptCorsHeaders = () => ({
-  Accept: '*',
-  'Access-Control-Allow-Headers': '*',
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Methods': '*',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Max-Age': '8640',
+export const acceptCorsHeaders = (
+  accept = '*', allow = '*', contentType = 'application/json', methods = '*', origin = '*', maxAge = '8640'
+) => ({
+  Accept: accept,
+  'Access-Control-Allow-Headers': allow,
+  'Content-Type': contentType,
+  'Access-Control-Allow-Methods': methods,
+  'Access-Control-Allow-Origin': origin,
+  'Access-Control-Max-Age': maxAge,
 })
 
 export const constructAmbassadorProfile = (

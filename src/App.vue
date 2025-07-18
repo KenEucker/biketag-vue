@@ -158,7 +158,7 @@ async function created() {
       const params = { tagnumber }
       await router.push({ name: 'Home', params })
     }
-    await store.FetchAllData({ currentBikeTagSync: true, credentialsSync: true })
+    await store.FetchAllData({ currentBikeTagSync: true })
 
     checkForNewBikeTagPost()
   } else if (!_gameIsSet) {

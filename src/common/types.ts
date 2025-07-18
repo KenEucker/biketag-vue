@@ -79,7 +79,7 @@ export interface BikeTagStoreState {
   allGames: Game[]
   achievements: Achievement[]
   gameSource: string
-  imageSource: 'aws' | 'imgur' | 'sanity'
+  imageSource: 'aws' | 'imgur' | 'sanity' | 'biketag'
   gameName: string
   gameNameProper: string
   currentBikeTag: Tag
@@ -93,6 +93,7 @@ export interface BikeTagStoreState {
   credentialsFetched: boolean
   mostRecentlyViewedTagnumber: BiketagQueueFormSteps
   regionPolyon: any
+  token: string
 }
 
 export enum BiketagQueueFormSteps {

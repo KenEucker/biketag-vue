@@ -41,7 +41,7 @@ export const ordinalSuffixOf = (n: number) => {
 export const getImageSized = (
   imageSourceOrUrl: 'aws' | 'imgur' | 'sanity' | string = '',
   imageUrlOrSize?: string,
-  size: 's' | 'm' | 'l' | 'o' | undefined = 'm'
+  size: 's' | 'm' | 'l' | 'o' | undefined = 'm',
 ): string => {
   const sizeMap: Record<string, 'small' | 'medium' | 'original'> = {
     s: 'small',
@@ -87,14 +87,11 @@ export const getImageSized = (
 
 export const getS3ImageSized = (
   imageUrl: string = '',
-  size: 'small' | 'medium' | 'original' = 'original'
+  size: 'small' | 'medium' | 'original' = 'original',
 ): string => {
   if (!imageUrl || size === 'original') return imageUrl
 
-  return imageUrl.replace(
-    /(_small|_medium)?(\.\w+)$/,
-    `_${size}$2`
-  )
+  return imageUrl.replace(/(_small|_medium)?(\.\w+)$/, `_${size}$2`)
 }
 
 export const getImgurImageSized = (imgurUrl = '', size = 'm') => {
@@ -179,19 +176,27 @@ export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
   }
 }
 
+export const getTokenFromCookie = (tokenCookieKey = 'token'): string => {
+  const { cookies } = useCookies()
+  return cookies.get(tokenCookieKey)
+}
+
+export const setTokenInCookie = (token: string, tokenCookieKey = 'token'): string => {
+  const { cookies } = useCookies()
+  cookies.set(tokenCookieKey, token)
+  return token
+}
+
 export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfile => {
   const { cookies } = useCookies()
   const existingProfileString = cookies.get(profileCookieKey)
 
   if (existingProfileString) {
     try {
-      const existingProfileDecodedString = CryptoJS.AES.decrypt(
-        existingProfileString,
-        /// TODO: this shouldn't be found in the frontend!
-        BikeTagEnv.HOST_KEY ?? 'BikeTag',
-      )
-      const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
-      return existingProfile
+      const existingProfile = decodeBikeTagString(existingProfileString)
+      if (existingProfile) {
+        return existingProfile as unknown as BikeTagProfile
+      }
     } catch (e) {
       /// Swallow anonymous
       console.error('failed to decrypt profile in cookie')
@@ -202,29 +207,6 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
   setProfileCookie(profile)
 
   return profile
-}
-
-export const getQueuedTagFromCookie = (biketagCookieKey = 'biketag'): Tag | undefined => {
-  const { cookies } = useCookies()
-  const existingBikeTag = cookies.get(biketagCookieKey)
-
-  debug('getQueuedTagFromCookie', { existingBikeTag })
-  if (existingBikeTag) {
-    return existingBikeTag as unknown as Tag
-  }
-}
-
-export const setQueuedTagInCookie = (queuedTag?: Tag, biketagCookieKey = 'biketag'): boolean => {
-  const { cookies } = useCookies()
-
-  debug('setQueuedTagInCookie', { queuedTag })
-  if (queuedTag) {
-    cookies.set(biketagCookieKey, JSON.stringify(queuedTag))
-  } else {
-    cookies.remove(biketagCookieKey)
-  }
-
-  return true
 }
 
 export const setProfileCookie = (
@@ -238,7 +220,7 @@ export const setProfileCookie = (
       const encryptedProfileString = CryptoJS.AES.encrypt(
         JSON.stringify(profile),
         /// TODO: this shouldn't be found in the frontend!
-        BikeTagEnv.HOST_KEY ?? 'BikeTag',
+        BikeTagEnv.B_KEY ?? 'BikeTag',
       ).toString()
       cookies.set(profileCookieKey, encryptedProfileString)
     } else {
@@ -252,9 +234,38 @@ export const setProfileCookie = (
   }
 }
 
+export const getQueuedTagFromCookie = (queuedTagCookieKey = 'biketag'): Tag | undefined => {
+  const { cookies } = useCookies()
+  const existingBikeTag = cookies.get(queuedTagCookieKey)
+
+  debug('getQueuedTagFromCookie', { existingBikeTag })
+  if (existingBikeTag) {
+    /// TODO: does this need to be JSON.parse d?
+    return existingBikeTag as unknown as Tag
+  }
+}
+
+export const setQueuedTagInCookie = (queuedTag?: Tag, queuedTagCookieKey = 'biketag'): boolean => {
+  const { cookies } = useCookies()
+
+  debug('setQueuedTagInCookie', { queuedTag })
+  if (queuedTag) {
+    cookies.set(queuedTagCookieKey, JSON.stringify(queuedTag))
+  } else {
+    cookies.remove(queuedTagCookieKey)
+  }
+
+  return true
+}
+
 export const encodeBikeTagString = (basic: string): string => {
   /// TODO: this shouldn't be found in the frontend!
-  return CryptoJS.AES.encrypt(basic, BikeTagEnv.HOST_KEY ?? 'BikeTag').toString()
+  return CryptoJS.AES.encrypt(basic, BikeTagEnv.B_KEY ?? 'BikeTag').toString()
+}
+
+export const decodeBikeTagString = (encoded: string): string => {
+  const decodedString = CryptoJS.AES.decrypt(encoded, BikeTagEnv.B_KEY ?? 'BikeTag')
+  return JSON.parse(decodedString.toString(CryptoJS.enc.Utf8))
 }
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
@@ -358,11 +369,15 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagQueueFormSteps => {
   return queuedTagState
 }
 
-export const getSupportedGames = (games: Game[]) =>
-  games.filter(
+export const getSupportedGames = (games: Game[]) => {
+  const isImgurSupported = (g: Game) => g.mainhash?.length && g.archivehash?.length && g.queuehash?.length
+  const isAwsSupported = (g:Game) => g.awsRegion?.length
+
+  return games.filter(
     (g: Game) =>
-      g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length,
+      (isImgurSupported(g) || isAwsSupported(g))&& g.logo?.length,
   )
+}
 
 export const getSanityImageActualSize = (logo: string) => logo?.split('.')[2]?.split('-')[1]
 

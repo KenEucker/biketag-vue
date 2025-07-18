@@ -24,6 +24,7 @@ export const BikeTagDefaults = {
 
 export const BikeTagEnv = {
   APP_ID: process.env.APP_ID ?? BikeTagDefaults.appId,
+  DEBUG_A: process.env.DEBUG_A === 'true',
   CONTEXT: process.env.CONTEXT ?? null,
   ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? BikeTagDefaults.admingEmail,
   AMBASSADOR_ROLE: process.env.AMBASSADOR_ROLE ?? BikeTagDefaults.sanityAmbassadorRoleID,
@@ -40,7 +41,6 @@ export const BikeTagEnv = {
   GAME_NAME: process.env.GAME_NAME ?? null,
   GAME_SOURCE: process.env.GAME_SOURCE ?? null,
   HOST: process.env.HOST ?? BikeTagDefaults.host,
-  HOST_KEY: process.env.HOST_KEY ?? BikeTagDefaults.hostKey,
   BIKETAG_AUTHED: process.env.BIKETAG_AUTHED ?? null,
   /* Google Configuration */
   G_AKEY:

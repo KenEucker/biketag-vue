@@ -22,14 +22,16 @@ export default async (req: Request) => {
   }
 
   const {
+    p_id: playerId,
     client_id: clientId,
     client_assertion: clientAssertion,
     grant_type: grantType,
   } = await getPayloadOpts(req)
 
   const selfHost = new URL(`http://${req.headers?.get('host')}`).hostname
-  if (process.env.DEBUG_A) {
+  if (process.env.DEBUG_A === 'true') {
     console.log({
+      playerId,
       clientId,
       clientAssertion,
       grantType,
@@ -54,7 +56,7 @@ export default async (req: Request) => {
   let status = HttpStatusCode.Unauthorized
   let body = 'Missing or invalid payload'
 
-  if (process.env.DEBUG_A) {
+  if (process.env.DEBUG_A === 'true') {
     console.log({
       assertionCorrect: clientAssertion === expectedAssertion,
       expectedAssertion,
@@ -66,7 +68,7 @@ export default async (req: Request) => {
       try {
         const jwtKey = getJwtSecretKey()
 
-        const jwt = await new SignJWT({ client_id: clientId })
+        const jwt = await new SignJWT({ client_id: clientId, p_id: playerId })
           .setProtectedHeader({ alg: 'HS256' })
           .setIssuedAt()
           .setExpirationTime('3h')

@@ -1,0 +1,56 @@
+import { BikeTagClient, Game } from 'biketag'
+import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, getProfileAuthorization, HttpStatusCode } from './common'
+
+export default async (req: Request) => {
+  const headers = acceptCorsHeaders()
+  // ✅ Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    /// TODO: check request host
+    return new Response(undefined, {
+      status: HttpStatusCode.Ok,
+      headers,
+    })
+  }
+
+  const player = await getProfileAuthorization(req)
+  const biketagOpts = getBikeTagClientOpts(req, true)
+  const biketag = new BikeTagClient(biketagOpts)
+  const game = (await biketag.game(biketagOpts.game, {
+    source: 'sanity',
+    concise: true,
+  })) as unknown as Game
+  const biketagPayload = await getPayloadOpts(req, {
+    imgur: {
+      hash: game.queuehash,
+    },
+    game: biketagOpts.game,
+    folder: 'queue',
+  })
+
+  if (player.p_id !== biketagPayload.playerId) {
+    return new Response('player not authorized to delete', {
+      status: HttpStatusCode.Unauthorized,
+      headers,
+    })
+  }
+  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  if (imageSource === 'aws') {
+    biketag.config({
+      biketag: {
+        host: process.env.HOST,
+      },
+      aws: {
+        region: game.awsRegion
+      }
+    }, false, true)
+  }
+  const deleteResponse = await biketag.deleteTag(biketagPayload, {
+    source: imageSource,
+  })
+  const { success, data } = deleteResponse
+  
+  return new Response(JSON.stringify(success ? data : deleteResponse), {
+    status: deleteResponse.status,
+    headers,
+  })
+}

@@ -6,65 +6,69 @@ export default async (req: Request) => {
   const headers = acceptCorsHeaders()
 
   if (req.method === 'OPTIONS') {
-     return new Response(undefined, {
+    return new Response(undefined, {
       status: HttpStatusCode.NoContent,
       headers,
     })
   }
 
   const authProfile = await getPayloadAuthorization(req)
+
   let status = HttpStatusCode.Unauthorized
   let body: string = 'Missing or invalid authorization'
 
-  if (authProfile && authProfile.valid && authProfile.token) {
-    const decodedPayload = authProfile.valid // this is your `{ client_id }` payload
-    const clientId = decodedPayload.client_id
-
-    const adminBiketagOpts = getBikeTagClientOpts(
-      req,
-      true,
-      true,
-    )
-    
+  if (!authProfile?.isValid || authProfile?.type !== 'jwt' || !authProfile?.profile) {
+    body = authProfile.reason === 'expired' ? 'Token expired' : 'Unauthorized or invalid token'
+  } else if (authProfile?.isValid && authProfile?.profile) {
+    const { client_id: clientId, p_id: playerId } = authProfile.profile
+    const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
     const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
-
     const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
 
     try {
-      const gameResponse = await nonAdminBiketag.getGame(adminBiketagOpts.game, { source: 'sanity' })
+      const gameResponse = await nonAdminBiketag.getGame(adminBiketagOpts.game, {
+        source: 'sanity',
+      })
       adminBiketagOpts.aws.region = gameResponse.data?.awsRegion
       const adminBiketag = new BikeTagClient(adminBiketagOpts)
 
-      const payload = new URLSearchParams(decodeURIComponent(await req.text() ?? ''))
+      const payload = new URLSearchParams(decodeURIComponent((await req.text()) ?? ''))
       const key = payload.get('key')
-      const game = payload.get('game')
+      const game = payload.get('game')!
+      const p_id = payload.get('p_id')!
       const contentType = payload.get('contentType')
 
       if (key && game && contentType) {
-        const contentKeyMatch = `queue/${adminBiketagOpts.game}-tag`
-        if (!key.startsWith(contentKeyMatch)) {
-          console.warn('[token] Key prefix mismatch', { key, contentKeyMatch })
-          throw new Error('Invalid key prefix')
-        }
+        if (p_id === playerId) {
+          const contentKeyMatch = `queue/${adminBiketagOpts.game}-tag`
+          if (!key.startsWith(contentKeyMatch)) {
+            console.warn('[token] Key prefix mismatch', { key, contentKeyMatch })
+            throw new Error('Invalid key prefix')
+          }
 
-        const signedUrlResponse = await adminBiketag.fetchSignedUrl(
-          {
-            key,
-            bucket: `${game}-biketag`,
-            contentType,
-            game,
-          },
-          {
-            source: 'aws',
-          },
-        )
+          const signedUrlResponse = await adminBiketag.fetchSignedUrl(
+            {
+              key,
+              bucket: `${game}-biketag`,
+              contentType,
+              game,
+              p_id,
+            },
+            {
+              source: 'aws',
+            },
+          )
 
-        if (signedUrlResponse.success) {
-          status = HttpStatusCode.Ok
-          body = signedUrlResponse.data
+          if (signedUrlResponse.success) {
+            status = HttpStatusCode.Ok
+            body = signedUrlResponse.data
+          } else {
+            body = signedUrlResponse.error
+            status = signedUrlResponse.status
+          }
         } else {
-          body = signedUrlResponse.error
-          status = signedUrlResponse.status
+          status = 400
+          body = 'Player id does not match'
         }
       } else {
         status = 400
@@ -78,10 +82,9 @@ export default async (req: Request) => {
   } else {
     console.warn('[token] Unauthorized request', { authProfile })
   }
-  
+
   return new Response(body, {
     headers,
     status,
   })
 }
-
