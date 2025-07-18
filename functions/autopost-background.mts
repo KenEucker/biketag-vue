@@ -54,18 +54,22 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
       }
 
       const thisGameConfig = {
-        game: game.slug,
+        biketag: {
+          game: game.slug,
+        },
+        aws: { region: game.awsRegion },
         imgur: { hash: game.mainhash, queuehash: game.queuehash, archivehash: game.archivehash },
       }
 
-      nonAdminBiketag.config(thisGameConfig)
-      adminBiketag.config(thisGameConfig)
+      nonAdminBiketag.config(thisGameConfig, false, true)
+      adminBiketag.config(thisGameConfig, false, true)
+      const imageSource = game.awsRegion ? 'aws' : 'imgur'
       const activeQueue = await getActiveQueueForGame(game, nonAdminBiketag)
 
       if (activeQueue.completedTags.length && activeQueue.timedOutTags.length === 0) {
         console.log('completed tags found but none timed out', { game, activeQueue })
       } else if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
-        const currentBikeTagResponse = await adminBiketag.getTag(undefined) // the "current" mystery tag to be updated from the main album
+        const currentBikeTagResponse = await adminBiketag.getTag(undefined, { source: imageSource }) // the "current" mystery tag to be updated from the main album
         if (!currentBikeTagResponse.success) {
           results = results.concat([
             'queue for game ' + game.name + ' has completed tags in it',

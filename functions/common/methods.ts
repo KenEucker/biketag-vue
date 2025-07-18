@@ -96,7 +96,9 @@ export const getBikeTagClientOpts = (
     // biketag: {
     clientKey: process.env.B_KEY,
     // },
-    aws: {},
+    aws: {
+      region: game?.awsRegion,
+    },
     imgur: {
       clientId: process.env.I_CID,
       hash: game?.mainhash,
@@ -1630,12 +1632,13 @@ export const setNewBikeTagPost = async (
   winningBikeTagPost: Tag,
   previousBikeTag: Tag,
   adminBiketag?: BikeTagClient,
-  nonAdminBiketag?: BikeTagClient,
+  nonAdminBiketag?: BikeTagClient
 ): Promise<BackgroundProcessResults> => {
   adminBiketag =
     adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
   /// Get the current BikeTag
   previousBikeTag = previousBikeTag ?? ((await adminBiketag.getTag()).data as Tag) // the "current" mystery tag to be updated
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
   let errors = false
   const results: any = []
 
@@ -1653,7 +1656,7 @@ export const setNewBikeTagPost = async (
     previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
     previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     // console.log('updating current BikeTag with the winning tag found information', previousBikeTag)
-    const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag)
+    const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, { source: imageSource })
 
     if (process.env.DEBUG_A === 'true') {
       console.log({ currentBikeTagUpdateResult })
@@ -1675,7 +1678,7 @@ export const setNewBikeTagPost = async (
     }
 
     /************** SET NEW BIKETAG POST FROM QUEUE *****************/
-    const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost)
+    const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost, { source: imageSource })
     if (process.env.DEBUG_A === 'true') {
       console.log({ newBikeTagUpdateResult })
     }
@@ -1713,6 +1716,7 @@ export const setNewBikeTagPost = async (
       const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true)
       nonAdminBikeTagOpts.game = game.name.toLocaleLowerCase()
       nonAdminBikeTagOpts.imgur.hash = game.queuehash
+      nonAdminBikeTagOpts.aws.region = game.awsRegion
       if (!nonAdminBiketag) {
         nonAdminBiketag = new BikeTagClient(nonAdminBikeTagOpts)
       } else {
@@ -1720,7 +1724,7 @@ export const setNewBikeTagPost = async (
       }
       // console.log({ config: nonAdminBikeTag.config() })
 
-      const deleteWinningTagFromQueueResult = await nonAdminBiketag.deleteTag(winningBikeTagPost)
+      const deleteWinningTagFromQueueResult = await nonAdminBiketag.deleteTag(winningBikeTagPost, { source: imageSource })
       if (deleteWinningTagFromQueueResult.success) {
         results.push({
           message: 'winning tag deleted from queue',

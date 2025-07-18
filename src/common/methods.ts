@@ -375,7 +375,7 @@ export const getSupportedGames = (games: Game[]) => {
 
   return games.filter(
     (g: Game) =>
-      (isImgurSupported(g) || isAwsSupported(g))&& g.logo?.length,
+      (isImgurSupported(g) || isAwsSupported(g)) && g.logo?.length,
   )
 }
 
