@@ -24,7 +24,7 @@ export const BikeTagDefaults = {
 
 export const BikeTagEnv = {
   APP_ID: process.env.APP_ID ?? BikeTagDefaults.appId,
-  DEBUG_A: process.env.DEBUG_A === 'true',
+  DEBUG_A: process.env.DEBUG_A,
   CONTEXT: process.env.CONTEXT ?? null,
   ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? BikeTagDefaults.admingEmail,
   AMBASSADOR_ROLE: process.env.AMBASSADOR_ROLE ?? BikeTagDefaults.sanityAmbassadorRoleID,

@@ -89,9 +89,9 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        entryFileNames: `assets/biketag.js`,
-        chunkFileNames: `assets/vendor.js`,
-        assetFileNames: `assets/[name].[ext]`,
+        entryFileNames: `assets/biketag.[hash].js`,
+        chunkFileNames: `assets/vendor.[hash].js`,
+        assetFileNames: `assets/[name].[hash].[ext]`,
       },
     },
   },

@@ -211,7 +211,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
             // TODO: set the default source to something else, now
             const configuredClient = client.config(biketagClientOpts, true, true)
-            if (BikeTagEnv.DEBUG_A) {
+            if (BikeTagEnv.DEBUG_A === 'true') {
               console.log({configuredClient, imageSource: this.imageSource})
             }
 
