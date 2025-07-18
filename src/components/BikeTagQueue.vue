@@ -80,7 +80,7 @@
 
 <script setup name="BikeTagQueue">
 import VLazyImage from 'v-lazy-image'
-import { computed, inject, nextTick } from 'vue'
+import { computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { BiketagQueueFormSteps } from '../common/types'
@@ -164,103 +164,3 @@ function paginationClick(key) {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.queued-tags {
-  &.s {
-    max-height: 30px;
-  }
-
-  &.m {
-    max-height: 40px;
-  }
-
-  &.l {
-    max-height: 60px;
-  }
-}
-
-.navigation {
-  width: 5rem;
-  height: 5rem;
-  margin: 10px;
-  padding: 0;
-  cursor: pointer;
-  border: 0;
-  border-radius: 5rem;
-
-  img {
-    background-color: white;
-    width: 5rem;
-    height: 5rem;
-    border-radius: 5rem;
-  }
-
-  @media (width >= 500px) {
-    width: 8rem;
-    height: 8rem;
-
-    img {
-      width: 8rem;
-      height: 8rem;
-    }
-  }
-}
-
-// .current-mystery,
-// .queued-found,
-// .queued-mystery {
-// }
-
-.bike-pagination-bullet {
-  position: relative;
-
-  span {
-    position: absolute;
-    top: 75%;
-    left: 25%;
-    right: 25%;
-    font-size: 2rem;
-    color: white;
-  }
-
-  img {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 5rem;
-    height: 5rem;
-    margin: 5px;
-    border-radius: 5rem;
-    cursor: pointer;
-  }
-}
-
-.bike-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-
-  /* border: 1px solid red; */
-  color: #000;
-
-  i {
-    margin-right: 20px;
-    font-size: 25px;
-  }
-
-  &.m {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-  }
-
-  &.s {
-    img {
-      width: 3rem;
-      height: 3rem;
-    }
-  }
-}
-</style>

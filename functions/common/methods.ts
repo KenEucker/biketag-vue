@@ -512,7 +512,7 @@ export const getPayloadAuthorization = async (
     } catch (err: any) {
       console.error('JWT verification failed:', err)
       const reason = err.code === 'ERR_JWT_EXPIRED' ? 'expired' : 'invalid'
-      return { isValid: false, reason, payload: null }
+      return { isValid: false, reason, profile: null }
     }
   }
 

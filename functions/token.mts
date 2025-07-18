@@ -32,11 +32,7 @@ export default async (req: Request) => {
       adminBiketagOpts.aws.region = gameResponse.data?.awsRegion
       const adminBiketag = new BikeTagClient(adminBiketagOpts)
 
-      const payload = new URLSearchParams(decodeURIComponent((await req.text()) ?? ''))
-      const key = payload.get('key')
-      const game = payload.get('game')!
-      const p_id = payload.get('p_id')!
-      const contentType = payload.get('contentType')
+      const { key, game, p_id, contentType } = await req.json()
 
       if (key && game && contentType) {
         if (p_id === playerId) {
