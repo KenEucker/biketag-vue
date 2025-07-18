@@ -43,7 +43,7 @@ export default async (req: Request) => {
     let queuedTags
 
     if (gameName) {
-      if (formName !== 'add-found-tag' || formName !== 'add-mystery-tag') {
+      if (formName !== 'add-found-tag' && formName !== 'add-mystery-tag') {
         const nonAdminBiketagOpts = getBikeTagClientOpts(
           req,
           true,

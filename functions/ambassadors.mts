@@ -23,7 +23,7 @@ export default async (req: Request) => {
     },
     game: biketagOpts.game,
   })
-  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
   const ambassadorsResponse = await biketag.getAmbassadors(
     biketagPayload,
     {

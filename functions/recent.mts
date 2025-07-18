@@ -66,7 +66,7 @@ export default async (req: Request) => {
     const recentResponses: any = []
     for (let i = 0; i < featuredGames.length; i++) {
       const game = featuredGames[i]
-      const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+      const imageSource = game.awsRegion ? 'aws' : 'imgur'
       const biketagPayload = await getPayloadOpts(req, {
         hash: game.mainhash,
         game: 'none',
@@ -96,7 +96,7 @@ export default async (req: Request) => {
       game: 'none',
       time: 'day',
     })
-    const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+    const imageSource = game.awsRegion ? 'aws' : 'imgur'
     if (imageSource === 'aws') {
       nonAdminBiketag.config({
         aws: {

@@ -28,7 +28,7 @@ export default async (req: Request) => {
     size: '',
     data: false,
   })
-  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
   const currentTagResponse = await biketag.getTag(biketagPayload, {
     source: imageSource,
   })

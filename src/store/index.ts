@@ -195,7 +195,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       newGameName = newGameName ?? this.gameName
       if (this.game?.name !== newGameName || !this.game?.mainhash) {
         this.fetchingData = false
-        return client.getGame({ game: newGameName }, biketagGameOpts as any).then(async (r) => {
+        return client.getGame({ game: newGameName }, biketagGameOpts).then(async (r) => {
           if (r.success) {
             const game = r.data as Game
 

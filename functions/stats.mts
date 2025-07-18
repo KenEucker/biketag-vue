@@ -25,7 +25,7 @@ export default async (req: Request) => {
     game: biketagOpts.game,
   })
   /// TODO: get stats from sanity source first, then fire off new call to gather stats from imgur and save them into sanity
-  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
   if (imageSource === 'aws') {
     biketag.config(
       {

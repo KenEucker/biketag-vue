@@ -382,7 +382,7 @@ export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTa
       getBikeTagClientOpts(
         {
           method: 'get',
-        } as any,
+        } as Request,
         true,
         true,
       )
@@ -517,7 +517,7 @@ export const getPayloadAuthorization = async (
   }
 
   switch (authorizationType) {
-    case 'basic':
+    case 'basic': {
       authorizationString = authorizationString.substring(basic.length)
       const basicProfile = await getBasicAuthProfile(authorizationString)
       authProfile = {
@@ -526,7 +526,8 @@ export const getPayloadAuthorization = async (
         profile: basicProfile,
       }
       break
-    case 'netlify':
+    }
+    case 'netlify': {
       authorizationString = authorizationString.substring(client.length)
       const netlifyProfile = await getNetlifyAuthProfile(authorizationString)
       authProfile = {
@@ -535,7 +536,8 @@ export const getPayloadAuthorization = async (
         profile: netlifyProfile,
       }
       break
-    case 'client':
+    }
+    case 'client': {
       authorizationString = authorizationString.substring(client.length)
       const clientProfile = await getAuth0AuthProfile(authorizationString)
       authProfile = {
@@ -544,7 +546,8 @@ export const getPayloadAuthorization = async (
         profile: clientProfile,
       }
       break
-    case 'bearer':
+    }
+    case 'bearer': {
       authorizationString = authorizationString.substring(bearer.length)
       const bearerProfile = await getAuth0AuthProfile(authorizationString)
       authProfile = {
@@ -553,18 +556,20 @@ export const getPayloadAuthorization = async (
         profile: bearerProfile,
       }
       break
-    case 'jwt':
+    }
+    case 'jwt': {
       authorizationString = authorizationString.substring(jwt.length)
-      const result = await getBikeTagAuthorization(authorizationString)
+      const biketagAuthProfile = await getBikeTagAuthorization(authorizationString)
       authProfile = {
         type: 'jwt',
         token: authorizationString,
-        isValid: result.isValid,
-        reason: result.reason,
-        profile: result.profile,
+        isValid: biketagAuthProfile.isValid,
+        reason: biketagAuthProfile.reason,
+        profile: biketagAuthProfile.profile,
       }
       break
-    default:
+    }
+    default: {
       authProfile = {
         type: null,
         isValid: false,
@@ -572,6 +577,7 @@ export const getPayloadAuthorization = async (
         profile: authorizationString?.length ? ErrorMessage.AuthTypeNotSupported : null,
       }
       break
+    }
   }
 
   if (process.env.DEBUG_A === 'true') {
@@ -929,7 +935,7 @@ export const getActiveQueueForGame = async (
       : 0
   /// TODO: check for the right ambassador here
   const approvingAmbassadorIsApproved = approvingAmbassador?.length
-  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
 
   console.log({ autoPostSetting, game, imageSource })
   if ((autoPostSetting && game.queuehash?.length) || approvingAmbassadorIsApproved) {
@@ -940,7 +946,7 @@ export const getActiveQueueForGame = async (
         getBikeTagClientOpts(
           {
             method: 'get',
-          } as any,
+          } as Request,
           true,
           true,
           game,
@@ -1306,7 +1312,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
   const link = `${host}/${winningTagnumber}`
   const gameLinkFacet = getStartAndEndBytesOfStringWithinString(heading, game.name)
-  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
   const imageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
 
   try {
@@ -1387,7 +1393,7 @@ export const sendBikeTagPostNotificationToWebhook = (
   const mysteryAltText = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
   const foundAltText = `BikeTag #${currentNumber} found by ${currentTag.foundPlayer}`
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
-  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
   const mysteryImageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
   const foundImageUrl = getImageSized(imageSource, currentTag.foundImageUrl, 'l')
 

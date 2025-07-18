@@ -33,7 +33,7 @@ export default async (req: Request) => {
       headers,
     })
   }
-  const imageSource = !!game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
   if (imageSource === 'aws') {
     biketag.config({
       biketag: {
