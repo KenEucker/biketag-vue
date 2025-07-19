@@ -29,12 +29,12 @@ let log: (message: string, data?: any, level?: 'info' | 'warn' | 'error') => voi
 
 if (process.env.DEBUG_A === 'true') {
   log = (message: string, data?: any, level: 'info' | 'warn' | 'error' = 'info') => {
-    console[level](message, ...(data && { data }))
+    console[level](message, data)
   }
 } else {
   log = (message: string, data?: any, level: 'info' | 'warn' | 'error' = 'info') => {
     if (level === 'warn' || level === 'error') {
-      console[level](message, ...(data && { data }))
+      console[level](message, data)
     }
   }
 }
