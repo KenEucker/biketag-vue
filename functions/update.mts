@@ -29,6 +29,7 @@ export default async (req: Request) => {
       p_id: profile.p_id,
     })
 
+    const updatePayload = await getPayloadOpts(req)
     const biketagOpts = getBikeTagClientOpts(req, true)
     log('[update-tag] Parsed BikeTagClient options', biketagOpts)
 
@@ -47,8 +48,10 @@ export default async (req: Request) => {
     })
     log('[update-tag] Prepared biketag payload', biketagPayload)
 
+    const ambassadorAndValid = profile.isBikeTagAmbassador && profile?.sub && profile.sub === updatePayload.ambassadorId
+    const playerValid = profile.p_id === updatePayload.playerId
     // Authorization check
-    if (!profile.isBikeTagAmbassador && profile.p_id !== biketagPayload.playerId) {
+    if (!(ambassadorAndValid || playerValid)) {
       log(
         '[update-tag] Authorization failure',
         { profilePId: profile.p_id, payloadPlayerId: biketagPayload.playerId },

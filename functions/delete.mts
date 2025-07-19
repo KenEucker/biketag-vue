@@ -24,15 +24,17 @@ export default async (req: Request) => {
   try {
     const profile = await getProfileAuthorization(req)
     log('[delete-tag] Profile authorization', {
-      isValid: profile.isValid,
       p_id: profile.p_id,
       isAmbassador: profile.isBikeTagAmbassador,
     })
+    const deletePayload = await getPayloadOpts(req)
 
     let body
     let status = HttpStatusCode.Unauthorized
-
-    if (profile.isValid) {
+    const ambassadorAndValid = profile.isBikeTagAmbassador && profile?.sub && profile.sub === deletePayload.ambassadorId
+    const playerValid = profile.p_id === deletePayload.playerId
+    
+    if (ambassadorAndValid || playerValid) {
       const biketagOpts = getBikeTagClientOpts(req, true)
       log('[delete-tag] Parsed BikeTagClient options', biketagOpts)
 
