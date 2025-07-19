@@ -31,9 +31,10 @@ export default async (req: Request) => {
 
     let body
     let status = HttpStatusCode.Unauthorized
-    const ambassadorAndValid = profile.isBikeTagAmbassador && profile?.sub && profile.sub === deletePayload.ambassadorId
+    const ambassadorAndValid =
+      profile.isBikeTagAmbassador && profile?.sub && profile.sub === deletePayload.ambassadorId
     const playerValid = profile.p_id === deletePayload.playerId
-    
+
     if (ambassadorAndValid || playerValid) {
       const biketagOpts = getBikeTagClientOpts(req, true)
       log('[delete-tag] Parsed BikeTagClient options', biketagOpts)
@@ -51,13 +52,14 @@ export default async (req: Request) => {
         folder: 'queue',
       })
       log('[delete-tag] Prepared biketag payload', biketagPayload)
+      const playerId = biketagPayload.tag?.playerId ?? biketagPayload.playerId
 
-      if (!profile.isBikeTagAmbassador && profile.p_id !== biketagPayload.playerId) {
+      if (!profile.isBikeTagAmbassador && profile.p_id !== playerId) {
         body = 'player not authorized to delete'
         status = HttpStatusCode.Unauthorized
         log('[delete-tag] Authorization failure', {
           profilePId: profile.p_id,
-          payloadPlayerId: biketagPayload.playerId,
+          payloadPlayerId: playerId,
         })
       } else {
         const imageSource = game.awsRegion ? 'aws' : 'imgur'
@@ -75,7 +77,9 @@ export default async (req: Request) => {
           log('[delete-tag] AWS config applied', { host: process.env.HOST, region: game.awsRegion })
         }
 
-        const deleteResponse = await biketag.deleteTag(biketagPayload, { source: imageSource })
+        const deleteResponse = await biketag.deleteTag(biketagPayload.tag ?? biketagPayload, {
+          source: imageSource,
+        })
         log('[delete-tag] Delete tag response', {
           success: deleteResponse.success,
           status: deleteResponse.status,

@@ -47,14 +47,16 @@ export default async (req: Request) => {
       folder: 'queue',
     })
     log('[update-tag] Prepared biketag payload', biketagPayload)
+    const playerId = biketagPayload.tag?.playerId ?? biketagPayload.playerId
 
-    const ambassadorAndValid = profile.isBikeTagAmbassador && profile?.sub && profile.sub === updatePayload.ambassadorId
-    const playerValid = profile.p_id === updatePayload.playerId
+    const ambassadorAndValid =
+      profile.isBikeTagAmbassador && profile?.sub && profile.sub === updatePayload.ambassadorId
+    const playerValid = profile.p_id === playerId
     // Authorization check
     if (!(ambassadorAndValid || playerValid)) {
       log(
         '[update-tag] Authorization failure',
-        { profilePId: profile.p_id, payloadPlayerId: biketagPayload.playerId },
+        { profilePId: profile.p_id, payloadPlayerId: playerId },
         'warn',
       )
       return new Response('player not authorized to update', {
@@ -78,7 +80,9 @@ export default async (req: Request) => {
       log('[update-tag] AWS config applied', { region: game.awsRegion })
     }
 
-    const updateResponse = await biketag.updateTag(biketagPayload, { source: imageSource })
+    const updateResponse = await biketag.updateTag(biketagPayload.tag ?? biketagPayload, {
+      source: imageSource,
+    })
     log('[update-tag] updateTag response', {
       success: updateResponse.success,
       status: updateResponse.status,
