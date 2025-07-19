@@ -78,10 +78,7 @@ async function onDeleteSubmit() {
   const errorAction = queueError.value.getAttribute('action')
 
   deleteInProgress.value = true
-  const result = await store.deleteCurrentTag({
-    game: getGameName.value,
-    token,
-  })
+  const result = await store.deleteCurrentTag(getCurrentBikeTag.value)
   deleteInProgress.value = false
 
   if (result === true) {
