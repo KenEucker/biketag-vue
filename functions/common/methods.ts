@@ -25,6 +25,27 @@ import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
 
+export const log = (
+  message: string,
+  data?: any,
+  level: 'info' | 'warn' | 'error' = 'info'
+) => {
+  const debug = process.env.DEBUG_A === 'true'
+
+  const shouldLog = (() => {
+    if (!debug) return false
+    if (level === 'error') return true
+    if (level === 'warn') return true
+    if (level === 'info') return true
+    return false
+  })()
+
+  if (shouldLog) {
+    const output = { level, message, ...(data && { data }) }
+    console.log(JSON.stringify(output))
+  }
+}
+
 export const getApiUrl = (game = '', path = ''): string => {
   return process.env.CONTEXT === 'dev'
     ? `http://${game.length ? `${game}.` : ''}${process.env.HOST}:7200/.netlify/functions/${path}`

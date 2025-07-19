@@ -1,40 +1,77 @@
 import { BikeTagClient, Game } from 'biketag'
-import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode } from './common'
+import {
+  acceptCorsHeaders,
+  getBikeTagClientOpts,
+  getPayloadOpts,
+  HttpStatusCode,
+  log,
+} from './common'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
-  // ✅ Handle CORS preflight
+
+  log('[ambassadors] Incoming request', { method: req.method, url: req.url })
+
   if (req.method === 'OPTIONS') {
-    /// TODO: check request host
+    log('[ambassadors] OPTIONS preflight handled')
     return new Response(undefined, {
       status: HttpStatusCode.Ok,
       headers,
     })
   }
-  const biketagOpts = getBikeTagClientOpts(req, true)
-  const biketag = new BikeTagClient(biketagOpts)
-  const game = (await biketag.game(biketagOpts.game, {
-    source: 'sanity',
-    concise: true,
-  })) as unknown as Game
-  const biketagPayload = await getPayloadOpts(req, {
-    imgur: {
-      hash: game.mainhash,
-    },
-    game: biketagOpts.game,
-  })
-  const imageSource = game.awsRegion ? 'aws' : 'imgur'
-  const ambassadorsResponse = await biketag.getAmbassadors(
-    biketagPayload,
-    {
+
+  try {
+    const biketagOpts = getBikeTagClientOpts(req, true)
+    log('[ambassadors] Parsed BikeTagClient options', biketagOpts)
+
+    const biketag = new BikeTagClient(biketagOpts)
+
+    const game = (await biketag.game(biketagOpts.game, {
+      source: 'sanity',
+      concise: true,
+    })) as unknown as Game
+    log('[ambassadors] Retrieved game', {
+      name: game.name,
+      id: game._id,
+      region: game.awsRegion ?? 'imgur',
+    })
+
+    const biketagPayload = await getPayloadOpts(req, {
+      imgur: { hash: game.mainhash },
+      game: biketagOpts.game,
+    })
+    log('[ambassadors] Prepared payload for getAmbassadors', biketagPayload)
+
+    const imageSource = game.awsRegion ? 'aws' : 'imgur'
+    log('[ambassadors] Using image source', { imageSource })
+
+    const ambassadorsResponse = await biketag.getAmbassadors(biketagPayload, {
       source: imageSource,
-    },
-  )
-  const { success, data } = ambassadorsResponse
+    })
+    log('[ambassadors] getAmbassadors response', {
+      success: ambassadorsResponse.success,
+      status: ambassadorsResponse.status,
+      count: Array.isArray(ambassadorsResponse.data) ? ambassadorsResponse.data.length : 0,
+    })
 
-  return new Response(JSON.stringify(success ? data : ambassadorsResponse), {
-    status: ambassadorsResponse.status,
-    headers,
-  })
+    return new Response(
+      JSON.stringify(ambassadorsResponse.success ? ambassadorsResponse.data : ambassadorsResponse),
+      {
+        status: ambassadorsResponse.status,
+        headers,
+      },
+    )
+  } catch (err: any) {
+    log('[ambassadors] Unexpected error', err, 'error')
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: err.message ?? 'Unknown error',
+      }),
+      {
+        status: HttpStatusCode.InternalServerError,
+        headers,
+      },
+    )
+  }
 }
-

@@ -5,14 +5,18 @@ import {
   getBikeTagClientOpts,
   getPayloadOpts,
   getProfileAuthorization,
+  log,
   setNewBikeTagPost,
 } from './common'
 import { ErrorMessage, HttpStatusCode } from './common/constants'
 
 export default async (req: Request) => {
-  /// Bailout on OPTIONS requests
   const headers = acceptCorsHeaders()
+
+  log('[approve-tag] Incoming request', { method: req.method, url: req.url })
+
   if (req.method === 'OPTIONS') {
+    log('[approve-tag] OPTIONS preflight handled')
     return new Response(undefined, {
       status: HttpStatusCode.NoContent,
       headers,
@@ -20,93 +24,137 @@ export default async (req: Request) => {
   }
 
   if (req.method !== 'POST') {
+    log('[approve-tag] Method not allowed', { method: req.method }, 'warn')
     return new Response(ErrorMessage.MethodNotAllowed, {
       headers,
       status: HttpStatusCode.MethodNotAllowed,
     })
   }
 
-  /// Retrieves the authorization and profile data, if present
-  const profile = await getProfileAuthorization(req)
-  const approvePayload = await getPayloadOpts(req)
-  let results: any[] = []
-  let errors: any[] = []
+  try {
+    const profile = await getProfileAuthorization(req)
+    log('[approve-tag] Profile authorization', { profile: profile?.sub ?? 'none' })
 
-  /// We can only provide profile data if the profile already exists (created by Auth0)
-  if (profile?.sub && profile.sub === approvePayload.ambassadorId) {
-    const { playerId, tagnumber } = approvePayload.tag
-    console.log('ambassador approving tag attempted')
+    const approvePayload = await getPayloadOpts(req)
+    log('[approve-tag] Approve payload', approvePayload)
 
-    const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
-    const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
-    const game = (await nonAdminBiketag.game(undefined, { source: 'sanity' })) as Game
+    let results: any[] = []
+    let errors: any[] = []
 
-    if (game) {
-      const currentBikeTag = (await nonAdminBiketag.getTag()).data
-      const adminBiketagOpts = getBikeTagClientOpts(
-        req,
-        true,
-        true,
-        game,
-      )
-      // biketagOpts.cached = true
-      const adminBiketag = new BikeTagClient(adminBiketagOpts)
-      const activeQueue = await getActiveQueueForGame(
-        game,
-        adminBiketag,
-        approvePayload.ambassadorId,
-      )
-      const approvedTagList = activeQueue.completedTags.filter((t) => {
-        return t.tagnumber === tagnumber && t.playerId === playerId
-      })
+    if (profile?.sub && profile.sub === approvePayload.ambassadorId) {
+      log('[approve-tag] Ambassador attempting to approve tag', { name: profile.name })
 
-      if (approvedTagList.length) {
-        const approvedTag = approvedTagList[0]
-        approvedTag.game = approvedTag.game.length ? approvedTag.game : game.name
-        // console.log({ approvedTag, approvedTagList })
+      const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
+      log('[approve-tag] Non-admin BikeTagClient options', nonAdminBiketagOpts)
 
-        const newBikeTagPostedResults = await setNewBikeTagPost(
+      const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
+      const game = (await nonAdminBiketag.game(undefined, { source: 'sanity' })) as Game
+      log('[approve-tag] Retrieved game', { name: game?.name ?? 'none' })
+
+      if (game) {
+        const currentBikeTag = (await nonAdminBiketag.getTag()).data
+        log('[approve-tag] Current bike tag', { tagnumber: currentBikeTag?.tagnumber })
+
+        const adminBiketagOpts = getBikeTagClientOpts(req, true, true, game)
+        const adminBiketag = new BikeTagClient(adminBiketagOpts)
+
+        const activeQueue = await getActiveQueueForGame(
           game,
-          approvedTag,
-          currentBikeTag,
           adminBiketag,
-          nonAdminBiketag,
+          approvePayload.ambassadorId,
         )
-        results.push({
-          message: `Approving BikeTag Ambassador: ${profile.name}`,
-          ambassador: profile.email,
-          tag: approvedTag.tagnumber,
+        log('[approve-tag] Active queue loaded', {
+          completedTags: activeQueue.completedTags.length,
         })
-        results = results.concat(newBikeTagPostedResults.results)
-        errors = errors.concat(newBikeTagPostedResults.errors)
+
+        const approvedTagList = activeQueue.completedTags.filter(
+          (t) =>
+            t.tagnumber === approvePayload.tag.tagnumber &&
+            t.playerId === approvePayload.tag.playerId,
+        )
+
+        if (approvedTagList.length) {
+          const approvedTag = approvedTagList[0]
+          approvedTag.game = approvedTag.game.length ? approvedTag.game : game.name
+          log('[approve-tag] Found tag to approve', {
+            tagnumber: approvedTag.tagnumber,
+            playerId: approvedTag.playerId,
+          })
+
+          const newBikeTagPostedResults = await setNewBikeTagPost(
+            game,
+            approvedTag,
+            currentBikeTag,
+            adminBiketag,
+            nonAdminBiketag,
+          )
+          log('[approve-tag] setNewBikeTagPost results', newBikeTagPostedResults)
+
+          results.push({
+            message: `Approving BikeTag Ambassador: ${profile.name}`,
+            ambassador: profile.email,
+            tag: approvedTag.tagnumber,
+          })
+          results = results.concat(newBikeTagPostedResults.results)
+          errors = errors.concat(newBikeTagPostedResults.errors)
+        } else {
+          log(
+            '[approve-tag] Tag could not be approved',
+            {
+              game: nonAdminBiketagOpts.game,
+              tagnumber: approvePayload.tag.tagnumber,
+              playerId: approvePayload.tag.playerId,
+            },
+            'warn',
+          )
+          errors.push(`tag could not be approved: ${nonAdminBiketagOpts.game}`)
+        }
       } else {
-        errors.push(`tag could not be approved: ${nonAdminBiketagOpts.game}`)
+        log(
+          '[approve-tag] No game found',
+          { game: nonAdminBiketagOpts.game, biketagOpts: nonAdminBiketagOpts },
+          'error',
+        )
+        errors.push(`no game found: ${nonAdminBiketagOpts.game}`)
       }
     } else {
-      console.error(`no game found: ${nonAdminBiketagOpts.game}`, {
-        biketagOpts: nonAdminBiketagOpts,
+      log('[approve-tag] Unauthorized attempt', { profile: profile?.sub ?? 'none' }, 'warn')
+      return new Response("you don't have permission to do that", {
+        headers,
+        status: HttpStatusCode.Unauthorized,
       })
-      errors.push(`no game found: ${nonAdminBiketagOpts.game}`)
     }
-  } else {
-    return new Response("you don't have permission to do that", {
-      headers,
-      status: HttpStatusCode.Unauthorized,
-    })
-  }
 
-  if (results.length) {
-    // console.log({ results })
-    return new Response(JSON.stringify(results), {
-      headers,
-      status: errors[0] ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted,
+    const responsePayload = results.length ? results : errors
+    const responseStatus = results.length
+      ? errors[0]
+        ? HttpStatusCode.BadRequest
+        : HttpStatusCode.Accepted
+      : errors.length
+        ? HttpStatusCode.BadRequest
+        : HttpStatusCode.Ok
+
+    log('[approve-tag] Response summary', {
+      status: responseStatus,
+      resultsCount: results.length,
+      errorsCount: errors.length,
     })
-  } else {
-    // console.log({ results, errors })
-    return new Response(JSON.stringify(errors), {
+
+    return new Response(JSON.stringify(responsePayload), {
       headers,
-      status: errors.length ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+      status: responseStatus,
     })
+  } catch (err) {
+    log('[approve-tag] Unhandled error', err, 'error')
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: err.message ?? 'Unknown error',
+      }),
+      {
+        status: HttpStatusCode.InternalServerError,
+        headers,
+      },
+    )
   }
 }
-

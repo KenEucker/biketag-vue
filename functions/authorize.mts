@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { SignJWT } from 'jose'
-import { acceptCorsHeaders, getPayloadOpts, HttpStatusCode } from './common'
+import { acceptCorsHeaders, getPayloadOpts, HttpStatusCode, log } from './common'
 
 const getJwtSecretKey = () =>
   crypto
@@ -16,86 +16,97 @@ const stripFirstSubdomain = (host: string) => {
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
 
+  log('[token] Incoming request', { method: req.method, url: req.url })
+
   if (req.method === 'OPTIONS') {
+    log('[token] OPTIONS preflight handled')
     return new Response(undefined, {
       status: HttpStatusCode.Ok,
       headers,
     })
   }
 
-  const {
-    p_id: playerId,
-    client_id: clientId,
-    client_assertion: clientAssertion,
-    grant_type: grantType,
-  } = await getPayloadOpts(req)
+  try {
+    const {
+      p_id: playerId,
+      client_id: clientId,
+      client_assertion: clientAssertion,
+      grant_type: grantType,
+    } = await getPayloadOpts(req)
 
-  const selfHostRaw = req.headers?.get('host') ?? ''
-  const selfHost = stripFirstSubdomain(
-    new URL(`http://${selfHostRaw}`).hostname
-  )
+    const selfHostRaw = req.headers?.get('host') ?? ''
+    const selfHost = stripFirstSubdomain(new URL(`http://${selfHostRaw}`).hostname)
 
-  if (process.env.DEBUG_A === 'true') {
-    console.log({
+    log('[token] Parsed payload', {
       playerId,
       clientId,
-      clientAssertion,
       grantType,
       selfHostRaw,
       selfHost,
     })
-  }
 
-  // Updated strict check: normalize selfHost and clientId before comparison
-  if (selfHost !== clientId) {
-    console.log('[token] host mismatch', { clientId, selfHost })
-    return new Response('Host mismatch', {
-      headers,
-      status: HttpStatusCode.Unauthorized,
+    if (selfHost !== clientId) {
+      log('[token] Host mismatch', { selfHost, clientId }, 'warn')
+      return new Response('Host mismatch', {
+        headers,
+        status: HttpStatusCode.Unauthorized,
+      })
+    }
+
+    const expectedAssertion = crypto
+      .createHash('sha256')
+      .update(`${clientId}${process.env.HOST_KEY || ''}`)
+      .digest('hex')
+
+    log('[token] Assertion check', {
+      assertionMatch: clientAssertion === expectedAssertion,
     })
-  }
 
-  const expectedAssertion = crypto
-    .createHash('sha256')
-    .update(`${clientId}${process.env.HOST_KEY || ''}`)
-    .digest('hex')
+    if (clientId && clientAssertion && grantType === 'biketag_origin_assertion') {
+      if (clientAssertion === expectedAssertion) {
+        log('[token] Valid client assertion', { clientId })
 
-  let status = HttpStatusCode.Unauthorized
-  let body = 'Missing or invalid payload'
+        try {
+          const jwtKey = getJwtSecretKey()
 
-  if (process.env.DEBUG_A === 'true') {
-    console.log({
-      assertionCorrect: clientAssertion === expectedAssertion,
-      expectedAssertion,
-    })
-  }
+          const jwt = await new SignJWT({ client_id: clientId, p_id: playerId })
+            .setProtectedHeader({ alg: 'HS256' })
+            .setIssuedAt()
+            .setExpirationTime('3h')
+            .sign(jwtKey)
 
-  if (clientId && clientAssertion && grantType === 'biketag_origin_assertion') {
-    if (clientAssertion === expectedAssertion) {
-      try {
-        const jwtKey = getJwtSecretKey()
+          log('[token] JWT issued', { clientId, playerId })
 
-        const jwt = await new SignJWT({ client_id: clientId, p_id: playerId })
-          .setProtectedHeader({ alg: 'HS256' })
-          .setIssuedAt()
-          .setExpirationTime('3h')
-          .sign(jwtKey)
-
-        status = HttpStatusCode.Ok
-        body = jwt
-      } catch (err) {
-        status = HttpStatusCode.InternalServerError
-        body = 'Error generating token'
+          return new Response(jwt, {
+            headers,
+            status: HttpStatusCode.Ok,
+          })
+        } catch (err) {
+          log('[token] Error generating JWT', err, 'error')
+          return new Response('Error generating token', {
+            headers,
+            status: HttpStatusCode.InternalServerError,
+          })
+        }
+      } else {
+        log('[token] Invalid client assertion', { clientId }, 'warn')
+        return new Response('Invalid client assertion', {
+          headers,
+          status: HttpStatusCode.Unauthorized,
+        })
       }
     } else {
-      body = 'Invalid client assertion'
+      log('[token] Invalid request payload or grant_type', { clientId, grantType }, 'warn')
+      return new Response('Invalid request payload or grant_type', {
+        headers,
+        status: HttpStatusCode.Unauthorized,
+      })
     }
-  } else {
-    body = 'Invalid request payload or grant_type'
+  } catch (err) {
+    log('[token] Unexpected error', err, 'error')
+    return new Response('Internal server error', {
+      headers,
+      status: HttpStatusCode.InternalServerError,
+    })
   }
-
-  return new Response(body, {
-    headers,
-    status,
-  })
 }

@@ -1,68 +1,99 @@
 import { BikeTagClient, Game } from 'biketag'
 import {
-    acceptCorsHeaders,
-    getBikeTagClientOpts,
-    getPayloadOpts,
-    getProfileAuthorization,
-    HttpStatusCode,
+  acceptCorsHeaders,
+  getBikeTagClientOpts,
+  getPayloadOpts,
+  getProfileAuthorization,
+  HttpStatusCode,
+  log,
 } from './common'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
 
+  log('[update-tag] Incoming request', { method: req.method, url: req.url })
+
   if (req.method === 'OPTIONS') {
+    log('[update-tag] OPTIONS preflight handled')
     return new Response(undefined, {
       status: HttpStatusCode.Ok,
       headers,
     })
   }
 
-  const profile = await getProfileAuthorization(req)
-  const biketagOpts = getBikeTagClientOpts(req, true)
-  const biketag = new BikeTagClient(biketagOpts)
+  try {
+    const profile = await getProfileAuthorization(req)
+    log('[update-tag] Profile authorization', {
+      isValid: profile.isValid,
+      isAmbassador: profile.isBikeTagAmbassador,
+      p_id: profile.p_id,
+    })
 
-  const game = (await biketag.game(biketagOpts.game, {
-    source: 'sanity',
-    concise: true,
-  })) as unknown as Game
+    const biketagOpts = getBikeTagClientOpts(req, true)
+    log('[update-tag] Parsed BikeTagClient options', biketagOpts)
 
-  const biketagPayload = await getPayloadOpts(req, {
-    imgur: {
-      hash: game.queuehash,
-    },
-    game: biketagOpts.game,
-    folder: 'queue',
-  })
+    const biketag = new BikeTagClient(biketagOpts)
 
-  // ✅ Authorization check
-  if (!profile.isBikeTagAmbassador && profile.p_id !== biketagPayload.playerId) {
-    return new Response('player not authorized to update', {
-      status: HttpStatusCode.Unauthorized,
+    const game = (await biketag.game(biketagOpts.game, {
+      source: 'sanity',
+      concise: true,
+    })) as unknown as Game
+    log('[update-tag] Retrieved game', { name: game.name, awsRegion: game.awsRegion })
+
+    const biketagPayload = await getPayloadOpts(req, {
+      imgur: { hash: game.queuehash },
+      game: biketagOpts.game,
+      folder: 'queue',
+    })
+    log('[update-tag] Prepared biketag payload', biketagPayload)
+
+    // Authorization check
+    if (!profile.isBikeTagAmbassador && profile.p_id !== biketagPayload.playerId) {
+      log(
+        '[update-tag] Authorization failure',
+        { profilePId: profile.p_id, payloadPlayerId: biketagPayload.playerId },
+        'warn',
+      )
+      return new Response('player not authorized to update', {
+        status: HttpStatusCode.Unauthorized,
+        headers,
+      })
+    }
+
+    const imageSource = game.awsRegion ? 'aws' : 'imgur'
+    log('[update-tag] Using image source', { imageSource })
+
+    if (imageSource === 'aws') {
+      biketag.config(
+        {
+          biketag: { host: process.env.HOST },
+          aws: { region: game.awsRegion },
+        },
+        false,
+        true,
+      )
+      log('[update-tag] AWS config applied', { region: game.awsRegion })
+    }
+
+    const updateResponse = await biketag.updateTag(biketagPayload, { source: imageSource })
+    log('[update-tag] updateTag response', {
+      success: updateResponse.success,
+      status: updateResponse.status,
+      biketagPayload,
+      response: updateResponse,
+    })
+
+    const { success, data } = updateResponse
+
+    return new Response(JSON.stringify(success ? data : updateResponse), {
+      status: updateResponse.status,
+      headers,
+    })
+  } catch (err) {
+    log('[update-tag] Unexpected error', err, 'error')
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: HttpStatusCode.InternalServerError,
       headers,
     })
   }
-
-  // ✅ Determine image source
-  const imageSource = game.awsRegion ? 'aws' : 'imgur'
-  if (imageSource === 'aws') {
-    biketag.config({
-      biketag: {
-        host: process.env.HOST,
-      },
-      aws: {
-        region: game.awsRegion,
-      },
-    }, false, true)
-  }
-
-  const updateResponse = await biketag.updateTag(biketagPayload, {
-    source: imageSource,
-  })
-  const { success, data } = updateResponse
-  console.log({biketagPayload, updateResponse})
-
-  return new Response(JSON.stringify(success ? data : updateResponse), {
-    status: updateResponse.status,
-    headers,
-  })
 }

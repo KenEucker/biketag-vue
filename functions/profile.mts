@@ -4,89 +4,107 @@ import {
   getBikeTagPlayerProfile,
   getProfileAuthorization,
   handleAuth0ProfileRequest,
+  log,
 } from './common'
 import { ErrorMessage, HttpStatusCode } from './common/constants'
 
 export default async (req: Request) => {
-  /// Bailout on OPTIONS requests
   const headers = acceptCorsHeaders()
+
+  log('[profile] Incoming request', { method: req.method, url: req.url })
+
   if (req.method === 'OPTIONS') {
+    log('[profile] OPTIONS preflight handled')
     return new Response(undefined, {
       status: HttpStatusCode.NoContent,
       headers,
     })
   }
-  /// If all else fails
+
   let body: any = ErrorMessage.MissingAuthHeader
   let status: number = HttpStatusCode.Unauthorized
 
-  /// Retrieves the authorization and profile data, if present
-  const profile = await getProfileAuthorization(req)
+  try {
+    const profile = await getProfileAuthorization(req)
+    log('[profile] Profile authorization', { profile })
 
-  const mergeProfilesIfSuccess =
-    (authorized = true) =>
-    async (results) => {
-      status = results.statusCode ?? results.status
-      const data = results.data ?? results.body
-      body = data
+    const mergeProfilesIfSuccess =
+      (authorized = true) =>
+      async (results) => {
+        status = results.statusCode ?? results.status
+        const data = results.data ?? results.body
+        body = data
 
-      if (status === HttpStatusCode.Ok) {
-        const dataIsArray = Array.isArray(data)
-        const dataIsString = typeof data === 'string'
-        const success = dataIsArray ? data?.length : !!data
-        const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
+        log('[profile] mergeProfilesIfSuccess result', { status, data })
 
-        // console.log({ profileFound })
-        if (profileFound) {
-          body = await getBikeTagPlayerProfile(profileFound, authorized, true)
-        } else {
-          body = ErrorMessage.ProfileNotFound
-          status = HttpStatusCode.NotFound
+        if (status === HttpStatusCode.Ok) {
+          const dataIsArray = Array.isArray(data)
+          const dataIsString = typeof data === 'string'
+          const success = dataIsArray ? data?.length : !!data
+          const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
+
+          if (profileFound) {
+            body = await getBikeTagPlayerProfile(profileFound, authorized, true)
+            log('[profile] Merged profile successfully', { profile: body })
+          } else {
+            body = ErrorMessage.ProfileNotFound
+            status = HttpStatusCode.NotFound
+            log('[profile] Profile not found after mergeProfilesIfSuccess')
+          }
         }
+      }
+
+    if (profile?.sub?.length) {
+      log('[profile] Auth0 profile found', { sub: profile.sub })
+      await handleAuth0ProfileRequest(req, profile)
+        .then(mergeProfilesIfSuccess())
+        .catch((error) => {
+          status = HttpStatusCode.InternalServerError
+          body = error.message
+          log('[profile] Error in handleAuth0ProfileRequest', { error }, 'error')
+        })
+    } else if (req.method === 'GET' && profile?.name) {
+      log('[profile] Profile.name fallback path', { name: profile.name })
+      await getBikeTagAuth0Profile(profile.name, true, profile.passcode)
+        .then(mergeProfilesIfSuccess())
+        .catch((error) => {
+          status = HttpStatusCode.InternalServerError
+          body = error.message
+          log('[profile] Error in getBikeTagAuth0Profile', { error }, 'error')
+        })
+    } else if (req.method === 'GET' && !profile) {
+      const queryStringParameters = new URL(req.url).searchParams
+      const playerName = queryStringParameters?.get('name')
+      log('[profile] Public profile lookup path', { playerName })
+
+      if (playerName) {
+        await getBikeTagPlayerProfile({ name: playerName }, true, true)
+          .then((resultProfile) => {
+            if (resultProfile) {
+              status = HttpStatusCode.Ok
+              body = resultProfile
+              log('[profile] Public profile found', { profile: resultProfile })
+            }
+          })
+          .catch((error) => {
+            status = HttpStatusCode.InternalServerError
+            body = error.message
+            log('[profile] Error in getBikeTagPlayerProfile (public)', { error }, 'error')
+          })
+      } else {
+        body = ErrorMessage.InvalidRequestData
+        status = HttpStatusCode.BadRequest
+        log('[profile] Missing player name query parameter')
       }
     }
 
-  /// We can only provide profile data if the profile already exists (created by Auth0)
-  if (profile?.sub?.length) {
-    /// If the profile sub (Auth0 field) exists (Authorized)
-    await handleAuth0ProfileRequest(req, profile)
-      .then(mergeProfilesIfSuccess())
-      .catch(function (error) {
-        status = HttpStatusCode.InternalServerError
-        body = error.message
-      })
-  } else if (req.method === 'GET' && profile?.name) {
-    /// Else if the profile name is known and passed in via data and Authorized
-    /// TODO: make this more secure
-    await getBikeTagAuth0Profile(profile.name, true, profile.passcode)
-      .then(mergeProfilesIfSuccess())
-      .catch(function (error) {
-        status = HttpStatusCode.InternalServerError
-        body = error.message
-      })
-  } else if (req.method === 'GET' && !profile) {
-    /// Else get the public player profile by name via query string (Unauthorized)
-    const queryStringParameters = new URL(req.url).searchParams
-    if (queryStringParameters?.get('name')) {
-      await getBikeTagPlayerProfile({ name: queryStringParameters.get('name') }, true, true)
-        .then((profile) => {
-          if (profile) {
-            status = HttpStatusCode.Ok
-            body = profile
-          }
-        })
-        .catch(function (error) {
-          status = HttpStatusCode.InternalServerError
-          body = error.message
-        })
-    } else {
-      body = ErrorMessage.InvalidRequestData
-      status = HttpStatusCode.BadRequest
+    if (status !== HttpStatusCode.Ok) {
+      log('[profile] Profile not retrieved', { status, body }, 'warn')
     }
-  }
-
-  if (status !== HttpStatusCode.Ok) {
-    console.log(status + ' ' + ErrorMessage.ProfileNotRetrieved, body)
+  } catch (err) {
+    log('[profile] Unexpected error', err, 'error')
+    status = HttpStatusCode.InternalServerError
+    body = 'Internal server error'
   }
 
   return new Response(body, {
