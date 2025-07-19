@@ -44,13 +44,21 @@
               @click="goProfile"
             />
           </li>
-          <li
+          <!-- <li
             v-if="isBikeTagAmbassador && getQueuedTags?.length"
             class="nav-item"
             :class="{ 'active-nav': currentRoute === 'Approve' }"
             @click="goApprovePage"
           >
             {{ $t('menu.queue') }}
+          </li> -->
+          <li
+            v-if="isBikeTagAmbassador"
+            class="nav-item"
+            :class="{ 'active-nav': currentRoute === 'Dashboard' }"
+            @click="goDashboardPage"
+          >
+            {{ $t('menu.dashboard') }}
           </li>
           <template v-if="isAuthenticated">
             <li class="nav-item" @click="logoutClick">
@@ -248,6 +256,10 @@ function goWorldwide() {
 function goApprovePage() {
   closeCollapsible()
   router.push('/approve')
+}
+function goDashboardPage() {
+  closeCollapsible()
+  router.push('/dashboard')
 }
 function goBikeTagsPage() {
   closeCollapsible()
