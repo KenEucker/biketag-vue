@@ -107,6 +107,8 @@ onMounted(async () => {
         }
       }
     )
+
+    await store.setProfile(undefined, await auth0.getAccessTokenSilently())
   }
 })
 

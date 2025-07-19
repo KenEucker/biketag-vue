@@ -163,7 +163,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async setProfile(profile: any, token?: string) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {
-        this.auth0Token = token ?? profile.token ?? ''
+        this.auth0Token = this.auth0Token ?? token ?? profile.token ?? ''
         profile.token = undefined
 
         const response = await client
@@ -188,6 +188,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         } else if (response.status === 400) {
           return { error: response.data.error }
         }
+      } else if (token?.length) {
+        this.auth0Token = token
       }
 
       return this.SET_PROFILE(profile)

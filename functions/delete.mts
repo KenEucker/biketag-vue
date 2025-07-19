@@ -1,5 +1,11 @@
 import { BikeTagClient, Game } from 'biketag'
-import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, getProfileAuthorization, HttpStatusCode } from './common'
+import {
+  acceptCorsHeaders,
+  getBikeTagClientOpts,
+  getPayloadOpts,
+  getProfileAuthorization,
+  HttpStatusCode,
+} from './common'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -13,44 +19,54 @@ export default async (req: Request) => {
   }
 
   const profile = await getProfileAuthorization(req)
-  const biketagOpts = getBikeTagClientOpts(req, true)
-  const biketag = new BikeTagClient(biketagOpts)
-  const game = (await biketag.game(biketagOpts.game, {
-    source: 'sanity',
-    concise: true,
-  })) as unknown as Game
-  const biketagPayload = await getPayloadOpts(req, {
-    imgur: {
-      hash: game.queuehash,
-    },
-    game: biketagOpts.game,
-    folder: 'queue',
-  })
+  let body,
+    status = HttpStatusCode.Unauthorized
 
-  if (!profile.isBikeTagAmbassador && profile.p_id !== biketagPayload.playerId) {
-    return new Response('player not authorized to delete', {
-      status: HttpStatusCode.Unauthorized,
-      headers,
-    })
-  }
-  const imageSource = game.awsRegion ? 'aws' : 'imgur'
-  if (imageSource === 'aws') {
-    biketag.config({
-      biketag: {
-        host: process.env.HOST,
+  if (profile.isValid) {
+    const biketagOpts = getBikeTagClientOpts(req, true)
+    const biketag = new BikeTagClient(biketagOpts)
+    const game = (await biketag.game(biketagOpts.game, {
+      source: 'sanity',
+      concise: true,
+    })) as unknown as Game
+    const biketagPayload = await getPayloadOpts(req, {
+      imgur: {
+        hash: game.queuehash,
       },
-      aws: {
-        region: game.awsRegion
+      game: biketagOpts.game,
+      folder: 'queue',
+    })
+
+    if (!profile.isBikeTagAmbassador && profile.p_id !== biketagPayload.playerId) {
+      body = 'player not authorized to delete'
+      status = HttpStatusCode.Unauthorized
+    } else {
+      const imageSource = game.awsRegion ? 'aws' : 'imgur'
+      if (imageSource === 'aws') {
+        biketag.config(
+          {
+            biketag: {
+              host: process.env.HOST,
+            },
+            aws: {
+              region: game.awsRegion,
+            },
+          },
+          false,
+          true,
+        )
       }
-    }, false, true)
+      const deleteResponse = await biketag.deleteTag(biketagPayload, {
+        source: imageSource,
+      })
+      const { success, data } = deleteResponse
+      body = success ? data : deleteResponse
+      status = deleteResponse.status
+    }
   }
-  const deleteResponse = await biketag.deleteTag(biketagPayload, {
-    source: imageSource,
-  })
-  const { success, data } = deleteResponse
-  
-  return new Response(JSON.stringify(success ? data : deleteResponse), {
-    status: deleteResponse.status,
+
+  return new Response(JSON.stringify(body), {
+    status,
     headers,
   })
 }
