@@ -46,35 +46,25 @@ export default async (req: Request) => {
       })) as unknown as Game
       log('[delete-tag] Retrieved game', { name: game.name, awsRegion: game.awsRegion })
 
-      deletePayload.imgur = {...deletePayload.imgur, ...{ hash: game.queuehash }}
+      deletePayload.imgur = { ...deletePayload.imgur, ...{ hash: game.queuehash } }
       deletePayload.game = deletePayload.game ?? biketagOpts.game
       deletePayload.folder = deletePayload.folder ?? 'queue'
 
       log('[delete-tag] Prepared biketag payload', deletePayload)
-      const playerId = deletePayload.tag?.playerId ?? deletePayload.playerId
 
-      if (!profile.isBikeTagAmbassador && profile.p_id !== playerId) {
-        body = 'player not authorized to delete'
-        status = HttpStatusCode.Unauthorized
-        log('[delete-tag] Authorization failure', {
-          profilePId: profile.p_id,
-          payloadPlayerId: playerId,
-        })
-      } else {
-        const imageSource = game.awsRegion ? 'aws' : 'imgur'
-        log('[delete-tag] Using image source', { imageSource })
+      const imageSource = game.awsRegion ? 'aws' : 'imgur'
+      log('[delete-tag] Using image source', { imageSource })
 
-        if (imageSource === 'aws') {
-          biketag.config(
-            {
-              biketag: { host: process.env.HOST },
-              aws: { region: game.awsRegion },
-            },
-            false,
-            true,
-          )
-          log('[delete-tag] AWS config applied', { host: process.env.HOST, region: game.awsRegion })
-        }
+      if (imageSource === 'aws') {
+        biketag.config(
+          {
+            biketag: { host: process.env.HOST },
+            aws: { region: game.awsRegion },
+          },
+          false,
+          true,
+        )
+        log('[delete-tag] AWS config applied', { host: process.env.HOST, region: game.awsRegion })
 
         const deleteResponse = await biketag.deleteTag(deletePayload.tag ?? deletePayload, {
           source: imageSource,
