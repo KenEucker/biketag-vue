@@ -3,15 +3,15 @@
     <h3 class="delete-title">{{ $t('pages.delete.title') }}</h3>
 
     <p class="delete-text">
-      Deleting this tag will remove {{ latestTag.foundPlayer }}'s submission for tag
-      #{{ latestTag.tagnumber - 1 }} and the latest mystery location.
+      Deleting this tag will remove {{ getCurrentBikeTag.foundPlayer }}'s submission for tag
+      #{{ getCurrentBikeTag.tagnumber - 1 }} and the latest mystery location.
       The mystery location will go back to {{ previousTag.foundPlayer }}'s tag.
     </p>
 
     <div class="bike-tag-container">
       <bike-tag
-        v-if="latestTag"
-        :tag="latestTag"
+        v-if="getCurrentBikeTag"
+        :tag="getCurrentBikeTag"
         :reverse="true"
         size="l"
         :show-posted-date="true"
@@ -74,7 +74,7 @@ function deleteTagFunction() {
   emit('submit', {
     formAction,
     formData,
-    tag: latestTag.value,
+    tag: getCurrentBikeTag.value,
     storeAction: 'deleteCurrentTag',
   })
 }
