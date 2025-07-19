@@ -66,7 +66,7 @@ onMounted(async () => {
 
   if (isLogout.value) {
     if (auth0?.isAuthenticated.value) {
-      await store.setProfile() // Clear profile in store
+      await store.setProfile()
       const returnTo = `${window.location.origin}/logout`
       await auth0.logout({ returnTo })
     }
@@ -98,7 +98,6 @@ onMounted(async () => {
       { immediate: true }
     )
 
-    // Optional: additional watcher if idTokenClaims changes after auth
     watch(
       () => auth0.idTokenClaims.value,
       async () => {
@@ -108,9 +107,16 @@ onMounted(async () => {
       }
     )
 
-    await store.setProfile(undefined, await auth0.getAccessTokenSilently())
+    // 🔔 Safe startup call:
+    if (!auth0.isLoading.value && auth0.isAuthenticated.value) {
+      try {
+        const token = await auth0.getAccessTokenSilently()
+        await store.setProfile(undefined, token)
+      } catch (e) {}
+    }
   }
 })
+
 
 // methods
 function checkForNewBikeTagPost() {
