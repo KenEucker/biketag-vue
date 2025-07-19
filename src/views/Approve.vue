@@ -37,12 +37,11 @@
   </div>
 </template>
 
-<script setup name="ApproveBikeTagView">
+<script setup name="ApproveView">
 import { useBikeTagStore } from '@/store/index'
 import { computed, inject, onMounted, ref } from 'vue'
 // import { useTimer } from 'vue-timer-hook'
 import { sendNetlifyError, sendNetlifyForm } from '@/common'
-import { useAuth0 } from '@auth0/auth0-vue'
 import { useRouter } from 'vue-router'
 
 // components

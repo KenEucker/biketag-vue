@@ -94,6 +94,7 @@ export interface BikeTagStoreState {
   mostRecentlyViewedTagnumber: BiketagQueueFormSteps
   regionPolygon: any
   token: string
+  auth0Token: string
 }
 
 export enum BiketagQueueFormSteps {

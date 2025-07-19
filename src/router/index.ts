@@ -2,6 +2,7 @@ import About from '@/views/About.vue'
 import Approve from '@/views/Approve.vue'
 import BikeTags from '@/views/BikeTags.vue'
 import Delete from '@/views/Delete.vue'
+import Edit from '@/views/Edit.vue'
 import Home from '@/views/Home.vue'
 import HowToPlay from '@/views/HowToPlay.vue'
 import Landing from '@/views/Landing.vue'
@@ -128,6 +129,12 @@ if (isAuthenticationEnabled()) {
       name: 'Delete',
       beforeEnter: authGuard,
       component: Delete,
+    },
+    {
+      path: '/edit',
+      name: 'Edit',
+      beforeEnter: authGuard,
+      component: Edit,
     },
   ]
 }

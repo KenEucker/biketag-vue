@@ -75,7 +75,7 @@ function deleteTagFunction() {
     formAction,
     formData,
     tag: latestTag.value,
-    storeAction: 'deleteLatestTag',
+    storeAction: 'deleteCurrentTag',
   })
 }
 </script>

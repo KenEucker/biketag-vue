@@ -1,4 +1,3 @@
-import { useAuth0 } from '@auth0/auth0-vue'
 import BikeTagClient from 'biketag'
 import { Achievement, Game, Player, Tag } from 'biketag/dist/common/schema'
 import { defineStore } from 'pinia'
@@ -67,17 +66,6 @@ export const initBikeTagStore = () => {
   }
 }
 
-const getAuth0Token = () => {
-  const { idTokenClaims } = useAuth0()
-  const claims = idTokenClaims?.value
-  if (claims) {
-    /// If no token, the request will be rejected
-    return claims.__raw
-  }
-
-  return null
-}
-
 export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
   state: (): BikeTagStoreState => ({
     fetchingData: false,
@@ -99,6 +87,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     playerTag: {} as Tag,
     profile: getProfileFromCookie(),
     token: getTokenFromCookie(),
+    auth0Token: '',
     mostRecentlyViewedTagnumber: getMostRecentlyViewedBikeTagTagnumber(0),
     credentialsFetched: false,
     regionPolygon: storedRegionPolygon,
@@ -174,7 +163,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async setProfile(profile: any, token?: string) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {
-        token = token ?? profile.token
+        this.auth0Token = token ?? profile.token ?? ''
         profile.token = undefined
 
         const response = await client
@@ -182,7 +171,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             method: 'GET',
             url: getApiUrl('profile'),
             headers: {
-              authorization: `Bearer ${token}`,
+              authorization: `Bearer ${this.auth0Token}`,
             },
           })
           .catch((e) => {
@@ -461,7 +450,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             url: getApiUrl('approve'),
             data: { tag: d, ambassadorId: this.profile.sub },
             headers: {
-              authorization: `Bearer ${getAuth0Token()}`,
+              authorization: `Bearer ${this.auth0Token}`,
             },
           })
           if (approveTagResponse.status === 202) {
@@ -485,7 +474,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             url: getApiUrl('delete'),
             data: { tag: d, ambassadorId: this.profile.sub },
             headers: {
-              authorization: `Bearer ${getAuth0Token()}`,
+              authorization: `Bearer ${this.auth0Token}`,
             },
           })
           if (deleteTagResponse.status === 202) {
@@ -501,7 +490,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return 'incorrect permissions'
     },
-    async deleteLatestTag(d: any) {
+    async deleteCurrentTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         try {
           const deleteTagResponse = await client.plainRequest({
@@ -509,7 +498,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             url: getApiUrl('delete'),
             data: { tag: d, ambassadorId: this.profile.sub },
             headers: {
-              authorization: `Bearer ${getAuth0Token()}`,
+              authorization: `Bearer ${this.auth0Token}`,
             },
           })
           if (deleteTagResponse.status === 202) {
@@ -520,6 +509,30 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         } catch (e: any) {
           console.error('error deleting tag', e?.message ?? e)
           return 'error deleting tag'
+        }
+      }
+
+      return 'incorrect permissions'
+    },
+    async updateCurrentTag(d: any) {
+      if (this.profile?.isBikeTagAmbassador) {
+        try {
+          const deleteTagResponse = await client.plainRequest({
+            method: 'POST',
+            url: getApiUrl('update'),
+            data: { tag: d, ambassadorId: this.profile.sub },
+            headers: {
+              authorization: `Bearer ${this.auth0Token}`,
+            },
+          })
+          if (deleteTagResponse.status === 202) {
+            return true
+          } else if (deleteTagResponse.status === 200) {
+            return `BikeTag #${d.tagnumber} couldn't be updated`
+          }
+        } catch (e: any) {
+          console.error('error updating tag', e?.message ?? e)
+          return 'error updating tag'
         }
       }
 
