@@ -61,27 +61,23 @@ const title = computed(function () {
 const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
 onMounted(async () => {
-  nextTick(async () => {
-    await router.isReady()
+  await nextTick()
+  await router.isReady()
 
-    if (isLogout.value) {
-      if (auth0?.isAuthenticated.value) {
-        await store.setProfile()
-        const returnTo = `${window.location.origin}/logout`
-        await auth0.logout({
-          returnTo,
-        })
-      }
-      router.push('/')
+  if (isLogout.value) {
+    if (auth0?.isAuthenticated.value) {
+      await store.setProfile() // Clear profile in store
+      const returnTo = `${window.location.origin}/logout`
+      await auth0.logout({ returnTo })
     }
-  })
+    router.push('/')
+  }
 
   if (auth0) {
     const checkAuth = async () => {
-      if (auth0.isAuthenticated.value) {
+      if (!auth0.isLoading.value && auth0.isAuthenticated.value) {
         if (auth0.idTokenClaims.value) {
-          const token = auth0.idTokenClaims?.value?.__raw
-          /// Always get more profile info
+          const token = auth0.idTokenClaims.value.__raw
           if (
             store.getProfile?.sub !== auth0.user?.value?.sub ||
             !store.getProfile?.user_metadata?.name?.length
@@ -91,9 +87,26 @@ onMounted(async () => {
         }
       }
     }
-    watch(auth0.isAuthenticated, checkAuth)
-    watch(auth0.idTokenClaims, checkAuth)
-    // checkAuth()
+
+    watch(
+      [() => auth0.isLoading.value, () => auth0.isAuthenticated.value],
+      async ([loading, isAuth]) => {
+        if (!loading && isAuth) {
+          await checkAuth()
+        }
+      },
+      { immediate: true }
+    )
+
+    // Optional: additional watcher if idTokenClaims changes after auth
+    watch(
+      () => auth0.idTokenClaims.value,
+      async () => {
+        if (!auth0.isLoading.value && auth0.isAuthenticated.value) {
+          await checkAuth()
+        }
+      }
+    )
   }
 })
 
