@@ -64,7 +64,6 @@ time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 // const timer = ref(useTimer(time))
 const uploadInProgress = ref(false)
 const approveSuccess = ref(false)
-const { idTokenClaims } = useAuth0()
 const queueError = ref(null)
 const store = useBikeTagStore()
 const router = useRouter()
@@ -94,13 +93,6 @@ async function onApproveSubmit(newTagSubmission) {
     position: 'top',
   })
   const errorAction = queueError.value.getAttribute('action')
-
-  const claims = idTokenClaims.value
-  if (claims) {
-    /// If no token, the request will be rejected
-    tag.token = claims.__raw
-  }
-
   uploadInProgress.value = true
   const success = await store[storeAction](tag)
   uploadInProgress.value = false

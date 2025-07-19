@@ -16,7 +16,9 @@
     "post-new-biketag": "New BikeTag Post for round ",
     "approve-new-biketag": "New BikeTag Post Approved by ",
     "post-tag-error": "Error posting BikeTag",
-    "approve-tag-error": "Error approving BikeTag"
+    "approve-tag-error": "Error approving BikeTag",
+    "deleting": "deleting BikeTag post",
+    "delete-success": "successfully deleted tag"
   },
   "menu": {
     "home": "Home",
@@ -58,6 +60,7 @@
       "current_mystery_location": "Current Mystery Location",
       "view_queue_button": "View tags in this round",
       "reset_queue_button": "RESET",
+      "play_button": "PLAY",
       "queue_mystery_title": "Add your new Mystery Location"
     },
     "games": {

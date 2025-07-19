@@ -1,3 +1,4 @@
+import { useAuth0 } from '@auth0/auth0-vue'
 import BikeTagClient from 'biketag'
 import { Achievement, Game, Player, Tag } from 'biketag/dist/common/schema'
 import { defineStore } from 'pinia'
@@ -42,12 +43,12 @@ export const initBikeTagStore = () => {
     gameName = domain.subdomain ?? BikeTagEnv.GAME_NAME ?? BikeTagDefaults.gameName
     biketagClientOpts = {
       cached: true,
-      host: BikeTagEnv.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.${BikeTagEnv.HOST}/api`,
+      host:
+        BikeTagEnv.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.${BikeTagEnv.HOST}/api`,
       clientToken: getTokenFromCookie(),
       // game: gameName,
       ...getBikeTagClientOpts(window, BikeTagEnv.BIKETAG_AUTHED === 'true'),
     }
-
 
     debug(`init::${BikeTagDefaults.store}`, {
       subdomain: domain.subdomain,
@@ -64,6 +65,17 @@ export const initBikeTagStore = () => {
       storedRegionPolygon = null
     }
   }
+}
+
+const getAuth0Token = () => {
+  const { idTokenClaims } = useAuth0()
+  const claims = idTokenClaims?.value
+  if (claims) {
+    /// If no token, the request will be rejected
+    return claims.__raw
+  }
+
+  return null
 }
 
 export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
@@ -212,7 +224,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             // TODO: set the default source to something else, now
             const configuredClient = client.config(biketagClientOpts, true, true)
             if (BikeTagEnv.DEBUG_A === 'true') {
-              console.log({configuredClient, imageSource: this.imageSource})
+              console.log({ configuredClient, imageSource: this.imageSource })
             }
 
             return this.SET_GAME(game)
@@ -443,15 +455,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async approveTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         d.hash = this.game.queuehash
-        const token = d.token
-        d.token = undefined
         try {
           const approveTagResponse = await client.plainRequest({
             method: 'POST',
             url: getApiUrl('approve'),
             data: { tag: d, ambassadorId: this.profile.sub },
             headers: {
-              authorization: `Bearer ${token}`,
+              authorization: `Bearer ${getAuth0Token()}`,
             },
           })
           if (approveTagResponse.status === 202) {
@@ -469,22 +479,50 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     async dequeueTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
-        let source = this.imageSource
-        if (this.imageSource === 'aws') {
-          source = 'biketag'
-        } else if (this.imageSource === 'imgur') {
-          d.hash = this.game.queuehash
-        }
-        return client.deleteTag(d, { source }).then((t) => {
-          if (t.success) {
-            debug(`${BikeTagDefaults.store}::tag dequeued`, d)
-          } else {
-            debug('error::dequeue BikeTag failed', t)
-            return t.error ? t.error : Array.isArray(t.data) ? t.data.join(' - ') : t.data
+        try {
+          const deleteTagResponse = await client.plainRequest({
+            method: 'POST',
+            url: getApiUrl('delete'),
+            data: { tag: d, ambassadorId: this.profile.sub },
+            headers: {
+              authorization: `Bearer ${getAuth0Token()}`,
+            },
+          })
+          if (deleteTagResponse.status === 202) {
+            return true
+          } else if (deleteTagResponse.status === 200) {
+            return `BikeTag #${d.tagnumber} couldn't be deleted`
           }
-          return true
-        })
+        } catch (e: any) {
+          console.error('error deleting tag', e?.message ?? e)
+          return 'error deleting tag'
+        }
       }
+
+      return 'incorrect permissions'
+    },
+    async deleteLatestTag(d: any) {
+      if (this.profile?.isBikeTagAmbassador) {
+        try {
+          const deleteTagResponse = await client.plainRequest({
+            method: 'POST',
+            url: getApiUrl('delete'),
+            data: { tag: d, ambassadorId: this.profile.sub },
+            headers: {
+              authorization: `Bearer ${getAuth0Token()}`,
+            },
+          })
+          if (deleteTagResponse.status === 202) {
+            return true
+          } else if (deleteTagResponse.status === 200) {
+            return `BikeTag #${d.tagnumber} couldn't be deleted`
+          }
+        } catch (e: any) {
+          console.error('error deleting tag', e?.message ?? e)
+          return 'error deleting tag'
+        }
+      }
+
       return 'incorrect permissions'
     },
     async assignPlayerName(profile: any) {
@@ -887,8 +925,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       if (!data) {
         this.playerTag = {} as Tag
-      }
-      else if (
+      } else if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
         oldState?.mysteryImage !== data?.mysteryImage ||
         oldState?.hint !== data?.hint ||

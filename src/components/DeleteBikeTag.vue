@@ -3,19 +3,12 @@
     <h3 class="delete-title">{{ $t('pages.delete.title') }}</h3>
 
     <p class="delete-text">
-      Deleting this tag will remove {{ latestTag.foundPlayer }}'s tag submission for tag
+      Deleting this tag will remove {{ latestTag.foundPlayer }}'s submission for tag
       #{{ latestTag.tagnumber - 1 }} and the latest mystery location.
       The mystery location will go back to {{ previousTag.foundPlayer }}'s tag.
     </p>
 
     <div class="bike-tag-container">
-      <bike-tag
-        v-if="previousTag"
-        :tag="previousTag"
-        :reverse="true"
-        size="l"
-        :show-posted-date="true"
-      />
       <bike-tag
         v-if="latestTag"
         :tag="latestTag"
@@ -36,7 +29,8 @@
         @submit.prevent="deleteTagFunction"
       >
         <input type="hidden" name="form-name" value="delete-latest-biketag" />
-        <input type="hidden" name="ambassadorId" value="" />
+        <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
+        <input type="hidden" name="tagnumber" :value="getCurrentBikeTag.tagnumber" />
         <bike-tag-button class="circle-button" variant="circle" type="submit" label="Delete">
           <img src="/images/red-circle-x.webp" alt="Delete Latest Tag" />
         </bike-tag-button>
@@ -62,16 +56,14 @@ const emit = defineEmits(['submit'])
 const deleteTag = ref(null)
 const store = useBikeTagStore()
 const { t } = useI18n()
+const getAmbassadorId = computed(() => store.getAmbassadorId)
 
 // computed
 const allTags = computed(() => store.getTags)
-const latestTag = computed(() => {
-  const tags = allTags.value
-  return tags?.length > 0 ? tags[tags.length - 1] : null
-})
+const latestTag = computed(() => store.getCurrentBikeTag)
 const previousTag = computed(() => {
   const tags = allTags.value
-  return tags?.length > 1 ? tags[tags.length - 2] : null
+  return tags.filter(t => t.tagnumber === getCurrentBikeTag.value.tagnumber - 1)
 })
 
 // methods

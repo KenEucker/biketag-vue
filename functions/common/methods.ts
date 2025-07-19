@@ -398,7 +398,7 @@ export const getProfileAuthorization = async (req: Request): Promise<any> => {
   if (authorization?.isValid && profile) {
     const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
     const adminBiketag = new BikeTagClient(adminBiketagOpts)
-    const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag)) as Ambassador[]
+    const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag, { source: 'sanity' })) as Ambassador[]
     if (!thisGamesAmbassadors?.length) {
       return profile
     }

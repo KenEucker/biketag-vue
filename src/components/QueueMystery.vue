@@ -7,6 +7,12 @@
         {{ $t('in the current round!') }}
       </h3>
       <bike-tag-button
+        class="modal-sub-btn"
+        variant="medium-orange"
+        :text="$t('components.queue.play_button')"
+        @click="hideModal"
+      />
+      <bike-tag-button
         class="modal-sub-btn modal-sub-btn--big"
         variant="medium"
         :text="$t('components.queue.view_queue_button')"

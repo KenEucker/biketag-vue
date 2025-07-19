@@ -29,7 +29,7 @@
       hidden
     >
       <input type="hidden" name="form-name" value="delete-tag-error" />
-      <input type="hidden" name="submission" />
+      <input type="hidden" name="tagnumber" :value="getCurrentBikeTag.tagnumber" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
       <input type="hidden" name="message" />
       <input type="hidden" name="ip" value="" />
@@ -52,7 +52,6 @@ import { useI18n } from 'vue-i18n'
 // data
 const deleteInProgress = ref(false)
 const deleteSuccess = ref(false)
-const { idTokenClaims } = useAuth0()
 const queueError = ref(null)
 const store = useBikeTagStore()
 const router = useRouter()
@@ -63,6 +62,7 @@ const { t } = useI18n()
 const getGameName = computed(() => store.getGameName)
 const getGameNameProper = computed(() => store.getGameNameProper)
 const getAmbassadorId = computed(() => store.getAmbassadorId)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 
 // methods
 async function onDeleteSubmit() {
@@ -78,12 +78,6 @@ async function onDeleteSubmit() {
   })
   const errorAction = queueError.value.getAttribute('action')
 
-  const claims = idTokenClaims.value
-  let token
-  if (claims) {
-    token = claims.__raw
-  }
-
   deleteInProgress.value = true
   const result = await store.deleteLatestTag({
     game: getGameName.value,
@@ -98,7 +92,7 @@ async function onDeleteSubmit() {
       `game=${getGameName.value}`,
       () => {
         toast.open({
-          message: `${t('notifications.deleteSuccess')}`,
+          message: `${t('notifications.delete-success')}`,
           type: 'success',
           position: 'top',
         })

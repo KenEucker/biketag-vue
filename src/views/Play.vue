@@ -27,6 +27,8 @@
       :only-mine="true"
       :show-number="false"
       @dequeue-error="dequeueErrorNotify(toast)"
+      @dequeing="uploadInProgress = true"
+      @dequeue-success="uploadInProgress = false"
     />
     <div
       v-if="BiketagQueueFormSteps[getFormStep] >= 1 && BiketagQueueFormSteps[getFormStep] < 4"
