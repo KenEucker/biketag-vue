@@ -2,19 +2,21 @@ import crypto from 'crypto'
 import { SignJWT } from 'jose'
 import { acceptCorsHeaders, getPayloadOpts, HttpStatusCode } from './common'
 
-// Utility: create consistent key for JWT signing
 const getJwtSecretKey = () =>
   crypto
     .createHash('sha256')
     .update(process.env.HOST_KEY || '')
     .digest()
 
+const stripFirstSubdomain = (host: string) => {
+  const parts = host.split('.')
+  return parts.length > 2 ? parts.slice(1).join('.') : host
+}
+
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
 
-  // ✅ Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    /// TODO: check request host
     return new Response(undefined, {
       status: HttpStatusCode.Ok,
       headers,
@@ -28,20 +30,25 @@ export default async (req: Request) => {
     grant_type: grantType,
   } = await getPayloadOpts(req)
 
-  const selfHost = new URL(`http://${req.headers?.get('host')}`).hostname
+  const selfHostRaw = req.headers?.get('host') ?? ''
+  const selfHost = stripFirstSubdomain(
+    new URL(`http://${selfHostRaw}`).hostname
+  )
+
   if (process.env.DEBUG_A === 'true') {
     console.log({
       playerId,
       clientId,
       clientAssertion,
       grantType,
+      selfHostRaw,
       selfHost,
     })
   }
 
-  // Additional strict check: ensure that `Host` header matches `client_id`
+  // Updated strict check: normalize selfHost and clientId before comparison
   if (selfHost !== clientId) {
-    console.log('[token] host mismatch', {clientId, selfHost})
+    console.log('[token] host mismatch', { clientId, selfHost })
     return new Response('Host mismatch', {
       headers,
       status: HttpStatusCode.Unauthorized,

@@ -976,12 +976,12 @@ export const getActiveQueueForGame = async (
         timedOutTags = completedTags.filter((t) => {
           if (process.env.DEBUG_A === 'true') {
             console.log({
-              diff: now - t.mysteryTime * 1000,
+              diff: now - (t.mysteryTime * 1000),
               mysteryTime: t.mysteryTime,
-              timedOut: now - t.mysteryTime * 1000 > tagAutoPostTimer,
+              timedOut: now - (t.mysteryTime * 1000) > tagAutoPostTimer,
             })
           }
-          return now - t.mysteryTime * 1000 > tagAutoPostTimer
+          return now - (t.mysteryTime * 1000) > tagAutoPostTimer
         })
 
         if (timedOutTags.length) {
