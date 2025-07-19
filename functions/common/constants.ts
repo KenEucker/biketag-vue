@@ -20,6 +20,7 @@ export enum ErrorMessage {
   ProfileNameNotSet = 'profile name not set, cannot create profile',
   MissingAuthHeader = 'missing authorization header',
   ProfileNotFound = 'no profile found',
+  GameNotSet = 'no game set',
   ImageUploadFailed = 'faile to upload image',
 
   /// Generic Method Errors

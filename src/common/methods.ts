@@ -309,7 +309,7 @@ export const sendNetlifyError = function (
     message,
   }).toString()
 
-  const request = fetch(action, {
+  const netlifyRequest = fetch(action, {
     method: 'POST',
     headers: {
       Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -319,9 +319,9 @@ export const sendNetlifyError = function (
   })
 
   if (then) {
-    request.then(then)
+    netlifyRequest.then(then)
   }
-  return request
+  return netlifyRequest
 }
 
 export const sendNetlifyForm = function (

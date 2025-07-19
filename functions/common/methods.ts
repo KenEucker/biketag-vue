@@ -1,6 +1,4 @@
 import { AtpAgent } from '@atproto/api'
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
@@ -12,20 +10,16 @@ import { readFileSync } from 'fs'
 import * as jose from 'jose'
 import { Liquid } from 'liquidjs'
 import lzutf8 from 'lzutf8'
-import md5 from 'md5'
 import nodemailer from 'nodemailer'
 import { extname, join } from 'path'
 import qs from 'qs'
-import request from 'request'
 import {
   getDomainInfo,
   getImageSized,
-  getTagDate,
   getTagDateISOFromTimezone,
   isAuthenticationEnabled,
 } from '../../src/common'
 import { BikeTagProfile } from '../../src/common/types'
-import authorize from '../authorize.mts'
 import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue } from './types'
 
@@ -80,10 +74,10 @@ export const getBikeTagClientOpts = (
   admin?: boolean,
   game?: Game,
 ) => {
-  const request = req ?? { method: 'GET' }
-  const domainInfo = getDomainInfo(request)
-  const isAuthenticatedPOST = request?.method === 'POST' || authorized
-  const isGET = !isAuthenticatedPOST && request?.method === 'GET'
+  const funcRequest = req ?? { method: 'GET' }
+  const domainInfo = getDomainInfo(funcRequest)
+  const isAuthenticatedPOST = funcRequest?.method === 'POST' || authorized
+  const isGET = !isAuthenticatedPOST && funcRequest?.method === 'GET'
 
   /// The minimum to load a BikeTag Game in Read-Only mode
   const opts: any = {
@@ -823,7 +817,7 @@ export const getSanityImageUrl = (
 
 export const archiveAndClearQueue = async (
   queuedTags: Tag[],
-  game?: Game | null,
+  game?: Game | undefined,
   adminBiketag?: BikeTagClient,
   nonAdminBikeTag?: BikeTagClient,
   noArchive = false,
@@ -831,30 +825,31 @@ export const archiveAndClearQueue = async (
   const results: any = []
   let errors = false
   adminBiketag =
-    adminBiketag ?? new BikeTagClient(getBikeTagClientOpts({ method: 'get' } as Request, true, true))
+    adminBiketag ??
+    new BikeTagClient(getBikeTagClientOpts({ method: 'get' } as Request, true, true, game))
   if (!game) {
     const gameResponse = await adminBiketag.getGame(
       { game: queuedTags[0].game },
       { source: 'sanity' },
     )
-    game = gameResponse.success ? gameResponse.data : null
+    game = gameResponse.success ? gameResponse.data : undefined
   }
+  const imageSource = game?.awsRegion ? 'aws' : 'imgur'
+
   if (queuedTags.length && game) {
-    const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true)
+    const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true, false, game)
     const gameName = game.name.toLocaleLowerCase()
-    nonAdminBikeTagOpts.game = gameName
-    nonAdminBikeTagOpts.imgur.hash = game.queuehash
 
     if (!nonAdminBikeTag) {
       nonAdminBikeTag = nonAdminBikeTag ?? new BikeTagClient(nonAdminBikeTagOpts)
     } else {
-      nonAdminBikeTag.config(nonAdminBikeTagOpts, false)
+      nonAdminBikeTag.config(nonAdminBikeTagOpts, false, true)
     }
 
     if (!noArchive) {
       console.log('archiving remaining queued tags', { game: gameName, queuedTags })
 
-      const currentBikeTag = (await adminBiketag.getTag({ limit: 1 })).data
+      const currentBikeTag = (await adminBiketag.getTag({ limit: 1 }, { source: imageSource })).data
       for (const nonWinningTag of queuedTags) {
         /// If there are remnants of tags from the currently posted biketag, don't archive them
         if (
@@ -862,10 +857,13 @@ export const archiveAndClearQueue = async (
           nonWinningTag.foundPlayer !== currentBikeTag?.mysteryPlayer
         ) {
           /* Archive using ambassador credentials (mainhash and archivehash are both ambassador albums) */
-          const archiveTagResult = await adminBiketag.archiveTag({
-            ...nonWinningTag,
-            archivehash: game.archivehash,
-          })
+          const archiveTagResult = await adminBiketag.archiveTag(
+            {
+              ...nonWinningTag,
+              archivehash: game.archivehash,
+            },
+            { source: imageSource },
+          )
           if (archiveTagResult.success) {
             results.push({
               message: 'non-winning found image archived',
@@ -883,7 +881,9 @@ export const archiveAndClearQueue = async (
           }
         }
         /* delete using player credentials (queuehash is player album) */
-        const deleteArchivedTagFromQueueResult = await nonAdminBikeTag.deleteTag(nonWinningTag)
+        const deleteArchivedTagFromQueueResult = await nonAdminBikeTag.deleteTag(nonWinningTag, {
+          source: imageSource,
+        })
         if (deleteArchivedTagFromQueueResult.success) {
           results.push({
             message: 'non-winning tag deleted from queue',
@@ -903,7 +903,7 @@ export const archiveAndClearQueue = async (
     } else {
       // Just remove all tags from the queue
       for (const queuedTag of queuedTags) {
-        const deletedTagResult = await nonAdminBikeTag.deleteTag(queuedTag)
+        const deletedTagResult = await nonAdminBikeTag.deleteTag(queuedTag, { source: imageSource })
 
         results.push({
           message: deletedTagResult.success
@@ -914,6 +914,12 @@ export const archiveAndClearQueue = async (
         })
       }
     }
+  } else {
+    errors = true
+    results.push({
+      message: ErrorMessage.GameNotSet,
+      game: undefined,
+    })
   }
 
   return {
@@ -1632,13 +1638,14 @@ export const setNewBikeTagPost = async (
   winningBikeTagPost: Tag,
   previousBikeTag: Tag,
   adminBiketag?: BikeTagClient,
-  nonAdminBiketag?: BikeTagClient
+  nonAdminBiketag?: BikeTagClient,
 ): Promise<BackgroundProcessResults> => {
   adminBiketag =
     adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
   /// Get the current BikeTag
-  previousBikeTag = previousBikeTag ?? ((await adminBiketag.getTag()).data as Tag) // the "current" mystery tag to be updated
   const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  previousBikeTag =
+    previousBikeTag ?? ((await adminBiketag.getTag(undefined, { source: imageSource })).data as Tag) // the "current" mystery tag to be updated
   let errors = false
   const results: any = []
 
@@ -1656,7 +1663,9 @@ export const setNewBikeTagPost = async (
     previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
     previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
     // console.log('updating current BikeTag with the winning tag found information', previousBikeTag)
-    const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, { source: imageSource })
+    const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, {
+      source: imageSource,
+    })
 
     if (process.env.DEBUG_A === 'true') {
       console.log({ currentBikeTagUpdateResult })
@@ -1678,7 +1687,9 @@ export const setNewBikeTagPost = async (
     }
 
     /************** SET NEW BIKETAG POST FROM QUEUE *****************/
-    const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost, { source: imageSource })
+    const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost, {
+      source: imageSource,
+    })
     if (process.env.DEBUG_A === 'true') {
       console.log({ newBikeTagUpdateResult })
     }
@@ -1724,7 +1735,9 @@ export const setNewBikeTagPost = async (
       }
       // console.log({ config: nonAdminBikeTag.config() })
 
-      const deleteWinningTagFromQueueResult = await nonAdminBiketag.deleteTag(winningBikeTagPost, { source: imageSource })
+      const deleteWinningTagFromQueueResult = await nonAdminBiketag.deleteTag(winningBikeTagPost, {
+        source: imageSource,
+      })
       if (deleteWinningTagFromQueueResult.success) {
         results.push({
           message: 'winning tag deleted from queue',
@@ -1822,7 +1835,12 @@ export const auth0Headers = async () => {
 }
 
 export const acceptCorsHeaders = (
-  accept = '*', allow = '*', contentType = 'application/json', methods = '*', origin = '*', maxAge = '8640'
+  accept = '*',
+  allow = '*',
+  contentType = 'application/json',
+  methods = '*',
+  origin = '*',
+  maxAge = '8640',
 ) => ({
   Accept: accept,
   'Access-Control-Allow-Headers': allow,

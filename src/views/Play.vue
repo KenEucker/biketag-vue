@@ -194,6 +194,7 @@ async function onQueueSubmit(newTagSubmission) {
   }
 
   const { tag, formAction, formData, storeAction } = newTagSubmission
+  const storeActionIsPosting = storeAction === 'postNewBikeTag'
 
   if (!tag.foundImage) {
     isFoundTag = false
@@ -202,13 +203,14 @@ async function onQueueSubmit(newTagSubmission) {
   const alreadyUploaded = localStorage.getItem(
     `${getGameName.value}-${getCurrentBikeTag.value?.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`,
   )
-  if (alreadyUploaded) {
+  if (!storeActionIsPosting && alreadyUploaded) {
     const alreadyUploadedTime = parseInt(alreadyUploaded)
     const uploadDelay = getGameNotices.value?.imgurDelay ?? 1
     const delayMultiplier = Number.isNaN(parseInt(uploadDelay, 10)) ? 1 : parseInt(uploadDelay, 10)
     const delayMs = delayMultiplier * 60 * 1000
+    const alreadyUploadedCheck = Date.now() - alreadyUploadedTime < delayMs
 
-    if (Date.now() - alreadyUploadedTime < delayMs) {
+    if (alreadyUploadedCheck) {
       window.scrollTo(0, 0)
       toast.open({
         message: t('notifications.already-uploaded'),
@@ -233,7 +235,7 @@ async function onQueueSubmit(newTagSubmission) {
   window.scrollTo(0, 0)
 
   toast.open({
-    message: t('notifications.uploading'),
+    message: t(storeActionIsPosting ? 'notifications.posting' : 'notifications.uploading'),
     type: 'info',
     position: 'bottom',
   })
@@ -245,9 +247,9 @@ async function onQueueSubmit(newTagSubmission) {
 
   if (success === true) {
     /// Get a clean cache
-    await store.fetchTags(true)
+    await store.fetchTags(false)
     /// Update the queue
-    await store.fetchQueuedTags(true)
+    await store.fetchQueuedTags(false)
 
     formData.set('game', getGameName.value)
     formData.set('tag', JSON.stringify(getPlayerTag.value))
@@ -263,10 +265,12 @@ async function onQueueSubmit(newTagSubmission) {
       formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
     }
 
-    localStorage.setItem(
-      `${getGameName.value}-${getCurrentBikeTag.value?.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`,
-      new Date().getTime(),
-    )
+    if (!storeActionIsPosting) {
+      localStorage.setItem(
+        `${getGameName.value}-${getCurrentBikeTag.value?.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`,
+        new Date().getTime(),
+      )
+    }
 
     return sendNetlifyForm(
       formAction,
