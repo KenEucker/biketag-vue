@@ -232,8 +232,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       await this.fetchCurrentBikeTag(false)
       await this.fetchQueuedTags(false)
     },
-    async fetchCredentials() {
-      if (!this.credentialsFetched) {
+    async fetchCredentials(fetchNewCredentials = false) {
+      if (!this.credentialsFetched || fetchNewCredentials) {
         // console.log('fetching credentials', biketagClientOpts)
         try {
           // await client.config(
@@ -580,7 +580,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             client.getQueue({ reindex: true }, { source: 'biketag' })
             await this.SET_QUEUED_TAG(queuedFoundTag)
             await this.RESET_FORM_STEP_TO_MYSTERY()
-            
 
             return true
           } else {
@@ -594,10 +593,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = this.profile.sub
 
-        return client.queueTag(d, { source: this.imageSource }).then((t) => {
+        return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
           if (t.success) {
             this.SET_QUEUE_FOUND(t.data)
-            client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
           } else {
             debug('error::queue (Found) BikeTag failed', t)
             return t.error
@@ -611,10 +610,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = this.profile.sub
 
-        return client.queueTag(d, { source: this.imageSource }).then((t) => {
+        return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
           if (t.success) {
             this.SET_QUEUE_MYSTERY(t.data)
-            client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
           } else {
             debug('error::queue (Mystery) BikeTag failed', t)
             return t.error
@@ -628,10 +627,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.mysteryImageUrl && d.foundImageUrl) {
         d.playerId = this.profile.sub
 
-        return client.queueTag(d, { source: this.imageSource }).then((t) => {
+        return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
           if (t.success) {
             this.SET_QUEUED_SUBMITTED(t.data)
-            client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
           } else {
             debug('error::submit BikeTag failed', t)
             return t.error

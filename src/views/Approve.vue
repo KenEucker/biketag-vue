@@ -179,14 +179,3 @@ onMounted(async () => {
   // })
 })
 </script>
-
-<style lang="scss" scoped>
-@import '../assets/styles/style';
-
-.loading-message {
-  p {
-    font-family: $default-font-family;
-    text-transform: uppercase;
-  }
-}
-</style>
