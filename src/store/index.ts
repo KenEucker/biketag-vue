@@ -499,6 +499,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async deleteCurrentTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         try {
+          d.folder = 'main'
           const deleteTagResponse = await client.plainRequest({
             method: 'POST',
             url: getApiUrl('delete'),

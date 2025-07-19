@@ -46,13 +46,12 @@ export default async (req: Request) => {
       })) as unknown as Game
       log('[delete-tag] Retrieved game', { name: game.name, awsRegion: game.awsRegion })
 
-      const biketagPayload = await getPayloadOpts(req, {
-        imgur: { hash: game.queuehash },
-        game: biketagOpts.game,
-        folder: 'queue',
-      })
-      log('[delete-tag] Prepared biketag payload', biketagPayload)
-      const playerId = biketagPayload.tag?.playerId ?? biketagPayload.playerId
+      deletePayload.imgur = {...deletePayload.imgur, ...{ hash: game.queuehash }}
+      deletePayload.game = deletePayload.game ?? biketagOpts.game
+      deletePayload.folder = deletePayload.folder ?? 'queue'
+
+      log('[delete-tag] Prepared biketag payload', deletePayload)
+      const playerId = deletePayload.tag?.playerId ?? deletePayload.playerId
 
       if (!profile.isBikeTagAmbassador && profile.p_id !== playerId) {
         body = 'player not authorized to delete'
@@ -77,7 +76,7 @@ export default async (req: Request) => {
           log('[delete-tag] AWS config applied', { host: process.env.HOST, region: game.awsRegion })
         }
 
-        const deleteResponse = await biketag.deleteTag(biketagPayload.tag ?? biketagPayload, {
+        const deleteResponse = await biketag.deleteTag(deletePayload.tag ?? deletePayload, {
           source: imageSource,
         })
         log('[delete-tag] Delete tag response', {
