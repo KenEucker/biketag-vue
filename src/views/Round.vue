@@ -63,8 +63,8 @@ function isViewingQueue() {
 // mounted
 onMounted(async () => {
   await store.isReady()
-  await store.fetchCurrentBikeTag()
-  await store.fetchQueuedTags()
+  await store.fetchCurrentBikeTag(false)
+  await store.fetchQueuedTags(false)
 })
 </script>
 

@@ -220,7 +220,7 @@ const onSubmit = async (e) => {
   if (!getCurrentBikeTag?.tagnumber) {
     await store.fetchTags()
     await store.fetchCurrentBikeTag()
-    await store.fetchQueuedTags()
+    await store.fetchQueuedTags(false)
   }
 
   if (!location.value?.length) {

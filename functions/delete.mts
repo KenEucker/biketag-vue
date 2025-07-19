@@ -12,7 +12,7 @@ export default async (req: Request) => {
     })
   }
 
-  const player = await getProfileAuthorization(req)
+  const profile = await getProfileAuthorization(req)
   const biketagOpts = getBikeTagClientOpts(req, true)
   const biketag = new BikeTagClient(biketagOpts)
   const game = (await biketag.game(biketagOpts.game, {
@@ -27,7 +27,7 @@ export default async (req: Request) => {
     folder: 'queue',
   })
 
-  if (player.p_id !== biketagPayload.playerId) {
+  if (!profile.isBikeTagAmbassador && profile.p_id !== biketagPayload.playerId) {
     return new Response('player not authorized to delete', {
       status: HttpStatusCode.Unauthorized,
       headers,

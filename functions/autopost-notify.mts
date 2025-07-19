@@ -25,6 +25,12 @@ export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<Backgrou
   )) as Game
 
   const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  nonAdminBiketag.config({
+    aws: {
+      region: game.awsRegion,
+    }
+  }, false, true)
+  adminBiketagOpts.aws.region =  game.awsRegion
   const twoMostRecentTags = await nonAdminBiketag.getTags(
     { game: game.slug, limit: 2 },
     { source: imageSource },
