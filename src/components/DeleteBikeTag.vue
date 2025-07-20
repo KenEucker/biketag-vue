@@ -3,33 +3,20 @@
     <h3 class="delete-title">{{ $t('pages.delete.title') }}</h3>
 
     <p class="delete-text">
-      Deleting this tag will remove {{ getCurrentBikeTag.foundPlayer }}'s submission for tag #{{
-        getCurrentBikeTag.tagnumber - 1
+      Deleting this tag will remove {{ getCurrentBikeTag.mysteryPlayer }}'s submission for tag #{{
+        previousTag?.tagnumber
       }}
-      and the latest mystery location. The mystery location will go back to
-      {{ previousTag.mysteryPlayer }}'s tag.
+      and the latest mystery location.<br />The mystery location will go back to
+      {{ previousTag?.mysteryPlayer }}'s tag.
     </p>
 
     <div class="bike-tag-container">
-      <bike-tag
-        v-if="getCurrentBikeTag"
-        :tag="getCurrentBikeTag"
-        :reverse="true"
-        size="l"
-        :show-posted-date="true"
-      />
+      <bike-tag v-if="getCurrentBikeTag" :tag="getCurrentBikeTag" :reverse="true" size="l" :show-posted-date="true" />
     </div>
 
     <div class="delete-button">
-      <form
-        ref="deleteTag"
-        name="delete-latest-biketag"
-        action="delete-latest-biketag"
-        method="POST"
-        data-netlify="true"
-        data-netlify-honeypot="bot-field"
-        @submit.prevent="deleteTagFunction"
-      >
+      <form ref="deleteTag" name="delete-latest-biketag" action="delete-latest-biketag" method="POST"
+        data-netlify="true" data-netlify-honeypot="bot-field" @submit.prevent="deleteTagFunction">
         <input type="hidden" name="form-name" value="delete-latest-biketag" />
         <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
         <input type="hidden" name="tagnumber" :value="getCurrentBikeTag.tagnumber" />
@@ -101,7 +88,7 @@ function deleteTagFunction() {
     justify-content: center;
     gap: 2em;
 
-    > * {
+    >* {
       flex: 1 1 300px;
       max-width: 500px;
     }

@@ -48,6 +48,7 @@ import { useRouter } from 'vue-router'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import QueueApprove from '@/components/QueueApprove.vue'
 import { useI18n } from 'vue-i18n'
+import Loading from 'vue-loading-overlay'
 
 // props
 const props = defineProps({

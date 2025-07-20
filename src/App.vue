@@ -167,7 +167,7 @@ async function created() {
         router.currentRoute.value.path.length > 1
           ? parseInt(router.currentRoute.value.path.split('/')[1])
           : undefined
-      const params = { tagnumber }
+      const params = { tagnumber: Number.isNaN(tagnumber) ? undefined : tagnumber }
       await router.push({ name: 'Home', params })
     }
     await store.FetchAllData({ currentBikeTagSync: true })

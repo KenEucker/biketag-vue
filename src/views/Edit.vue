@@ -26,11 +26,13 @@
       </bike-tag-button>
 
       <div class="biketag-container">
-        <BikeTag v-if="previewMode" :tag="mergedTag" />
+        <BikeTag v-if="previewMode" :tag="mergedTag" 
+              :found-tagnumber="mergedTag?.tagnumber - 1"
+              :found-description="mergedTag?.foundLocation" />
         <EditBikeTag v-else :tag="mergedTag" @update="onFieldUpdate" />
       </div>
 
-      <bike-tag-button @click="onSave">Save</bike-tag-button>
+      <bike-tag-button variant="light" class="big-btn" @click="onSave">Save Changes</bike-tag-button>
     </div>
 
     <div v-else class="loading-message">
@@ -65,6 +67,7 @@ import { sendNetlifyError, sendNetlifyForm } from '@/common'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import EditBikeTag from '@/components/EditBikeTag.vue'
+import Loading from 'vue-loading-overlay'
 
 const store = useBikeTagStore()
 const router = useRouter()
@@ -91,16 +94,13 @@ function togglePreview() {
 }
 
 async function mergeTags() {
-    console.log('merging current and previous tags', {
-      currentTag: currentTag.value,
-      previousTag: previousTag.value,
-    })
   if (currentTag.value && previousTag.value) {
     Object.assign(mergedTag, {
       ...currentTag.value,
       foundPlayer: previousTag.value.foundPlayer,
       foundTime: previousTag.value.foundTime,
       foundLocation: previousTag.value.foundLocation,
+      foundImageUrl: previousTag.value.foundImageUrl,
     })
   } else {
     console.log('issue merging current and previous tags', {
@@ -188,5 +188,7 @@ onMounted(async () => {
 <style scoped>
 .biketag-container {
   margin: 1rem 0;
+  max-width: clamp(80vw, 80vw, 500px);
+  margin: auto;
 }
 </style>

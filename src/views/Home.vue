@@ -83,7 +83,10 @@ const route = useRoute()
 const tagIsLoading = ref(true)
 const store = useBikeTagStore()
 const { t } = useI18n()
-const tagnumber = computed(() => (route.params?.tagnumber ? parseInt(route.params.tagnumber) : 0))
+const tagnumber = computed(() => {
+  const landingTagnumber = parseInt(route.params.tagnumber)
+  return landingTagnumber !== NaN ? landingTagnumber : 0
+})
 
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)

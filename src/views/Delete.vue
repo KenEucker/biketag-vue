@@ -47,6 +47,7 @@ import { useRouter } from 'vue-router'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import DeleteBikeTag from '@/components/DeleteBikeTag.vue'
 import { useI18n } from 'vue-i18n'
+import Loading from 'vue-loading-overlay'
 
 // data
 const deleteInProgress = ref(false)
