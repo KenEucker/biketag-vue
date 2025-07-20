@@ -163,11 +163,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async setProfile(profile: any, token?: string) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {
-        this.auth0Token = token?.length
-          ? token
-          : this.auth0Token?.length
-            ? this.auth0Token
-            : (token ?? profile.token ?? '')
+        this.auth0Token = token || this.auth0Token || profile.token || ''
         profile.token = undefined
 
         const response = await client
@@ -536,9 +532,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               authorization: `Bearer ${this.auth0Token}`,
             },
           })
-          if (deleteTagResponse.status === 202) {
+          if (deleteTagResponse.status > 199 && deleteTagResponse.status < 300) {
             return true
-          } else if (deleteTagResponse.status === 200) {
+          } else {
             return `BikeTag #${d.tagnumber} couldn't be updated`
           }
         } catch (e: any) {
@@ -1110,7 +1106,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return state.currentBikeTag
     },
     getPreviousBikeTag(state) {
-      return state.tags.find((t) => t.tagnumber === this.currentBikeTag.tagnumber - 1)
+      return state.tags.find((t) => t.tagnumber === state.currentBikeTag.tagnumber - 1)
     },
     getTags(state) {
       return state.tags

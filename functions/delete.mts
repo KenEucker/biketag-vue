@@ -77,6 +77,9 @@ export default async (req: Request) => {
         const { success, data } = deleteResponse
         body = success ? data : deleteResponse
         status = deleteResponse.status
+      } else {
+        status = HttpStatusCode.NotImplemented
+        body = '[delete-tag] Imgur deletion not supported in this version'
       }
     } else {
       log('[delete-tag] Profile invalid or not present')
