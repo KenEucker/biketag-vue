@@ -7,7 +7,7 @@
         getCurrentBikeTag.tagnumber - 1
       }}
       and the latest mystery location. The mystery location will go back to
-      {{ previousTag.foundPlayer }}'s tag.
+      {{ previousTag.mysteryPlayer }}'s tag.
     </p>
 
     <div class="bike-tag-container">

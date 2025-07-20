@@ -1113,7 +1113,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return state.currentBikeTag
     },
     getPreviousBikeTag(state) {
-      return state.tags[1]
+      return state.tags.find(t => t.tagnumber === this.currentBikeTag.tagnumber - 1)
     },
     getTags(state) {
       return state.tags

@@ -30,7 +30,7 @@
         <EditBikeTag v-else :tag="mergedTag" @update="onFieldUpdate" />
       </div>
 
-      <bike-tag-button @click="onSave"> Save Changes </bike-tag-button>
+      <bike-tag-button @click="onSave">Save</bike-tag-button>
     </div>
 
     <div v-else class="loading-message">
@@ -98,6 +98,8 @@ async function mergeTags() {
       foundTime: previousTag.value.foundTime,
       foundLocation: previousTag.value.foundLocation,
     })
+  } else {
+    console.log('issue merging current and previous tags', { currentTag: currentTag.value, previousTag: previousTag.value })
   }
 }
 
