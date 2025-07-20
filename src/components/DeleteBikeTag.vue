@@ -61,12 +61,8 @@ const { t } = useI18n()
 const getAmbassadorId = computed(() => store.getAmbassadorId)
 
 // computed
-const allTags = computed(() => store.getTags)
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-const previousTag = computed(() => {
-  const tags = allTags.value
-  return tags.filter((t) => t.tagnumber === getCurrentBikeTag.value.tagnumber - 1)
-})
+const previousTag = computed(() => store.getPreviousBikeTag)
 
 // methods
 function deleteTagFunction() {
