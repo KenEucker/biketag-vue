@@ -310,6 +310,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return client
         .getAllGames(undefined, {
           source: BikeTagDefaults.gameSource,
+          cached
         })
         .then((d) => {
           if (d.success) {
@@ -336,7 +337,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     async fetchQueuedTags(cached = true) {
       if (this.currentBikeTag?.tagnumber > 0) {
-        return client.queue(undefined, { source: cached ? 'aws' : 'biketag', cached }).then((d) => {
+        return client.queue(undefined, { source: cached ? this.imageSource : 'biketag', cached }).then((d) => {
           if ((d as Tag[])?.length > 0) {
             const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
               (t) =>
@@ -1020,6 +1021,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     getImageSized: (state) => {
       return (url: string, s: string = 'm') =>
         getImageSized(state.imageSource, url, s as 's' | 'm' | 'l' | 'o' | undefined)
+    },
+    getImageSource (state) {
+      return state.imageSource
     },
     getQueuedTagState: (state) => {
       return getQueuedTagState(state.playerTag)

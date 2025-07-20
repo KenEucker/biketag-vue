@@ -219,7 +219,7 @@ async function onQueueSubmit(newTagSubmission) {
         type: 'error',
         position: 'top',
       })
-      if (store.imageSource === 'imgur' && getGameNotices.value?.imgurDelayNotice) {
+      if (store.getImageSource === 'imgur' && getGameNotices.value?.imgurDelayNotice) {
         toast.open({
           duration: 10000,
           message: getGameNotices.value.imgurDelayNotice,
