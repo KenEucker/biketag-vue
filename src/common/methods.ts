@@ -8,13 +8,13 @@ import log from 'loglevel'
 import moment from 'moment-timezone'
 import { useCookies } from 'vue3-cookies'
 import {
-    BikeTagDefaults,
-    BikeTagEnv,
-    BikeTagProfile,
-    BiketagQueueFormSteps,
-    DomainInfo,
-    deca,
-    special,
+  BikeTagDefaults,
+  BikeTagEnv,
+  BikeTagProfile,
+  BiketagQueueFormSteps,
+  DomainInfo,
+  deca,
+  special,
 } from '.'
 
 export const stringifyNumber = (n: number): string => {
@@ -50,7 +50,7 @@ export const getImageSized = (
     o: 'original',
   }
 
-  let imageSource: 'aws' | 'imgur' | 'sanity' = 'imgur'
+  let imageSource
   let imageUrl: string
 
   // Handle case where imageSource was omitted
@@ -181,6 +181,20 @@ export const getTokenFromCookie = (tokenCookieKey = 'token'): string => {
   return cookies.get(tokenCookieKey)
 }
 
+export const getRegionPolygonFromCookie = (
+  regionPolygonCookieKey = 'regionPolygon',
+): any => {
+  const { cookies } = useCookies()
+  const existingRegionPolygon = cookies.get(regionPolygonCookieKey)
+  if (existingRegionPolygon) {
+    try {
+      return JSON.parse(existingRegionPolygon)
+    } catch (e: any) {
+    }
+  }
+  return null 
+}
+
 export const setTokenInCookie = (token: string, tokenCookieKey = 'token'): string => {
   const { cookies } = useCookies()
   cookies.set(tokenCookieKey, token)
@@ -238,7 +252,7 @@ export const getQueuedTagFromCookie = (queuedTagCookieKey = 'biketag'): Tag | un
   const { cookies } = useCookies()
   const existingBikeTag = cookies.get(queuedTagCookieKey)
 
-  debug('getQueuedTagFromCookie', { existingBikeTag })
+  debug('play::getQueuedTagFromCookie', { existingBikeTag })
   if (existingBikeTag) {
     /// TODO: does this need to be JSON.parse d?
     return existingBikeTag as unknown as Tag
@@ -248,7 +262,7 @@ export const getQueuedTagFromCookie = (queuedTagCookieKey = 'biketag'): Tag | un
 export const setQueuedTagInCookie = (queuedTag?: Tag, queuedTagCookieKey = 'biketag'): boolean => {
   const { cookies } = useCookies()
 
-  debug('setQueuedTagInCookie', { queuedTag })
+  debug('play::setQueuedTagInCookie', { queuedTag })
   if (queuedTag) {
     cookies.set(queuedTagCookieKey, JSON.stringify(queuedTag))
   } else {
@@ -354,6 +368,11 @@ export const GetQueryString = (win: Window, name: string): string | null => {
   return null
 }
 
+export const getQueryParam = (win: Window, param: string): string | null => {
+  const urlParams = new URLSearchParams(win.location.search)
+  return urlParams.get(param)
+}    
+
 export const getQueuedTagState = (queuedTag: Tag): BiketagQueueFormSteps => {
   const mysteryImageSet = queuedTag.mysteryImageUrl?.length > 0
   const foundImageSet = queuedTag.foundImageUrl?.length > 0
@@ -446,12 +465,12 @@ export const getApiUrl = (path = '') => {
 
 export const exportHtmlToDownload = (filename: string, node?: any, selector?: string): any => {
   if (!node && !selector) {
-    debug('nothing to render')
+    debug('data::export', 'nothing to render')
     return
   }
   node = node ?? document.querySelector(selector as string)
   if (!node) {
-    debug('node not found')
+    debug('data::export', 'node not found')
     return
   }
 
@@ -469,9 +488,13 @@ export const exportHtmlToDownload = (filename: string, node?: any, selector?: st
     })
 }
 
-export const debug = (message: string, context?: any) => {
-  console.log(message, { context })
-  log.debug(message, { context })
+export const debug = (message: string, context?: any, level: 'log' | 'info' | 'warn' | 'error' = 'log') => {
+  const shouldLogBecauseDebugIsSet = getQueryParam(window, 'debug_a') === 'true' || BikeTagEnv.DEBUG_A === 'true'
+  const shouldLogBecauseLevel = level === 'error' || level === 'warn' || level === 'info'
+  if (shouldLogBecauseDebugIsSet || shouldLogBecauseLevel) {
+    console[level](message, context)
+  }
+  log.debug(message, context)
 }
 
 export const feetToKm = (feets: number) => feets * 0.0003048

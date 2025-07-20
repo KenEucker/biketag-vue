@@ -75,11 +75,13 @@ export type BikeTagProfile = Partial<Profile> & Partial<AmbassadorProfile>
 export interface BikeTagStoreState {
   fetchingData: boolean
   dataFetched: boolean
+  lastCacheResetTime: number
+  cacheResetInterval: number
   game: Game
   allGames: Game[]
   achievements: Achievement[]
   gameSource: string
-  imageSource: 'aws' | 'imgur' | 'sanity' | 'biketag'
+  imageSource: string
   gameName: string
   gameNameProper: string
   currentBikeTag: Tag
@@ -93,8 +95,8 @@ export interface BikeTagStoreState {
   credentialsFetched: boolean
   mostRecentlyViewedTagnumber: BiketagQueueFormSteps
   regionPolygon: any
-  token: string
-  auth0Token: string
+  token?: string
+  auth0Token?: string
 }
 
 export enum BiketagQueueFormSteps {

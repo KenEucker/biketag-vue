@@ -313,14 +313,14 @@ const onSubmit = async (e) => {
   }
   if (location.value?.length == 0) {
     if (!gps.value.lat) {
-      debug('location must be set')
+      debug('play::queue-found', 'location must be set')
       uploadInProgress.value = false
       return
     }
   }
   if (player.value.length == 0) {
     if (getPlayerName.value.length == 0) {
-      debug('player name must set')
+      debug('play::queue-found', 'player name must set')
       uploadInProgress.value = false
       return
     } else {

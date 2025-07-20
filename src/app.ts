@@ -54,13 +54,16 @@ class BikeTagApp {
     this.app.use(router)
   }
   store() {
+    const pinia = createPinia()
+    const store = createBikeTag({ includeComponents: false, includeDirectives: false })
     this.app
-      .use(createPinia())
-      .use(createBikeTag({ includeComponents: false, includeDirectives: false }))
+      .use(pinia)
+      .use(store)
+    debug('app::store', store.storeName)
   }
   authentication() {
     if (isAuthenticationEnabled()) {
-      debug('init::authentication', BikeTagEnv.A_DOMAIN)
+      debug('app::authentication', BikeTagEnv.A_DOMAIN)
       this.app.use(
         createAuth0({
           domain: BikeTagEnv.A_DOMAIN as string,
@@ -73,7 +76,7 @@ class BikeTagApp {
         }),
       )
     } else {
-      debug('init::authentication', 'authentication disabled')
+      debug('app::authentication', 'disabled')
     }
   }
 
@@ -97,6 +100,7 @@ class BikeTagApp {
 
   mount() {
     this.app.mount('#app')
+    debug('app::init', 'mounted')
   }
 
   run() {

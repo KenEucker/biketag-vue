@@ -126,7 +126,7 @@ onMounted(() => {
       postToBluesky: postToBluesky.value,
       postToInstagram: postToInstagram.value,
     }
-    debug('autosubmitting tag with default share settings', defaultShareSettings)
+    debug('play::queue-post', 'autosubmitting tag with default share settings')
     nextTick(() => submitTag(defaultShareSettings), 1000)
   }
 })

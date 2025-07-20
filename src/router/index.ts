@@ -146,7 +146,7 @@ if (isAuthenticationEnabled()) {
   ]
 }
 
-debug('init::router', { sitemap: routes.map((r) => r.path) })
+debug('router::init', { sitemap: routes.map((r) => r.path) })
 
 const router = createRouter({
   history: createWebHistory(),

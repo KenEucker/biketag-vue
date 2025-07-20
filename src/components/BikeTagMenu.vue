@@ -200,7 +200,7 @@ const getQueuedTags = computed(() => store.getQueuedTags)
 const limitQueue = computed(() => (window.innerWidth < 500 ? 2 : 0))
 const isShow = computed(() => {
   if (route.name) {
-    debug('view::loaded', route.name)
+    debug('view::loaded', 'route: ' + route.name)
   }
   return route.name !== 'Home'
 })

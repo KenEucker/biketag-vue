@@ -116,7 +116,7 @@ function checkForNewBikeTagPost() {
     store.getMostRecentlyViewedTagnumber !== 0
   ) {
     let showNewRoundNotification = true
-    debug('ui::new biketag posted!!', store.getCurrentBikeTag.tagnumber)
+    debug('play::new-biketag-posted', store.getCurrentBikeTag.tagnumber, 'info')
     if (store.getCurrentBikeTag?.playerId?.length && store.getProfile?.sub?.length) {
       const playerIdMatches = store.getCurrentBikeTag.playerId === store.getProfile.sub
       const playerName = store.getProfile.user_metadata?.name
@@ -156,7 +156,7 @@ async function created() {
 
   if (_gameIsSet && (!routeIsLanding || routeIsRoot)) {
     const game = await store.setGame().catch((err) => {
-      debug('view::data-init', err)
+      debug('view::data-init', err, 'error')
       // router.push('/landing')
     })
     gameIsSet.value = true
@@ -176,7 +176,7 @@ async function created() {
   } else if (!_gameIsSet) {
     await store.fetchAllGames()
   }
-  debug(`view::data-init`, 'created')
+  debug(`view::init`, 'app created', 'info')
 }
 
 created()
