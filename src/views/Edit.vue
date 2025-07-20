@@ -91,6 +91,10 @@ function togglePreview() {
 }
 
 async function mergeTags() {
+    console.log('merging current and previous tags', {
+      currentTag: currentTag.value,
+      previousTag: previousTag.value,
+    })
   if (currentTag.value && previousTag.value) {
     Object.assign(mergedTag, {
       ...currentTag.value,
@@ -99,7 +103,10 @@ async function mergeTags() {
       foundLocation: previousTag.value.foundLocation,
     })
   } else {
-    console.log('issue merging current and previous tags', { currentTag: currentTag.value, previousTag: previousTag.value })
+    console.log('issue merging current and previous tags', {
+      currentTag: currentTag.value,
+      previousTag: previousTag.value,
+    })
   }
 }
 

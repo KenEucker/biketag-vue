@@ -459,12 +459,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               authorization: `Bearer ${this.auth0Token}`,
             },
           })
-          if (approveTagResponse.status === 202) {
-            return true
-          } else if (approveTagResponse.status !== 200) {
-            return `BikeTag round #${d.tagnumber} couldn't be posted`
-          } else {
+          if (approveTagResponse.status > 199 && approveTagResponse.status < 300) {
             this.resetBikeTagCache()
+            return true
+          } else {
+            return `BikeTag round #${d.tagnumber} couldn't be posted`
           }
         } catch (e: any) {
           console.error('error approving tag', e?.message ?? e)
@@ -477,7 +476,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async dequeueTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         try {
-          const deleteTagResponse = await client.plainRequest({
+          const dequequeTagResponse = await client.plainRequest({
             method: 'POST',
             url: getApiUrl('delete'),
             data: { tag: d, ambassadorId: this.profile.sub },
@@ -486,12 +485,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             },
           })
 
-          if (deleteTagResponse.status === 202) {
-            return true
-          } else if (deleteTagResponse.status !== 200) {
-            return `BikeTag #${d.tagnumber} couldn't be deleted`
-          } else {
+          if (dequequeTagResponse.status > 199 && dequequeTagResponse.status < 300) {
             this.resetBikeTagCache()
+            return true
+          } else {
+            return `BikeTag #${d.tagnumber} couldn't be dequeued`
           }
         } catch (e: any) {
           console.error('error deleting tag', e?.message ?? e)
@@ -513,12 +511,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               authorization: `Bearer ${this.auth0Token}`,
             },
           })
-          if (deleteTagResponse.status === 202) {
-            return true
-          } else if (deleteTagResponse.status !== 200) {
-            return `BikeTag #${d.tagnumber} couldn't be deleted`
-          } else {
+          if (deleteTagResponse.status > 199 && deleteTagResponse.status < 300) {
             this.resetBikeTagCache()
+            return true
+          } else {
+            return `BikeTag #${d.tagnumber} couldn't be deleted`
           }
         } catch (e: any) {
           console.error('error deleting tag', e?.message ?? e)
@@ -1113,7 +1110,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return state.currentBikeTag
     },
     getPreviousBikeTag(state) {
-      return state.tags.find(t => t.tagnumber === this.currentBikeTag.tagnumber - 1)
+      return state.tags.find((t) => t.tagnumber === this.currentBikeTag.tagnumber - 1)
     },
     getTags(state) {
       return state.tags

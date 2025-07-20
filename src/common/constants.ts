@@ -23,8 +23,8 @@ export const BikeTagDefaults = {
 }
 
 export const BikeTagEnv = {
-  APP_ID: process.env.APP_ID ?? BikeTagDefaults.appId,
-  DEBUG_A: process.env.DEBUG_A,
+  APP_ID: process.env.APP_ID ?? BikeTagDefaults.appId ?? null,
+  DEBUG_A: process.env.DEBUG_A ?? 'false',
   CONTEXT: process.env.CONTEXT ?? null,
   ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? BikeTagDefaults.admingEmail,
   AMBASSADOR_ROLE: process.env.AMBASSADOR_ROLE ?? BikeTagDefaults.sanityAmbassadorRoleID,
@@ -40,7 +40,7 @@ export const BikeTagEnv = {
   /* BikeTag Configuration */
   GAME_NAME: process.env.GAME_NAME ?? null,
   GAME_SOURCE: process.env.GAME_SOURCE ?? null,
-  HOST: process.env.HOST ?? BikeTagDefaults.host,
+  HOST: process.env.HOST ?? BikeTagDefaults.host ?? null,
   BIKETAG_AUTHED: process.env.BIKETAG_AUTHED ?? null,
   /* Google Configuration */
   G_AKEY:
@@ -67,9 +67,9 @@ export const BikeTagEnv = {
   SA_PID: process.env.SA_PID ?? process.env.SANITY_ADMIN_PROJECT_ID ?? null,
   // SA_TOKEN: process.env.SA_TOKEN ?? process.env.SANITY_ADMIN_ACCESS_TOKEN ?? null,
   /* Sanity Configuration */
-  S_CURL: process.env.S_CURL ?? BikeTagDefaults.sanityImagesCDNUrl,
-  S_DSET: process.env.S_DSET ?? process.env.SANITY_DATASET,
-  S_PID: process.env.S_PID ?? process.env.SANITY_PROJECT_ID,
+  S_CURL: process.env.S_CURL ?? BikeTagDefaults.sanityImagesCDNUrl ?? null,
+  S_DSET: process.env.S_DSET ?? process.env.SANITY_DATASET ?? null,
+  S_PID: process.env.S_PID ?? process.env.SANITY_PROJECT_ID ?? null,
   // S_TOKEN: process.env.S_TOKEN ?? process.env.SANITY_ACCESS_TOKEN ?? null,
   /* AWS S3 Configuration */
   RELOAD_SW: process.env.RELOAD_SW ?? 'false',
