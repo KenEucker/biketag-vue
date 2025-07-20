@@ -1,11 +1,5 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <loading
-    v-show="editInProgress"
-    v-model:active="editInProgress"
-    :is-full-page="true"
-    class="realign-spinner"
-  >
+  <loading v-show="editInProgress" v-model:active="editInProgress" :is-full-page="true" class="realign-spinner">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
 
@@ -17,9 +11,19 @@
       </bike-tag-button>
     </div>
 
-    <div v-else-if="!editInProgress && currentTag">
+    <div v-else-if="!editInProgress && mergedTag">
       <h2>Edit Most Recent BikeTag for {{ getGameNameProper }}</h2>
-      <EditBikeTag :tag="currentTag" @update="onFieldUpdate" />
+
+      <!-- Toggle preview/edit mode -->
+      <bike-tag-button @click="togglePreview">
+        {{ previewMode ? 'Switch to Edit Mode' : 'Switch to Preview Mode' }}
+      </bike-tag-button>
+
+      <div class="biketag-container">
+        <BikeTag v-if="previewMode" :tag="mergedTag" />
+        <EditBikeTag v-else :tag="mergedTag" @update="onFieldUpdate" />
+      </div>
+
       <bike-tag-button @click="onSave">
         Save Changes
       </bike-tag-button>
@@ -29,17 +33,10 @@
       <p>Loading the latest BikeTag for editing...</p>
     </div>
 
-    <form
-      ref="editError"
-      name="edit-tag-error"
-      action="edit-tag-error"
-      method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="bot-field"
-      hidden
-    >
+    <form ref="editError" name="edit-tag-error" action="edit-tag-error" method="POST" data-netlify="true"
+      data-netlify-honeypot="bot-field" hidden>
       <input type="hidden" name="form-name" value="edit-tag-error" />
-      <input type="hidden" name="tagnumber" :value="currentTag?.tagnumber" />
+      <input type="hidden" name="tagnumber" :value="mergedTag?.tagnumber" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
       <input type="hidden" name="message" />
       <input type="hidden" name="ip" value="" />
@@ -54,6 +51,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import { sendNetlifyError, sendNetlifyForm } from '@/common'
+import BikeTag from '@/components/BikeTag.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import EditBikeTag from '@/components/EditBikeTag.vue'
 
@@ -66,15 +64,35 @@ const editInProgress = ref(true)
 const editSuccess = ref(false)
 const editError = ref(null)
 
+const previewMode = ref(false)
+
 const pendingEdits = reactive({})
+const mergedTag = reactive({})
 
 const getGameName = computed(() => store.getGameName)
 const getGameNameProper = computed(() => store.getGameNameProper)
 const getAmbassadorId = computed(() => store.getAmbassadorId)
 const currentTag = computed(() => store.getCurrentBikeTag)
+const previousTag = computed(() => store.getPreviousBikeTag)
+
+function togglePreview() {
+  previewMode.value = !previewMode.value
+}
+
+async function mergeTags() {
+  if (currentTag.value && previousTag.value) {
+    Object.assign(mergedTag, {
+      ...currentTag.value,
+      foundPlayer: previousTag.value.foundPlayer,
+      foundTime: previousTag.value.foundTime,
+      foundLocation: previousTag.value.foundLocation
+    })
+  }
+}
 
 async function onFieldUpdate({ field, value }) {
   pendingEdits[field] = value
+  mergedTag[field] = value // update mergedTag so preview reflects changes live
 }
 
 async function onSave() {
@@ -95,7 +113,7 @@ async function onSave() {
 
   const payload = {
     game: getGameName.value,
-    tagnumber: currentTag.value.tagnumber,
+    tagnumber: mergedTag.tagnumber,
     ...pendingEdits
   }
 
@@ -142,6 +160,13 @@ async function onSave() {
 
 onMounted(async () => {
   await store.isReady()
+  await mergeTags()
   editInProgress.value = false
 })
 </script>
+
+<style scoped>
+.biketag-container {
+  margin: 1rem 0;
+}
+</style>

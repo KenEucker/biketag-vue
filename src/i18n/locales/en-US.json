@@ -245,6 +245,12 @@
     "approve": {
       "confirm_remove": "Removing this Queued Tag will delete the images and the user will be removed from the round. You should only be doing this if the tag images are invalid. When a tag is approved, all queued 'found' images are archived on behalf of that BikeTag Player. There is no need to remove valid submissions.",
       "confirm_approve": "Are you sure this is the winning tag? "
+    },
+    "delete": {
+      "title": "Delete Current BikeTag Post"
+    },
+    "edit": {
+      "title": "Delete Current BikeTag Post"
     }
   }
 }
