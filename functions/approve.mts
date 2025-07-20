@@ -144,7 +144,7 @@ export default async (req: Request) => {
       headers,
       status: responseStatus,
     })
-  } catch (err) {
+  } catch (err: any) {
     log('[approve-tag] Unhandled error', err, 'error')
     return new Response(
       JSON.stringify({

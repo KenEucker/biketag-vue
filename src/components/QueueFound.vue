@@ -272,7 +272,7 @@ const onSubmit = async (e) => {
       // console.log({ passcodeCheckResponse })
       showModal.value = false
       await sleep(100)
-    } catch (e) {
+    } catch(e: any) {
       // console.log('response', e.response)
       const noProfileFound = e.response.status === 404 && e.response.data === 'no profile found'
       const incorrectPasscode = e.response.status === 401
@@ -458,7 +458,7 @@ const setImage = async (event) => {
           location.value = ''
         }
       }
-    } catch (e) {
+    } catch(e: any) {
       console.error(e)
     }
   }

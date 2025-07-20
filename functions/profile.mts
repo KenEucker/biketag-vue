@@ -101,7 +101,7 @@ export default async (req: Request) => {
     if (status !== HttpStatusCode.Ok) {
       log('[profile] Profile not retrieved', { status, body }, 'warn')
     }
-  } catch (err) {
+  } catch (err: any) {
     log('[profile] Unexpected error', err, 'error')
     status = HttpStatusCode.InternalServerError
     body = 'Internal server error'

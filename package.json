@@ -7,6 +7,8 @@
     "url": "https://github.com/keneucker/biketag-vue/issues"
   },
   "scripts": {
+    "build:functions": "tsc --project tsconfig.functions.json",
+    "watch:functions": "tsc --project tsconfig.functions.json --watch",
     "lint": "npm run lint:js && npm run lint:style",
     "lint:js": "eslint --ext .ts,.js,.vue src --fix",
     "lint:style": "stylelint \"./src/**/*.vue\" \"./src/**/*.scss\" --fix",
@@ -86,6 +88,7 @@
     "@types/md5": "^2.3.5",
     "@types/node": "^20.11.5",
     "@types/nodemailer": "^6.4.14",
+    "@types/qs": "^6.14.0",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
     "@vitejs/plugin-vue": "^5.0.3",

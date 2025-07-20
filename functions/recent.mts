@@ -122,7 +122,7 @@ export default async (req: Request) => {
         body = JSON.stringify(recentResponse.data)
       }
     }
-  } catch (err) {
+  } catch (err: any) {
     log('[get-recent-tags] Unexpected error', err, 'error')
     status = HttpStatusCode.InternalServerError
     body = JSON.stringify({ error: 'Internal server error' })

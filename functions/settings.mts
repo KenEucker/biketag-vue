@@ -51,7 +51,7 @@ export default async (req: Request) => {
       status: settingsResponse.status,
       headers,
     })
-  } catch (err) {
+  } catch (err: any) {
     log('[get-settings] Unexpected error', err, 'error')
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: HttpStatusCode.InternalServerError,

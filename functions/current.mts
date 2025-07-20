@@ -90,7 +90,7 @@ export default async (req: Request) => {
       status: currentTagResponse.status,
       headers,
     })
-  } catch (err) {
+  } catch (err: any) {
     log('[get-tag-image] Unexpected error', err, 'error')
     return new Response('Internal server error', {
       status: HttpStatusCode.InternalServerError,

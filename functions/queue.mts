@@ -70,7 +70,7 @@ export default async (req: Request) => {
       status: queueResponse.status,
       headers,
     })
-  } catch (err) {
+  } catch (err: any) {
     log('[get-queue] Unexpected error', err, 'error')
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: HttpStatusCode.InternalServerError,

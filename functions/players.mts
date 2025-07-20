@@ -65,7 +65,7 @@ export default async (req: Request) => {
       status: playersResponse.status,
       headers,
     })
-  } catch (err) {
+  } catch (err: any) {
     log('[get-players] Unexpected error', err, 'error')
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: HttpStatusCode.InternalServerError,

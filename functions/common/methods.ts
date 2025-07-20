@@ -183,7 +183,7 @@ export const parseBody = async (req: Request) => {
     if (!parsed) {
       parsed = parseQuery(req)
     }
-  } catch (e) {
+  } catch (e: any) {
     parsed = parseQuery(req)
   }
 
@@ -200,7 +200,7 @@ export const getPayloadOpts = async (req: any, base = {}): Promise<any> => {
   }
 }
 
-export const isValidJson = (data, type = 'none') => {
+export const isValidJson = (data = {}, type = 'none') => {
   let schema = {}
 
   switch (type) {
@@ -358,7 +358,7 @@ const validateJWT = (verifier: JwtVerifier, options: any) => {
     try {
       clientToken = getTokenFromHeader(req.headers.get('authorization') as string)
       claims = await verifier.verifyAccessToken(clientToken)
-    } catch (err) {
+    } catch (err: any) {
       if (typeof options.handleError !== 'undefined' && options.handleError !== null) {
         return options.handleError(err)
       }
@@ -472,7 +472,7 @@ export const getPayloadAuthorization = async (
         const [name, passcode] = decoded.split('::')
         return { name, passcode }
       }
-    } catch (e) {
+    } catch (e: any) {
       log('Error decrypting Basic auth string', e, 'warn')
     }
     return { name: null, passcode: null }
@@ -483,7 +483,7 @@ export const getPayloadAuthorization = async (
       const verifierOpts = { issuer: '', audience: '' }
       const verifier = new JwtVerifier(verifierOpts)
       return await validateJWT(verifier, verifierOpts)
-    } catch (e) {
+    } catch (e: any) {
       log('Error verifying Netlify JWT', e, 'warn')
     }
     return null
@@ -629,7 +629,7 @@ export const encrypt = (t: any, key?: string) => {
     const encrypted = cipher.update(t, 'utf8', 'base64')
 
     return encrypted + cipher.final('base64')
-  } catch (e) {
+  } catch (e: any) {
     /// swallow exception
     return null
   }
@@ -647,7 +647,7 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
     const jsonObject = JSON.parse(decrypted)
 
     return jsonObject || decrypted
-  } catch (e) {
+  } catch (e: any) {
     /// swallow exception
     // console.log(e)
     return null
@@ -657,8 +657,8 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
 export const compress = lzutf8.compress
 export const decompress = lzutf8.decompress
 
-let liquidInstance
-export const liquidOpts = {
+let liquidInstance: Liquid
+export const liquidOpts: any = {
   dynamicPartials: true,
   strict_filters: true,
   extname: '.liquid',
@@ -710,8 +710,8 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
 
   const liquid = getLiquidInstance()
 
-  Object.keys(liquidOpts.customFilters).forEach((filter) => {
-    const filterMethod = liquidOpts.customFilters[filter]
+  Object.keys(liquidOpts.customFilters).forEach((filter: string) => {
+    const filterMethod: any = liquidOpts.customFilters[filter]
     liquid.registerFilter(filter, filterMethod)
   })
   const templateFilePath = join('functions', 'emails', template)
@@ -727,7 +727,7 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     const textTemplate = readFileSync(textTemplateFilePath).toString()
     text = liquid.parseAndRenderSync(textTemplate, locals)
     // }
-  } catch (e) {
+  } catch (e: any) {
     console.error(ErrorMessage.sendEmail, { e })
   }
 
@@ -781,8 +781,8 @@ export const sendEmailsToAmbassadors = async (
   if (!(process.env.G_EMAIL && process.env.G_PASS))
     return Promise.resolve({ accepted: [], rejected: [ErrorMessage.EmailNotConfigured] })
   let emailSent
-  let accepted = []
-  let rejected = []
+  let accepted: any = []
+  let rejected: any = []
   const defaultEmailData = {
     host: 'eh?',
     subdomainIcon: '/images/BikeTag.svg',
@@ -800,8 +800,8 @@ export const sendEmailsToAmbassadors = async (
         },
         emailName,
       )
-      accepted = accepted.concat(emailSent.accepted)
-      rejected = rejected.concat(emailSent.rejected)
+      accepted = accepted.concat(emailSent?.accepted ?? [])
+      rejected = rejected.concat(emailSent?.rejected ?? [])
     }
   }
   if (sendToAdmin) {
@@ -817,8 +817,8 @@ export const sendEmailsToAmbassadors = async (
         },
         emailName,
       )
-      accepted = accepted.concat(emailSent.accepted)
-      rejected = rejected.concat(emailSent.rejected)
+      accepted = accepted.concat(emailSent?.accepted ?? [])
+      rejected = rejected.concat(emailSent?.rejected ?? [])
     }
   }
 
@@ -1022,7 +1022,7 @@ export const createBikeTagPlayerProfile = async (
   return Promise.resolve({ data: null, success: false })
 }
 
-export const handleAuth0ProfileRequest = async (req: Request, profile): Promise<any> => {
+export const handleAuth0ProfileRequest = async (req: Request, profile: any): Promise<any> => {
   let body = ''
   let statusCode = HttpStatusCode.Continue
   let options = {}
@@ -1124,7 +1124,7 @@ export const handleAuth0ProfileRequest = async (req: Request, profile): Promise<
           body = ErrorMessage.InvalidRequestData
           statusCode = HttpStatusCode.BadRequest
         }
-      } catch (e) {
+      } catch (e: any) {
         body = `${ErrorMessage.PatchFailed}: ${e.message ?? e}`
         statusCode = HttpStatusCode.BadRequest
       }
@@ -1154,7 +1154,7 @@ export const handleAuth0ProfileRequest = async (req: Request, profile): Promise<
           body = ErrorMessage.InvalidRequestData
           statusCode = HttpStatusCode.BadRequest
         }
-      } catch (e) {
+      } catch (e: any) {
         body = `${ErrorMessage.PatchFailed}: ${e.message ?? e}`
         statusCode = HttpStatusCode.BadRequest
       }
@@ -1203,7 +1203,7 @@ export const handleAuth0ProfileRequest = async (req: Request, profile): Promise<
 }
 
 export const getBikeTagAuth0Profile = async (
-  name,
+  name: string,
   authorized = false,
   passcode?: string,
   sub?: string,
@@ -1256,7 +1256,7 @@ export const getBikeTagAuth0Profile = async (
 }
 
 export const getBikeTagPlayerProfile = async (
-  profile,
+  profile: any,
   authorized = false,
   stringifyResponse = false,
   adminBikeTag?: BikeTagClient,
@@ -1375,7 +1375,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
 
       return `bluesky::${postCreated.cid}`
     }
-  } catch (e) {
+  } catch (e: any) {
     console.log({ blueskyError: e })
   }
 
@@ -1768,7 +1768,7 @@ const getAuthManagementToken = async () => {
       }),
     })
     return getManagementTokenRequest?.data?.access_token
-  } catch (e) {
+  } catch (e: any) {
     // console.log({
     //   domain: process.env.A_DOMAIN,
     //   client_id: process.env.A_M_CID,

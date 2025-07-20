@@ -81,7 +81,7 @@ export default async (req: Request) => {
             headers,
             status: HttpStatusCode.Ok,
           })
-        } catch (err) {
+        } catch (err: any) {
           log('[token] Error generating JWT', err, 'error')
           return new Response('Error generating token', {
             headers,
@@ -102,7 +102,7 @@ export default async (req: Request) => {
         status: HttpStatusCode.Unauthorized,
       })
     }
-  } catch (err) {
+  } catch (err: any) {
     log('[token] Unexpected error', err, 'error')
     return new Response('Internal server error', {
       headers,

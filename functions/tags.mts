@@ -65,7 +65,7 @@ export default async (req: Request) => {
       status: tagsResponse.status,
       headers,
     })
-  } catch (err) {
+  } catch (err: any) {
     log('[get-tags] Unexpected error', err, 'error')
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: HttpStatusCode.InternalServerError,

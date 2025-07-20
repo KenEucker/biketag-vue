@@ -64,7 +64,7 @@ export default async (req: Request) => {
       status: statsResponse.status,
       headers,
     })
-  } catch (err) {
+  } catch (err: any) {
     log('[get-stats] Unexpected error', err, 'error')
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: HttpStatusCode.InternalServerError,

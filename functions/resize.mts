@@ -43,7 +43,7 @@ export default async (req: Request) => {
       status = 200
       headers['Content-Type'] = `image/${format}`
       body = output
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error resizing image:', err)
       status = 500
       body = 'Failed to resize image'

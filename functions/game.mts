@@ -41,7 +41,7 @@ export default async (req: Request) => {
       status: gameResponse.status,
       headers,
     })
-  } catch (err) {
+  } catch (err: any) {
     log('[get-game] Unexpected error', err, 'error')
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: HttpStatusCode.InternalServerError,

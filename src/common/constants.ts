@@ -67,9 +67,9 @@ export const BikeTagEnv = {
   SA_PID: process.env.SA_PID ?? process.env.SANITY_ADMIN_PROJECT_ID ?? null,
   // SA_TOKEN: process.env.SA_TOKEN ?? process.env.SANITY_ADMIN_ACCESS_TOKEN ?? null,
   /* Sanity Configuration */
-  S_CURL: process.env.S_CURL ?? BikeTagDefaults.sanityImagesCDNUrl ?? null,
-  S_DSET: process.env.S_DSET ?? process.env.SANITY_DATASET ?? null,
-  S_PID: process.env.S_PID ?? process.env.SANITY_PROJECT_ID ?? null,
+  S_CURL: process.env.S_CURL ?? BikeTagDefaults.sanityImagesCDNUrl ?? '',
+  S_DSET: process.env.S_DSET ?? process.env.SANITY_DATASET ?? '',
+  S_PID: process.env.S_PID ?? process.env.SANITY_PROJECT_ID ?? '',
   // S_TOKEN: process.env.S_TOKEN ?? process.env.SANITY_ACCESS_TOKEN ?? null,
   /* AWS S3 Configuration */
   RELOAD_SW: process.env.RELOAD_SW ?? 'false',

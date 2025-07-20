@@ -97,7 +97,7 @@ async function created() {
       manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
       debug('app::application manifest updated', applicationManifest)
     }
-  } catch (e) {
+  } catch(e: any) {
     console.error('app::error loading manifest')
   }
 }

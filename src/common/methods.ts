@@ -197,7 +197,7 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
       if (existingProfile) {
         return existingProfile as unknown as BikeTagProfile
       }
-    } catch (e) {
+    } catch(e: any) {
       /// Swallow anonymous
       console.error('failed to decrypt profile in cookie')
     }
@@ -228,7 +228,7 @@ export const setProfileCookie = (
     }
 
     return true
-  } catch (err) {
+  } catch (err: any) {
     console.error('could not set profile cookie', err)
     return false
   }

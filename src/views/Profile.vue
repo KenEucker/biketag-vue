@@ -225,7 +225,7 @@ async function onSubmitName() {
         type: 'success',
         position: 'top',
       })
-    } catch (e) {
+    } catch(e: any) {
       profile.value.user_metadata.name = ''
       toast.open({
         message: e.response?.data ?? e.message,
@@ -248,7 +248,7 @@ async function onSubmit() {
         type: 'success',
         position: 'top',
       })
-    } catch (e) {
+    } catch(e: any) {
       toast.open({
         message: e.response?.data ?? e.message,
         type: 'error',

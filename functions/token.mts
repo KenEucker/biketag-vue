@@ -101,7 +101,7 @@ export default async (req: Request) => {
     } else {
       log('[fetch-signed-url] Unauthorized request fallback', { authProfile }, 'warn')
     }
-  } catch (err) {
+  } catch (err: any) {
     log('[fetch-signed-url] Unexpected error', err, 'error')
     status = HttpStatusCode.InternalServerError
     body = err.message || 'Unexpected error'

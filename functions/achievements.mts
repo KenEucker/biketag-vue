@@ -1,5 +1,11 @@
 import { BikeTagClient, Game } from 'biketag'
-import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, HttpStatusCode, log } from './common'
+import {
+  acceptCorsHeaders,
+  getBikeTagClientOpts,
+  getPayloadOpts,
+  HttpStatusCode,
+  log,
+} from './common'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -35,14 +41,13 @@ export default async (req: Request) => {
     const imageSource = game.awsRegion ? 'aws' : 'imgur'
     log('[get-achievements] Using image source', { imageSource })
 
-    const achievementsResponse = await biketag.getAchievements(
-      biketagPayload,
-      { source: imageSource }
-    )
+    const achievementsResponse = await biketag.getAchievements(biketagPayload, {
+      source: imageSource,
+    })
     log('[get-achievements] getAchievements response', {
       success: achievementsResponse.success,
       status: achievementsResponse.status,
-      count: Array.isArray(achievementsResponse.data) ? achievementsResponse.data.length : 0
+      count: Array.isArray(achievementsResponse.data) ? achievementsResponse.data.length : 0,
     })
 
     const { success, data } = achievementsResponse
@@ -51,7 +56,7 @@ export default async (req: Request) => {
       status: achievementsResponse.status,
       headers,
     })
-  } catch (err) {
+  } catch (err: any) {
     log('[get-achievements] Unexpected error', err, 'error')
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: HttpStatusCode.InternalServerError,
