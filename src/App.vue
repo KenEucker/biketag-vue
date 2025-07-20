@@ -106,14 +106,6 @@ onMounted(async () => {
         }
       }
     )
-
-    // 🔔 Safe startup call:
-    if (!auth0.isLoading.value && auth0.isAuthenticated.value) {
-      try {
-        const token = await auth0.getAccessTokenSilently()
-        await store.setProfile(undefined, token)
-      } catch (e) {}
-    }
   }
 })
 

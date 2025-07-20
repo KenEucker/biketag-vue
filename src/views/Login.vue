@@ -5,10 +5,7 @@
         <h1>BikeTag</h1>
         <p>Be part of the adventure.<br />Join the BikeTag community and unlock player features.</p>
         <img v-if="isBikeTagAmbassador" :src="BikeTagSvg" alt="BikeTag Ambassador" />
-        <p class="mt-5 mb-5 welcome">
-          {{ isBikeTagAmbassador ? $t('pages.login.ambassador') : $t('pages.login.player') }}
-        </p>
-        <bike-tag-button variant="bold" class="cta primary-cta" :text="$t('menu.login')" @click="login" />
+        <bike-tag-button variant="bold" :text="$t('menu.login')" @click="login" />
       </section>
 
       <section class="benefit">
@@ -74,7 +71,7 @@
       </section>
 
       <section class="cta-footer">
-        <bike-tag-button variant="bold" class="cta secondary-cta" text="Create Account" @click="login" />
+        <bike-tag-button variant="light" text="Create Account" @click="login" />
       </section>
     </div>
   </div>

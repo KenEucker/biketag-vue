@@ -4,7 +4,7 @@
     <p>Manage your local BikeTag round. Use the tools below to approve, edit, or remove posts.</p>
 
     <div class="actions">
-      <router-link to="/ambassador/approve" class="action-button">
+      <router-link to="/approve" class="action-button">
         <span class="icon">
           <!-- Sketch-style checkmark -->
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -14,7 +14,7 @@
         Approve Posts in Round
       </router-link>
 
-      <router-link to="/ambassador/delete" class="action-button">
+      <router-link to="/delete" class="action-button">
         <span class="icon">
           <!-- Sketch-style trash can -->
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -26,7 +26,7 @@
         Delete Current Post
       </router-link>
 
-      <router-link to="/ambassador/edit" class="action-button">
+      <router-link to="/edit" class="action-button">
         <span class="icon">
           <!-- Sketch-style pencil -->
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
