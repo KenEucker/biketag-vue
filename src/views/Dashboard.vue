@@ -1,7 +1,8 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="ambassador-dashboard">
-    <h1>Ambassador Dashboard</h1>
+  <div class="ambassador-dashboard container">
+    <img class="ambassador-icon" src="/images/biketag-ambassador.svg" alt="Ambassador Icon" />
+    <h1>BikeTag Ambassador Dashboard</h1>
     <p>Manage your local BikeTag round. Use the tools below to approve, edit, or remove posts.</p>
 
     <div class="actions">

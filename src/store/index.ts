@@ -335,7 +335,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     fetchAllAchievements(cached = true) {
       return client
-        .getAchievements(undefined, { source: this.imageSource, cached })
+        .getAchievements(undefined, { source: this.gameSource, cached })
         .then((r) => this.SET_ACHIEVEMENTS(r.data))
     },
     fetchCurrentBikeTag(cached = true) {

@@ -1,54 +1,82 @@
 <template>
   <div>
     <BikeTag :tag="editableTag">
-      <!-- Editable mystery player -->
+      <!-- Mystery Player -->
       <template #mysteryPlayer>
-        <label class="edit-label">Mystery Player</label>
-        <input v-model="editableTag.mysteryPlayer" @blur="save('mysteryPlayer')" />
+        <div class="edit-field">
+          <label class="edit-label" :for="inputId('mysteryPlayer')">Mystery Player</label>
+          <input
+            :id="inputId('mysteryPlayer')"
+            v-model="editableTag.mysteryPlayer"
+            @blur="save('mysteryPlayer')"
+          />
+        </div>
       </template>
 
-      <!-- Editable mystery time -->
+      <!-- Mystery Time -->
       <template #mysteryTime>
-        <label class="edit-label">Mystery Time</label>
-        <DatePicker
-          v-model="mysteryDate"
-          :enable-time-picker="true"
-          @update:model-value="onDateChange('mysteryTime', $event)"
-        />
+        <div class="edit-field">
+          <label class="edit-label" :for="inputId('mysteryTime')">Mystery Time</label>
+          <DatePicker
+            :id="inputId('mysteryTime')"
+            v-model="mysteryDate"
+            :enable-time-picker="true"
+            @update:model-value="onDateChange('mysteryTime', $event)"
+          />
+        </div>
       </template>
 
-      <!-- Editable found player -->
+      <!-- Found Player -->
       <template #foundPlayer>
-        <label class="edit-label">Found Player</label>
-        <input v-model="editableTag.foundPlayer" @blur="save('foundPlayer')" />
+        <div class="edit-field">
+          <label class="edit-label" :for="inputId('foundPlayer')">Found Player</label>
+          <input
+            :id="inputId('foundPlayer')"
+            v-model="editableTag.foundPlayer"
+            @blur="save('foundPlayer')"
+          />
+        </div>
       </template>
 
-      <!-- Editable found time -->
+      <!-- Found Time -->
       <template #foundTime>
-        <label class="edit-label">Found Time</label>
-        <DatePicker
-          v-model="foundDate"
-          :enable-time-picker="true"
-          @update:model-value="onDateChange('foundTime', $event)"
-        />
+        <div class="edit-field">
+          <label class="edit-label" :for="inputId('foundTime')">Found Time</label>
+          <DatePicker
+            :id="inputId('foundTime')"
+            v-model="foundDate"
+            :enable-time-picker="true"
+            @update:model-value="onDateChange('foundTime', $event)"
+          />
+        </div>
       </template>
 
-      <!-- Editable found location -->
+      <!-- Found Location -->
       <template #foundLocation>
-        <label class="edit-label">Found Location</label>
-        <input v-model="editableTag.foundLocation" @blur="save('foundLocation')" />
+        <div class="edit-field">
+          <label class="edit-label" :for="inputId('foundLocation')">Found Location</label>
+          <input
+            :id="inputId('foundLocation')"
+            v-model="editableTag.foundLocation"
+            @blur="save('foundLocation')"
+          />
+        </div>
       </template>
 
-      <!-- Editable mystery description / hint -->
+      <!-- Hint -->
       <template #mysteryDescription>
-        <label class="edit-label">Hint</label>
-        <input v-model="editableTag.hint" @blur="save('hint')" />
+        <div class="edit-field">
+          <label class="edit-label" :for="inputId('hint')">Hint</label>
+          <input :id="inputId('hint')" v-model="editableTag.hint" @blur="save('hint')" />
+        </div>
       </template>
 
-      <!-- Editable gps -->
+      <!-- GPS Coordinates -->
       <template #gps>
-        <label class="edit-label">GPS Coordinates</label>
-        <input v-model="editableTag.gps" @blur="save('gps')" />
+        <div class="edit-field">
+          <label class="edit-label" :for="inputId('gps')">GPS Coordinates</label>
+          <input :id="inputId('gps')" v-model="editableTag.gps" @blur="save('gps')" />
+        </div>
       </template>
     </BikeTag>
   </div>
@@ -87,7 +115,6 @@ const foundDate = ref<Date | null>(
 const emit = defineEmits(['update'])
 
 const save = (field: EditableField) => {
-  console.log(`Saving ${field}:`, editableTag[field])
   emit('update', {
     field,
     value: editableTag[field],
@@ -103,7 +130,6 @@ const onDateChange = (field: 'mysteryTime' | 'foundTime', date: Date | null) => 
   }
 }
 
-// Sync prop changes if needed (optional but robust)
 watch(
   () => props.tag,
   (newTag) => {
@@ -113,21 +139,29 @@ watch(
   },
   { deep: true },
 )
+
+// Generates a unique id for each input/label pair
+const inputId = (field: string) => `edit-biketag-${field}`
 </script>
 
 <style scoped>
-input {
-  width: 100%;
-  font-size: 1rem;
-  padding: 0.25rem;
-  margin-bottom: 0.5rem;
-  box-sizing: border-box;
-}
-
 .edit-label {
   display: block;
   font-weight: bold;
   margin-top: 0.5rem;
   margin-bottom: 0.25rem;
+}
+
+.edit-field {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.edit-field input,
+.edit-field ::deep(.dp__input) {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.25rem;
+  box-sizing: border-box;
 }
 </style>
