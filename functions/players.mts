@@ -15,7 +15,7 @@ export default async (req: Request) => {
   if (req.method === 'OPTIONS') {
     log('[get-players] OPTIONS preflight handled')
     return new Response(undefined, {
-      status: HttpStatusCode.Ok,
+      status: HttpStatusCode.NoContent,
       headers,
     })
   }
