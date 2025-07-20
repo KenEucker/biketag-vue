@@ -237,13 +237,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     async fetchCredentials(fetchNewCredentials = false) {
       if (!this.credentialsFetched || fetchNewCredentials) {
-        // console.log('fetching credentials', biketagClientOpts)
         try {
-          // await client.config(
-          //   { ...biketagClientOpts, ...getBikeTagClientOpts(window, true) },
-          //   false,
-          //   true,
-          // )
           const biketagConf = await client.fetchCredentials(`player-id ${this.profile.sub}`)
           if (biketagConf?.biketag?.clientToken) {
             this.token = setTokenInCookie(biketagConf.biketag.clientToken)
@@ -251,8 +245,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         } catch (e: any) {
           console.error('error fetching credentials', e)
         }
-        // const credentials = await client.fetchCredentials()
-        // await client.config(credentials, false, true)
         this.credentialsFetched = true
       }
     },
@@ -524,7 +516,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async updateCurrentTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         try {
-          const deleteTagResponse = await client.plainRequest({
+          const updateTagResponse = await client.plainRequest({
             method: 'POST',
             url: getApiUrl('update'),
             data: { tag: d, ambassadorId: this.profile.sub },
@@ -532,7 +524,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               authorization: `Bearer ${this.auth0Token}`,
             },
           })
-          if (deleteTagResponse.status > 199 && deleteTagResponse.status < 300) {
+          if (updateTagResponse.status > 199 && updateTagResponse.status < 300) {
+            this.resetBikeTagCache()
             return true
           } else {
             return `BikeTag #${d.tagnumber} couldn't be updated`
@@ -607,9 +600,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.deleteTag(queuedTag, { source }).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::found tag dequeued`, this.playerTag)
-            client.getQueue({ reindex: true }, { source: 'biketag' })
-            await this.SET_QUEUED_TAG({})
-            await this.RESET_FORM_STEP_TO_FOUND()
+            await client.getQueue({ reindex: true }, { source: 'biketag' })
+            this.SET_QUEUED_TAG({})
+            this.RESET_FORM_STEP_TO_FOUND()
 
             return true
           } else {
@@ -635,9 +628,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.deleteTag(queuedMysteryTag, { source }).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::mystery tag dequeued`)
-            client.getQueue({ reindex: true }, { source: 'biketag' })
-            await this.SET_QUEUED_TAG(queuedFoundTag)
-            await this.RESET_FORM_STEP_TO_MYSTERY()
+            await client.getQueue({ reindex: true }, { source: 'biketag' })
+            this.SET_QUEUED_TAG(queuedFoundTag)
+            this.RESET_FORM_STEP_TO_MYSTERY()
 
             return true
           } else {
@@ -875,8 +868,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         oldState?.mysteryPlayer !== data?.foundPlayer
       ) {
         debug(`${BikeTagDefaults.store}::queuedFoundTag`, this.playerTag)
-        this.resetBikeTagCache()
-        console.log('SET_QUEUE_FOUND')
         if (oldState?.mysteryPlayer !== data?.foundPlayer) {
           this.formStep = BiketagQueueFormSteps.roundJoined
         } else {
@@ -886,7 +877,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return this.playerTag
     },
-    async SET_QUEUE_MYSTERY(data: any) {
+    SET_QUEUE_MYSTERY(data: any) {
       const oldState = this.playerTag
       this.playerTag = BikeTagClient.createTagObject(data, this.playerTag)
       // setQueuedTagInCookie(this.queuedTag)
@@ -909,7 +900,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         oldState?.tagnumber !== data?.tagnumber
       ) {
         debug(`${BikeTagDefaults.store}::queuedMysteryTag`, this.playerTag)
-        await this.resetBikeTagCache()
         if (
           oldState?.discussionUrl !== data?.discussionUrl ||
           oldState?.mentionUrl !== data?.mentionUrl
@@ -933,7 +923,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         oldState?.mentionUrl !== data?.mentionUrl
       ) {
         debug(`${BikeTagDefaults.store}::submittedTag`, this.playerTag)
-        this.resetBikeTagCache()
         this.formStep = BiketagQueueFormSteps.roundPosted
       }
 
