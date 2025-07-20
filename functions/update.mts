@@ -41,13 +41,10 @@ export default async (req: Request) => {
     })) as unknown as Game
     log('[update-tag] Retrieved game', { name: game.name, awsRegion: game.awsRegion })
 
-    const biketagPayload = await getPayloadOpts(req, {
-      imgur: { hash: game.queuehash },
-      game: biketagOpts.game,
-      folder: 'queue',
-    })
-    log('[update-tag] Prepared biketag payload', biketagPayload)
-    const playerId = biketagPayload.tag?.playerId ?? biketagPayload.playerId
+    updatePayload.imgur.hash = game.queuehash
+    updatePayload.folder = updatePayload.folder ?? 'queue'
+    log('[update-tag] Prepared biketag payload', updatePayload)
+    const playerId = updatePayload.tag?.playerId ?? updatePayload.playerId
 
     const ambassadorAndValid =
       profile.isBikeTagAmbassador && profile?.sub && profile.sub === updatePayload.ambassadorId
@@ -80,13 +77,13 @@ export default async (req: Request) => {
       log('[update-tag] AWS config applied', { region: game.awsRegion })
     }
 
-    const updateResponse = await biketag.updateTag(biketagPayload.tag ?? biketagPayload, {
+    const updateResponse = await biketag.updateTag(updatePayload.tag ?? updatePayload, {
       source: imageSource,
     })
     log('[update-tag] updateTag response', {
       success: updateResponse.success,
       status: updateResponse.status,
-      biketagPayload,
+      updatePayload,
       response: updateResponse,
     })
 
