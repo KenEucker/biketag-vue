@@ -370,13 +370,11 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagQueueFormSteps => {
 }
 
 export const getSupportedGames = (games: Game[]) => {
-  const isImgurSupported = (g: Game) => g.mainhash?.length && g.archivehash?.length && g.queuehash?.length
-  const isAwsSupported = (g:Game) => g.awsRegion?.length
+  const isImgurSupported = (g: Game) =>
+    g.mainhash?.length && g.archivehash?.length && g.queuehash?.length
+  const isAwsSupported = (g: Game) => g.awsRegion?.length
 
-  return games.filter(
-    (g: Game) =>
-      (isImgurSupported(g) || isAwsSupported(g)) && g.logo?.length,
-  )
+  return games.filter((g: Game) => (isImgurSupported(g) || isAwsSupported(g)) && g.logo?.length)
 }
 
 export const getSanityImageActualSize = (logo: string) => logo?.split('.')[2]?.split('-')[1]

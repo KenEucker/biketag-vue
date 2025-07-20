@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="ambassador-dashboard">
     <h1>Ambassador Dashboard</h1>
@@ -8,7 +9,7 @@
         <span class="icon">
           <!-- Sketch-style checkmark -->
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </span>
         Approve Posts in Round

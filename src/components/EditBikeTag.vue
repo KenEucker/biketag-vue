@@ -4,10 +4,7 @@
       <!-- Editable mystery player -->
       <template #mysteryPlayer>
         <label class="edit-label">Mystery Player</label>
-        <input
-          v-model="editableTag.mysteryPlayer"
-          @blur="save('mysteryPlayer')"
-        />
+        <input v-model="editableTag.mysteryPlayer" @blur="save('mysteryPlayer')" />
       </template>
 
       <!-- Editable mystery time -->
@@ -23,10 +20,7 @@
       <!-- Editable found player -->
       <template #foundPlayer>
         <label class="edit-label">Found Player</label>
-        <input
-          v-model="editableTag.foundPlayer"
-          @blur="save('foundPlayer')"
-        />
+        <input v-model="editableTag.foundPlayer" @blur="save('foundPlayer')" />
       </template>
 
       <!-- Editable found time -->
@@ -42,39 +36,30 @@
       <!-- Editable found location -->
       <template #foundLocation>
         <label class="edit-label">Found Location</label>
-        <input
-          v-model="editableTag.foundLocation"
-          @blur="save('foundLocation')"
-        />
+        <input v-model="editableTag.foundLocation" @blur="save('foundLocation')" />
       </template>
 
       <!-- Editable mystery description / hint -->
       <template #mysteryDescription>
         <label class="edit-label">Hint</label>
-        <input
-          v-model="editableTag.hint"
-          @blur="save('hint')"
-        />
+        <input v-model="editableTag.hint" @blur="save('hint')" />
       </template>
 
       <!-- Editable gps -->
       <template #gps>
         <label class="edit-label">GPS Coordinates</label>
-        <input
-          v-model="editableTag.gps"
-          @blur="save('gps')"
-        />
+        <input v-model="editableTag.gps" @blur="save('gps')" />
       </template>
     </BikeTag>
   </div>
 </template>
 
 <script setup lang="ts">
-import DatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
-import type { Tag } from 'biketag';
-import { reactive, ref, toRaw, watch } from 'vue';
-import BikeTag from './BikeTag.vue';
+import DatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import type { Tag } from 'biketag'
+import { reactive, ref, toRaw, watch } from 'vue'
+import BikeTag from './BikeTag.vue'
 
 type EditableField =
   | 'mysteryPlayer'
@@ -92,11 +77,11 @@ const props = defineProps<{
 const editableTag = reactive<Tag>({ ...props.tag })
 
 const mysteryDate = ref<Date | null>(
-  editableTag.mysteryTime ? new Date(editableTag.mysteryTime * 1000) : null
+  editableTag.mysteryTime ? new Date(editableTag.mysteryTime * 1000) : null,
 )
 
 const foundDate = ref<Date | null>(
-  editableTag.foundTime ? new Date(editableTag.foundTime * 1000) : null
+  editableTag.foundTime ? new Date(editableTag.foundTime * 1000) : null,
 )
 
 const emit = defineEmits(['update'])
@@ -106,7 +91,7 @@ const save = (field: EditableField) => {
   emit('update', {
     field,
     value: editableTag[field],
-    tag: toRaw(editableTag)
+    tag: toRaw(editableTag),
   })
 }
 
@@ -119,12 +104,15 @@ const onDateChange = (field: 'mysteryTime' | 'foundTime', date: Date | null) => 
 }
 
 // Sync prop changes if needed (optional but robust)
-watch(() => props.tag, (newTag) => {
-  Object.assign(editableTag, newTag)
-  mysteryDate.value = newTag.mysteryTime ? new Date(newTag.mysteryTime * 1000) : null
-  foundDate.value = newTag.foundTime ? new Date(newTag.foundTime * 1000) : null
-}, { deep: true })
-
+watch(
+  () => props.tag,
+  (newTag) => {
+    Object.assign(editableTag, newTag)
+    mysteryDate.value = newTag.mysteryTime ? new Date(newTag.mysteryTime * 1000) : null
+    foundDate.value = newTag.foundTime ? new Date(newTag.foundTime * 1000) : null
+  },
+  { deep: true },
+)
 </script>
 
 <style scoped>

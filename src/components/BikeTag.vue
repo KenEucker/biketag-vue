@@ -5,8 +5,13 @@
       <b-card class="polaroid found-tag">
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
-          <expandable-image class="image img-fluid" :source="getFoundImageSrc" :full-source="_foundImageUrl"
-            :alt="props.foundDescription" @loaded="tagImageLoaded('found')"></expandable-image>
+          <expandable-image
+            class="image img-fluid"
+            :source="getFoundImageSrc"
+            :full-source="_foundImageUrl"
+            :alt="props.foundDescription"
+            @loaded="tagImageLoaded('found')"
+          ></expandable-image>
         </div>
         <div class="card-bottom">
           <div v-if="props.foundDescription?.length" class="description">
@@ -31,11 +36,18 @@
           </div>
           <div class="info-wrapper">
             <slot name="foundPlayer">
-              <span v-if="props.showPlayer" class="tag-player" @click="goPlayerPage(props.tag.foundPlayer)">
+              <span
+                v-if="props.showPlayer"
+                class="tag-player"
+                @click="goPlayerPage(props.tag.foundPlayer)"
+              >
                 {{ props.tag.foundPlayer }}
               </span>
             </slot>
-            <span v-if="showInBoundary" :class="`${props.tag.inBoundary ? 'tag-inBoundary' : 'tag-outBoundary'}`">
+            <span
+              v-if="showInBoundary"
+              :class="`${props.tag.inBoundary ? 'tag-inBoundary' : 'tag-outBoundary'}`"
+            >
               {{ tagInBoundary }}
             </span>
             <slot name="foundTime">
@@ -54,12 +66,21 @@
     <!-- MYSTERY IMAGE SECTION -->
     <b-col v-show="_mysteryImageUrl" :md="_foundImageUrl ? 6 : 12" class="mb-3 max-w">
       <b-card class="polaroid mystery-tag">
-        <bike-tag-button v-if="props.tagnumber" v-b-popover.click.left="_getHint" class="btn-hint btn-circle" text="?"
-          variant="circle-clean" />
+        <bike-tag-button
+          v-if="props.tagnumber"
+          v-b-popover.click.left="_getHint"
+          class="btn-hint btn-circle"
+          text="?"
+          variant="circle-clean"
+        />
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _tagnumber }}</span>
-          <expandable-image :source="getMysteryImageSrc" :full-source="_mysteryImageUrl" :alt="_mysteryDescription"
-            @loaded="tagImageLoaded('mystery')" />
+          <expandable-image
+            :source="getMysteryImageSrc"
+            :full-source="_mysteryImageUrl"
+            :alt="_mysteryDescription"
+            @loaded="tagImageLoaded('mystery')"
+          />
         </div>
         <div class="card-bottom">
           <div class="description">
@@ -69,7 +90,11 @@
           </div>
           <div class="info-wrapper">
             <slot name="mysteryPlayer">
-              <span v-if="props.showPlayer" class="tag-player" @click="goPlayerPage(props.tag.mysteryPlayer)">
+              <span
+                v-if="props.showPlayer"
+                class="tag-player"
+                @click="goPlayerPage(props.tag.mysteryPlayer)"
+              >
                 {{ props.tag.mysteryPlayer }}
               </span>
             </slot>
@@ -160,7 +185,7 @@ const getFoundImageSrc = computed(() =>
     ? store.getImageSized(_foundImageUrl.value, props.imageSize)
     : props.sizedFoundImage
       ? store.getImageSized(_foundImageUrl.value)
-      : _foundImageUrl.value
+      : _foundImageUrl.value,
 )
 
 const getMysteryImageSrc = computed(() =>
@@ -168,17 +193,21 @@ const getMysteryImageSrc = computed(() =>
     ? store.getImageSized(_mysteryImageUrl.value, props.imageSize)
     : props.sizedMysteryImage
       ? store.getImageSized(_mysteryImageUrl.value, _foundImageUrl.value ? 'm' : 'l')
-      : _mysteryImageUrl.value
+      : _mysteryImageUrl.value,
 )
 
 const _mysteryDescription = computed(() =>
   props.mysteryDescription
     ? props.mysteryDescription
-    : `#${_tagnumber.value} ${props.tag?.hint?.length > 0 ? `"${props.tag.hint}"` : ''}`
+    : `#${_tagnumber.value} ${props.tag?.hint?.length > 0 ? `"${props.tag.hint}"` : ''}`,
 )
 
 const tagInBoundary = computed(() =>
-  props.tag.inBoundary === undefined ? '' : props.tag.inBoundary ? 'Inside boundaries' : 'Outside boundaries'
+  props.tag.inBoundary === undefined
+    ? ''
+    : props.tag.inBoundary
+      ? 'Inside boundaries'
+      : 'Outside boundaries',
 )
 
 // methods
@@ -193,7 +222,10 @@ const tagImageLoaded = (type: string) => {
   if (type === 'mystery') mysteryImageLoaded.value = true
   if (type === 'found') foundImageLoaded.value = true
 
-  if (mysteryImageLoaded.value && (!!_foundImageUrl.value || foundImageLoaded.value || !_foundImageUrl.value)) {
+  if (
+    mysteryImageLoaded.value &&
+    (!!_foundImageUrl.value || foundImageLoaded.value || !_foundImageUrl.value)
+  ) {
     emit('load')
   }
 }
@@ -260,7 +292,9 @@ onMounted(() => {
 
 .polaroid {
   background-color: white;
-  box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
+  box-shadow:
+    0 4px 8px 0 rgb(0 0 0 / 20%),
+    0 6px 20px 0 rgb(0 0 0 / 19%);
   margin-bottom: 25px;
   width: 100%;
 }

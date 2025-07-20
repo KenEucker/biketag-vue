@@ -3,9 +3,11 @@
     <h3 class="delete-title">{{ $t('pages.delete.title') }}</h3>
 
     <p class="delete-text">
-      Deleting this tag will remove {{ getCurrentBikeTag.foundPlayer }}'s submission for tag
-      #{{ getCurrentBikeTag.tagnumber - 1 }} and the latest mystery location.
-      The mystery location will go back to {{ previousTag.foundPlayer }}'s tag.
+      Deleting this tag will remove {{ getCurrentBikeTag.foundPlayer }}'s submission for tag #{{
+        getCurrentBikeTag.tagnumber - 1
+      }}
+      and the latest mystery location. The mystery location will go back to
+      {{ previousTag.foundPlayer }}'s tag.
     </p>
 
     <div class="bike-tag-container">
@@ -63,7 +65,7 @@ const allTags = computed(() => store.getTags)
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const previousTag = computed(() => {
   const tags = allTags.value
-  return tags.filter(t => t.tagnumber === getCurrentBikeTag.value.tagnumber - 1)
+  return tags.filter((t) => t.tagnumber === getCurrentBikeTag.value.tagnumber - 1)
 })
 
 // methods

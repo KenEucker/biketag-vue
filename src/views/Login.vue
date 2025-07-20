@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div v-if="isAuthenticationEnabled()" class="container">
     <div class="login-benefits">
@@ -11,7 +12,9 @@
       <section class="benefit">
         <div class="icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-3-3.87M4 21v-2a4 4 0 0 1 3-3.87M16 3.13a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path>
+            <path
+              d="M20 21v-2a4 4 0 0 0-3-3.87M4 21v-2a4 4 0 0 1 3-3.87M16 3.13a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+            ></path>
           </svg>
         </div>
         <div>
@@ -61,7 +64,9 @@
       <section class="benefit">
         <div class="icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14.7 6.3l3 3m-6.4-2.2L12 5l2 2M10 9l-7 7 4 4 7-7m4.3-4.3l-4-4m2 10.7l2 2M21 3l-6 6"></path>
+            <path
+              d="M14.7 6.3l3 3m-6.4-2.2L12 5l2 2M10 9l-7 7 4 4 7-7m4.3-4.3l-4-4m2 10.7l2 2M21 3l-6 6"
+            ></path>
           </svg>
         </div>
         <div>
@@ -81,7 +86,7 @@
     </p>
   </div>
 </template>
-<!-- eslint-disable vue/multi-word-component-names -->
+
 <script setup name="LoginView">
 import BikeTagSvg from '@/assets/images/BikeTag.svg'
 import { isAuthenticationEnabled } from '@/common'
@@ -124,11 +129,11 @@ async function login() {
   }
 }
 </script>
-<!-- eslint-disable vue/multi-word-component-names -->
+
 <style lang="scss" scoped>
 .login-benefits {
   background: linear-gradient(to bottom, #0b1a36, #131c3a);
-  color: #ffffff;
+  color: #fff;
   padding: 2rem;
   text-align: center;
 
@@ -140,7 +145,7 @@ async function login() {
 
   p {
     max-width: 600px;
-    margin: 0 auto 1rem auto;
+    margin: 0 auto 1rem;
     line-height: 1.4;
     font-size: 1rem;
   }
@@ -207,6 +212,7 @@ async function login() {
 
   .secondary-cta {
     background-color: #10b981;
+
     &:hover {
       background-color: #059669;
     }

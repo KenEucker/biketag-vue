@@ -1,5 +1,11 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <loading v-show="editInProgress" v-model:active="editInProgress" :is-full-page="true" class="realign-spinner">
+  <loading
+    v-show="editInProgress"
+    v-model:active="editInProgress"
+    :is-full-page="true"
+    class="realign-spinner"
+  >
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
 
@@ -24,17 +30,22 @@
         <EditBikeTag v-else :tag="mergedTag" @update="onFieldUpdate" />
       </div>
 
-      <bike-tag-button @click="onSave">
-        Save Changes
-      </bike-tag-button>
+      <bike-tag-button @click="onSave"> Save Changes </bike-tag-button>
     </div>
 
     <div v-else class="loading-message">
       <p>Loading the latest BikeTag for editing...</p>
     </div>
 
-    <form ref="editError" name="edit-tag-error" action="edit-tag-error" method="POST" data-netlify="true"
-      data-netlify-honeypot="bot-field" hidden>
+    <form
+      ref="editError"
+      name="edit-tag-error"
+      action="edit-tag-error"
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+      hidden
+    >
       <input type="hidden" name="form-name" value="edit-tag-error" />
       <input type="hidden" name="tagnumber" :value="mergedTag?.tagnumber" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
@@ -85,7 +96,7 @@ async function mergeTags() {
       ...currentTag.value,
       foundPlayer: previousTag.value.foundPlayer,
       foundTime: previousTag.value.foundTime,
-      foundLocation: previousTag.value.foundLocation
+      foundLocation: previousTag.value.foundLocation,
     })
   }
 }
@@ -104,7 +115,7 @@ async function onSave() {
   toast.open({
     message: 'Saving edits...',
     type: 'info',
-    position: 'top'
+    position: 'top',
   })
 
   const errorAction = editError.value.getAttribute('action')
@@ -114,7 +125,7 @@ async function onSave() {
   const payload = {
     game: getGameName.value,
     tagnumber: mergedTag.tagnumber,
-    ...pendingEdits
+    ...pendingEdits,
   }
 
   const result = await store.updateCurrentTag(payload)
@@ -129,7 +140,7 @@ async function onSave() {
         toast.open({
           message: 'Edit successful!',
           type: 'success',
-          position: 'top'
+          position: 'top',
         })
         editSuccess.value = true
         store.resetBikeTagCache()
@@ -140,10 +151,10 @@ async function onSave() {
           type: 'error',
           duration: 10000,
           timeout: false,
-          position: 'bottom'
+          position: 'bottom',
         })
         return sendNetlifyError(m, undefined, errorAction)
-      }
+      },
     )
   } else {
     const message = `Error saving edit: ${result}`
@@ -152,7 +163,7 @@ async function onSave() {
       type: 'error',
       duration: 10000,
       timeout: false,
-      position: 'bottom'
+      position: 'bottom',
     })
     return sendNetlifyError(message, undefined, errorAction)
   }

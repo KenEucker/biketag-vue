@@ -95,7 +95,7 @@ onMounted(async () => {
           await checkAuth()
         }
       },
-      { immediate: true }
+      { immediate: true },
     )
 
     watch(
@@ -104,11 +104,10 @@ onMounted(async () => {
         if (!auth0.isLoading.value && auth0.isAuthenticated.value) {
           await checkAuth()
         }
-      }
+      },
     )
   }
 })
-
 
 // methods
 function checkForNewBikeTagPost() {
