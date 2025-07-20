@@ -139,8 +139,8 @@ export const getBikeTagClientOpts = (
 
     /// Enables aws uploads and edits
     opts.aws = {
-      accessKeyId: process.env.BE_S3_ACCESS_ID,
-      secretAccessKey: process.env.BE_S3_ACCESS_KEY,
+      accessKeyId: process.env.S3_BE_ACCESS_ID,
+      secretAccessKey: process.env.S3_BE_ACCESS_KEY,
     }
 
     opts.sanity = opts.sanity ?? {}

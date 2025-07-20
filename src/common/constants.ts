@@ -73,8 +73,8 @@ export const BikeTagEnv = {
   // S_TOKEN: process.env.S_TOKEN ?? process.env.SANITY_ACCESS_TOKEN ?? null,
   /* AWS S3 Configuration */
   RELOAD_SW: process.env.RELOAD_SW ?? 'false',
-  FE_S3_AID: process.env.FE_S3_AID ?? process.env.FE_S3_ACCESS_ID ?? null,
-  FE_S3_AKEY: process.env.FE_S3_AKEY ?? process.env.FE_S3_ACCESS_KEY ?? null,
+  S3_FE_AID: process.env.S3_FE_AID ?? process.env.S3_FE_ACCESS_ID ?? null,
+  S3_FE_AKEY: process.env.S3_FE_AKEY ?? process.env.S3_FE_ACCESS_KEY ?? null,
   IMGUR_DELAY_NOTICE: process.env.IMGUR_DELAY_NOTICE ?? null,
   IMGUR_DELAY: process.env.IMGUR_DELAY ?? null,
 }

@@ -8,13 +8,13 @@ import log from 'loglevel'
 import moment from 'moment-timezone'
 import { useCookies } from 'vue3-cookies'
 import {
-  BikeTagDefaults,
-  BikeTagEnv,
-  BikeTagProfile,
-  BiketagQueueFormSteps,
-  DomainInfo,
-  deca,
-  special,
+    BikeTagDefaults,
+    BikeTagEnv,
+    BikeTagProfile,
+    BiketagQueueFormSteps,
+    DomainInfo,
+    deca,
+    special,
 } from '.'
 
 export const stringifyNumber = (n: number): string => {
@@ -170,8 +170,8 @@ export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
       dataset: BikeTagEnv.S_DSET,
     },
     aws: {
-      accessKeyId: BikeTagEnv.FE_S3_AID,
-      secretAccessKey: BikeTagEnv.FE_S3_AKEY,
+      accessKeyId: BikeTagEnv.S3_FE_AID,
+      secretAccessKey: BikeTagEnv.S3_FE_AKEY,
     },
   }
 }
