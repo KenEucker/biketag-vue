@@ -265,7 +265,7 @@ const setImage = async (event) => {
           // location.value = ''
         }
       }
-    } catch(e: any) {
+    } catch(e) {
       console.error(e)
     }
   }
