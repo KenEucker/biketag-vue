@@ -20,7 +20,7 @@
     "commit": "cz",
     "dev:rerun": "npm run dev:clear && npm run dev",
     "dev:clear": "rm -rf node_modules/.vite && rm -rf dist",
-    "dev": "netlify dev --functionsPort 7200",
+    "dev": "netlify dev --functions-port 7200",
     "preview": "npm run build -w && npm run serve dist"
   },
   "dependencies": {
@@ -151,16 +151,15 @@
     "vuejs"
   ],
   "types": "./index.d.ts",
-  "module": "./biketag-vue.es.js",
   "exports": {
     ".": {
       "import": "./biketag-vue.es.js",
-      "require": "./biketag-vue.umd.js",
-      "types": "./index.d.ts"
+      "require": "./biketag-vue.umd.js"
     },
     "./biketag-vue.css": {
       "import": "./biketag-vue.css",
       "require": "./biketag-vue.css"
     }
-  }
+  },
+  "module": "./biketag-vue.es.js"
 }
