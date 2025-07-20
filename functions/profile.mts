@@ -30,7 +30,7 @@ export default async (req: Request) => {
 
     const mergeProfilesIfSuccess =
       (authorized = true) =>
-      async (results) => {
+      async (results: any) => {
         status = results.statusCode ?? results.status
         const data = results.data ?? results.body
         body = data

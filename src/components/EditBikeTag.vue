@@ -1,8 +1,10 @@
 <template>
   <div>
-    <BikeTag :tag="editableTag" 
-              :found-tagnumber="editableTag?.tagnumber - 1"
-              :found-description="editableTag?.foundLocation">
+    <BikeTag
+      :tag="editableTag"
+      :found-tagnumber="editableTag?.tagnumber - 1"
+      :found-description="editableTag?.foundLocation"
+    >
       <!-- Mystery Player -->
       <template #mysteryPlayer>
         <div class="edit-field">
@@ -108,11 +110,11 @@ const props = defineProps<{
 const editableTag = reactive<Tag>({ ...props.tag })
 
 const mysteryDate = ref<Date | null>(
-  editableTag.mysteryTime ? new Date(editableTag.mysteryTime * 1000) : null
+  editableTag.mysteryTime ? new Date(editableTag.mysteryTime * 1000) : null,
 )
 
 const foundDate = ref<Date | null>(
-  editableTag.foundTime ? new Date(editableTag.foundTime * 1000) : null
+  editableTag.foundTime ? new Date(editableTag.foundTime * 1000) : null,
 )
 
 const emit = defineEmits(['update'])
@@ -127,7 +129,7 @@ onMounted(() => {
     console.warn(
       '[EditBikeTag] Players initially different, fallback to independent editing:',
       editableTag.mysteryPlayer,
-      editableTag.foundPlayer
+      editableTag.foundPlayer,
     )
   }
 })
@@ -183,8 +185,7 @@ const inputId = (field: string) => `edit-biketag-${field}`
   margin-bottom: 0.5rem;
 }
 
-.edit-field input,
-.edit-field ::deep(.dp__input) {
+.edit-field input {
   width: 100%;
   font-size: 1rem;
   padding: 0.25rem;

@@ -85,7 +85,7 @@ const store = useBikeTagStore()
 const { t } = useI18n()
 const tagnumber = computed(() => {
   const landingTagnumber = parseInt(route.params.tagnumber)
-  return landingTagnumber !== NaN ? landingTagnumber : 0
+  return Number.isNaN(landingTagnumber) ? landingTagnumber : 0
 })
 
 // computed

@@ -4,7 +4,7 @@ import { getPayloadOpts } from './common/methods'
 
 export default async (req: Request) => {
   const { url, width, format = 'webp' } = await getPayloadOpts(req)
-  const headers = {
+  const headers: any = {
     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',

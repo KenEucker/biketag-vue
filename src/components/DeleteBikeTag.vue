@@ -11,12 +11,25 @@
     </p>
 
     <div class="bike-tag-container">
-      <bike-tag v-if="getCurrentBikeTag" :tag="getCurrentBikeTag" :reverse="true" size="l" :show-posted-date="true" />
+      <bike-tag
+        v-if="getCurrentBikeTag"
+        :tag="getCurrentBikeTag"
+        :reverse="true"
+        size="l"
+        :show-posted-date="true"
+      />
     </div>
 
     <div class="delete-button">
-      <form ref="deleteTag" name="delete-latest-biketag" action="delete-latest-biketag" method="POST"
-        data-netlify="true" data-netlify-honeypot="bot-field" @submit.prevent="deleteTagFunction">
+      <form
+        ref="deleteTag"
+        name="delete-latest-biketag"
+        action="delete-latest-biketag"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+        @submit.prevent="deleteTagFunction"
+      >
         <input type="hidden" name="form-name" value="delete-latest-biketag" />
         <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
         <input type="hidden" name="tagnumber" :value="getCurrentBikeTag.tagnumber" />
@@ -88,7 +101,7 @@ function deleteTagFunction() {
     justify-content: center;
     gap: 2em;
 
-    >* {
+    > * {
       flex: 1 1 300px;
       max-width: 500px;
     }

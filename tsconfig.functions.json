@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "sourceMap": true
   },
-  "include": ["functions/**/*.ts"]
+  "include": ["functions/**/*.mts"]
 }

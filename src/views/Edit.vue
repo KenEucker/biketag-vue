@@ -26,13 +26,18 @@
       </bike-tag-button>
 
       <div class="biketag-container">
-        <BikeTag v-if="previewMode" :tag="mergedTag" 
-              :found-tagnumber="mergedTag?.tagnumber - 1"
-              :found-description="mergedTag?.foundLocation" />
+        <BikeTag
+          v-if="previewMode"
+          :tag="mergedTag"
+          :found-tagnumber="mergedTag?.tagnumber - 1"
+          :found-description="mergedTag?.foundLocation"
+        />
         <EditBikeTag v-else :tag="mergedTag" @update="onFieldUpdate" />
       </div>
 
-      <bike-tag-button variant="light" class="big-btn" @click="onSave">Save Changes</bike-tag-button>
+      <bike-tag-button variant="light" class="big-btn" @click="onSave"
+        >Save Changes</bike-tag-button
+      >
     </div>
 
     <div v-else class="loading-message">
@@ -187,7 +192,6 @@ onMounted(async () => {
 
 <style scoped>
 .biketag-container {
-  margin: 1rem 0;
   max-width: clamp(80vw, 80vw, 500px);
   margin: auto;
 }

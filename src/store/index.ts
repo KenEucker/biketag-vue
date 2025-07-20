@@ -60,7 +60,7 @@ export const initBikeTagStore = () => {
     storedRegionPolygon = localStorage.getItem(`${gameName}::regionPolygon`)
     try {
       storedRegionPolygon = JSON.parse(storedRegionPolygon)
-    } catch(e: any) {
+    } catch (e: any) {
       storedRegionPolygon = null
     }
   }
@@ -155,7 +155,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         } else {
           console.log('map cannot continue, region not set properly')
         }
-      } catch(e: any) {
+      } catch (e: any) {
         console.log('map cannot continue')
         console.error(e)
       }
@@ -252,7 +252,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           if (biketagConf?.biketag?.clientToken) {
             this.token = setTokenInCookie(biketagConf.biketag.clientToken)
           }
-        } catch(e: any) {
+        } catch (e: any) {
           console.error('error fetching credentials', e)
         }
         // const credentials = await client.fetchCredentials()

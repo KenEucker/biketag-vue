@@ -197,7 +197,7 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
       if (existingProfile) {
         return existingProfile as unknown as BikeTagProfile
       }
-    } catch(e: any) {
+    } catch (e: any) {
       /// Swallow anonymous
       console.error('failed to decrypt profile in cookie')
     }
