@@ -64,7 +64,7 @@ export default async (req: Request) => {
         const adminBiketagOpts = getBikeTagClientOpts(req, true, true, game)
         const adminBiketag = new BikeTagClient(adminBiketagOpts)
 
-        log('[approve-tag] Admin BikeTagClient options', adminBiketagOpts.config())
+        log('[approve-tag] Admin BikeTagClient options', adminBiketag.config())
         const activeQueue = await getActiveQueueForGame(
           game,
           adminBiketag,
