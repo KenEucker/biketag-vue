@@ -157,8 +157,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async setProfile(profile: any, token?: string) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {
-        this.auth0Token = token || this.auth0Token || profile.token || ''
-        profile.token = undefined
+        if (profile.token || token) {
+          this.auth0Token = token || this.auth0Token || profile.token || ''
+          this.fetchCredentials(true)
+          profile.token = undefined
+        }
 
         const response = await client
           .plainRequest({
