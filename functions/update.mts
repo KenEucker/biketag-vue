@@ -41,6 +41,7 @@ export default async (req: Request) => {
     })) as unknown as Game
     log('[update-tag] Retrieved game', { name: game.name, awsRegion: game.awsRegion })
 
+    updatePayload.imgur = updatePayload.imgur ?? {}
     updatePayload.imgur.hash = game.queuehash
     updatePayload.folder = updatePayload.folder ?? 'queue'
     log('[update-tag] Prepared biketag payload', updatePayload)

@@ -89,7 +89,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
 
           if (autoSelectedWinningTag) {
             console.log('winning tag found, setting new BikeTag post', {
-              game,
+              game: game.slug,
               autoSelectedWinningTag,
             })
             const setNewBikeTagPostResults = await setNewBikeTagPost(
