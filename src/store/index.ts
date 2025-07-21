@@ -674,6 +674,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         d.playerId = this.profile.sub
 
         return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
+          console.log('postNewBikeTag', t)
           if (t.success) {
             this.SET_QUEUED_SUBMITTED(t.data)
             await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })

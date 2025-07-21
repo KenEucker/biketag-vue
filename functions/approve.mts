@@ -45,24 +45,26 @@ export default async (req: Request) => {
       log('[approve-tag] Ambassador attempting to approve tag', { name: profile.name })
 
       const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
-      log('[approve-tag] Non-admin BikeTagClient options', nonAdminBiketagOpts)
 
       const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
       const game = (await nonAdminBiketag.game(undefined, { source: 'sanity' })) as Game
       log('[approve-tag] Retrieved game', { name: game?.name ?? 'none' })
 
       if (game) {
-        nonAdminBiketag.config({
+        const nonAdminBiketagOptsUpdated = nonAdminBiketag.config({
           aws: {
             region: game.awsRegion,
           }
         }, false, true)
+        log('[approve-tag] Non-admin BikeTagClient options', nonAdminBiketagOptsUpdated)
+
         const currentBikeTag = (await nonAdminBiketag.getTag()).data
         log('[approve-tag] Current bike tag', { tagnumber: currentBikeTag?.tagnumber })
 
         const adminBiketagOpts = getBikeTagClientOpts(req, true, true, game)
         const adminBiketag = new BikeTagClient(adminBiketagOpts)
 
+        log('[approve-tag] Admin BikeTagClient options', adminBiketagOpts)
         const activeQueue = await getActiveQueueForGame(
           game,
           adminBiketag,
