@@ -247,9 +247,11 @@
       "confirm_approve": "Are you sure this is the winning tag? "
     },
     "delete": {
+      "confirm_delete": "Removing the current Bike Tag will delete the images and the data associated with the current and the previous round. Please be sure that you want to do this.",
       "title": "Delete Current BikeTag Post"
     },
     "edit": {
+      "confirm_edit": "Editing the current Bike Tag will replace data associated with the current and the previous round. Please be sure that you want to do this.",
       "title": "Delete Current BikeTag Post"
     }
   }
