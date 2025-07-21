@@ -118,17 +118,17 @@ function mergeTags(forward = true) {
     return {
       currentTag: {
         ...currentTag.value,
-        foundPlayer: pendingEdits.value.foundPlayer,
-        foundTime: pendingEdits.value.foundTime,
-        foundLocation: pendingEdits.value.foundLocation,
-        foundImageUrl: pendingEdits.value.foundImageUrl,
+        foundPlayer: pendingEdits.foundPlayer,
+        foundTime: pendingEdits.foundTime,
+        foundLocation: pendingEdits.foundLocation,
+        foundImageUrl: pendingEdits.foundImageUrl,
       },
       previousTag: {
         ...previousTag.value,
-        mysteryPlayer: pendingEdits.value.mysteryPlayer,
-        mysteryTime: pendingEdits.value.mysteryTime,
-        mysteryLocation: pendingEdits.value.mysteryLocation,
-        mysteryImageUrl: pendingEdits.value.mysteryImageUrl,
+        mysteryPlayer: pendingEdits.mysteryPlayer,
+        mysteryTime: pendingEdits.mysteryTime,
+        mysteryLocation: pendingEdits.mysteryLocation,
+        mysteryImageUrl: pendingEdits.mysteryImageUrl,
       },
     } 
   }
