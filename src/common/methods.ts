@@ -232,7 +232,7 @@ export const setProfileCookie = (
     if (profile) {
       const encryptedProfileString = CryptoJS.AES.encrypt(
         JSON.stringify(profile),
-        /// TODO: this shouldn't be found in the frontend!
+        /// BikeTagEnv.B_KEY is intentionally a shared public key
         BikeTagEnv.B_KEY ?? 'BikeTag',
       ).toString()
       cookies.set(profileCookieKey, encryptedProfileString)
@@ -272,7 +272,7 @@ export const setQueuedTagInCookie = (queuedTag?: Tag, queuedTagCookieKey = 'bike
 }
 
 export const encodeBikeTagString = (basic: string): string => {
-  /// TODO: this shouldn't be found in the frontend!
+  /// BikeTagEnv.B_KEY is intentionally a shared public key
   return CryptoJS.AES.encrypt(basic, BikeTagEnv.B_KEY ?? 'BikeTag').toString()
 }
 
