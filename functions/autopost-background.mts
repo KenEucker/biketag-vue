@@ -125,7 +125,7 @@ export default async () => {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })
   } else {
-    log('nothing to report', 'info')
+    log('autopost ran', 'nothing to report', 'info')
     return new Response('', {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })
