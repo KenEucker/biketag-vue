@@ -27,7 +27,7 @@ const ajv = new Ajv()
 
 let log: (message: string, data?: any, level?: 'info' | 'warn' | 'error') => void
 
-if (process.env.DEBUG_A === 'true') {
+if (process.env.DEBUG_BE === 'true' || process.env.DEBUG_A === 'true') {
   log = (message: string, data?: any, level: 'info' | 'warn' | 'error' = 'info') => {
     console[level](message, data)
   }

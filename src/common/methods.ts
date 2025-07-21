@@ -483,7 +483,7 @@ export const exportHtmlToDownload = (filename: string, node?: any, selector?: st
 }
 
 export const debug = (message: string, context?: any, level: 'log' | 'info' | 'warn' | 'error' = 'log') => {
-  const shouldLogBecauseDebugIsSet = getQueryParam(window, 'debug_a') === 'true' || BikeTagEnv.DEBUG_A === 'true'
+  const shouldLogBecauseDebugIsSet = getQueryParam(window, 'debug_a') === 'true' || BikeTagEnv.DEBUG_FE === 'true'
   const shouldLogBecauseLevel = level === 'error' || level === 'warn' || level === 'info'
   if (shouldLogBecauseDebugIsSet || shouldLogBecauseLevel) {
     console[level](message, context)
