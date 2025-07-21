@@ -52,6 +52,11 @@ export default async (req: Request) => {
       log('[approve-tag] Retrieved game', { name: game?.name ?? 'none' })
 
       if (game) {
+        nonAdminBiketag.config({
+          aws: {
+            region: game.awsRegion,
+          }
+        }, false, true)
         const currentBikeTag = (await nonAdminBiketag.getTag()).data
         log('[approve-tag] Current bike tag', { tagnumber: currentBikeTag?.tagnumber })
 
