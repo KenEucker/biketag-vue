@@ -20,6 +20,7 @@ import {
   getSupportedGames,
   getTokenFromCookie,
   setProfileCookie,
+  setRegionPolygonInCookie,
   setTokenInCookie,
 } from '../common'
 
@@ -159,7 +160,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (profile) {
         if (profile.token || token) {
           this.auth0Token = token || this.auth0Token || profile.token || ''
-          this.fetchCredentials(true)
+          await this.fetchCredentials(true)
           profile.token = undefined
         }
 
@@ -187,6 +188,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         }
       } else if (token?.length) {
         this.auth0Token = token
+        await this.fetchCredentials(true)
       }
 
       return this.SET_PROFILE(profile)
@@ -996,8 +998,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return this.formStep
     },
     SET_REGION_POLYGON(regionPolygon: any) {
-      localStorage.setItem(`${gameName}::regionPolygon`, JSON.stringify(regionPolygon))
-      this.regionPolygon = regionPolygon
+      this.regionPolygon = setRegionPolygonInCookie(regionPolygon, `${gameName}::regionPolygon`)
 
       return this.regionPolygon
     },

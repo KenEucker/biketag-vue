@@ -83,6 +83,8 @@ onMounted(async () => {
             !store.getProfile?.user_metadata?.name?.length
           ) {
             await store.setProfile(auth0.user.value, token)
+          } else {
+            await store.setProfile(undefined, token)
           }
         }
       }

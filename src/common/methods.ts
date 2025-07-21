@@ -176,23 +176,22 @@ export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
   }
 }
 
-export const getTokenFromCookie = (tokenCookieKey = 'token'): string => {
-  const { cookies } = useCookies()
-  return cookies.get(tokenCookieKey)
+export const setRegionPolygonInCookie = (regionPolygon: any, regionPolygonCookieKey = 'regionPolygon') => {
+  localStorage.setItem(regionPolygonCookieKey, JSON.stringify(regionPolygon))
+
+  return regionPolygon
 }
 
 export const getRegionPolygonFromCookie = (
   regionPolygonCookieKey = 'regionPolygon',
 ): any => {
+  const regionPolygonString = localStorage.getItem(regionPolygonCookieKey)
+  return regionPolygonString?.length ? JSON.parse(regionPolygonString) : undefined
+}
+
+export const getTokenFromCookie = (tokenCookieKey = 'token'): string => {
   const { cookies } = useCookies()
-  const existingRegionPolygon = cookies.get(regionPolygonCookieKey)
-  if (existingRegionPolygon) {
-    try {
-      return JSON.parse(existingRegionPolygon)
-    } catch (e: any) {
-    }
-  }
-  return null 
+  return cookies.get(tokenCookieKey)
 }
 
 export const setTokenInCookie = (token: string, tokenCookieKey = 'token'): string => {
