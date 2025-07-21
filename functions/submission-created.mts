@@ -1,22 +1,21 @@
-import { BikeTagClient } from 'biketag'
-import { Ambassador, Game, Tag } from 'biketag/dist/common/schema'
-import request from 'request'
+import { Ambassador, BikeTagClient, Game, Tag } from 'biketag'
 import { getBannedIPs, stringifyNumber } from '../src/common'
 import {
   defaultLogo,
   getBikeTagClientOpts,
   getEncodedExpiry,
   getSanityImageUrl,
+  log,
   sendEmailsToAmbassadors,
 } from './common'
 import { HttpStatusCode } from './common/constants'
 
-export const handler = async (event) => {
-  const body = JSON.parse(event.body)
+export default async (req: Request) => {
+  const body = await req.json()
   const payload = body.payload
   let success = false
 
-  console.log('submission-created', { payload })
+  log('submission-created', { payload })
   const bannedIPs = await getBannedIPs()
 
   if (bannedIPs.indexOf(payload.ip) !== -1) {
@@ -37,57 +36,59 @@ export const handler = async (event) => {
     let successfulEmailsSent: any = []
     let rejectedEmails: any = []
     let thisGamesAmbassadors: Ambassador[] = []
-    let currentMysteryTag
+    let currentMysteryTag: Tag | undefined
     let emailSent
-    let game
-    let numberInQueue
-    let qeueCleared
+    let game: Game | undefined
+    let numberInQueue: number = -1
     let queuedTags
 
     if (gameName) {
-      if (formName !== 'add-found-tag' || formName !== 'add-mystery-tag') {
-        const nonAdminBiketagOpts = getBikeTagClientOpts(
-          {
-            ...event,
-            method: event.httpMethod,
-          } as unknown as request.Request,
-          true,
-          false,
-          { name: gameName.toLowerCase() } as Game,
-        )
-        const adminBiketagOpts = getBikeTagClientOpts(
-          {
-            ...event,
-            method: event.httpMethod,
-          } as unknown as request.Request,
-          true,
-          true,
-          { name: gameName.toLowerCase() } as Game,
-        )
+      if (formName !== 'add-found-tag' && formName !== 'add-mystery-tag') {
+        const nonAdminBiketagOpts = getBikeTagClientOpts(req, true, false, {
+          name: gameName.toLowerCase(),
+        } as Game)
+        const adminBiketagOpts = getBikeTagClientOpts(req, true, true, {
+          name: gameName.toLowerCase(),
+        } as Game)
         /// TODO: fix whatever is wrong with the biketag-api interface
         const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
         const adminBiketag = new BikeTagClient(adminBiketagOpts)
         game = (await nonAdminBiketag.game(undefined, {
           source: 'sanity',
         })) as Game
+
+        if (!game) {
+          console.error('no game found for', gameName, payload)
+          return {
+            data: false,
+            statusCode: HttpStatusCode.BadRequest,
+          }
+        }
+
         const ambassadors = (await adminBiketag.ambassadors(undefined, {
           source: 'sanity',
         })) as Ambassador[]
         thisGamesAmbassadors = ambassadors.length
-          ? ambassadors.filter((a) => game.ambassadors.indexOf(a?.name) !== -1)
+          ? ambassadors.filter((a) => game!.ambassadors.indexOf(a?.name) !== -1)
           : []
 
         const currentMysteryTagResponse = (await nonAdminBiketag.tags()) as Tag[]
-        currentMysteryTag = currentMysteryTagResponse?.length ? currentMysteryTagResponse[0] : null
+        currentMysteryTag = currentMysteryTagResponse?.length
+          ? currentMysteryTagResponse[0]
+          : undefined
 
         if (!game || !currentMysteryTag || !thisGamesAmbassadors.length) {
-          console.log('insufficient game data to work with', {
+          log('insufficient game data to work with', {
             gameName,
             game,
             ambassadors,
             thisGamesAmbassadors,
             currentMysteryTag,
           })
+          return {
+            data: false,
+            statusCode: HttpStatusCode.BadRequest,
+          }
         }
 
         queuedTags = (await nonAdminBiketag.queue()) as Tag[]
@@ -100,6 +101,14 @@ export const handler = async (event) => {
         success = true
       }
 
+      if (!game) {
+        console.error('no game found for', gameName, payload)
+        return {
+          data: false,
+          statusCode: HttpStatusCode.BadRequest,
+        }
+      }
+
       const autoPostEnabled = true
       const logo = game.logo?.length
         ? game.logo.indexOf('imgur.co') !== -1
@@ -109,8 +118,12 @@ export const handler = async (event) => {
       const gameHost = `${host.replace('://', `://${gameName}.`)}`
       const tagQueuedNumber = stringifyNumber(numberInQueue)
 
-      if (!game.settings['emails::sendall'] || game.settings['emails::sendall']  === 'true' || game.settings['emails::disable']?.split(',').indexOf(formName) === -1) {
-        console.log('processing form::', formName)
+      if (
+        !game.settings['emails::sendall'] ||
+        game.settings['emails::sendall'] === 'true' ||
+        game.settings['emails::disable']?.split(',').indexOf(formName) === -1
+      ) {
+        log('processing form::', formName)
         switch (formName) {
           case 'add-found-tag':
             // send app notification
@@ -141,7 +154,8 @@ export const handler = async (event) => {
                     foundImageUrl: tag?.foundImageUrl?.length ? tag.foundImageUrl : '',
                     goCurrentMystery: 'SEE CURRENT MYSTERY',
                     currentMysteryHint: `current hint: "${currentMysteryTag?.hint}"`,
-                    footerText: 'BikeTag is an OpenSource project that you can contribute to anytime',
+                    footerText:
+                      'BikeTag is an OpenSource project that you can contribute to anytime',
                     goToQueueButton: 'GO TO QUEUE',
                     newBikeTagPlayedText: 'A new round of BikeTag has been queued!',
                     mainTitleText: `this is the ${tagQueuedNumber} tag to be queue for round #${tag?.tagnumber}`,
@@ -156,10 +170,14 @@ export const handler = async (event) => {
                     currentMysteryBlurb:
                       'This is the current mystery location. You can see the full screen image in the app, if you need to, by clicking the button below.',
                     ambassadorsUrl: `${gameHost}/queue?btaId=${a.id}`,
-                    redditLink: `https://reddit.com/r/${game.subreddit?.length ? game.subreddit : 'biketag'
-                      }`,
-                    blueskyLink: `https://bsky.app/profile/${game.bsky?.length ? game.bsky : 'biketag.bsky.social'
-                      }`,
+                    redditLink: `https://reddit.com/r/${
+                      game!.settings['subreddit']?.length ? game!.settings['subreddit'] : 'biketag'
+                    }`,
+                    blueskyLink: `https://bsky.app/profile/${
+                      game!.settings['bsky']?.length
+                        ? game!.settings['bsky']
+                        : 'biketag.bsky.social'
+                    }`,
                     // instagramLink: `https://www.reddit.com/r/${game. ?? 'biketag'}`,
                     expiryHash: getEncodedExpiry({
                       btaId: a.id,
@@ -269,22 +287,22 @@ export const handler = async (event) => {
             break
         }
       } else {
-        console.log(`Sending of email:${formName} disabled`, { 
+        log(`Sending of email:${formName} disabled`, {
           sendAll: game.settings['emails::sendall'],
           disabled: game.settings['emails::disable'],
-        })
+        }, 'info')
       }
 
       if (successfulEmailsSent.length) {
-        console.log('success sending notifications and emails', {
+        log('success sending notifications and emails', {
           successfulEmailsSent,
           rejectedEmails,
-        })
+        }, 'info')
         success = true
       } else if (rejectedEmails.length) {
-        console.log('error sending emails', rejectedEmails)
+        log('error sending emails', rejectedEmails)
       } else {
-        console.log('nothing to do')
+        log('nothing to do')
       }
     } else {
       console.error('no game to work with', payload)

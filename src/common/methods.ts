@@ -1,15 +1,15 @@
 import { DeviceUUID } from '@/common/uuid'
-import sanityClient from '@sanity/client'
+import { createClient } from '@sanity/client'
 import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
 import { Game, Tag } from 'biketag/dist/common/schema'
 import CryptoJS from 'crypto-js'
 import domtoimage from 'dom-to-image'
 import log from 'loglevel'
-import md5 from 'md5'
 import moment from 'moment-timezone'
 import { useCookies } from 'vue3-cookies'
 import {
   BikeTagDefaults,
+  BikeTagEnv,
   BikeTagProfile,
   BiketagQueueFormSteps,
   DomainInfo,
@@ -37,7 +37,62 @@ export const ordinalSuffixOf = (n: number) => {
   }
   return n + 'th'
 }
-export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
+
+export const getImageSized = (
+  imageSourceOrUrl: 'aws' | 'imgur' | 'sanity' | string = '',
+  imageUrlOrSize?: string,
+  size: 's' | 'm' | 'l' | 'o' | undefined = 'm',
+): string => {
+  const sizeMap: Record<string, 'small' | 'medium' | 'original'> = {
+    s: 'small',
+    m: 'medium',
+    l: 'original',
+    o: 'original',
+  }
+
+  let imageSource
+  let imageUrl: string
+
+  // Handle case where imageSource was omitted
+  if (!['aws', 'imgur', 'sanity'].includes(imageSourceOrUrl)) {
+    imageUrl = imageSourceOrUrl
+    if (imageUrlOrSize !== undefined) {
+      size = imageUrlOrSize as typeof size
+    }
+  } else {
+    imageSource = imageSourceOrUrl as 'aws' | 'imgur' | 'sanity'
+    imageUrl = imageUrlOrSize || ''
+  }
+
+  const resolvedSize = sizeMap[size] || 'original'
+
+  // Short-circuit based on image URL
+  if (/imgur\.com/.test(imageUrl)) {
+    return getImgurImageSized(imageUrl, size)
+  }
+
+  if (/digitaloceanspaces\.com/.test(imageUrl)) {
+    return getS3ImageSized(imageUrl, resolvedSize)
+  }
+
+  // Fallback based on declared or defaulted source
+  switch (imageSource) {
+    case 'aws':
+      return getS3ImageSized(imageUrl, resolvedSize)
+    case 'imgur':
+    default:
+      return getImgurImageSized(imageUrl, size)
+  }
+}
+
+export const getS3ImageSized = (
+  imageUrl: string = '',
+  size: 'small' | 'medium' | 'original' = 'original',
+): string => {
+  if (!imageUrl || size === 'original') return imageUrl
+
+  return imageUrl.replace(/(_small|_medium)?(\.\w+)$/, `_${size}$2`)
+}
 
 export const getImgurImageSized = (imgurUrl = '', size = 'm') => {
   return imgurUrl
@@ -51,14 +106,14 @@ export const getImgurImageSized = (imgurUrl = '', size = 'm') => {
 
 export const getDomainInfo = (req: any): DomainInfo => {
   const nonSubdomainHosts = [
-    `${process.env.HOST ?? 'biketag.local'}`,
+    `${BikeTagEnv.HOST ?? 'biketag.local'}`,
     'biketag.dev',
     '0.0.0.0',
     'localhost',
   ]
   let host = (
-    req?.headers?.host?.length
-      ? req.headers.host
+    req.headers?.get('host')?.length
+      ? req.headers.get('host')
       : req?.location?.host?.length
         ? req.location.host
         : ''
@@ -101,24 +156,48 @@ export const getTagDateISOFromTimezone = (time: number, tz?: string) => {
 export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
   const domainInfo = getDomainInfo(win)
   return {
-    game: domainInfo.subdomain ?? process.env.GAME_NAME,
-    accessToken: process.env.ACCESS_TOKEN,
+    game: domainInfo.subdomain ?? BikeTagEnv.GAME_NAME,
+    clientKey: BikeTagEnv.B_KEY,
     imgur: {
-      clientId: process.env.I_CID,
-      clientSecret: process.env.I_CSECRET,
-      accessToken: process.env.I_TOKEN,
-      rapidApiKey: process.env.RA_FE_KEY,
-      refreshToken: withToken ? process.env.I_RTOKEN : undefined,
+      clientId: BikeTagEnv.I_CID,
+      // clientSecret: BikeTagEnv.I_CSECRET,
+      accessToken: BikeTagEnv.I_TOKEN,
+      rapidApiKey: BikeTagEnv.RA_FE_KEY,
+      refreshToken: withToken ? BikeTagEnv.I_RTOKEN : undefined,
     },
     sanity: {
-      projectId: process.env.S_PID,
-      dataset: process.env.S_DSET,
+      projectId: BikeTagEnv.S_PID,
+      dataset: BikeTagEnv.S_DSET,
     },
     aws: {
-      accessKeyId: process.env.S3_AID,
-      secretAccessKey: process.env.S3_AKEY,
+      accessKeyId: BikeTagEnv.S3_FE_AID,
+      secretAccessKey: BikeTagEnv.S3_FE_AKEY,
     },
   }
+}
+
+export const setRegionPolygonInCookie = (regionPolygon: any, regionPolygonCookieKey = 'regionPolygon') => {
+  localStorage.setItem(regionPolygonCookieKey, JSON.stringify(regionPolygon))
+
+  return regionPolygon
+}
+
+export const getRegionPolygonFromCookie = (
+  regionPolygonCookieKey = 'regionPolygon',
+): any => {
+  const regionPolygonString = localStorage.getItem(regionPolygonCookieKey)
+  return regionPolygonString?.length ? JSON.parse(regionPolygonString) : undefined
+}
+
+export const getTokenFromCookie = (tokenCookieKey = 'token'): string => {
+  const { cookies } = useCookies()
+  return cookies.get(tokenCookieKey)
+}
+
+export const setTokenInCookie = (token: string, tokenCookieKey = 'token'): string => {
+  const { cookies } = useCookies()
+  cookies.set(tokenCookieKey, token)
+  return token
 }
 
 export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfile => {
@@ -127,13 +206,11 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
 
   if (existingProfileString) {
     try {
-      const existingProfileDecodedString = CryptoJS.AES.decrypt(
-        existingProfileString,
-        process.env.HOST_KEY ?? 'BikeTag',
-      )
-      const existingProfile = JSON.parse(existingProfileDecodedString.toString(CryptoJS.enc.Utf8))
-      return existingProfile
-    } catch (e) {
+      const existingProfile = decodeBikeTagString(existingProfileString)
+      if (existingProfile) {
+        return existingProfile as unknown as BikeTagProfile
+      }
+    } catch (e: any) {
       /// Swallow anonymous
       console.error('failed to decrypt profile in cookie')
     }
@@ -143,29 +220,6 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
   setProfileCookie(profile)
 
   return profile
-}
-
-export const getQueuedTagFromCookie = (biketagCookieKey = 'biketag'): Tag | undefined => {
-  const { cookies } = useCookies()
-  const existingBikeTag = cookies.get(biketagCookieKey)
-
-  debug('getQueuedTagFromCookie', { existingBikeTag })
-  if (existingBikeTag) {
-    return existingBikeTag as unknown as Tag
-  }
-}
-
-export const setQueuedTagInCookie = (queuedTag?: Tag, biketagCookieKey = 'biketag'): boolean => {
-  const { cookies } = useCookies()
-
-  debug('setQueuedTagInCookie', { queuedTag })
-  if (queuedTag) {
-    cookies.set(biketagCookieKey, JSON.stringify(queuedTag))
-  } else {
-    cookies.remove(biketagCookieKey)
-  }
-
-  return true
 }
 
 export const setProfileCookie = (
@@ -178,7 +232,8 @@ export const setProfileCookie = (
     if (profile) {
       const encryptedProfileString = CryptoJS.AES.encrypt(
         JSON.stringify(profile),
-        process.env.HOST_KEY ?? 'BikeTag',
+        /// BikeTagEnv.B_KEY is intentionally a shared public key
+        BikeTagEnv.B_KEY ?? 'BikeTag',
       ).toString()
       cookies.set(profileCookieKey, encryptedProfileString)
     } else {
@@ -186,14 +241,44 @@ export const setProfileCookie = (
     }
 
     return true
-  } catch (err) {
+  } catch (err: any) {
     console.error('could not set profile cookie', err)
     return false
   }
 }
 
+export const getQueuedTagFromCookie = (queuedTagCookieKey = 'biketag'): Tag | undefined => {
+  const { cookies } = useCookies()
+  const existingBikeTag = cookies.get(queuedTagCookieKey)
+
+  debug('play::getQueuedTagFromCookie', { existingBikeTag })
+  if (existingBikeTag) {
+    /// TODO: does this need to be JSON.parse d?
+    return existingBikeTag as unknown as Tag
+  }
+}
+
+export const setQueuedTagInCookie = (queuedTag?: Tag, queuedTagCookieKey = 'biketag'): boolean => {
+  const { cookies } = useCookies()
+
+  debug('play::setQueuedTagInCookie', { queuedTag })
+  if (queuedTag) {
+    cookies.set(queuedTagCookieKey, JSON.stringify(queuedTag))
+  } else {
+    cookies.remove(queuedTagCookieKey)
+  }
+
+  return true
+}
+
 export const encodeBikeTagString = (basic: string): string => {
-  return CryptoJS.AES.encrypt(basic, process.env.HOST_KEY ?? 'BikeTag').toString()
+  /// BikeTagEnv.B_KEY is intentionally a shared public key
+  return CryptoJS.AES.encrypt(basic, BikeTagEnv.B_KEY ?? 'BikeTag').toString()
+}
+
+export const decodeBikeTagString = (encoded: string): any => {
+  const decodedString = CryptoJS.AES.decrypt(encoded, BikeTagEnv.B_KEY ?? 'BikeTag')
+  return JSON.parse(decodedString.toString(CryptoJS.enc.Utf8))
 }
 
 export const getMostRecentlyViewedBikeTagTagnumber = (
@@ -213,11 +298,6 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
       (existingMostRecentNumber > 0 && currentTagnumber > existingMostRecentNumber) ||
       existingMostRecentNumber === 0
     if (currentTagnumberIsNewer) {
-      // console.log('setting most recently viewed tag', {
-      //   existingMostRecent,
-      //   currentTagnumberIsNewer,
-      //   currentTagnumber,
-      // })
       cookies.set(mostRecentCookieKey, currentTagnumber.toString())
     }
 
@@ -237,7 +317,7 @@ export const sendNetlifyError = function (
     message,
   }).toString()
 
-  const request = fetch(action, {
+  const netlifyRequest = fetch(action, {
     method: 'POST',
     headers: {
       Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -247,9 +327,9 @@ export const sendNetlifyError = function (
   })
 
   if (then) {
-    request.then(then)
+    netlifyRequest.then(then)
   }
-  return request
+  return netlifyRequest
 }
 
 export const sendNetlifyForm = function (
@@ -282,6 +362,11 @@ export const GetQueryString = (win: Window, name: string): string | null => {
   return null
 }
 
+export const getQueryParam = (win: Window, param: string): string | null => {
+  const urlParams = new URLSearchParams(win.location.search)
+  return urlParams.get(param)
+}    
+
 export const getQueuedTagState = (queuedTag: Tag): BiketagQueueFormSteps => {
   const mysteryImageSet = queuedTag.mysteryImageUrl?.length > 0
   const foundImageSet = queuedTag.foundImageUrl?.length > 0
@@ -297,11 +382,13 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagQueueFormSteps => {
   return queuedTagState
 }
 
-export const getSupportedGames = (games: Game[]) =>
-  games.filter(
-    (g: Game) =>
-      g.mainhash?.length && g.archivehash?.length && g.queuehash?.length && g.logo?.length,
-  )
+export const getSupportedGames = (games: Game[]) => {
+  const isImgurSupported = (g: Game) =>
+    g.mainhash?.length && g.archivehash?.length && g.queuehash?.length
+  const isAwsSupported = (g: Game) => g.awsRegion?.length
+
+  return games.filter((g: Game) => (isImgurSupported(g) || isAwsSupported(g)) && g.logo?.length)
+}
 
 export const getSanityImageActualSize = (logo: string) => logo?.split('.')[2]?.split('-')[1]
 
@@ -356,28 +443,28 @@ export const getSanityImageUrl = (
 }
 
 export const getApiUrl = (path = '') => {
-  if (!window) {
-    return process.env.CONTEXT === 'dev'
+  if (typeof window === 'undefined') {
+    return BikeTagEnv.CONTEXT === 'dev'
       ? `http://localhost:7200/.netlify/functions/${path}`
       : `/api/${path}`
   }
 
   const url =
-    process.env.CONTEXT === 'dev'
-      ? `${window?.location?.protocol}//${window?.location?.hostname}:7200/.netlify/functions/${path}`
-      : `/api/${path}`
+    BikeTagEnv.CONTEXT === 'dev'
+      ? `${window?.location?.protocol}//${window?.location?.hostname}:7200/.netlify/functions${path.length ? '/' + path : ''}`
+      : `/api${path.length ? '/' + path : ''}`
 
   return url
 }
 
 export const exportHtmlToDownload = (filename: string, node?: any, selector?: string): any => {
   if (!node && !selector) {
-    debug('nothing to render')
+    debug('data::export', 'nothing to render')
     return
   }
   node = node ?? document.querySelector(selector as string)
   if (!node) {
-    debug('node not found')
+    debug('data::export', 'node not found')
     return
   }
 
@@ -395,9 +482,13 @@ export const exportHtmlToDownload = (filename: string, node?: any, selector?: st
     })
 }
 
-export const debug = (message: string, context?: any) => {
-  console.log(message, { context })
-  log.debug(message, { context })
+export const debug = (message: string, context?: any, level: 'log' | 'info' | 'warn' | 'error' = 'log') => {
+  const shouldLogBecauseDebugIsSet = getQueryParam(window, 'debug_a') === 'true' || BikeTagEnv.DEBUG_FE === 'true'
+  const shouldLogBecauseLevel = level === 'error' || level === 'warn' || level === 'info'
+  if (shouldLogBecauseDebugIsSet || shouldLogBecauseLevel) {
+    console[level](message, context)
+  }
+  log.debug(message, context)
 }
 
 export const feetToKm = (feets: number) => feets * 0.0003048
@@ -435,8 +526,8 @@ export const isOnline = async (checkExternally = false) => {
     .catch(() => false)
 }
 
-export const isAuthenticationEnabled = () => !!process.env.A_DOMAIN?.length
-export const isGmapsEnabled = () => !!process.env.G_AKEY?.length
+export const isAuthenticationEnabled = () => !!BikeTagEnv.A_DOMAIN?.length
+export const isGmapsEnabled = () => !!BikeTagEnv.G_AKEY?.length
 
 export const dequeueErrorNotify = (toast: any) => (error: string) => {
   return toast.open({
@@ -449,9 +540,9 @@ export const dequeueErrorNotify = (toast: any) => (error: string) => {
 }
 
 export const getBannedIPs = () => {
-  const sanityInstance = sanityClient({
-    projectId: process.env.S_PID,
-    dataset: process.env.S_DSET,
+  const sanityInstance = createClient({
+    projectId: BikeTagEnv.S_PID,
+    dataset: BikeTagEnv.S_DSET,
     apiVersion: '2021-06-07',
     useCdn: true,
   })

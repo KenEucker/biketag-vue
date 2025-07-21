@@ -29,6 +29,7 @@ import BikeTagLabel from './components/BikeTagLabel.vue'
 export interface BikeTagPlugin {
   install: (app: App) => void
   useBikeTagStore: () => BikeTagStore
+  storeName?: string
 }
 
 export type createBikeTagOptions = Partial<BikeTagCredentials> & {
@@ -57,7 +58,7 @@ const createBikeTag = (
     }
   }
 
-  return { install, useBikeTagStore }
+  return { install, useBikeTagStore, storeName: BikeTagDefaults.store }
 }
 
 export {
@@ -74,15 +75,14 @@ export {
   // BikeTagGames,
   BikeTagHeader,
   // BikeTagInput,
-  BikeTagLabel,
+  BikeTagLabel, createBikeTag,
+  getBikeTagClientOpts,
+  initBikeTagStore,
   // BikeTagLoader,
   // BikeTagMap,
   // BikeTagMenu,
   // BikeTagPlayer,
   // BikeTagQueue,
-  Types,
-  createBikeTag,
-  getBikeTagClientOpts,
-  initBikeTagStore,
-  useBikeTagStore,
+  Types, useBikeTagStore
 }
+

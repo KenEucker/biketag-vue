@@ -1,17 +1,18 @@
-import { Handler } from '@netlify/functions'
 import BikeTagClient from 'biketag'
-import { Game } from 'biketag/dist/common/schema'
 import {
   archiveAndClearQueue,
   getActiveQueueForGame,
   getBikeTagClientOpts,
   isRequestAllowed,
+  log,
 } from './common'
 import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'
+// @ts-ignore
+import { Game } from 'biketag/dist/common/schema'
 
-export const autoClearQueue = async (event): Promise<BackgroundProcessResults> => {
-  if (!isRequestAllowed(event, true, true, false, 'post')) {
+export const autoClearQueue = async (req: Request): Promise<BackgroundProcessResults> => {
+  if (!isRequestAllowed(req, true, true, false, 'post')) {
     return {
       results: ['unauthorized'],
       errors: true,
@@ -19,25 +20,32 @@ export const autoClearQueue = async (event): Promise<BackgroundProcessResults> =
   }
 
   let errors = false
-  const forceClear = event.queryStringParameters.force === 'true'
-  const clearAll = event.queryStringParameters.all === 'true'
+  const queryStringParameters = new URL(req.url).searchParams
+  const forceClear = queryStringParameters?.get('force') === 'true'
+  const clearAll = queryStringParameters?.get('all') === 'true'
   let results: any = []
-  const nonAdminBiketagOpts = getBikeTagClientOpts(event, true)
+  const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
   const game = (await nonAdminBiketag.game(
     { game: nonAdminBiketagOpts.game },
     { source: 'sanity' },
   )) as Game
 
-  const adminBiketagOpts = getBikeTagClientOpts(event, true, true, game)
+  nonAdminBiketag.config({
+    aws: {
+      region: game.awsRegion,
+    }
+  }, false, true)
+  const adminBiketagOpts = getBikeTagClientOpts(req, true, true, game)
   const adminBiketag = new BikeTagClient(adminBiketagOpts)
-  const { data: mostRecentTag } = await adminBiketag.getTag(undefined, { source: 'imgur' })
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  const { data: mostRecentTag } = await adminBiketag.getTag(undefined, { source: imageSource })
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
   if (twentyFourHoursAgo > mostRecentTag.mysteryTime * 1000 && !forceClear) {
     const errorMessage =
       'Most recent tag was created more than 24 hours ago. Please clear the queue manually.'
-    console.log(errorMessage)
+    log('cannot continue', errorMessage, 'error')
     return {
       results: [errorMessage],
       errors: true,
@@ -45,10 +53,10 @@ export const autoClearQueue = async (event): Promise<BackgroundProcessResults> =
   }
 
   if (clearAll) {
-    const allTags = (await nonAdminBiketag.getQueue({ game: adminBiketagOpts.game })).data
+    const allTags = (await nonAdminBiketag.getQueue({ game: adminBiketagOpts.game }, { source: imageSource })).data
 
     if (allTags.length) {
-      console.log('all tags found', { game, allTags })
+      log('all tags found', { game, allTags }, 'info')
       const archiveAndClearQueueResults = await archiveAndClearQueue(
         allTags,
         game,
@@ -60,14 +68,14 @@ export const autoClearQueue = async (event): Promise<BackgroundProcessResults> =
       errors = archiveAndClearQueueResults.errors
     } else {
       const nothingToDoMessage = 'no tags found'
-      console.log(nothingToDoMessage)
+      log('nothing to do', nothingToDoMessage)
       results.push(nothingToDoMessage)
     }
   } else {
     const { queuedTags } = await getActiveQueueForGame(game, adminBiketag)
 
     if (queuedTags.length) {
-      console.log('non-winning tag(s) found', { game, queuedTags })
+      log('non-winning tag(s) found', { game, queuedTags })
       const archiveAndClearQueueResults = await archiveAndClearQueue(
         queuedTags,
         game,
@@ -79,7 +87,7 @@ export const autoClearQueue = async (event): Promise<BackgroundProcessResults> =
       errors = archiveAndClearQueueResults.errors
     } else {
       const nothingToDoMessage = 'no non-winning tags found'
-      console.log(nothingToDoMessage)
+      log('nothing to do', nothingToDoMessage)
       results.push(nothingToDoMessage)
     }
   }
@@ -90,24 +98,19 @@ export const autoClearQueue = async (event): Promise<BackgroundProcessResults> =
   }
 }
 
-const autoPostClearHandler: Handler = async (event) => {
-  const { results, errors } = await autoClearQueue(event)
+export default async (req: Request) => {
+  const { results, errors } = await autoClearQueue(req)
 
   if (results.length) {
-    console.log('queue cleared', { results })
-    return {
-      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
-      body: JSON.stringify(results),
-    }
+    log('queue cleared', { results }, 'info')
+    
+    return new Response(JSON.stringify(results), {
+      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+    })
   } else {
-    console.log('queue not cleared')
-    return {
-      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
-      body: '',
-    }
+    log('queue not cleared', 'no results found', 'error')
+    return new Response('', {
+      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+    })
   }
 }
-
-const handler = autoPostClearHandler
-
-export { handler }

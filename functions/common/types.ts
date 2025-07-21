@@ -1,4 +1,4 @@
-import { Tag } from 'biketag/dist/common/schema'
+import { Tag } from 'biketag'
 
 export type BackgroundProcessResults = {
   results: any[]

@@ -2,23 +2,20 @@ import { AtpAgent } from '@atproto/api'
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
+import type { Ambassador, Game, Tag } from 'biketag'
 import BikeTagClient from 'biketag'
-import { Ambassador, Game, Tag } from 'biketag/dist/common/schema'
 import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
 import { readFileSync } from 'fs'
 import * as jose from 'jose'
 import { Liquid } from 'liquidjs'
 import lzutf8 from 'lzutf8'
-import md5 from 'md5'
 import nodemailer from 'nodemailer'
 import { extname, join } from 'path'
 import qs from 'qs'
-import request from 'request'
 import {
   getDomainInfo,
-  getImgurImageSized,
-  getTagDate,
+  getImageSized,
   getTagDateISOFromTimezone,
   isAuthenticationEnabled,
 } from '../../src/common'
@@ -27,12 +24,28 @@ import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue } from './types'
 
 const ajv = new Ajv()
-export const getBikeTagHash = (val: string): string => md5(`${val}${process.env.HOST_KEY}`)
 
-export const getApiUrl = (game = '', path = ''): string =>
-  process.env.CONTEXT === 'dev'
+let log: (message: string, data?: any, level?: 'info' | 'warn' | 'error') => void
+
+if (process.env.DEBUG_BE === 'true' || process.env.DEBUG_A === 'true') {
+  log = (message: string, data?: any, level: 'info' | 'warn' | 'error' = 'info') => {
+    console[level](message, data)
+  }
+} else {
+  log = (message: string, data?: any, level: 'info' | 'warn' | 'error' = 'info') => {
+    if (level === 'warn' || level === 'error') {
+      console[level](message, data)
+    }
+  }
+}
+
+export { log }
+
+export const getApiUrl = (game = '', path = ''): string => {
+  return process.env.CONTEXT === 'dev'
     ? `http://${game.length ? `${game}.` : ''}${process.env.HOST}:7200/.netlify/functions/${path}`
     : `https://${game.length ? `${game}.` : ''}${process.env.HOST}/api/${path}`
+}
 
 export const isRequestAllowed = (
   req: any,
@@ -43,7 +56,7 @@ export const isRequestAllowed = (
 ): boolean => {
   if (restrictMethod?.length) {
     const restrictMethods = typeof restrictMethod === 'string' ? [restrictMethod] : restrictMethod
-    if (restrictMethods!.indexOf(req.httpMethod.toLowerCase()) === -1) {
+    if (restrictMethods!.indexOf(req.method.toLowerCase()) === -1) {
       return false
     }
   }
@@ -65,22 +78,22 @@ export const isRequestAllowed = (
       return false
     }
 
-    return req.headers.referrer.includes(process.env.HOST)
+    return req.headers?.get('referrer')?.includes(process.env.HOST)
   }
 
   return false
 }
 
 export const getBikeTagClientOpts = (
-  req?: request.Request,
+  req?: Request,
   authorized?: boolean,
   admin?: boolean,
   game?: Game,
 ) => {
-  const request = req ?? { method: 'GET' }
-  const domainInfo = getDomainInfo(request)
-  const isAuthenticatedPOST = request?.method === 'POST' || authorized
-  const isGET = !isAuthenticatedPOST && request?.method === 'GET'
+  const funcRequest = req ?? { method: 'GET' }
+  const domainInfo = getDomainInfo(funcRequest)
+  const isAuthenticatedPOST = funcRequest?.method === 'POST' || authorized
+  const isGET = !isAuthenticatedPOST && funcRequest?.method === 'GET'
 
   /// The minimum to load a BikeTag Game in Read-Only mode
   const opts: any = {
@@ -90,7 +103,12 @@ export const getBikeTagClientOpts = (
       domainInfo.subdomain ??
       process.env.GAME_NAME,
     cached: isGET || !isAuthenticatedPOST,
-    accessToken: process.env.ACCESS_TOKEN,
+    // biketag: {
+    clientKey: process.env.B_KEY,
+    // },
+    aws: {
+      region: game?.awsRegion,
+    },
     imgur: {
       clientId: process.env.I_CID,
       hash: game?.mainhash,
@@ -118,6 +136,13 @@ export const getBikeTagClientOpts = (
     /// TODO: comes from sanity game settings
     // opts.reddit.username = process.env.R_UNAME
     // opts.reddit.password = process.env.R_PASS
+
+    /// Enables aws uploads and edits
+    opts.aws = {
+      accessKeyId: process.env.S3_BE_ACCESS_ID,
+      secretAccessKey: process.env.S3_BE_ACCESS_KEY,
+      region: game?.awsRegion,
+    }
 
     opts.sanity = opts.sanity ?? {}
     opts.sanity.projectId = process.env.S_PID
@@ -147,25 +172,28 @@ export const getBikeTagClientOpts = (
   return opts
 }
 
-export const parseQuery = (query = '') => {
-  const params: any = new URLSearchParams(query) ?? []
+export const parseQuery = (req: Request) => {
+  const params: any = new URL(req.url).searchParams ?? []
   return Object.fromEntries(params)
 }
 
-export const parseBody = (body = '') => {
+export const parseBody = async (req: Request) => {
   let parsed = {}
   try {
-    parsed = JSON.parse(body)
-  } catch (e) {
-    parsed = parseQuery(body)
+    parsed = await req.json()
+    if (!parsed) {
+      parsed = parseQuery(req)
+    }
+  } catch (e: any) {
+    parsed = parseQuery(req)
   }
 
   return parsed
 }
 
-export const getPayloadOpts = (event: any, base = {}): any => {
-  const parsedQuery = parseQuery(event.rawQuery)
-  const parsedBody = parseBody(event.body)
+export const getPayloadOpts = async (req: any, base = {}): Promise<any> => {
+  const parsedQuery = parseQuery(req)
+  const parsedBody = await parseBody(req)
   return {
     ...base,
     ...parsedQuery,
@@ -173,7 +201,7 @@ export const getPayloadOpts = (event: any, base = {}): any => {
   }
 }
 
-export const isValidJson = (data, type = 'none') => {
+export const isValidJson = (data = {}, type = 'none') => {
   let schema = {}
 
   switch (type) {
@@ -310,10 +338,6 @@ export const isValidJson = (data, type = 'none') => {
   return validate(data)
 }
 
-interface Event {
-  headers: Record<string, unknown>
-}
-
 export interface IdentityContext {
   /**
    * The token that was provided.
@@ -328,14 +352,14 @@ export interface IdentityContext {
 
 /// For netlify identity JWT decoding
 const validateJWT = (verifier: JwtVerifier, options: any) => {
-  return (handler: any) => async (event: Event, context: any, cb: any) => {
+  return (handler: any) => async (req: Request, context: any, cb: any) => {
     let claims
-    let accessToken
+    let clientToken
 
     try {
-      accessToken = getTokenFromHeader(event.headers.authorization as string)
-      claims = await verifier.verifyAccessToken(accessToken)
-    } catch (err) {
+      clientToken = getTokenFromHeader(req.headers.get('authorization') as string)
+      claims = await verifier.verifyAccessToken(clientToken)
+    } catch (err: any) {
       if (typeof options.handleError !== 'undefined' && options.handleError !== null) {
         return options.handleError(err)
       }
@@ -354,13 +378,13 @@ const validateJWT = (verifier: JwtVerifier, options: any) => {
 
     // Expose the identity in the client context.
     const ctx: IdentityContext = {
-      token: accessToken,
+      token: clientToken,
       claims,
     }
     context.identityContext = ctx
 
     // Continue.
-    return handler(event, context, cb)
+    return handler(req, context, cb)
   }
 }
 
@@ -371,7 +395,7 @@ export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTa
       getBikeTagClientOpts(
         {
           method: 'get',
-        } as unknown as request.Request,
+        } as Request,
         true,
         true,
       )
@@ -384,17 +408,22 @@ export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTa
   return thisGamesAmbassadors
 }
 
-export const getProfileAuthorization = async (event: any): Promise<any> => {
-  const authorization = await getPayloadAuthorization(event)
-  let profile: any = authorization
+export const getProfileAuthorization = async (req: Request): Promise<any> => {
+  const authorization = await getPayloadAuthorization(req)
+  let profile: any = authorization?.isValid ? authorization.profile : null
 
-  if (authorization && profile) {
-    const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
+  if (authorization?.isValid && profile) {
+    log('Valid authorization received for profile', { email: profile.email }, 'info')
+
+    const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
     const adminBiketag = new BikeTagClient(adminBiketagOpts)
-    const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag)) as Ambassador[]
+    const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag, {
+      source: 'sanity',
+    })) as Ambassador[]
     if (!thisGamesAmbassadors?.length) {
       return profile
     }
+
     const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
     const isABikeTagAmbassador = profileAmbassadorMatch.length
       ? true
@@ -403,107 +432,181 @@ export const getProfileAuthorization = async (event: any): Promise<any> => {
     if (isABikeTagAmbassador) {
       profile.isBikeTagAmbassador = true
       profile = { ...profile, ...profileAmbassadorMatch[0] }
+      log('Profile marked as BikeTagAmbassador', { email: profile.email }, 'info')
     }
   }
 
-  /// TODO: pear down this object to only the things we care about
   return profile
 }
 
-export const getPayloadAuthorization = async (event: any): Promise<any> => {
-  let authorizationString = event.headers.authorization
+export const getPayloadAuthorization = async (
+  req: any,
+): Promise<{
+  type: 'jwt' | 'basic' | 'client' | 'bearer' | null
+  token?: string
+  isValid: boolean
+  reason?: 'expired' | 'invalid' | null
+  profile?: any
+}> => {
+  let authorizationString = req.headers.get('authorization')
   const basic = 'Basic '
   const bearer = 'Bearer '
+  const jwt = 'JWT '
   const client = 'Client-ID '
-  let authProfile
+  let authProfile: any = {}
 
-  const authorizationType: string | null =
-    authorizationString?.indexOf(basic) === 0
-      ? 'basic'
-      : authorizationString?.indexOf(client) === 0
-        ? 'client'
-        : authorizationString?.indexOf(bearer) === 0
-          ? 'bearer'
+  const authorizationType: string | null = authorizationString?.startsWith(basic)
+    ? 'basic'
+    : authorizationString?.startsWith(client)
+      ? 'client'
+      : authorizationString?.startsWith(bearer)
+        ? 'bearer'
+        : authorizationString?.startsWith(jwt)
+          ? 'jwt'
           : null
 
-  const getBasicAuthProfile = (authorizationString: string) => {
-    /// Basic Auth: "Basic [name]::[password]""
-    // console.log('basic', { authorizationString })
-    const namePasscodeString = CryptoJS.AES.decrypt(authorizationString, process.env.HOST_KEY ?? '')
-    const decryptedPasscode = namePasscodeString.toString(CryptoJS.enc.Utf8)
-    if (decryptedPasscode) {
-      const namePasscodeSplit = decryptedPasscode.split('::')
-
-      return {
-        name: namePasscodeSplit[0],
-        passcode: namePasscodeSplit[1],
+  const getBasicAuthProfile = (authStr: string) => {
+    try {
+      const decrypted = CryptoJS.AES.decrypt(authStr, process.env.HOST_KEY ?? '')
+      const decoded = decrypted.toString(CryptoJS.enc.Utf8)
+      if (decoded) {
+        const [name, passcode] = decoded.split('::')
+        return { name, passcode }
       }
+    } catch (e: any) {
+      log('Error decrypting Basic auth string', e, 'warn')
     }
-    return {
-      name: null,
-      passcode: null,
-    }
+    return { name: null, passcode: null }
   }
 
-  const getNetlifyAuthProfile = async (authorizationString: string) => {
-    // console.log('netlify', { authorizationString })
+  const getNetlifyAuthProfile = async (authStr: string) => {
     try {
       const verifierOpts = { issuer: '', audience: '' }
       const verifier = new JwtVerifier(verifierOpts)
       return await validateJWT(verifier, verifierOpts)
-    } catch (e) {
-      console.error({ authorizationNetlifyValidationError: e })
+    } catch (e: any) {
+      log('Error verifying Netlify JWT', e, 'warn')
     }
     return null
   }
 
-  const getAuth0AuthProfile = async (authorizationString: string) => {
+  const getAuth0AuthProfile = async (authStr: string) => {
     try {
       const JWKS = jose.createRemoteJWKSet(
         new URL(`https://${process.env.A_DOMAIN}/.well-known/jwks.json`),
       )
-
-      const { payload } = await jose.jwtVerify(authorizationString, JWKS)
+      const { payload } = await jose.jwtVerify(authStr, JWKS)
       return payload
-    } catch (e) {
-      /// Swallow error
+    } catch (e: any) {
       if (e.code === 'ERR_JWT_EXPIRED') return null
+      log('Auth0 JWT verification error', e, 'warn')
+      return authStr
+    }
+  }
 
-      return authorizationString
+  const getBikeTagAuthorization = async (
+    token: string,
+  ): Promise<{
+    isValid: boolean
+    reason: 'expired' | 'invalid' | null
+    profile: { client_id: string; p_id: string } | null
+  }> => {
+    const jwtSecretKey = process.env.HOST_KEY
+      ? crypto.createHash('sha256').update(process.env.HOST_KEY).digest()
+      : null
+
+    if (!jwtSecretKey) {
+      log('JWT verification failed: HOST_KEY missing', null, 'error')
+      return { isValid: false, reason: 'invalid', profile: null }
+    }
+
+    try {
+      const { payload } = await jose.jwtVerify(token, jwtSecretKey)
+      return {
+        isValid: true,
+        reason: null,
+        profile: payload as { client_id: string; p_id: string },
+      }
+    } catch (err: any) {
+      log('BikeTag JWT verification failed', err, 'warn')
+      const reason = err.code === 'ERR_JWT_EXPIRED' ? 'expired' : 'invalid'
+      return { isValid: false, reason, profile: null }
     }
   }
 
   switch (authorizationType) {
-    case 'basic':
+    case 'basic': {
       authorizationString = authorizationString.substring(basic.length)
-      authProfile = await getBasicAuthProfile(authorizationString)
+      const basicProfile = await getBasicAuthProfile(authorizationString)
+      authProfile = {
+        type: 'basic',
+        isValid: !!basicProfile.name && !!basicProfile.passcode,
+        profile: basicProfile,
+      }
       break
-    case 'netlify':
+    }
+    case 'netlify': {
       authorizationString = authorizationString.substring(client.length)
-      authProfile = await getNetlifyAuthProfile(authorizationString)
+      const netlifyProfile = await getNetlifyAuthProfile(authorizationString)
+      authProfile = {
+        type: 'netlify',
+        isValid: !!netlifyProfile,
+        profile: netlifyProfile,
+      }
       break
-    case 'client':
+    }
+    case 'client': {
       authorizationString = authorizationString.substring(client.length)
-      authProfile = await getAuth0AuthProfile(authorizationString)
+      const clientProfile = await getAuth0AuthProfile(authorizationString)
+      authProfile = {
+        type: 'client',
+        isValid: !!clientProfile,
+        profile: clientProfile,
+      }
       break
-    case 'bearer':
+    }
+    case 'bearer': {
       authorizationString = authorizationString.substring(bearer.length)
-      authProfile = await getAuth0AuthProfile(authorizationString)
+      const bearerProfile = await getAuth0AuthProfile(authorizationString)
+      authProfile = {
+        type: 'bearer',
+        isValid: !!bearerProfile,
+        profile: bearerProfile,
+      }
       break
-    default:
-      authProfile = authorizationString?.length ? ErrorMessage.AuthTypeNotSupported : null
+    }
+    case 'jwt': {
+      authorizationString = authorizationString.substring(jwt.length)
+      const biketagAuthProfile = await getBikeTagAuthorization(authorizationString)
+      authProfile = {
+        type: 'jwt',
+        token: authorizationString,
+        isValid: biketagAuthProfile.isValid,
+        reason: biketagAuthProfile.reason,
+        profile: biketagAuthProfile.profile,
+      }
       break
+    }
+    default: {
+      authProfile = {
+        type: null,
+        isValid: false,
+        reason: 'unsupported',
+        profile: authorizationString?.length ? ErrorMessage.AuthTypeNotSupported : null,
+      }
+      break
+    }
   }
 
-  /// DEBUG: uncomment to check incoming authorization credentials
-  if (process.env.DEBUG_A) {
-    console.log({
-      orign: event.headers.authorization,
+  log(
+    'Authorization resolved',
+    {
+      originalAuthorization: req.headers.get('authorization'),
       authorizationType,
-      authorizationString,
       authProfile,
-    })
-  }
+    },
+    'info',
+  )
 
   return authProfile
 }
@@ -527,7 +630,7 @@ export const encrypt = (t: any, key?: string) => {
     const encrypted = cipher.update(t, 'utf8', 'base64')
 
     return encrypted + cipher.final('base64')
-  } catch (e) {
+  } catch (e: any) {
     /// swallow exception
     return null
   }
@@ -545,7 +648,7 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
     const jsonObject = JSON.parse(decrypted)
 
     return jsonObject || decrypted
-  } catch (e) {
+  } catch (e: any) {
     /// swallow exception
     // console.log(e)
     return null
@@ -555,8 +658,8 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
 export const compress = lzutf8.compress
 export const decompress = lzutf8.decompress
 
-let liquidInstance
-export const liquidOpts = {
+let liquidInstance: Liquid
+export const liquidOpts: any = {
   dynamicPartials: true,
   strict_filters: true,
   extname: '.liquid',
@@ -608,8 +711,8 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
 
   const liquid = getLiquidInstance()
 
-  Object.keys(liquidOpts.customFilters).forEach((filter) => {
-    const filterMethod = liquidOpts.customFilters[filter]
+  Object.keys(liquidOpts.customFilters).forEach((filter: string) => {
+    const filterMethod: any = liquidOpts.customFilters[filter]
     liquid.registerFilter(filter, filterMethod)
   })
   const templateFilePath = join('functions', 'emails', template)
@@ -625,12 +728,12 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     const textTemplate = readFileSync(textTemplateFilePath).toString()
     text = liquid.parseAndRenderSync(textTemplate, locals)
     // }
-  } catch (e) {
+  } catch (e: any) {
     console.error(ErrorMessage.sendEmail, { e })
   }
 
   if (!html.length) {
-    console.log(ErrorMessage.NoHtmlLoaded, { templateFilePath, htmlTemplateFilePath })
+    log(ErrorMessage.NoHtmlLoaded, { templateFilePath, htmlTemplateFilePath }, 'error')
     return null
   }
 
@@ -679,8 +782,8 @@ export const sendEmailsToAmbassadors = async (
   if (!(process.env.G_EMAIL && process.env.G_PASS))
     return Promise.resolve({ accepted: [], rejected: [ErrorMessage.EmailNotConfigured] })
   let emailSent
-  let accepted = []
-  let rejected = []
+  let accepted: any = []
+  let rejected: any = []
   const defaultEmailData = {
     host: 'eh?',
     subdomainIcon: '/images/BikeTag.svg',
@@ -688,7 +791,7 @@ export const sendEmailsToAmbassadors = async (
 
   for (const ambassador of ambassadors) {
     if (ambassador.email) {
-      console.log(`sending ${emailName} email to BikeTag Ambassador: ${ambassador.email}`)
+      log(`sending ${emailName} email to BikeTag Ambassador`, { email: ambassador.email }, 'info')
       emailSent = await sendEmail(
         ambassador.email,
         emailSubject,
@@ -698,14 +801,14 @@ export const sendEmailsToAmbassadors = async (
         },
         emailName,
       )
-      accepted = accepted.concat(emailSent.accepted)
-      rejected = rejected.concat(emailSent.rejected)
+      accepted = accepted.concat(emailSent?.accepted ?? [])
+      rejected = rejected.concat(emailSent?.rejected ?? [])
     }
   }
   if (sendToAdmin) {
     const biketagAdminEmail = process.env.ADMIN_EMAIL ?? ''
     if (biketagAdminEmail?.length) {
-      console.log(`sending ${emailName} email to BikeTag Administrator: ${biketagAdminEmail}`)
+      log(`sending ${emailName} email to BikeTag Administrator:`, {biketagAdminEmail}, 'info')
       emailSent = await sendEmail(
         biketagAdminEmail,
         emailSubject,
@@ -715,8 +818,8 @@ export const sendEmailsToAmbassadors = async (
         },
         emailName,
       )
-      accepted = accepted.concat(emailSent.accepted)
-      rejected = rejected.concat(emailSent.rejected)
+      accepted = accepted.concat(emailSent?.accepted ?? [])
+      rejected = rejected.concat(emailSent?.rejected ?? [])
     }
   }
 
@@ -738,7 +841,7 @@ export const getSanityImageUrl = (
 
 export const archiveAndClearQueue = async (
   queuedTags: Tag[],
-  game?: Game | null,
+  game?: Game | undefined,
   adminBiketag?: BikeTagClient,
   nonAdminBikeTag?: BikeTagClient,
   noArchive = false,
@@ -747,43 +850,44 @@ export const archiveAndClearQueue = async (
   let errors = false
   adminBiketag =
     adminBiketag ??
-    new BikeTagClient(
-      getBikeTagClientOpts({ method: 'get' } as unknown as request.Request, true, true),
-    )
+    new BikeTagClient(getBikeTagClientOpts({ method: 'get' } as Request, true, true, game))
+
   if (!game) {
     const gameResponse = await adminBiketag.getGame(
       { game: queuedTags[0].game },
       { source: 'sanity' },
     )
-    game = gameResponse.success ? gameResponse.data : null
+    game = gameResponse.success ? gameResponse.data : undefined
   }
+  const imageSource = game?.awsRegion ? 'aws' : 'imgur'
+
   if (queuedTags.length && game) {
-    const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true)
-    const gameName = game.name.toLocaleLowerCase()
-    nonAdminBikeTagOpts.game = gameName
-    nonAdminBikeTagOpts.imgur.hash = game.queuehash
+    const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true, false, game)
+    const gameName = game.name.toLowerCase()
 
     if (!nonAdminBikeTag) {
-      nonAdminBikeTag = nonAdminBikeTag ?? new BikeTagClient(nonAdminBikeTagOpts)
+      nonAdminBikeTag = new BikeTagClient(nonAdminBikeTagOpts)
     } else {
-      nonAdminBikeTag.config(nonAdminBikeTagOpts, false)
+      nonAdminBikeTag.config(nonAdminBikeTagOpts, false, true)
     }
 
     if (!noArchive) {
-      console.log('archiving remaining queued tags', { game: gameName, queuedTags })
+      log(
+        'Archiving remaining queued tags',
+        { game: gameName, queuedTagsCount: queuedTags.length },
+        'info',
+      )
 
-      const currentBikeTag = (await adminBiketag.getTag({ limit: 1 })).data
+      const currentBikeTag = (await adminBiketag.getTag({ limit: 1 }, { source: imageSource })).data
       for (const nonWinningTag of queuedTags) {
-        /// If there are remnants of tags from the currently posted biketag, don't archive them
         if (
           nonWinningTag.mysteryPlayer !== currentBikeTag?.mysteryPlayer &&
           nonWinningTag.foundPlayer !== currentBikeTag?.mysteryPlayer
         ) {
-          /* Archive using ambassador credentials (mainhash and archivehash are both ambassador albums) */
-          const archiveTagResult = await adminBiketag.archiveTag({
-            ...nonWinningTag,
-            archivehash: game.archivehash,
-          })
+          const archiveTagResult = await adminBiketag.archiveTag(
+            { ...nonWinningTag, archivehash: game.archivehash },
+            { source: imageSource },
+          )
           if (archiveTagResult.success) {
             results.push({
               message: 'non-winning found image archived',
@@ -791,7 +895,7 @@ export const archiveAndClearQueue = async (
               tag: nonWinningTag,
             })
           } else {
-            // console.log({ archiveTagResult })
+            log('Failed to archive non-winning tag', archiveTagResult, 'warn')
             results.push({
               message: ErrorMessage.NonWinningTagNotArchived,
               game: gameName,
@@ -800,8 +904,10 @@ export const archiveAndClearQueue = async (
             errors = true
           }
         }
-        /* delete using player credentials (queuehash is player album) */
-        const deleteArchivedTagFromQueueResult = await nonAdminBikeTag.deleteTag(nonWinningTag)
+
+        const deleteArchivedTagFromQueueResult = await nonAdminBikeTag.deleteTag(nonWinningTag, {
+          source: imageSource,
+        })
         if (deleteArchivedTagFromQueueResult.success) {
           results.push({
             message: 'non-winning tag deleted from queue',
@@ -809,20 +915,21 @@ export const archiveAndClearQueue = async (
             tag: nonWinningTag,
           })
         } else {
-          // console.log({ deleteArchivedTagFromQueueResult })
+          log(
+            'Failed to delete non-winning tag from queue',
+            deleteArchivedTagFromQueueResult,
+            'warn',
+          )
           results.push({
             message: ErrorMessage.NonWinningTagNotDeleted,
             game: gameName,
             tag: nonWinningTag,
           })
-          /// No error here?
         }
       }
     } else {
-      // Just remove all tags from the queue
       for (const queuedTag of queuedTags) {
-        const deletedTagResult = await nonAdminBikeTag.deleteTag(queuedTag)
-
+        const deletedTagResult = await nonAdminBikeTag.deleteTag(queuedTag, { source: imageSource })
         results.push({
           message: deletedTagResult.success
             ? 'tag deleted from queue'
@@ -832,12 +939,12 @@ export const archiveAndClearQueue = async (
         })
       }
     }
+  } else {
+    errors = true
+    results.push({ message: ErrorMessage.GameNotSet, game: undefined })
   }
 
-  return {
-    results,
-    errors,
-  }
+  return { results, errors }
 }
 
 export const getActiveQueueForGame = async (
@@ -853,57 +960,48 @@ export const getActiveQueueForGame = async (
     game.settings && !!game.settings['queue::autoPost']
       ? parseInt(game.settings['queue::autoPost'])
       : 0
-  /// TODO: check for the right ambassador here
-  const approvingAmbassadorIsApproved = approvingAmbassador?.length
 
-  console.log({ autoPostSetting, game })
+  const approvingAmbassadorIsApproved = !!approvingAmbassador?.length
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+
+  log('Evaluating active queue for game', { game: game.name, autoPostSetting, imageSource }, 'info')
+
   if ((autoPostSetting && game.queuehash?.length) || approvingAmbassadorIsApproved) {
-    /************** GET WINNING QUEUE *****************/
     adminBikeTag =
       adminBikeTag ??
-      new BikeTagClient(
-        getBikeTagClientOpts(
-          {
-            method: 'get',
-          } as unknown as request.Request,
-          true,
-          true,
-          game,
-        ),
-      )
-    const getQueueResponse = await adminBikeTag.getQueue(undefined, {
-      source: 'imgur',
-    })
+      new BikeTagClient(getBikeTagClientOpts({ method: 'get' } as Request, true, true, game))
+    const getQueueResponse = await adminBikeTag.getQueue(undefined, { source: imageSource })
     queuedTags = getQueueResponse.success ? getQueueResponse.data : []
-    if (queuedTags?.length) {
+
+    if (queuedTags.length) {
       completedTags = queuedTags.filter((t) => t.foundImageUrl?.length && t.mysteryImageUrl?.length)
 
       if (completedTags.length) {
         const now = Date.now()
         const tagAutoPostTimer = 1000 * 60 * autoPostSetting
-        console.log({ now, tagAutoPostTimer })
+        log(
+          'Checking for timed-out tags',
+          { now, tagAutoPostTimer, completedTagsCount: completedTags.length },
+          'info',
+        )
+
         timedOutTags = completedTags.filter((t) => {
-          console.log({
-            diff: now - t.mysteryTime * 1000,
-            mysteryTime: t.mysteryTime,
-            timedOut: now - t.mysteryTime * 1000 > tagAutoPostTimer,
-          })
-          return now - t.mysteryTime * 1000 > tagAutoPostTimer
+          const diff = now - t.mysteryTime * 1000
+          const isTimedOut = diff > tagAutoPostTimer
+          if (isTimedOut) {
+            log('Tag timed out', { tagnumber: t.tagnumber, diff }, 'info')
+          }
+          return isTimedOut
         })
 
         if (timedOutTags.length) {
-          const orderedTimedOutTags = timedOutTags.sort((t1, t2) => t1.mysteryTime - t2.mysteryTime)
-          timedOutTags = orderedTimedOutTags
+          timedOutTags = timedOutTags.sort((t1, t2) => t1.mysteryTime - t2.mysteryTime)
         }
       }
     }
   }
 
-  return {
-    queuedTags,
-    completedTags,
-    timedOutTags,
-  }
+  return { queuedTags, completedTags, timedOutTags }
 }
 
 export const createBikeTagPlayerProfile = async (
@@ -911,36 +1009,33 @@ export const createBikeTagPlayerProfile = async (
   game?: string,
   biketag?: BikeTagClient,
 ) => {
-  profile = {
-    ...profile,
-    name: profile?.user_metadata?.name ?? profile.name,
-  }
+  profile = { ...profile, name: profile?.user_metadata?.name ?? profile.name }
   if (profile?.name?.length) {
     biketag = biketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true))
     if (game?.length) {
       profile.games = profile.games ?? [game]
     }
-    console.log('creating new BikeTag Profile', profile)
-    /// BUG: names with spaces in them can't be created with a matching ID in sanity
+    log('Creating new BikeTag profile', { name: profile.name, game }, 'info')
     return biketag.updatePlayer(profile, { source: 'sanity' })
   } else {
-    console.error(ErrorMessage.ProfileNameNotSet, profile)
+    log(ErrorMessage.ProfileNameNotSet, profile, 'error')
   }
   return Promise.resolve({ data: null, success: false })
 }
 
-export const handleAuth0ProfileRequest = async (req, request, profile): Promise<any> => {
+export const handleAuth0ProfileRequest = async (req: Request, profile: any): Promise<any> => {
   let body = ''
   let statusCode = HttpStatusCode.Continue
   let options = {}
   const authorizationHeaders = await auth0Headers()
-  const method = req.method ?? req.httpMethod
+  const method = req.method ?? req.method
 
   switch (method) {
     case 'PUT':
       /// CREATE a new BikeTag profile fields (role, name)
       try {
-        const data: any = JSON.parse(request)
+        const data = await req.json()
+        const userMetadata = data.user_metadata
         /// If the request is valid for an update
         if (isValidJson(data, 'profile.role')) {
           /// Happy path
@@ -975,7 +1070,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
                   per_page: 1,
                   include_totals: false,
                   fields: 'user_metadata.name',
-                  q: `user_metadata.name:"${data.user_metadata?.name}"`,
+                  q: `user_metadata.name:"${userMetadata?.name}"`,
                   search_engine: 'v3',
                 },
                 headers: authorizationHeaders,
@@ -999,7 +1094,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
               const biketagAdminOpts = getBikeTagClientOpts(req, true)
 
               /// Create the player profile in sanity
-              console.log('creating the player in sanity', { data, biketagAdminOpts })
+              log('creating the player in sanity', { data, biketagAdminOpts })
               const updatedPlayerResponse = await createBikeTagPlayerProfile(
                 data,
                 biketagAdminOpts.game,
@@ -1030,7 +1125,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
           body = ErrorMessage.InvalidRequestData
           statusCode = HttpStatusCode.BadRequest
         }
-      } catch (e) {
+      } catch (e: any) {
         body = `${ErrorMessage.PatchFailed}: ${e.message ?? e}`
         statusCode = HttpStatusCode.BadRequest
       }
@@ -1038,7 +1133,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
     case 'PATCH':
       /// UPDATE a BikeTag profile
       try {
-        const data: any = JSON.parse(request)
+        const data: any = await req.json()
         /// WAIT WHY was this added? this needs to be in the request.
         // delete data.user_metadata?.name
         const profileType = profile.isBikeTagAmbassador
@@ -1056,11 +1151,11 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
           }
         } else {
           /// Invalid data
-          console.log(ErrorMessage.InvalidRequestData, data, profileType)
+          log(ErrorMessage.InvalidRequestData, { data, profileType }, 'error')
           body = ErrorMessage.InvalidRequestData
           statusCode = HttpStatusCode.BadRequest
         }
-      } catch (e) {
+      } catch (e: any) {
         body = `${ErrorMessage.PatchFailed}: ${e.message ?? e}`
         statusCode = HttpStatusCode.BadRequest
       }
@@ -1085,7 +1180,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
         if (typeof response.data === 'string') {
           body = response.data
         } else if (Array.isArray(response.data)) {
-          if (response.data?.length) console.log('well how did this happen?')
+          if (response.data?.length) log('well how did this happen?', { 'response.data': response.data }, 'warn')
           body = ''
         } else {
           const profileDataResponse = profile.isBikeTagAmbassador
@@ -1109,7 +1204,7 @@ export const handleAuth0ProfileRequest = async (req, request, profile): Promise<
 }
 
 export const getBikeTagAuth0Profile = async (
-  name,
+  name: string,
   authorized = false,
   passcode?: string,
   sub?: string,
@@ -1122,8 +1217,9 @@ export const getBikeTagAuth0Profile = async (
     page: 0,
     per_page: 1,
     include_totals: false,
-    fields: `${restrictUserMeta ? 'user_metadata.social,user_metadata.options' : 'user_metadata'}${authorized ? ',sub,user_metadata.name,user_metadata.passcode' : ''
-      }`,
+    fields: `${restrictUserMeta ? 'user_metadata.social,user_metadata.options' : 'user_metadata'}${
+      authorized ? ',sub,user_metadata.name,user_metadata.passcode' : ''
+    }`,
     q: `user_metadata.name:"${name}"`,
     search_engine: 'v3',
   }
@@ -1161,7 +1257,7 @@ export const getBikeTagAuth0Profile = async (
 }
 
 export const getBikeTagPlayerProfile = async (
-  profile,
+  profile: any,
   authorized = false,
   stringifyResponse = false,
   adminBikeTag?: BikeTagClient,
@@ -1206,7 +1302,7 @@ const uploadImageToBlueSkyFromURL = async (agent: AtpAgent, url: string) => {
 
   const uploadResponse = await agent.uploadBlob(img)
   if (!uploadResponse.success) {
-    console.log(ErrorMessage.ImageUploadFailed, { uploadResponse })
+    log(ErrorMessage.ImageUploadFailed, { uploadResponse }, 'error')
     throw new Error(ErrorMessage.ImageUploadFailed)
   }
   return uploadResponse.data.blob
@@ -1225,7 +1321,8 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
   const link = `${host}/${winningTagnumber}`
   const gameLinkFacet = getStartAndEndBytesOfStringWithinString(heading, game.name)
-  const imageUrl = getImgurImageSized(winningTag.mysteryImageUrl, 'l')
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  const imageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
 
   try {
     if (process.env.BSKY_USER && process.env.BSKY_PASS) {
@@ -1233,7 +1330,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
       const bskyPass = process.env.BSKY_PASS
       const bskyServer = process.env.BSKY_SERVER ?? 'https://bsky.social'
 
-      console.log('sending bluesky on behalf of ' + bskyUser)
+      log('sending bluesky on behalf of ' + bskyUser, {winningTagnumber, bskyUser})
 
       const agent = new AtpAgent({
         service: bskyServer,
@@ -1252,19 +1349,19 @@ export const sendBikeTagPostNotificationToBlueSky = async (
         createdAt: timestamp,
         facets: gameLinkFacet.length
           ? [
-            {
-              index: {
-                byteStart: gameLinkFacet[0],
-                byteEnd: gameLinkFacet[1],
-              },
-              features: [
-                {
-                  $type: 'app.bsky.richtext.facet#link',
-                  uri: link,
+              {
+                index: {
+                  byteStart: gameLinkFacet[0],
+                  byteEnd: gameLinkFacet[1],
                 },
-              ],
-            },
-          ]
+                features: [
+                  {
+                    $type: 'app.bsky.richtext.facet#link',
+                    uri: link,
+                  },
+                ],
+              },
+            ]
           : [],
         embed: {
           $type: 'app.bsky.embed.external',
@@ -1279,8 +1376,8 @@ export const sendBikeTagPostNotificationToBlueSky = async (
 
       return `bluesky::${postCreated.cid}`
     }
-  } catch (e) {
-    console.log({ blueskyError: e })
+  } catch (e: any) {
+    log('error sending bluesky notification', { blueskyError: e }, 'error')
   }
 
   return `bluesky::failed`
@@ -1305,10 +1402,11 @@ export const sendBikeTagPostNotificationToWebhook = (
   const mysteryAltText = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
   const foundAltText = `BikeTag #${currentNumber} found by ${currentTag.foundPlayer}`
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
-  const mysteryImageUrl = getImgurImageSized(winningTag.mysteryImageUrl, 'l')
-  const foundImageUrl = getImgurImageSized(currentTag.foundImageUrl, 'l')
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  const mysteryImageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
+  const foundImageUrl = getImageSized(imageSource, currentTag.foundImageUrl, 'l')
 
-  console.log('sending notification webhook timestamp', {
+  log('sending notification webhook timestamp', {
     timestamp,
     foundTime: currentTag.foundTime,
     tz: game.region.tz,
@@ -1411,7 +1509,7 @@ export const sendNewBikeTagNotifications = async (
   if (!skipSocials) {
     const sendGlobalDiscordNotification = process.env.DCN
     if (sendGlobalDiscordNotification) {
-      // console.log({ sendGlobalDiscordNotification })
+      log('Sending global Discord notification', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
           currentTag,
@@ -1426,7 +1524,7 @@ export const sendNewBikeTagNotifications = async (
 
     const sendGlobalBlueSkyNotification = process.env.BSN
     if (sendGlobalBlueSkyNotification) {
-      // console.log({ sendGlobalBlueSkyNotification })
+      log('Sending global BlueSky notification', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToBlueSky(currentTag, winningTag, host, game),
       )
@@ -1434,7 +1532,7 @@ export const sendNewBikeTagNotifications = async (
 
     const sendGlobalSlackNotification = process.env.SLN
     if (sendGlobalSlackNotification) {
-      // console.log({ sendGlobalSlackNotification })
+      log('Sending global Slack notification', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
           currentTag,
@@ -1449,7 +1547,7 @@ export const sendNewBikeTagNotifications = async (
 
     const sendDiscordNotification = game.settings['notifications::discord']
     if (sendDiscordNotification) {
-      // console.log({ sendDiscordNotification })
+      log('Sending Discord notification for game', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
           currentTag,
@@ -1464,7 +1562,7 @@ export const sendNewBikeTagNotifications = async (
 
     const sendSlackNotification = game.settings['notifications::slack']
     if (sendSlackNotification) {
-      // console.log({ sendSlackNotification })
+      log('Sending Slack notification for game', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
           currentTag,
@@ -1477,57 +1575,55 @@ export const sendNewBikeTagNotifications = async (
       )
     }
   } else {
-    console.log('skipping posting of social notifications')
+    log('Skipping social notifications', { game: game.name }, 'info')
   }
 
-  if (!skipEmails && (!game.settings['emails::disable'] || game.settings['emails::disable'].split(',').indexOf('new-biketag-notification') === -1)) {
-    // console.log('emailing', { thisGamesAmbassadors })
+  if (
+    !skipEmails &&
+    (!game.settings['emails::disable'] ||
+      game.settings['emails::disable'].split(',').indexOf('new-biketag-notification') === -1)
+  ) {
+    log(
+      'Sending new BikeTag email notifications',
+      { game: game.name, ambassadors: thisGamesAmbassadors.length },
+      'info',
+    )
     notificationPromises.push(
       sendEmailsToAmbassadors(
         'biketag-auto-posted',
         `New BikeTag Round (#${winningTagnumber}) Auto-Posted for [${game.name}]`,
         thisGamesAmbassadors,
-        (a) => {
-          return {
-            currentBikeTag: currentTag,
-            newBikeTagPost: winningTag,
-            logo,
-            ambassadorsUrl: `${host}/queue?btaId=${a?.id}`,
-            tagAutoApprovedText:
-              'This tag was auto-approved by the AutoPost feature for being the first, completed, BikeTag Post to be submitted. If there is a problem with this tag, please click the button below to address the issue.',
-            newBikeTagRoundTitle: ``,
-            newBikeTagRoundText: `BikeTag Round #${winningTagnumber} was just auto-posted!`,
-            tosText: 'Terms & Conditions',
-            replyToRemoveLink:
-              'reply to this email to request that these emails no longer be sent to you',
-            newBikeTagRoundFooter: 'Thank you for being a BikeTag Ambassador!',
-            btaDashboardButton: 'BikeTag Ambassador dashboard',
-            host,
-            game: game.name,
-            redditLink: `https://reddit.com/r/${game.subreddit?.length ? game.subreddit : 'biketag'}`,
-            blueskyLink: `https://bsky.app/profile/${game.bluesky?.length ? game.bluesky : 'biketag.bsky.social'}`,
-          }
-        },
-      ).then((results) => {
-        return results.accepted.concat(results.rejected)
-      }),
+        (a) => ({
+          currentBikeTag: currentTag,
+          newBikeTagPost: winningTag,
+          logo,
+          ambassadorsUrl: `${host}/queue?btaId=${a?.id}`,
+          tagAutoApprovedText:
+            'This tag was auto-approved by the AutoPost feature for being the first, completed, BikeTag Post to be submitted. If there is a problem with this tag, please click the button below to address the issue.',
+          newBikeTagRoundTitle: ``,
+          newBikeTagRoundText: `BikeTag Round #${winningTagnumber} was just auto-posted!`,
+          tosText: 'Terms & Conditions',
+          replyToRemoveLink:
+            'reply to this email to request that these emails no longer be sent to you',
+          newBikeTagRoundFooter: 'Thank you for being a BikeTag Ambassador!',
+          btaDashboardButton: 'BikeTag Ambassador dashboard',
+          host,
+          game: game.name,
+          blueskyLink: `https://bsky.app/profile/${game.bluesky?.length ? game.bluesky : 'biketag.bsky.social'}`,
+        }),
+      ).then((results) => results.accepted.concat(results.rejected)),
     )
   } else {
-    console.log('Sending of emails is disabled for email:biketag-auto-posted', { emailsDisabled: game.settings['emails::disable'] })
+    log(
+      'Sending of emails disabled for new-biketag-notification',
+      { disabled: game.settings['emails::disable'] },
+      'info',
+    )
   }
 
   return notificationPromises
 }
 
-/**
- * Sets a new BikeTag post by updating the current BikeTag with the winning tag information
- * and posting the new BikeTag from the queue.
- *
- * @param game - The game object.
- * @param winningBikeTagPost - The winning BikeTag post.
- * @param previousBikeTag - The previous BikeTag post.
- * @returns A promise that resolves to the background process results.
- */
 export const setNewBikeTagPost = async (
   game: Game,
   winningBikeTagPost: Tag,
@@ -1537,132 +1633,108 @@ export const setNewBikeTagPost = async (
 ): Promise<BackgroundProcessResults> => {
   adminBiketag =
     adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
-  /// Get the current BikeTag
-  previousBikeTag = previousBikeTag ?? ((await adminBiketag.getTag()).data as Tag) // the "current" mystery tag to be updated
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  previousBikeTag =
+    previousBikeTag ?? ((await adminBiketag.getTag(undefined, { source: imageSource })).data as Tag)
   let errors = false
   const results: any = []
 
-  /// Create the new BikeTag to be posted from the mystery information of the winning BikeTag
-  const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost) // the new "current" mystery tag
+  const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost)
+  newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
+  previousBikeTag.gps = winningBikeTagPost.gps
+  previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
+  previousBikeTag.foundTime = winningBikeTagPost.foundTime
+  previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
+  previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
 
-  try {
-    /************** UPDATE CURRENT BIKETAG WITH FOUND IMAGE *****************/
-    /// Zero out the gps for the new location, as the GPS of a newly posted tag is the current/previous tag found location
-    newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
-    /// Update the current BikeTag with the winning tag found information
-    previousBikeTag.gps = winningBikeTagPost.gps
-    previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
-    previousBikeTag.foundTime = winningBikeTagPost.foundTime
-    previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
-    previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
-    // console.log('updating current BikeTag with the winning tag found information', previousBikeTag)
-    const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag)
+  log('Updating current BikeTag with winning tag found info', previousBikeTag, 'info')
+  const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, {
+    source: imageSource,
+  })
+  log('Result of currentBikeTag update', currentBikeTagUpdateResult, 'info')
 
-    console.log({ currentBikeTagUpdateResult })
-    if (currentBikeTagUpdateResult.success) {
-      results.push({
-        message: 'current BikeTag updated',
-        game: game.name,
-        tag: previousBikeTag,
-      })
-    } else {
-      results.push({
-        message: 'current BikeTag was not updated',
-        error: currentBikeTagUpdateResult.error,
-        game: game.name,
-        tag: previousBikeTag,
-      })
-      errors = true
-    }
+  if (currentBikeTagUpdateResult.success) {
+    results.push({ message: 'current BikeTag updated', game: game.name, tag: previousBikeTag })
+  } else {
+    results.push({
+      message: 'current BikeTag was not updated',
+      error: currentBikeTagUpdateResult.error,
+      game: game.name,
+      tag: previousBikeTag,
+    })
+    errors = true
+  }
 
-    /************** SET NEW BIKETAG POST FROM QUEUE *****************/
-    const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost)
-    console.log({ newBikeTagUpdateResult })
-    if (newBikeTagUpdateResult.success) {
-      results.push({
-        message: 'new BikeTag posted',
-        game: game.name,
-        tag: newBikeTagUpdateResult.data,
-      })
-    } else {
-      results.push({
-        message: ErrorMessage.BikeTagNotPosted,
-        error: newBikeTagUpdateResult.error,
-        game: game.name,
-        tag: newBikeTagPost,
-      })
-      errors = true
-    }
+  const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost, {
+    source: imageSource,
+  })
+  log('Result of newBikeTag update', newBikeTagUpdateResult, 'info')
 
-    if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
-      /************** SEND NOTIFICATIONS *****************/
-      /// Send it off and hope that it finishes
-      // console.log('sending notifications', getApiUrl(game.name, 'autopost-notify'))
-      axios({
-        method: 'post',
-        url: getApiUrl(game.name, 'autopost-notify'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }).catch((e) => {
-        console.log(ErrorMessage.NotificationsNotSent, e.message ?? e)
-      })
-
-      /************** REMOVE NEWLY POSTED BIKETAG FROM QUEUE *****************/
-      const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true)
-      nonAdminBikeTagOpts.game = game.name.toLocaleLowerCase()
-      nonAdminBikeTagOpts.imgur.hash = game.queuehash
-      if (!nonAdminBiketag) {
-        nonAdminBiketag = new BikeTagClient(nonAdminBikeTagOpts)
-      } else {
-        nonAdminBiketag.config(nonAdminBikeTagOpts)
-      }
-      // console.log({ config: nonAdminBikeTag.config() })
-
-      const deleteWinningTagFromQueueResult = await nonAdminBiketag.deleteTag(winningBikeTagPost)
-      if (deleteWinningTagFromQueueResult.success) {
-        results.push({
-          message: 'winning tag deleted from queue',
-          game: game.name,
-          tag: winningBikeTagPost,
-        })
-      } else {
-        // console.log({ deleteQueuedTagResult: deleteWinningTagFromQueueResult })
-        results.push({
-          message: ErrorMessage.WinningTagNotDeleted,
-          game: game.name,
-          tag: winningBikeTagPost,
-        })
-        errors = true
-      }
-
-      /************** REMOVE REMAINING BIKETAGS FROM QUEUE *****************/
-      /// Send it off and hope that it finishes
-      axios({
-        method: 'post',
-        url: getApiUrl(game.name, 'autopost-clear'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }).catch((e) => {
-        console.log(ErrorMessage.QueueNotCleared, e.message ?? e)
-      })
-    }
-  } catch (e) {
+  if (newBikeTagUpdateResult.success) {
+    results.push({
+      message: 'new BikeTag posted',
+      game: game.name,
+      tag: newBikeTagUpdateResult.data,
+    })
+  } else {
     results.push({
       message: ErrorMessage.BikeTagNotPosted,
-      error: e?.message ?? e,
+      error: newBikeTagUpdateResult.error,
       game: game.name,
-      current: previousBikeTag,
       tag: newBikeTagPost,
     })
     errors = true
   }
 
-  return {
-    results,
-    errors,
+  if (currentBikeTagUpdateResult.success && newBikeTagUpdateResult.success) {
+    axios
+      .post(
+        getApiUrl(game.name, 'autopost-notify'),
+        {},
+        { headers: { 'Content-Type': 'application/json' } },
+      )
+      .catch((e) => log(ErrorMessage.NotificationsNotSent, e.message ?? e, 'warn'))
+
+    const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true)
+    nonAdminBikeTagOpts.game = game.name.toLocaleLowerCase()
+    nonAdminBikeTagOpts.imgur.hash = game.queuehash
+    nonAdminBikeTagOpts.aws.region = game.awsRegion
+    if (!nonAdminBiketag) {
+      nonAdminBiketag = new BikeTagClient(nonAdminBikeTagOpts)
+    } else {
+      nonAdminBiketag.config(nonAdminBikeTagOpts)
+    }
+
+    const deleteWinningTagFromQueueResult = await nonAdminBiketag.deleteTag(winningBikeTagPost, {
+      source: imageSource,
+    })
+    log('Result of deleting winning tag from queue', deleteWinningTagFromQueueResult, 'info')
+
+    if (deleteWinningTagFromQueueResult.success) {
+      results.push({
+        message: 'winning tag deleted from queue',
+        game: game.name,
+        tag: winningBikeTagPost,
+      })
+    } else {
+      results.push({
+        message: ErrorMessage.WinningTagNotDeleted,
+        game: game.name,
+        tag: winningBikeTagPost,
+      })
+      errors = true
+    }
+
+    axios
+      .post(
+        getApiUrl(game.name, 'autopost-clear'),
+        {},
+        { headers: { 'Content-Type': 'application/json' } },
+      )
+      .catch((e) => log(ErrorMessage.QueueNotCleared, e.message ?? e, 'warn'))
   }
+
+  return { results, errors }
 }
 
 export const getWinningTagForCurrentRound = (
@@ -1671,10 +1743,9 @@ export const getWinningTagForCurrentRound = (
 ): Tag | undefined => {
   if (timedOutTags.length) {
     const orderedTimedOutTags = timedOutTags.sort((t1, t2) => t1.mysteryTime - t2.mysteryTime)
-    const winnerWinnerChickenDinner = orderedTimedOutTags[0] // the "first" completed tag in the queue
-
-    if (currentBikeTag.tagnumber === winnerWinnerChickenDinner.tagnumber - 1) {
-      return winnerWinnerChickenDinner
+    const winner = orderedTimedOutTags[0]
+    if (currentBikeTag.tagnumber === winner.tagnumber - 1) {
+      return winner
     }
   }
   return undefined
@@ -1696,14 +1767,14 @@ const getAuthManagementToken = async () => {
       }),
     })
     return getManagementTokenRequest?.data?.access_token
-  } catch (e) {
+  } catch (e: any) {
     // console.log({
     //   domain: process.env.A_DOMAIN,
     //   client_id: process.env.A_M_CID,
     //   client_secret: process.env.A_M_CS,
     //   audience: process.env.A_AUDIENCE,
     // })
-    console.log(ErrorMessage.getAuthManagementToken, e.message)
+    log(ErrorMessage.getAuthManagementToken, e.message, 'error')
   }
 }
 
@@ -1716,13 +1787,20 @@ export const auth0Headers = async () => {
   return {}
 }
 
-export const acceptCorsHeaders = () => ({
-  Accept: '*',
-  'Access-Control-Allow-Headers': '*',
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Methods': '*',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Max-Age': '8640',
+export const acceptCorsHeaders = (
+  accept = '*',
+  allow = '*',
+  contentType = 'application/json',
+  methods = '*',
+  origin = '*',
+  maxAge = '8640',
+) => ({
+  Accept: accept,
+  'Access-Control-Allow-Headers': allow,
+  'Content-Type': contentType,
+  'Access-Control-Allow-Methods': methods,
+  'Access-Control-Allow-Origin': origin,
+  'Access-Control-Max-Age': maxAge,
 })
 
 export const constructAmbassadorProfile = (

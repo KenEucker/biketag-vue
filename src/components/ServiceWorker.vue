@@ -10,7 +10,7 @@
 </template>
 
 <script setup name="ServiceWorker">
-import { debug, getSanityImageResizedSize } from '@/common'
+import { BikeTagEnv, debug, getSanityImageResizedSize } from '@/common'
 import { useBikeTagStore } from '@/store/index'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { computed } from 'vue'
@@ -29,14 +29,14 @@ const store = useBikeTagStore()
 const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
   immediate: true,
   onRegistered(r) {
-    if (process.env.RELOAD_SW === 'true') {
+    if (BikeTagEnv.RELOAD_SW === 'true') {
       r &&
         setInterval(async () => {
-          debug('Checking for sw update')
+          debug('worker::init', 'Checking for sw update')
           await r.update()
         }, 3000 /* 20s for testing purposes */)
     } else {
-      debug('app::service worker registered', r?.active)
+      debug('worker::init', 'registered: ' + r?.active)
     }
   },
 })
@@ -95,7 +95,7 @@ async function created() {
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
       manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
-      debug('app::application manifest updated', applicationManifest)
+      debug('worker::manifest', applicationManifest)
     }
   } catch (e) {
     console.error('app::error loading manifest')

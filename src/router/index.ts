@@ -1,6 +1,9 @@
 import About from '@/views/About.vue'
 import Approve from '@/views/Approve.vue'
 import BikeTags from '@/views/BikeTags.vue'
+import Dashboard from '@/views/Dashboard.vue'
+import Delete from '@/views/Delete.vue'
+import Edit from '@/views/Edit.vue'
 import Home from '@/views/Home.vue'
 import HowToPlay from '@/views/HowToPlay.vue'
 import Landing from '@/views/Landing.vue'
@@ -122,10 +125,28 @@ if (isAuthenticationEnabled()) {
       beforeEnter: authGuard,
       component: Approve,
     },
+    {
+      path: '/dashboard',
+      name: 'Dashboard',
+      beforeEnter: authGuard,
+      component: Dashboard,
+    },
+    {
+      path: '/delete',
+      name: 'Delete',
+      beforeEnter: authGuard,
+      component: Delete,
+    },
+    {
+      path: '/edit',
+      name: 'Edit',
+      beforeEnter: authGuard,
+      component: Edit,
+    },
   ]
 }
 
-debug('init::router', { sitemap: routes.map((r) => r.path) })
+debug('router::init', { sitemap: routes.map((r) => r.path) })
 
 const router = createRouter({
   history: createWebHistory(),

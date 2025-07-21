@@ -63,7 +63,7 @@ const store = useBikeTagStore()
 const router = useRouter()
 
 // computed
-const getImgurImageSized = computed(() => store.getImgurImageSized)
+const getImageSized = computed(() => store.getImageSized)
 const _playerName = computed(() => {
   if (props.playerName) {
     return props.playerName
@@ -85,7 +85,7 @@ const playerBiconUrl = computed(() => {
       url = props.player.tags[props.player.tags.length - 1]?.foundImageUrl
     }
   }
-  return getImgurImageSized.value(url, props.size[0])
+  return getImageSized.value(url, props.size[0])
 })
 const getTagCount = computed(() => {
   if (props.size === 'lg') {

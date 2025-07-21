@@ -61,39 +61,53 @@ const title = computed(function () {
 const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
 
 onMounted(async () => {
-  nextTick(async () => {
-    await router.isReady()
+  await nextTick()
+  await router.isReady()
 
-    if (isLogout.value) {
-      if (auth0?.isAuthenticated.value) {
-        await store.setProfile()
-        const returnTo = `${window.location.origin}/logout`
-        await auth0.logout({
-          returnTo,
-        })
-      }
-      router.push('/')
+  if (isLogout.value) {
+    if (auth0?.isAuthenticated.value) {
+      await store.setProfile()
+      const returnTo = `${window.location.origin}/logout`
+      await auth0.logout({ returnTo })
     }
-  })
+    router.push('/')
+  }
 
   if (auth0) {
     const checkAuth = async () => {
-      if (auth0.isAuthenticated.value) {
+      if (!auth0.isLoading.value && auth0.isAuthenticated.value) {
         if (auth0.idTokenClaims.value) {
-          const token = auth0.idTokenClaims?.value?.__raw
-          /// Always get more profile info
+          const token = auth0.idTokenClaims.value.__raw
           if (
             store.getProfile?.sub !== auth0.user?.value?.sub ||
             !store.getProfile?.user_metadata?.name?.length
           ) {
             await store.setProfile(auth0.user.value, token)
+          } else {
+            await store.setProfile(undefined, token)
           }
         }
       }
     }
-    watch(auth0.isAuthenticated, checkAuth)
-    watch(auth0.idTokenClaims, checkAuth)
-    // checkAuth()
+
+    watch(
+      [() => auth0.isLoading.value, () => auth0.isAuthenticated.value],
+      async ([loading, isAuth]) => {
+        if (!loading && isAuth) {
+          await checkAuth()
+        }
+      },
+      { immediate: true },
+    )
+
+    watch(
+      () => auth0.idTokenClaims.value,
+      async () => {
+        if (!auth0.isLoading.value && auth0.isAuthenticated.value) {
+          await checkAuth()
+        }
+      },
+    )
   }
 })
 
@@ -104,7 +118,7 @@ function checkForNewBikeTagPost() {
     store.getMostRecentlyViewedTagnumber !== 0
   ) {
     let showNewRoundNotification = true
-    debug('ui::new biketag posted!!', store.getCurrentBikeTag.tagnumber)
+    debug('play::new-biketag-posted', store.getCurrentBikeTag.tagnumber, 'info')
     if (store.getCurrentBikeTag?.playerId?.length && store.getProfile?.sub?.length) {
       const playerIdMatches = store.getCurrentBikeTag.playerId === store.getProfile.sub
       const playerName = store.getProfile.user_metadata?.name
@@ -144,7 +158,7 @@ async function created() {
 
   if (_gameIsSet && (!routeIsLanding || routeIsRoot)) {
     const game = await store.setGame().catch((err) => {
-      debug('view::data-init', err)
+      debug('view::data-init', err, 'error')
       // router.push('/landing')
     })
     gameIsSet.value = true
@@ -155,16 +169,16 @@ async function created() {
         router.currentRoute.value.path.length > 1
           ? parseInt(router.currentRoute.value.path.split('/')[1])
           : undefined
-      const params = { tagnumber }
+      const params = { tagnumber: Number.isNaN(tagnumber) ? undefined : tagnumber }
       await router.push({ name: 'Home', params })
     }
-    await store.FetchAllData({ currentBikeTagSync: true, credentialsSync: true })
+    await store.FetchAllData({ currentBikeTagSync: true })
 
     checkForNewBikeTagPost()
   } else if (!_gameIsSet) {
     await store.fetchAllGames()
   }
-  debug(`view::data-init`, 'created')
+  debug(`view::init`, 'app created', 'info')
 }
 
 created()

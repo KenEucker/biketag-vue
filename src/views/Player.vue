@@ -113,7 +113,6 @@ const achievements = computed(() => player.value?.achievements?.map(store.getBik
 // methods
 const showBikeDex = () => {
   modal.value = true
-  // console.log(modal)
 }
 // const hideModal = () => {
 //   modal.value = false

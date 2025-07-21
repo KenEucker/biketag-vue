@@ -1,39 +1,43 @@
-import { Handler } from '@netlify/functions'
-import BikeTagClient from 'biketag'
-import { Game } from 'biketag/dist/common/schema'
-import { getBikeTagClientOpts, getPayloadOpts, isRequestAllowed, sendNewBikeTagNotifications } from './common'
+import BikeTagClient, { Game } from 'biketag'
+import { BackgroundProcessResults, getBikeTagClientOpts, getPayloadOpts, isRequestAllowed, log, sendNewBikeTagNotifications } from './common'
 import { HttpStatusCode } from './common/constants'
-import { BackgroundProcessResults } from './common/types'
 
-export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProcessResults> => {
-  if (!isRequestAllowed(event, true, true, false, 'post')) {
+export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<BackgroundProcessResults> => {
+  if (!isRequestAllowed(req, true, true, false, 'post')) {
     return {
       results: ['unauthorized'],
       errors: true,
     }
   }
 
-  const payloadOpts = getPayloadOpts(event, {
+  const payloadOpts = await getPayloadOpts(req, {
     skipEmails: false,
     force: false,
   })
   const errors = false
   let results: any = []
-  const nonAdminBiketagOpts = getBikeTagClientOpts(event, true)
-  const adminBiketagOpts = getBikeTagClientOpts(event, true, true)
+  const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
+  const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
   const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
   const game = (await nonAdminBiketag.game(
     { game: nonAdminBiketagOpts.game },
     { source: 'sanity' },
   )) as Game
 
+  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  nonAdminBiketag.config({
+    aws: {
+      region: game.awsRegion,
+    }
+  }, false, true)
+  adminBiketagOpts.aws.region =  game.awsRegion
   const twoMostRecentTags = await nonAdminBiketag.getTags(
     { game: game.slug, limit: 2 },
-    { source: 'imgur' },
+    { source: imageSource },
   )
   if (twoMostRecentTags.data?.length !== 2) {
     const errorMessage = 'Could not retrieve two most recent tags.'
-    console.log(errorMessage, { twoMostRecentTags })
+    log(errorMessage, { twoMostRecentTags }, 'error')
     return {
       results: [errorMessage],
       errors: true,
@@ -45,7 +49,7 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
 
   if (twentyFourHoursAgo > winningTag.mysteryTime * 1000 && !payloadOpts.force) {
     const errorMessage = 'Most recent tag was created more than 24 hours ago.'
-    console.log(errorMessage)
+    log('cannot continue', errorMessage, 'error')
     return {
       results: [errorMessage],
       errors: true,
@@ -62,14 +66,14 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
     payloadOpts.skipEmails,
     payloadOpts.skipSocials,
   ).catch((err) => {
-    console.log('error sending notifications', err)
+    log('error sending notifications', err, 'error')
   })
 
   if (notificationsSent?.length) {
     results = await Promise.allSettled(notificationsSent)
       .then((r) => r.map((p: any) => p.value))
       .catch((e) => {
-        console.log('error sending notifications', { e })
+        log('error sending notifications', { e }, 'error')
         return []
       })
   }
@@ -80,24 +84,18 @@ export const autoNotifyNewBikeTagPosted = async (event): Promise<BackgroundProce
   }
 }
 
-const autoPostNotifyHandler: Handler = async (event) => {
-  const { results, errors } = await autoNotifyNewBikeTagPosted(event)
+export default async (req: Request) => {
+  const { results, errors } = await autoNotifyNewBikeTagPosted(req)
 
   if (results.length) {
-    console.log('notifications sent', { results })
-    return {
-      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
-      body: JSON.stringify(results),
-    }
+    log('notifications sent', { results }, 'info')
+    return new Response(JSON.stringify(results), {
+      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok
+    })
   } else {
-    console.log('no notifications sent')
-    return {
-      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
-      body: '',
-    }
+    log('no notifications sent', 'info')
+    return new Response('', {
+      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+    })
   }
 }
-
-const handler = autoPostNotifyHandler
-
-export { handler }

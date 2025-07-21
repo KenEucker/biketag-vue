@@ -289,6 +289,7 @@ onMounted(async () => {
 })
 </script>
 <style lang="scss">
+@import '../assets/styles/style';
 .flx-columns {
   @include flx-center($flow: column nowrap, $al: flex-start);
 

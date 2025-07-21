@@ -220,7 +220,7 @@ const onSubmit = async (e) => {
   if (!getCurrentBikeTag?.tagnumber) {
     await store.fetchTags()
     await store.fetchCurrentBikeTag()
-    await store.fetchQueuedTags()
+    await store.fetchQueuedTags(false)
   }
 
   if (!location.value?.length) {
@@ -263,17 +263,14 @@ const onSubmit = async (e) => {
 
   /// TODO: watch this?
   if (!isAuthenticated.value) {
-    // console.log('player', player.value)
     try {
       const passcodeCheckResponse = await store.checkPasscode({
         name: player.value,
         passcode: passcode.value,
       })
-      // console.log({ passcodeCheckResponse })
       showModal.value = false
       await sleep(100)
     } catch (e) {
-      // console.log('response', e.response)
       const noProfileFound = e.response.status === 404 && e.response.data === 'no profile found'
       const incorrectPasscode = e.response.status === 401
 
@@ -313,14 +310,14 @@ const onSubmit = async (e) => {
   }
   if (location.value?.length == 0) {
     if (!gps.value.lat) {
-      debug('location must be set')
+      debug('play::queue-found', 'location must be set')
       uploadInProgress.value = false
       return
     }
   }
   if (player.value.length == 0) {
     if (getPlayerName.value.length == 0) {
-      debug('player name must set')
+      debug('play::queue-found', 'player name must set')
       uploadInProgress.value = false
       return
     } else {
@@ -380,7 +377,7 @@ const updateMarker = (e) => {
 }
 const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
 const setImage = async (event) => {
-  store.fetchCredentials()
+  // store.fetchCredentials()
   const input = event.target
   if (input.files) {
     locationDisabled.value = false

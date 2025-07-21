@@ -105,6 +105,32 @@
       <input name="tag" type="text" required />
       <input name="submission" type="text" required />
     </form>
+    <form
+        name="delete-latest-biketag"
+        action="delete-latest-biketag"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+        hidden
+      >
+      <input type="hidden" name="form-name" value="delete-latest-biketag" />
+      <input type="hidden" name="ambassadorId" required />
+      <input type="hidden" name="tagnumber" required />
+    </form>
+    <form
+      name="delete-tag-error"
+      action="delete-tag-error"
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+      hidden
+    >
+      <input type="hidden" name="form-name" value="delete-tag-error" />
+      <input type="hidden" name="tagnumber" required />
+      <input type="hidden" name="message" required />
+      <input type="hidden" name="ambassadorId" required/>
+      <input type="hidden" name="ip" required />
+    </form>
   </div>
 </body>
 

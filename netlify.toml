@@ -2,6 +2,7 @@
   publish = "dist"
   command = "npm run build"
   functions = "functions/"
+  node_version = "20"
 
 [dev]
   targetPort = 8080
@@ -19,9 +20,19 @@
   status = 200
 
 [[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    
+[[headers]]
   for = "/worker.js"
   [headers.values]
-    cache-control = "max-age=0,no-cache,no-store,must-revalidate"
+    Cache-Control = "max-age=0,no-cache,no-store,must-revalidate"
 
 [[headers]]
   for = "/*"

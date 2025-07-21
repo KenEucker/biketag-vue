@@ -221,10 +221,6 @@ i {
   font-size: 20px;
 }
 
-.ambassador-icon {
-  max-height: 10vh;
-}
-
 form {
   flex-basis: fit-content;
   display: flex;

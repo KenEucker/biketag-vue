@@ -1,35 +1,35 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <loading
-    v-show="uploadInProgress"
-    v-model:active="uploadInProgress"
+    v-show="deleteInProgress"
+    v-model:active="deleteInProgress"
     :is-full-page="true"
     class="realign-spinner"
   >
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
   <div class="queue-page">
-    <div v-if="approveSuccess">
-      You successfully posted a new round of BikeTag {{ getGameNameProper }}!
+    <div v-if="deleteSuccess">
+      The most recent BikeTag from {{ getGameNameProper }} has been deleted!
       <bike-tag-button @click="router.push({ name: 'Home' })">
         Go to the Home Page
       </bike-tag-button>
     </div>
-    <queue-approve v-else-if="!uploadInProgress" @submit="onApproveSubmit" />
+    <delete-bike-tag v-else-if="!deleteInProgress" @submit="onDeleteSubmit" />
     <div v-else class="loading-message">
-      <p>The next BikeTag Round is loading!</p>
+      <p>Deleting the last BikeTag...</p>
     </div>
     <form
       ref="queueError"
-      name="approve-tag-error"
-      action="approve-tag-error"
+      name="delete-tag-error"
+      action="delete-tag-error"
       method="POST"
       data-netlify="true"
       data-netlify-honeypot="bot-field"
       hidden
     >
-      <input type="hidden" name="form-name" value="post-tag-error" />
-      <input type="hidden" name="submission" />
+      <input type="hidden" name="form-name" value="delete-tag-error" />
+      <input type="hidden" name="tagnumber" :value="getCurrentBikeTag.tagnumber" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
       <input type="hidden" name="message" />
       <input type="hidden" name="ip" value="" />
@@ -37,33 +37,21 @@
   </div>
 </template>
 
-<script setup name="ApproveView">
+<script setup name="DeleteView">
+import { sendNetlifyError, sendNetlifyForm } from '@/common'
 import { useBikeTagStore } from '@/store/index'
 import { computed, inject, onMounted, ref } from 'vue'
-// import { useTimer } from 'vue-timer-hook'
-import { sendNetlifyError, sendNetlifyForm } from '@/common'
 import { useRouter } from 'vue-router'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
-import QueueApprove from '@/components/QueueApprove.vue'
+import DeleteBikeTag from '@/components/DeleteBikeTag.vue'
 import { useI18n } from 'vue-i18n'
 import Loading from 'vue-loading-overlay'
 
-// props
-const props = defineProps({
-  usingTimer: {
-    type: Boolean,
-    default: false,
-  },
-})
-
 // data
-const time = new Date()
-time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
-// const timer = ref(useTimer(time))
-const uploadInProgress = ref(false)
-const approveSuccess = ref(false)
+const deleteInProgress = ref(false)
+const deleteSuccess = ref(false)
 const queueError = ref(null)
 const store = useBikeTagStore()
 const router = useRouter()
@@ -71,58 +59,41 @@ const toast = inject('toast')
 const { t } = useI18n()
 
 // computed
-const getPlayerTag = computed(() => store.getPlayerTag)
 const getGameName = computed(() => store.getGameName)
 const getGameNameProper = computed(() => store.getGameNameProper)
 const getAmbassadorId = computed(() => store.getAmbassadorId)
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 
 // methods
-async function onApproveSubmit(newTagSubmission) {
-  const { tag, formAction, formData, storeAction } = newTagSubmission
+async function onDeleteSubmit() {
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual'
   }
   window.scrollTo(0, 0)
 
   toast.open({
-    message:
-      storeAction.indexOf('approve') !== -1
-        ? t('notifications.approving')
-        : t('notifications.removing'),
+    message: t('notifications.deleting'),
     type: 'info',
     position: 'top',
   })
   const errorAction = queueError.value.getAttribute('action')
-  uploadInProgress.value = true
-  const success = await store[storeAction](tag)
-  uploadInProgress.value = false
 
-  if (success === true) {
-    /// Update the queue
+  deleteInProgress.value = true
+  const result = await store.deleteCurrentTag(getCurrentBikeTag.value)
+  deleteInProgress.value = false
+
+  if (result === true) {
     store.fetchQueuedTags(false)
-
-    formData.set('game', getGameName.value)
-    formData.set('tag', JSON.stringify(getPlayerTag.value))
-    formData.set(
-      'approve',
-      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
-    )
-
-    if (tag.foundImage) {
-      formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
-    } else if (tag.mysteryImage) {
-      formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
-    }
     return sendNetlifyForm(
-      formAction,
-      new URLSearchParams(formData).toString(),
+      'delete-tag-success',
+      `game=${getGameName.value}`,
       () => {
         toast.open({
-          message: `${storeAction} ${t('notifications.success')}`,
+          message: `${t('notifications.delete-success')}`,
           type: 'success',
           position: 'top',
         })
-        approveSuccess.value = true
+        deleteSuccess.value = true
         store.resetBikeTagCache()
       },
       (m) => {
@@ -137,7 +108,7 @@ async function onApproveSubmit(newTagSubmission) {
       },
     )
   } else {
-    const message = `${t('notifications.error')}: ${success}`
+    const message = `${t('notifications.error')}: ${result}`
     toast.open({
       message,
       type: 'error',
@@ -152,7 +123,6 @@ async function onApproveSubmit(newTagSubmission) {
 // mounted
 onMounted(async () => {
   await store.isReady()
-  await store.fetchQueuedTags(false)
-  uploadInProgress.value = false
+  deleteInProgress.value = false
 })
 </script>

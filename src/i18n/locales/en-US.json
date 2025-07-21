@@ -5,6 +5,7 @@
   "notifications": {
     "approving": "Approving new BikeTag",
     "uploading": "Uploading tag information...",
+    "posting": "Posting new BikeTag...",
     "already-uploaded": "You already uploaded this tag recently. Please wait before submitting again.",
     "error": "ERROR",
     "by": " by ",
@@ -15,7 +16,9 @@
     "post-new-biketag": "New BikeTag Post for round ",
     "approve-new-biketag": "New BikeTag Post Approved by ",
     "post-tag-error": "Error posting BikeTag",
-    "approve-tag-error": "Error approving BikeTag"
+    "approve-tag-error": "Error approving BikeTag",
+    "deleting": "deleting BikeTag post",
+    "delete-success": "successfully deleted tag"
   },
   "menu": {
     "home": "Home",
@@ -23,6 +26,7 @@
     "play": "Play!",
     "howto": "How-To",
     "about": "About",
+    "dashboard": "Dashboard",
     "players": "Players",
     "top10": "Top10",
     "queue": "Current Round",
@@ -57,6 +61,7 @@
       "current_mystery_location": "Current Mystery Location",
       "view_queue_button": "View tags in this round",
       "reset_queue_button": "RESET",
+      "play_button": "PLAY",
       "queue_mystery_title": "Add your new Mystery Location"
     },
     "games": {
@@ -240,6 +245,12 @@
     "approve": {
       "confirm_remove": "Removing this Queued Tag will delete the images and the user will be removed from the round. You should only be doing this if the tag images are invalid. When a tag is approved, all queued 'found' images are archived on behalf of that BikeTag Player. There is no need to remove valid submissions.",
       "confirm_approve": "Are you sure this is the winning tag? "
+    },
+    "delete": {
+      "title": "Delete Current BikeTag Post"
+    },
+    "edit": {
+      "title": "Delete Current BikeTag Post"
     }
   }
 }

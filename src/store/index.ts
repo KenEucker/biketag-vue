@@ -3,28 +3,30 @@ import { Achievement, Game, Player, Tag } from 'biketag/dist/common/schema'
 import { defineStore } from 'pinia'
 import {
   BikeTagDefaults,
+  BikeTagEnv,
   BikeTagStoreState,
   BiketagQueueFormSteps,
   debug,
   encodeBikeTagString,
   getApiUrl,
   getBikeTagClientOpts,
-  getBikeTagHash,
   getDomainInfo,
-  getImgurImageSized,
+  getImageSized,
   getMostRecentlyViewedBikeTagTagnumber,
   getProfileFromCookie,
   getQueuedTagState,
+  getRegionPolygonFromCookie,
   getSanityImageUrl,
   getSupportedGames,
+  getTokenFromCookie,
   setProfileCookie,
+  setRegionPolygonInCookie,
+  setTokenInCookie,
 } from '../common'
 
 let client: BikeTagClient
 let gameName: string
 let biketagClientOpts: any
-let biketagGameOpts: any
-let storedRegionPolygon: any
 let bikeTagInitialized = false
 
 export const initBikeTagStore = () => {
@@ -34,35 +36,26 @@ export const initBikeTagStore = () => {
 
   if (!bikeTagInitialized) {
     bikeTagInitialized = true
-    biketagGameOpts = { source: BikeTagDefaults.gameSource }
 
     const domain = getDomainInfo(window)
-    gameName = domain.subdomain ?? process.env.GAME_NAME ?? BikeTagDefaults.gameName
+    gameName = domain.subdomain ?? BikeTagEnv.GAME_NAME ?? BikeTagDefaults.gameName
     biketagClientOpts = {
-      // biketag: {
       cached: true,
-      host: process.env.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.biketag.org/api`,
+      host:
+        BikeTagEnv.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.${BikeTagEnv.HOST}/api`,
+      clientToken: getTokenFromCookie(),
       // game: gameName,
-      clientKey: getBikeTagHash(window?.location?.hostname),
-      // clientToken: process.env.ACCESS_TOKEN,
-      // },
-      ...getBikeTagClientOpts(window, process.env.BIKETAG_AUTHED === 'true'),
+      ...getBikeTagClientOpts(window, BikeTagEnv.BIKETAG_AUTHED === 'true'),
     }
 
-    debug(`init::${BikeTagDefaults.store}`, {
-      subdomain: domain.subdomain,
-      domain,
+    debug(`${BikeTagDefaults.store}::init`, {
       gameName,
+      host: domain.host,
+      subdomain: domain.subdomain,
     })
 
     /// TODO: create a helper for the instantiation of the biketag client (use singleton?)
     client = new BikeTagClient(biketagClientOpts)
-    storedRegionPolygon = localStorage.getItem(`${gameName}::regionPolygon`)
-    try {
-      storedRegionPolygon = JSON.parse(storedRegionPolygon)
-    } catch (e) {
-      storedRegionPolygon = null
-    }
   }
 }
 
@@ -70,8 +63,14 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
   state: (): BikeTagStoreState => ({
     fetchingData: false,
     dataFetched: false,
+    credentialsFetched: false,
+    auth0Token: '',
+    lastCacheResetTime: 0,
+    cacheResetInterval: parseInt(BikeTagEnv.CACHE_RESET_INTERVAL),
     gameName,
     gameNameProper: gameName?.length ? gameName[0].toUpperCase() + gameName.slice(1) : '',
+    imageSource: BikeTagEnv.IMAGE_SOURCE,
+    gameSource: BikeTagEnv.GAME_SOURCE,
     game: {} as Game,
     allGames: [] as Game[],
     achievements: [] as Achievement[],
@@ -84,9 +83,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     // queuedTag: getQueuedTagFromCookie() ?? ({} as Tag),
     playerTag: {} as Tag,
     profile: getProfileFromCookie(),
+    token: getTokenFromCookie(),
     mostRecentlyViewedTagnumber: getMostRecentlyViewedBikeTagTagnumber(0),
-    credentialsFetched: false,
-    regionPolyon: storedRegionPolygon,
+    regionPolygon: getRegionPolygonFromCookie(`${gameName}::regionPolygon`),
   }),
 
   actions: {
@@ -109,7 +108,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     // eslint-disable-next-line no-empty-pattern
     async getRegionPolygon(region: any) {
       try {
-        if (this.regionPolyon) return this.regionPolyon
+        if (this.regionPolygon) return this.regionPolygon
         else if (!region?.description?.length) {
           return
         }
@@ -151,7 +150,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         } else {
           console.log('map cannot continue, region not set properly')
         }
-      } catch (e) {
+      } catch (e: any) {
         console.log('map cannot continue')
         console.error(e)
       }
@@ -159,15 +158,17 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async setProfile(profile: any, token?: string) {
       /// Call to backend api GET on /profile with authorization header
       if (profile) {
-        token = token ?? profile.token
-        profile.token = undefined
+        if (profile.token || token) {
+          this.auth0Token = token || this.auth0Token || profile.token || ''
+          profile.token = undefined
+        }
 
         const response = await client
           .plainRequest({
             method: 'GET',
             url: getApiUrl('profile'),
             headers: {
-              authorization: `Bearer ${token}`,
+              authorization: `Bearer ${this.auth0Token}`,
             },
           })
           .catch((e) => {
@@ -181,9 +182,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           } else if (typeof response.data === 'object') {
             return this.SET_PROFILE(response.data)
           }
+          await this.fetchCredentials(true)
         } else if (response.status === 400) {
           return { error: response.data.error }
         }
+      } else if (token?.length) {
+        this.auth0Token = token
+        return this.profile
       }
 
       return this.SET_PROFILE(profile)
@@ -192,13 +197,23 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       newGameName = newGameName ?? this.gameName
       if (this.game?.name !== newGameName || !this.game?.mainhash) {
         this.fetchingData = false
-        return client.getGame({ game: newGameName }, biketagGameOpts as any).then(async (r) => {
+        return client.getGame({ game: newGameName }, { source: BikeTagDefaults.gameSource }).then(async (r) => {
           if (r.success) {
             const game = r.data as Game
+
+            if (game.settings['data::aws'] && game.settings['data::aws'] === 'true') {
+              this.imageSource = 'aws'
+            } else if (game.settings['data::imgur'] && game.settings['data::imgur'] === 'true') {
+              this.imageSource = 'imgur'
+            }
+            /// TODO: split these up based on the imageSource?
             biketagClientOpts.imgur.hash = game.mainhash
             biketagClientOpts.imgur.queuehash = game.queuehash
             biketagClientOpts.aws.region = game.awsRegion
-            client.config(biketagClientOpts, true, true)
+
+            // TODO: set the default source to something else, now
+            const configuredClient = client.config(biketagClientOpts, true, true)
+            debug(`${BikeTagDefaults.store}::client-init`, { configuredClient, imageSource: this.imageSource })
 
             return this.SET_GAME(game)
           } else {
@@ -212,25 +227,27 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
     },
     async resetBikeTagCache() {
-      /// TODO: add a check for stale cache before unnecessarily resetting
-      await this.fetchTags(false)
-      await this.fetchCurrentBikeTag(false)
-      await this.fetchQueuedTags(true)
+      // TODO: add a check for stale cache before unnecessarily resetting
+      const now = Date.now()
+      if (now - this.lastCacheResetTime >= this.cacheResetInterval) {
+        this.lastCacheResetTime = now
+        await this.fetchTags(false)
+        await this.fetchCurrentBikeTag()
+        await this.fetchQueuedTags(false)
+        debug(`${BikeTagDefaults.store}::data`, 'reset cache')
+      }
     },
-    async fetchCredentials() {
-      if (!this.credentialsFetched) {
-        // console.log('fetching credentials')
+    async fetchCredentials(fetchNewCredentials = false) {
+      if (!this.credentialsFetched || fetchNewCredentials) {
         try {
-          await client.config(
-            { ...biketagClientOpts, ...getBikeTagClientOpts(window, true) },
-            false,
-            true,
-          )
-        } catch (e) {
+          const biketagConf = await client.fetchCredentials(`player-id ${this.profile.sub}`)
+          if (biketagConf?.biketag?.clientToken) {
+            this.token = setTokenInCookie(biketagConf.biketag.clientToken)
+            debug(`${BikeTagDefaults.store}::credentials`, 'token set')
+          }
+        } catch (e: any) {
           console.error('error fetching credentials', e)
         }
-        // const credentials = await client.fetchCredentials()
-        // await client.config(credentials, false, true)
         this.credentialsFetched = true
       }
     },
@@ -271,10 +288,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         if (opts.leaderboardSync) initResults.push(await this.fetchLeaderboard())
         else initResults.push(this.fetchLeaderboard())
       }
-      if (!opts.skipCredentials) {
-        if (opts.credentialsSync) initResults.push(await this.fetchCredentials())
-        else initResults.push(await this.fetchCredentials())
-      }
       if (!opts.skipQueuedTags) {
         if (opts.queuedTagsSync) initResults.push(await this.fetchQueuedTags())
         else initResults.push(this.fetchQueuedTags())
@@ -282,6 +295,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (!opts.skipAllGames) {
         if (opts.allGamesSync) initResults.push(await this.fetchAllGames())
         else initResults.push(this.fetchAllGames())
+      }
+      if (!opts.skipCredentials) {
+        if (opts.credentialsSync) initResults.push(await this.fetchCredentials())
+        else this.fetchCredentials() // don't include in initial data fetch results
       }
 
       Promise.allSettled(initResults).then((results) => {
@@ -293,14 +310,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     fetchAllGames(cached = true) {
       this.fetchingData = false
-      const biketagClient = new BikeTagClient({ ...biketagClientOpts, game: undefined, cached })
-      return biketagClient
-        .getGame(
-          { game: '' },
-          {
-            source: BikeTagDefaults.gameSource,
-          },
-        )
+      return client
+        .getAllGames(undefined, {
+          source: BikeTagDefaults.gameSource,
+          cached
+        })
         .then((d) => {
           if (d.success) {
             const games = d.data as unknown as Game[]
@@ -312,26 +326,21 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         })
     },
     fetchAllAchievements(cached = true) {
-      return client.getAchievements({ cached }).then((r) => this.SET_ACHIEVEMENTS(r.data))
+      return client
+        .getAchievements(undefined, { source: this.gameSource, cached })
+        .then((r) => this.SET_ACHIEVEMENTS(r.data))
     },
     fetchCurrentBikeTag(cached = true) {
-      return client.getTag({ cached }).then((r) => {
+      return client.getTag(undefined, { source: this.imageSource, cached }).then((r) => {
         return this.SET_CURRENT_TAG(r.data)
       })
     },
     fetchTags(cached = true) {
-      return client.tags({ cached }).then(this.SET_TAGS)
+      return client.tags(undefined, { source: this.imageSource, cached }).then(this.SET_TAGS)
     },
-    fetchQueuedTag(d: any) {
-      return this.SET_QUEUED_TAG(d)
-    },
-    async fetchQueuedTags(withCredentials = false) {
+    async fetchQueuedTags(cached = true) {
       if (this.currentBikeTag?.tagnumber > 0) {
-        if (withCredentials) {
-          await this.fetchCredentials()
-        }
-
-        return client.queue({ cached: false }).then((d) => {
+        return client.queue(undefined, { source: cached ? this.imageSource : 'biketag', cached }).then((d) => {
           if ((d as Tag[])?.length > 0) {
             const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
               (t) =>
@@ -345,19 +354,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             )
 
             if (playerQueuedTag) {
-              // const [queuedMysteryTag] = (d as Tag[]).filter(
-              //   (t) => t.mysteryPlayer === playerQueuedTag.foundPlayer,
-              // )
-              // if (queuedMysteryTag) {
-              //   /// Add the mystery tag image to the player queued tag (WHY?)
-              //   playerQueuedTag.mysteryImage = queuedMysteryTag.mysteryImage
-              //   playerQueuedTag.mysteryImageUrl = queuedMysteryTag.mysteryImageUrl
-              //   playerQueuedTag.mysteryPlayer = queuedMysteryTag.mysteryPlayer
-              // }
               this.SET_QUEUED_TAG(playerQueuedTag)
               this.SET_QUEUED_TAG_STATE(playerQueuedTag)
             } else {
               this.SET_QUEUED_TAG()
+              this.SET_QUEUED_TAG_STATE()
             }
 
             return this.SET_QUEUED_TAGS(currentBikeTagQueue)
@@ -372,14 +373,16 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return false
     },
     fetchPlayers(cached = true) {
-      return client.players({ cached }).then(this.SET_PLAYERS)
+      return client.players(undefined, { source: this.imageSource, cached }).then(this.SET_PLAYERS)
     },
     fetchLeaderboard(cached = true) {
-      return client.players({ sort: 'top', limit: 10, cached }).then(this.SET_LEADERBOARD)
+      return client
+        .players({ sort: 'top', limit: 10 }, { source: this.imageSource, cached })
+        .then(this.SET_LEADERBOARD)
     },
     async fetchLeaderboardPlayersProfiles(cached = true) {
       const names = this.leaderboard.map((p) => p.name)
-      return client.players({ names, cached }, biketagGameOpts as any).then(async (d) => {
+      return client.players({ names }, { source: this.imageSource, cached }).then(async (d) => {
         if (Array.isArray(d)) {
           d.forEach((p) => this.SET_PLAYER(p))
         }
@@ -399,7 +402,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         }
       }
 
-      // console.log('fetching player profile', name)
       const playerProfileResult = await client
         .plainRequest({
           method: 'GET',
@@ -430,20 +432,19 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async approveTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         d.hash = this.game.queuehash
-        const token = d.token
-        d.token = undefined
         try {
           const approveTagResponse = await client.plainRequest({
             method: 'POST',
             url: getApiUrl('approve'),
             data: { tag: d, ambassadorId: this.profile.sub },
             headers: {
-              authorization: `Bearer ${token}`,
+              authorization: `Bearer ${this.auth0Token}`,
             },
           })
-          if (approveTagResponse.status === 202) {
+          if (approveTagResponse.status > 199 && approveTagResponse.status < 300) {
+            this.resetBikeTagCache()
             return true
-          } else if (approveTagResponse.status === 200) {
+          } else {
             return `BikeTag round #${d.tagnumber} couldn't be posted`
           }
         } catch (e: any) {
@@ -456,17 +457,79 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     async dequeueTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
-        d.hash = this.game.queuehash
-        return client.deleteTag(d).then((t) => {
-          if (t.success) {
-            debug(`${BikeTagDefaults.store}::tag dequeued`, d)
+        try {
+          const dequequeTagResponse = await client.plainRequest({
+            method: 'POST',
+            url: getApiUrl('delete'),
+            data: { tag: d, ambassadorId: this.profile.sub },
+            headers: {
+              authorization: `Bearer ${this.auth0Token}`,
+            },
+          })
+
+          if (dequequeTagResponse.status > 199 && dequequeTagResponse.status < 300) {
+            this.resetBikeTagCache()
+            return true
           } else {
-            debug('error::dequeue BikeTag failed', t)
-            return t.error ? t.error : Array.isArray(t.data) ? t.data.join(' - ') : t.data
+            return `BikeTag #${d.tagnumber} couldn't be dequeued`
           }
-          return true
-        })
+        } catch (e: any) {
+          console.error('error deleting tag', e?.message ?? e)
+          return 'error deleting tag'
+        }
       }
+
+      return 'incorrect permissions'
+    },
+    async deleteCurrentTag(d: any) {
+      if (this.profile?.isBikeTagAmbassador) {
+        try {
+          d.folder = 'main'
+          const deleteTagResponse = await client.plainRequest({
+            method: 'POST',
+            url: getApiUrl('delete'),
+            data: { tag: d, ambassadorId: this.profile.sub },
+            headers: {
+              authorization: `Bearer ${this.auth0Token}`,
+            },
+          })
+          if (deleteTagResponse.status > 199 && deleteTagResponse.status < 300) {
+            this.resetBikeTagCache()
+            return true
+          } else {
+            return `BikeTag #${d.tagnumber} couldn't be deleted`
+          }
+        } catch (e: any) {
+          console.error('error deleting tag', e?.message ?? e)
+          return 'error deleting tag'
+        }
+      }
+
+      return 'incorrect permissions'
+    },
+    async updateCurrentTag(d: any) {
+      if (this.profile?.isBikeTagAmbassador) {
+        try {
+          const updateTagResponse = await client.plainRequest({
+            method: 'POST',
+            url: getApiUrl('update'),
+            data: { tag: d, ambassadorId: this.profile.sub },
+            headers: {
+              authorization: `Bearer ${this.auth0Token}`,
+            },
+          })
+          if (updateTagResponse.status > 199 && updateTagResponse.status < 300) {
+            this.resetBikeTagCache()
+            return true
+          } else {
+            return `BikeTag #${d.tagnumber} couldn't be updated`
+          }
+        } catch (e: any) {
+          console.error('error updating tag', e?.message ?? e)
+          return 'error updating tag'
+        }
+      }
+
       return 'incorrect permissions'
     },
     async assignPlayerName(profile: any) {
@@ -522,12 +585,18 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async dequeueFoundTag() {
       if (this.playerTag?.playerId === this.profile.sub) {
         const queuedTag: any = this.playerTag
-        queuedTag.hash = this.game.queuehash
-        return client.deleteTag(queuedTag).then(async (t) => {
+        let source = this.imageSource
+        if (this.imageSource === 'aws') {
+          source = 'biketag'
+        } else if (this.imageSource === 'imgur') {
+          queuedTag.hash = this.game.queuehash
+        }
+        return client.deleteTag(queuedTag, { source }).then(async (t) => {
           if (t.success) {
-            debug(`${BikeTagDefaults.store}::found tag dequeued`, this.playerTag)
-            await this.SET_QUEUED_TAG({})
-            await this.RESET_FORM_STEP_TO_FOUND()
+            debug(`${BikeTagDefaults.store}::dequeue-found-tag`, this.playerTag)
+            await client.getQueue({ reindex: true }, { source: 'biketag' })
+            this.SET_QUEUED_TAG({})
+            this.RESET_FORM_STEP_TO_FOUND()
 
             return true
           } else {
@@ -544,16 +613,22 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         const queuedMysteryTag: any = BikeTagClient.getters.getOnlyMysteryTagFromTagData(
           this.playerTag,
         )
-        queuedMysteryTag.hash = this.game.queuehash
-        return client.deleteTag(queuedMysteryTag).then(async (t) => {
+        let source = this.imageSource
+        if (this.imageSource === 'aws') {
+          source = 'biketag'
+        } else if (this.imageSource === 'imgur') {
+          queuedMysteryTag.hash = this.game.queuehash
+        }
+        return client.deleteTag(queuedMysteryTag, { source }).then(async (t) => {
           if (t.success) {
-            debug(`${BikeTagDefaults.store}::mystery tag dequeued`)
-            await this.SET_QUEUED_TAG(queuedFoundTag)
-            await this.RESET_FORM_STEP_TO_MYSTERY()
+            debug(`${BikeTagDefaults.store}::dequeue-mystery-tag`,'mystery tag dequeued')
+            await client.getQueue({ reindex: true }, { source: 'biketag' })
+            this.SET_QUEUED_TAG(queuedFoundTag)
+            this.RESET_FORM_STEP_TO_MYSTERY()
 
             return true
           } else {
-            debug('error::dequeue BikeTag failed', t)
+            debug(`${BikeTagDefaults.store}::dequeue-mystery-tag`, 'dequeue BikeTag failed: ' + t.error, 'error')
             return t.error
           }
         })
@@ -563,11 +638,12 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = this.profile.sub
 
-        return client.queueTag(d).then((t) => {
+        return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
           if (t.success) {
             this.SET_QUEUE_FOUND(t.data)
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
           } else {
-            debug('error::queue (Found) BikeTag failed', t)
+            debug(`${BikeTagDefaults.store}::queue-found-tag`, 'queue (Found) BikeTag failed: ' + t.error, 'error')
             return t.error
           }
           return t.success
@@ -579,11 +655,12 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = this.profile.sub
 
-        return client.queueTag(d).then((t) => {
+        return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
           if (t.success) {
             this.SET_QUEUE_MYSTERY(t.data)
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
           } else {
-            debug('error::queue (Mystery) BikeTag failed', t)
+            debug(`${BikeTagDefaults.store}::queue-mystery-tag`, 'queue (Mystery) BikeTag failed: ' + t.error, 'error')
             return t.error
           }
           return t.success
@@ -595,11 +672,12 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.mysteryImageUrl && d.foundImageUrl) {
         d.playerId = this.profile.sub
 
-        return client.queueTag(d).then((t) => {
+        return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
           if (t.success) {
             this.SET_QUEUED_SUBMITTED(t.data)
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
           } else {
-            debug('error::submit BikeTag failed', t)
+            debug(`${BikeTagDefaults.store}::queue-post-tag`, 'queue (Post) BikeTag failed: ' + t.error, 'error')
             return t.error
           }
           return t.success
@@ -655,6 +733,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         this.profile = profile
         setProfileCookie(profile)
         debug(`${BikeTagDefaults.store}::profile`, profile)
+      } else if (!profile) {
+        setProfileCookie(profile)
+        this.profile = getProfileFromCookie()
+        debug(`${BikeTagDefaults.store}::profile`, profile)
       }
 
       return this.profile
@@ -676,7 +758,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       this.fetchingData = true
 
       if (oldState?.length !== allGames?.length) {
-        debug(`${BikeTagDefaults.store}::allGames`, { allGames })
+        debug(`${BikeTagDefaults.store}::all-games`, { allGames })
       }
 
       return this.allGames
@@ -686,7 +768,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       this.currentBikeTag = tag
 
       if (oldState?.tagnumber !== tag?.tagnumber) {
-        debug(`${BikeTagDefaults.store}::currentBikeTag`, { tag })
+        debug(`${BikeTagDefaults.store}::current-bike-tag`, { tag })
       }
 
       return this.currentBikeTag
@@ -757,7 +839,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       this.tagsInRound = queuedTags
 
       if (oldState?.length !== queuedTags?.length || queuedTags.length === 0) {
-        debug(`${BikeTagDefaults.store}::queuedTags`, { queuedTags })
+        debug(`${BikeTagDefaults.store}::queued-tags`, { queuedTags })
       }
 
       return this.tagsInRound
@@ -777,15 +859,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (
         oldState?.foundImageUrl !== data?.foundImageUrl ||
         oldState?.foundImage !== data?.foundImage ||
-        oldState?.foundLocation !== data?.foundImageUrl ||
+        oldState?.foundLocation !== data?.foundLocation ||
         oldState?.foundPlayer !== data?.foundPlayer ||
         oldState?.tagnumber !== data?.tagnumber ||
         /// In case of a reset to this step
         oldState?.mysteryPlayer !== data?.foundPlayer
       ) {
-        debug(`${BikeTagDefaults.store}::queuedFoundTag`, this.playerTag)
-        this.resetBikeTagCache()
-        console.log('SET_QUEUE_FOUND')
+        debug(`${BikeTagDefaults.store}::queued-found-tag`, this.playerTag)
         if (oldState?.mysteryPlayer !== data?.foundPlayer) {
           this.formStep = BiketagQueueFormSteps.roundJoined
         } else {
@@ -817,8 +897,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
-        debug(`${BikeTagDefaults.store}::queuedMysteryTag`, this.playerTag)
-        this.resetBikeTagCache()
+        debug(`${BikeTagDefaults.store}::queued-mystery-tag`, this.playerTag)
         if (
           oldState?.discussionUrl !== data?.discussionUrl ||
           oldState?.mentionUrl !== data?.mentionUrl
@@ -841,8 +920,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         oldState?.discussionUrl !== data?.discussionUrl ||
         oldState?.mentionUrl !== data?.mentionUrl
       ) {
-        debug(`${BikeTagDefaults.store}::submittedTag`, this.playerTag)
-        this.resetBikeTagCache()
+        debug(`${BikeTagDefaults.store}::submitted-tag`, this.playerTag)
         this.formStep = BiketagQueueFormSteps.roundPosted
       }
 
@@ -850,10 +928,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     SET_QUEUED_TAG(data?: any) {
       const oldState = this.playerTag
-      this.playerTag = BikeTagClient.createTagObject(data ?? {}, data ? {} : this.playerTag)
       // setQueuedTagInCookie(data ? this.queuedTag : undefined)
 
-      if (
+      if (!data) {
+        this.playerTag = {} as Tag
+      } else if (
         oldState?.mysteryImageUrl !== data?.mysteryImageUrl ||
         oldState?.mysteryImage !== data?.mysteryImage ||
         oldState?.hint !== data?.hint ||
@@ -866,7 +945,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         oldState?.mentionUrl !== data?.mentionUrl ||
         oldState?.tagnumber !== data?.tagnumber
       ) {
-        debug(`${BikeTagDefaults.store}::queuedTag`, this.playerTag)
+        this.playerTag = BikeTagClient.createTagObject(data ?? {}, data ? {} : this.playerTag)
+        debug(`${BikeTagDefaults.store}::queued-tag`, this.playerTag)
       }
 
       return this.playerTag
@@ -881,7 +961,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
 
       if (oldState !== this.formStep) {
-        debug('state::queue', BiketagQueueFormSteps[this.formStep])
+        debug(`${BikeTagDefaults.store}::queue-state`, BiketagQueueFormSteps[this.formStep])
       }
 
       return this.formStep
@@ -910,21 +990,20 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     RESET_FORM_STEP_TO_FOUND() {
       console.log('RESET_FORM_STEP_TO_FOUND')
       this.formStep = BiketagQueueFormSteps.addFoundImage
-      // debug('state::queue', BiketagFormSteps[this.formStep])
+      debug(`${BikeTagDefaults.store}::queue-state`, BiketagQueueFormSteps[this.formStep])
 
       return this.formStep
     },
     RESET_FORM_STEP_TO_MYSTERY() {
       this.formStep = BiketagQueueFormSteps.addMysteryImage
-      // debug('state::queue', BiketagFormSteps[this.formStep])
+      debug(`${BikeTagDefaults.store}::queue-state`, BiketagQueueFormSteps[this.formStep])
 
       return this.formStep
     },
     SET_REGION_POLYGON(regionPolygon: any) {
-      localStorage.setItem(`${gameName}::regionPolygon`, JSON.stringify(regionPolygon))
-      this.regionPolyon = regionPolygon
+      this.regionPolygon = setRegionPolygonInCookie(regionPolygon, `${gameName}::regionPolygon`)
 
-      return this.regionPolyon
+      return this.regionPolygon
     },
   },
 
@@ -935,7 +1014,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
       return null
     },
-    getImgurImageSized: () => getImgurImageSized,
+    getImageSized: (state) => {
+      return (url: string, s: string = 'm') =>
+        getImageSized(state.imageSource, url, s as 's' | 'm' | 'l' | 'o' | undefined)
+    },
+    getImageSource (state) {
+      return state.imageSource
+    },
     getQueuedTagState: (state) => {
       return getQueuedTagState(state.playerTag)
     },
@@ -1010,7 +1095,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return state.currentBikeTag
     },
     getPreviousBikeTag(state) {
-      return state.tags[1]
+      return state.tags.find((t) => t.tagnumber === state.currentBikeTag.tagnumber - 1)
     },
     getTags(state) {
       return state.tags
@@ -1038,8 +1123,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     getGameNotices(state) {
       return {
-        imgurDelayNotice: process.env.IMGUR_DELAY_NOTICE,
-        imgurDelay: process.env.IMGUR_DELAY,
+        imgurDelayNotice: BikeTagEnv.IMGUR_DELAY_NOTICE,
+        imgurDelay: BikeTagEnv.IMGUR_DELAY,
       }
     },
     isBikeTagAmbassador(state) {

@@ -1,6 +1,5 @@
 export const BikeTagDefaults = {
   appId: 'com.app.biketag',
-  accessToken: '8b4e2b86a724bf3f39d6766de6e67212',
   admingEmail: 'biketag@biketag.org',
   gameName: '',
   host: 'biketag.org',
@@ -10,6 +9,7 @@ export const BikeTagDefaults = {
   imageSource: 'imgur',
   gameSource: 'sanity',
   store: 'biketag',
+  cacheResetInterval: '5000',
   manifest: {
     name: 'BikeTag',
     shortName: 'BikeTag',
@@ -24,8 +24,9 @@ export const BikeTagDefaults = {
 }
 
 export const BikeTagEnv = {
-  APP_ID: process.env.APP_ID ?? BikeTagDefaults.appId,
-  ACCESS_TOKEN: process.env.ACCESS_TOKEN ?? BikeTagDefaults.accessToken,
+  APP_ID: process.env.APP_ID ?? BikeTagDefaults.appId ?? null,
+  DEBUG_FE: process.env.DEBUG_FE ?? process.env.DEBUG_A ?? 'false',
+  CACHE_RESET_INTERVAL: process.env.CACHE_RESET_INTERVAL ?? BikeTagDefaults.cacheResetInterval,
   CONTEXT: process.env.CONTEXT ?? null,
   ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? BikeTagDefaults.admingEmail,
   AMBASSADOR_ROLE: process.env.AMBASSADOR_ROLE ?? BikeTagDefaults.sanityAmbassadorRoleID,
@@ -37,47 +38,48 @@ export const BikeTagEnv = {
   A_M_CS: process.env.A_M_CS ?? null,
   A_M_CID: process.env.A_M_CID ?? null,
   /* Bugs Configuration */
-  B_AKEY: process.env.B_AKEY ?? null,
+  B_KEY: process.env.B_KEY ?? process.env.CLIENT_KEY ?? null,
   /* BikeTag Configuration */
   GAME_NAME: process.env.GAME_NAME ?? null,
-  GAME_SOURCE: process.env.GAME_SOURCE ?? null,
-  HOST: process.env.HOST ?? BikeTagDefaults.host,
-  HOST_KEY: process.env.HOST_KEY ?? BikeTagDefaults.hostKey,
-  BIKETAG_AUTHED: process.env.B_AUTHED ?? process.env.BIKETAG_AUTHED ?? null,
+  GAME_SOURCE: process.env.GAME_SOURCE ?? BikeTagDefaults.gameSource ?? null,
+  IMAGE_SOURCE: process.env.IMAGE_SOURCE ?? BikeTagDefaults.imageSource ?? null,
+  HOST: process.env.HOST ?? BikeTagDefaults.host ?? null,
+  BIKETAG_AUTHED: process.env.BIKETAG_AUTHED ?? null,
   /* Google Configuration */
   G_AKEY:
     process.env.G_AKEY ?? process.env.GOOGLE_ACCESS_TOKEN ?? process.env.GOOGLE_API_KEY ?? null,
-  G_CID: process.env.G_CID ?? process.env.GOOGLE_CLIENT_ID ?? null,
-  G_CSECRET: process.env.G_CSECRET ?? process.env.GOOGLE_CLIENT_SECRET ?? null,
-  G_EMAIL: process.env.G_EMAIL ?? process.env.GOOGLE_EMAIL_ADDRESS ?? null,
-  G_PASS: process.env.G_PASS ?? process.env.GOOGLE_PASSWORD ?? null,
-  G_RTOKEN: process.env.G_RTOKEN ?? process.env.GOOGLE_REFRESH_TOKEN ?? null,
+  // G_CID: process.env.G_CID ?? process.env.GOOGLE_CLIENT_ID ?? null,
+  // G_CSECRET: process.env.G_CSECRET ?? process.env.GOOGLE_CLIENT_SECRET ?? null,
+  // G_EMAIL: process.env.G_EMAIL ?? process.env.GOOGLE_EMAIL_ADDRESS ?? null,
+  // G_PASS: process.env.G_PASS ?? process.env.GOOGLE_PASSWORD ?? null,
+  // G_RTOKEN: process.env.G_RTOKEN ?? process.env.GOOGLE_REFRESH_TOKEN ?? null,
   /* Imgur Admin Configuration */
-  IA_CID: process.env.IA_CID ?? process.env.IMGUR_ADMIN_CLIENT_ID ?? null,
-  IA_CSECRET: process.env.IA_CSECRET ?? process.env.IMGUR_ADMIN_CLIENT_SECRET ?? null,
-  IA_RTOKEN: process.env.IA_RTOKEN ?? process.env.IMGUR_ADMIN_REFRESH_TOKEN ?? null,
-  IA_TOKEN: process.env.IA_TOKEN ?? process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? null,
+  // IA_CID: process.env.IA_CID ?? process.env.IMGUR_ADMIN_CLIENT_ID ?? null,
+  // IA_CSECRET: process.env.IA_CSECRET ?? process.env.IMGUR_ADMIN_CLIENT_SECRET ?? null,
+  // IA_RTOKEN: process.env.IA_RTOKEN ?? process.env.IMGUR_ADMIN_REFRESH_TOKEN ?? null,
+  // IA_TOKEN: process.env.IA_TOKEN ?? process.env.IMGUR_ADMIN_ACCESS_TOKEN ?? null,
   RA_FE_KEY: process.env.RA_FE_KEY ?? process.env.RA_FE_KEY ?? null,
   /* Imgur Configuration */
   I_CID: process.env.I_CID ?? process.env.IMGUR_CLIENT_ID ?? null,
-  I_CSECRET: process.env.I_CSECRET ?? process.env.IMGUR_CLIENT_SECRET ?? null,
+  // I_CSECRET: process.env.I_CSECRET ?? process.env.IMGUR_CLIENT_SECRET ?? null,
   I_RTOKEN: process.env.I_RTOKEN ?? process.env.IMGUR_REFRESH_TOKEN ?? null,
   I_TOKEN: process.env.I_TOKEN ?? process.env.IMGUR_ACCESS_TOKEN ?? null,
   /* Sanity Admin Configuration */
   SA_CDN_URL: process.env.SA_CDN_URL ?? BikeTagDefaults.sanityImagesCDNUrl,
   SA_DSET: process.env.SA_DSET ?? process.env.SANITY_ADMIN_DATASET ?? null,
   SA_PID: process.env.SA_PID ?? process.env.SANITY_ADMIN_PROJECT_ID ?? null,
-  SA_TOKEN: process.env.SA_TOKEN ?? process.env.SANITY_ADMIN_ACCESS_TOKEN ?? null,
+  // SA_TOKEN: process.env.SA_TOKEN ?? process.env.SANITY_ADMIN_ACCESS_TOKEN ?? null,
   /* Sanity Configuration */
-  S_CURL: process.env.S_CURL ?? BikeTagDefaults.sanityImagesCDNUrl,
-  S_DSET: process.env.S_DSET ?? process.env.SANITY_DATASET ?? null,
-  S_PID: process.env.S_PID ?? process.env.SANITY_PROJECT_ID ?? null,
-  S_TOKEN: process.env.S_TOKEN ?? process.env.SANITY_ACCESS_TOKEN ?? null,
+  S_CURL: process.env.S_CURL ?? BikeTagDefaults.sanityImagesCDNUrl ?? '',
+  S_DSET: process.env.S_DSET ?? process.env.SANITY_DATASET ?? '',
+  S_PID: process.env.S_PID ?? process.env.SANITY_PROJECT_ID ?? '',
+  // S_TOKEN: process.env.S_TOKEN ?? process.env.SANITY_ACCESS_TOKEN ?? null,
   /* AWS S3 Configuration */
-  S3_AID: process.env.S3_AID ?? process.env.S3_ACCESS_ID ?? null,
-  S3_AKEY: process.env.S3_AKEY ?? process.env.S3_ACCESS_KEY ?? null,
-  IMGUR_DELAY_NOTICE: process.env.IMGUR_DELAY_NOTICE,
-  IMGUR_DELAY: process.env.IMGUR_DELAY,
+  RELOAD_SW: process.env.RELOAD_SW ?? 'false',
+  S3_FE_AID: process.env.S3_FE_AID ?? process.env.S3_FE_ACCESS_ID ?? null,
+  S3_FE_AKEY: process.env.S3_FE_AKEY ?? process.env.S3_FE_ACCESS_KEY ?? null,
+  IMGUR_DELAY_NOTICE: process.env.IMGUR_DELAY_NOTICE ?? null,
+  IMGUR_DELAY: process.env.IMGUR_DELAY ?? null,
 }
 
 export const special = [

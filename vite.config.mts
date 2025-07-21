@@ -21,12 +21,6 @@ export default defineConfig({
     },
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
   },
-  css: {
-    preprocessorOptions: {
-      scss: { charset: false, additionalData: `@import "./src/assets/styles/mixins.scss";` },
-      css: { charset: false },
-    },
-  },
   plugins: [
     vue(),
     EnvironmentPlugin(BikeTagEnv),
@@ -79,6 +73,9 @@ export default defineConfig({
           },
         ],
       },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5000000, // Example: allow up to 5 MB
+      },
     }),
     viteCommonjs(),
     envCompatible(),
@@ -89,9 +86,9 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        entryFileNames: `assets/biketag.js`,
-        chunkFileNames: `assets/vendor.js`,
-        assetFileNames: `assets/[name].[ext]`,
+        entryFileNames: `assets/biketag.[hash].js`,
+        chunkFileNames: `assets/vendor.[hash].js`,
+        assetFileNames: `assets/[name].[hash].[ext]`,
       },
     },
   },

@@ -1,79 +1,3 @@
-<script setup name="QueuePosted">
-import { debug } from '@/common'
-import { useBikeTagStore } from '@/store/index'
-import { computed, nextTick, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-
-// components
-import BikeTagButton from '@/components/BikeTagButton.vue'
-import { useI18n } from 'vue-i18n'
-
-// data
-const emit = defineEmits(['submit'])
-const submitTagRef = ref(null)
-const store = useBikeTagStore()
-const router = useRouter()
-const { t } = useI18n()
-const postToReddit = ref(false)
-const postToBluesky = ref(false)
-const postToInstagram = ref(false)
-
-// computed
-const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
-const getPlayerTag = computed(() => store.getPlayerTag)
-const getPlayerId = computed(() => store.getPlayerId)
-
-// methods
-function goViewRound() {
-  router.push('/round')
-}
-async function submitTag(defaultShareSettings) {
-  await store.fetchCredentials()
-  const formAction = submitTagRef.value.getAttribute('action')
-  const formData = new FormData(submitTagRef.value)
-  const submittedTag = getPlayerTag.value
-  defaultShareSettings = defaultShareSettings ?? {
-    postToReddit,
-    postToBluesky,
-    postToInstagram,
-  }
-
-  submittedTag.discussionUrl = '☯'
-  submittedTag.mentionUrl = JSON.stringify({
-    postToBluesky: defaultShareSettings.postToBluesky.value,
-  })
-  submittedTag.shareUrl = JSON.stringify({
-    postToInstagram: defaultShareSettings.postToInstagram.value,
-  })
-
-  formData.append('discussionUrl', submittedTag.discussionUrl)
-  formData.append('mentionUrl', submittedTag.mentionUrl)
-  // formData.append('shareUrl', submittedTag.shareUrl)
-
-  emit('submit', {
-    formAction,
-    formData,
-    tag: submittedTag,
-    storeAction: 'postNewBikeTag',
-  })
-}
-
-// mounted
-onMounted(() => {
-  /// TODO: check the mysteryTime instead of the discussion URL once (biketag-api)#207 is resolved.
-  if (!getPlayerTag.value?.discussionUrl?.length) {
-    /// TODO: check game settings for queue and remove this hardcoded hack
-    const defaultShareSettings = {
-      postToReddit: postToReddit.value,
-      postToBluesky: postToBluesky.value,
-      postToInstagram: postToInstagram.value,
-    }
-    debug('autosubmitting tag with default share settings', defaultShareSettings)
-    nextTick(() => submitTag(defaultShareSettings), 1000)
-  }
-})
-</script>
-
 <template>
   <div class="container queue-posted">
     <h3 class="queue-title">{{ $t('pages.round.posted_title') }}</h3>
@@ -131,3 +55,79 @@ onMounted(() => {
     </form>
   </div>
 </template>
+
+<script setup name="QueuePosted">
+import { debug } from '@/common'
+import { useBikeTagStore } from '@/store/index'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+// components
+import BikeTagButton from '@/components/BikeTagButton.vue'
+import { useI18n } from 'vue-i18n'
+
+// data
+const emit = defineEmits(['submit'])
+const submitTagRef = ref(null)
+const store = useBikeTagStore()
+const router = useRouter()
+const { t } = useI18n()
+const postToReddit = ref(false)
+const postToBluesky = ref(false)
+const postToInstagram = ref(false)
+
+// computed
+const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
+const getPlayerTag = computed(() => store.getPlayerTag)
+const getPlayerId = computed(() => store.getPlayerId)
+
+// methods
+function goViewRound() {
+  router.push('/round')
+}
+async function submitTag(defaultShareSettings) {
+  // await store.fetchCredentials()
+  const formAction = submitTagRef.value.getAttribute('action')
+  const formData = new FormData(submitTagRef.value)
+  const submittedTag = getPlayerTag.value
+  defaultShareSettings = defaultShareSettings ?? {
+    postToReddit,
+    postToBluesky,
+    postToInstagram,
+  }
+
+  submittedTag.discussionUrl = '☯'
+  submittedTag.mentionUrl = JSON.stringify({
+    postToBluesky: defaultShareSettings.postToBluesky.value,
+  })
+  submittedTag.shareUrl = JSON.stringify({
+    postToInstagram: defaultShareSettings.postToInstagram.value,
+  })
+
+  formData.append('discussionUrl', submittedTag.discussionUrl)
+  formData.append('mentionUrl', submittedTag.mentionUrl)
+  // formData.append('shareUrl', submittedTag.shareUrl)
+
+  emit('submit', {
+    formAction,
+    formData,
+    tag: submittedTag,
+    storeAction: 'postNewBikeTag',
+  })
+}
+
+// mounted
+onMounted(() => {
+  /// TODO: check the mysteryTime instead of the discussion URL once (biketag-api)#207 is resolved.
+  if (!getPlayerTag.value?.discussionUrl?.length) {
+    /// TODO: check game settings for queue and remove this hardcoded hack
+    const defaultShareSettings = {
+      postToReddit: postToReddit.value,
+      postToBluesky: postToBluesky.value,
+      postToInstagram: postToInstagram.value,
+    }
+    debug('play::queue-post', 'autosubmitting tag with default share settings')
+    nextTick(() => submitTag(defaultShareSettings), 1000)
+  }
+})
+</script>

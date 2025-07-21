@@ -27,7 +27,7 @@ import 'bootstrap-vue-next/dist/bootstrap-vue-next.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'highlight.js/styles/monokai.css'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { debug, isAuthenticationEnabled } from './common'
+import { BikeTagEnv, debug, isAuthenticationEnabled } from './common'
 
 class BikeTagApp {
   protected emitter
@@ -54,17 +54,20 @@ class BikeTagApp {
     this.app.use(router)
   }
   store() {
+    const pinia = createPinia()
+    const store = createBikeTag({ includeComponents: false, includeDirectives: false })
     this.app
-      .use(createPinia())
-      .use(createBikeTag({ includeComponents: false, includeDirectives: false }))
+      .use(pinia)
+      .use(store)
+    debug('app::store', store.storeName)
   }
   authentication() {
     if (isAuthenticationEnabled()) {
-      debug('init::authentication', process.env.A_DOMAIN)
+      debug('app::authentication', BikeTagEnv.A_DOMAIN)
       this.app.use(
         createAuth0({
-          domain: process.env.A_DOMAIN as string,
-          clientId: process.env.A_CID as string,
+          domain: BikeTagEnv.A_DOMAIN as string,
+          clientId: BikeTagEnv.A_CID as string,
           authorizationParams: {
             redirect_uri: window.location.origin,
           },
@@ -73,7 +76,7 @@ class BikeTagApp {
         }),
       )
     } else {
-      debug('init::authentication', 'authentication disabled')
+      debug('app::authentication', 'disabled')
     }
   }
 
@@ -88,7 +91,7 @@ class BikeTagApp {
     this.app.use(VueSocials)
     this.app.use(VueGoogleMaps, {
       load: {
-        key: process.env.G_AKEY,
+        key: BikeTagEnv.G_AKEY,
         libraries: 'places',
         v: 3.54,
       },
@@ -97,6 +100,7 @@ class BikeTagApp {
 
   mount() {
     this.app.mount('#app')
+    debug('app::init', 'mounted')
   }
 
   run() {

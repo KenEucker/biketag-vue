@@ -1,18 +1,16 @@
-import { Handler } from '@netlify/functions'
-import BikeTagClient from 'biketag'
-import { Game } from 'biketag/dist/common/schema'
-import request from 'request'
+import BikeTagClient, { Game } from 'biketag'
 import {
   getActiveQueueForGame,
   getBikeTagClientOpts,
   getWinningTagForCurrentRound,
+  log,
   setNewBikeTagPost,
 } from './common'
 import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'
 
 export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> => {
-  if (process.env.SKIP_AUTOPOST_FUNCTION) {
+  if (process.env.SKIP_AUTOPOST_FUNCTION === "true") {
     return Promise.resolve({
       results: ['function skipped'],
       errors: false,
@@ -20,10 +18,9 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
   }
 
   // if (!isRequestAllowed()) {}
-  console.log('Running autoPostNewBikeTags')
 
   const adminBiketagOpts = getBikeTagClientOpts(
-    { method: 'get' } as unknown as request.Request,
+    { method: 'get' } as unknown as Request,
     true,
     true,
   )
@@ -50,25 +47,29 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
           : 0
 
       if (autoPostSetting === 0) {
-        console.log('autopost not set, skipping game', game.name)
+        log('autopost not set, skipping game', game.name)
         continue
       } else {
-        console.log(`autopost set to ${autoPostSetting} minutes, checking game`, game.name)
+        log(`autopost set to ${autoPostSetting} minutes, checking game`, game.name, 'info')
       }
 
       const thisGameConfig = {
-        game: game.slug,
+        biketag: {
+          game: game.slug,
+        },
+        aws: { region: game.awsRegion },
         imgur: { hash: game.mainhash, queuehash: game.queuehash, archivehash: game.archivehash },
       }
 
-      nonAdminBiketag.config(thisGameConfig)
-      adminBiketag.config(thisGameConfig)
+      nonAdminBiketag.config(thisGameConfig, false, true)
+      adminBiketag.config(thisGameConfig, false, true)
+      const imageSource = game.awsRegion ? 'aws' : 'imgur'
       const activeQueue = await getActiveQueueForGame(game, nonAdminBiketag)
 
       if (activeQueue.completedTags.length && activeQueue.timedOutTags.length === 0) {
-        console.log('completed tags found but none timed out', { game, activeQueue })
+        log('completed tags found but none timed out', { game, activeQueue }, 'info')
       } else if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
-        const currentBikeTagResponse = await adminBiketag.getTag(undefined) // the "current" mystery tag to be updated from the main album
+        const currentBikeTagResponse = await adminBiketag.getTag(undefined, { source: imageSource }) // the "current" mystery tag to be updated from the main album
         if (!currentBikeTagResponse.success) {
           results = results.concat([
             'queue for game ' + game.name + ' has completed tags in it',
@@ -87,10 +88,10 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
           )
 
           if (autoSelectedWinningTag) {
-            console.log('winning tag found, setting new BikeTag post', {
-              game,
+            log('winning tag found, setting new BikeTag post', {
+              game: game.slug,
               autoSelectedWinningTag,
-            })
+            }, 'info')
             const setNewBikeTagPostResults = await setNewBikeTagPost(
               game,
               autoSelectedWinningTag,
@@ -105,7 +106,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
       }
     }
   } else {
-    console.log('couldnt get games', gamesResponse)
+    log('couldnt get games', gamesResponse, 'error')
   }
 
   return {
@@ -114,24 +115,19 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
   }
 }
 
-const autoPostHandler: Handler = async () => {
+export default async () => {
   const { results, errors } = await autoPostNewBikeTags()
 
   if (results.length) {
-    console.log('autopost attempted', { results })
-    return {
-      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
-      body: JSON.stringify(results),
-    }
+    log('autopost attempted', { results }, 'info')
+    
+    return new Response(JSON.stringify(results), {
+      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+    })
   } else {
-    console.log('nothing to report')
-    return {
-      statusCode: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
-      body: '',
-    }
+    log('nothing to report', 'info')
+    return new Response('', {
+      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+    })
   }
 }
-
-const handler = autoPostHandler
-
-export { handler }
