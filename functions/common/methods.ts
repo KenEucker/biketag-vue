@@ -141,6 +141,7 @@ export const getBikeTagClientOpts = (
     opts.aws = {
       accessKeyId: process.env.S3_BE_ACCESS_ID,
       secretAccessKey: process.env.S3_BE_ACCESS_KEY,
+      region: game?.awsRegion,
     }
 
     opts.sanity = opts.sanity ?? {}
