@@ -98,20 +98,39 @@ function togglePreview() {
   previewMode.value = !previewMode.value
 }
 
-async function mergeTags() {
-  if (currentTag.value && previousTag.value) {
-    Object.assign(mergedTag, {
-      ...currentTag.value,
-      foundPlayer: previousTag.value.foundPlayer,
-      foundTime: previousTag.value.foundTime,
-      foundLocation: previousTag.value.foundLocation,
-      foundImageUrl: previousTag.value.foundImageUrl,
-    })
+function mergeTags(forward = true) {
+  if (forward) {
+    if (currentTag.value && previousTag.value) {
+      Object.assign(mergedTag, {
+        ...currentTag.value,
+        foundPlayer: previousTag.value.foundPlayer,
+        foundTime: previousTag.value.foundTime,
+        foundLocation: previousTag.value.foundLocation,
+        foundImageUrl: previousTag.value.foundImageUrl,
+      })
+    } else {
+      console.log('issue merging current and previous tags', {
+        currentTag: currentTag.value,
+        previousTag: previousTag.value,
+      })
+    }
   } else {
-    console.log('issue merging current and previous tags', {
-      currentTag: currentTag.value,
-      previousTag: previousTag.value,
-    })
+    return {
+      currentTag: {
+        ...currentTag.value,
+        foundPlayer: pendingEdits.value.foundPlayer,
+        foundTime: pendingEdits.value.foundTime,
+        foundLocation: pendingEdits.value.foundLocation,
+        foundImageUrl: pendingEdits.value.foundImageUrl,
+      },
+      previousTag: {
+        ...previousTag.value,
+        mysteryPlayer: pendingEdits.value.mysteryPlayer,
+        mysteryTime: pendingEdits.value.mysteryTime,
+        mysteryLocation: pendingEdits.value.mysteryLocation,
+        mysteryImageUrl: pendingEdits.value.mysteryImageUrl,
+      },
+    } 
   }
 }
 
@@ -136,16 +155,13 @@ async function onSave() {
 
   editInProgress.value = true
 
-  const payload = {
-    game: getGameName.value,
-    tagnumber: mergedTag.tagnumber,
-    ...pendingEdits,
-  }
+  const updatePayloads = mergeTags(false)
 
-  const result = await store.updateCurrentTag(payload)
+  const currentUpdateResult = await store.updateCurrentTag(updatePayloads.currentTag)
+  const previousUpdateResult = await store.updateCurrentTag(updatePayloads.previousTag)
   editInProgress.value = false
 
-  if (result === true) {
+  if (currentUpdateResult === true && previousUpdateResult === true) {
     store.fetchQueuedTags(false)
     return sendNetlifyForm(
       'edit-tag-success',
@@ -171,7 +187,7 @@ async function onSave() {
       },
     )
   } else {
-    const message = `Error saving edit: ${result}`
+    const message = `Error saving edits for${currentUpdateResult !== true ? ' current' : ''}${previousUpdateResult !== true ? ' previous' : ''}`
     toast.open({
       message,
       type: 'error',
@@ -179,13 +195,17 @@ async function onSave() {
       timeout: false,
       position: 'bottom',
     })
+    console.error(message, {
+      currentUpdateResult,
+      previousUpdateResult,
+    })
     return sendNetlifyError(message, undefined, errorAction)
   }
 }
 
 onMounted(async () => {
   await store.isReady()
-  await mergeTags()
+  mergeTags()
   editInProgress.value = false
 })
 </script>
