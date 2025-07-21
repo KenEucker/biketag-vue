@@ -1,6 +1,14 @@
 <template>
   <div class="container delete-bike-tag">
     <h3 class="delete-title">{{ $t('pages.delete.title') }}</h3>
+    <b-modal
+      v-model="confirmDelete"
+      class="confirm-modal"
+      title="Confirm Delete of Current Bike Tag"
+      @ok="deleteTagFunction"
+    >
+      <p>{{ $t('pages.delete.confirm_delete') }}</p>
+    </b-modal>
 
     <p class="delete-text">
       Deleting this tag will remove {{ getCurrentBikeTag.mysteryPlayer }}'s submission for tag #{{
@@ -28,7 +36,7 @@
         method="POST"
         data-netlify="true"
         data-netlify-honeypot="bot-field"
-        @submit.prevent="deleteTagFunction"
+        @submit.prevent="deleteTagConfirm"
       >
         <input type="hidden" name="form-name" value="delete-latest-biketag" />
         <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
@@ -59,12 +67,18 @@ const deleteTag = ref(null)
 const store = useBikeTagStore()
 const { t } = useI18n()
 const getAmbassadorId = computed(() => store.getAmbassadorId)
+const confirmDelete = ref(false)
 
 // computed
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const previousTag = computed(() => store.getPreviousBikeTag)
 
 // methods
+
+function deleteTagConfirm() {
+  confirmRemove.value = true
+}
+
 function deleteTagFunction() {
   const formAction = deleteTag.value.getAttribute('action')
   const formData = new FormData(deleteTag.value)

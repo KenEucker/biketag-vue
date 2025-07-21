@@ -8,6 +8,14 @@
   >
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
+  <b-modal
+    v-model="confirmEdit"
+    class="confirm-modal"
+    title="Confirm Edit of Current Bike Tag"
+    @ok="doSave"
+  >
+    <p>{{ $t('pages.edit.confirm_edit') }}</p>
+  </b-modal>
 
   <div class="queue-page">
     <div v-if="editSuccess">
@@ -35,7 +43,7 @@
         <EditBikeTag v-else :tag="mergedTag" @update="onFieldUpdate" />
       </div>
 
-      <bike-tag-button variant="light" class="big-btn" @click="onSave"
+      <bike-tag-button variant="light" class="big-btn" @click="onSaveClick"
         >Save Changes</bike-tag-button
       >
     </div>
@@ -82,7 +90,7 @@ const { t } = useI18n()
 const editInProgress = ref(true)
 const editSuccess = ref(false)
 const editError = ref(null)
-
+const confirmEdit = ref(false)
 const previewMode = ref(false)
 
 const pendingEdits = reactive({})
@@ -139,7 +147,11 @@ async function onFieldUpdate({ field, value }) {
   mergedTag[field] = value // update mergedTag so preview reflects changes live
 }
 
-async function onSave() {
+async function onSaveClick() {
+  confirmEdit.value = true
+}
+
+async function doSave() {
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual'
   }
