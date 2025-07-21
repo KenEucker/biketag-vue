@@ -153,21 +153,6 @@ async function onApproveSubmit(newTagSubmission) {
 onMounted(async () => {
   await store.isReady()
   await store.fetchQueuedTags(false)
-  // await store.fetchCredentials()
-
-  /// TODO: do we need to?
-  // /// Get the user credentials for BikeTag Ambassador functions
-  // checkAuth(useAuth0(), (user, tokens) => {
-  //   if (!store.getProfile?.nonce?.length) {
-  //     store.setProfile({ ...user.value, token: tokens?.__raw })
-  //   }
-  // })
   uploadInProgress.value = false
-
-  // watchEffect(async () => {
-  //   if (timer.value.isExpired.valueof) {
-  //     console.warn('IsExpired')
-  //   }
-  // })
 })
 </script>

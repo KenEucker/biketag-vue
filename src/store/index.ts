@@ -160,7 +160,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (profile) {
         if (profile.token || token) {
           this.auth0Token = token || this.auth0Token || profile.token || ''
-          await this.fetchCredentials(true)
           profile.token = undefined
         }
 
@@ -183,12 +182,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           } else if (typeof response.data === 'object') {
             return this.SET_PROFILE(response.data)
           }
+          await this.fetchCredentials(true)
         } else if (response.status === 400) {
           return { error: response.data.error }
         }
       } else if (token?.length) {
         this.auth0Token = token
-        await this.fetchCredentials(true)
+        return this.profile
       }
 
       return this.SET_PROFILE(profile)
@@ -733,6 +733,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       ) {
         this.profile = profile
         setProfileCookie(profile)
+        debug(`${BikeTagDefaults.store}::profile`, profile)
+      } else if (!profile) {
+        setProfileCookie(profile)
+        this.profile = getProfileFromCookie()
         debug(`${BikeTagDefaults.store}::profile`, profile)
       }
 
