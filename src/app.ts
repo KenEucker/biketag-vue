@@ -56,9 +56,7 @@ class BikeTagApp {
   store() {
     const pinia = createPinia()
     const store = createBikeTag({ includeComponents: false, includeDirectives: false })
-    this.app
-      .use(pinia)
-      .use(store)
+    this.app.use(pinia).use(store)
     debug('app::store', store.storeName)
   }
   authentication() {

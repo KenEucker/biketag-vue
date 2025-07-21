@@ -76,7 +76,7 @@ const previousTag = computed(() => store.getPreviousBikeTag)
 // methods
 
 function deleteTagConfirm() {
-  confirmRemove.value = true
+  confirmDelete.value = true
 }
 
 function deleteTagFunction() {
