@@ -4,6 +4,7 @@ import {
   getActiveQueueForGame,
   getBikeTagClientOpts,
   isRequestAllowed,
+  log,
 } from './common'
 import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'
@@ -44,7 +45,7 @@ export const autoClearQueue = async (req: Request): Promise<BackgroundProcessRes
   if (twentyFourHoursAgo > mostRecentTag.mysteryTime * 1000 && !forceClear) {
     const errorMessage =
       'Most recent tag was created more than 24 hours ago. Please clear the queue manually.'
-    console.log(errorMessage)
+    log('cannot continue', errorMessage, 'error')
     return {
       results: [errorMessage],
       errors: true,
@@ -55,7 +56,7 @@ export const autoClearQueue = async (req: Request): Promise<BackgroundProcessRes
     const allTags = (await nonAdminBiketag.getQueue({ game: adminBiketagOpts.game }, { source: imageSource })).data
 
     if (allTags.length) {
-      console.log('all tags found', { game, allTags })
+      log('all tags found', { game, allTags }, 'info')
       const archiveAndClearQueueResults = await archiveAndClearQueue(
         allTags,
         game,
@@ -67,14 +68,14 @@ export const autoClearQueue = async (req: Request): Promise<BackgroundProcessRes
       errors = archiveAndClearQueueResults.errors
     } else {
       const nothingToDoMessage = 'no tags found'
-      console.log(nothingToDoMessage)
+      log('nothing to do', nothingToDoMessage)
       results.push(nothingToDoMessage)
     }
   } else {
     const { queuedTags } = await getActiveQueueForGame(game, adminBiketag)
 
     if (queuedTags.length) {
-      console.log('non-winning tag(s) found', { game, queuedTags })
+      log('non-winning tag(s) found', { game, queuedTags })
       const archiveAndClearQueueResults = await archiveAndClearQueue(
         queuedTags,
         game,
@@ -86,7 +87,7 @@ export const autoClearQueue = async (req: Request): Promise<BackgroundProcessRes
       errors = archiveAndClearQueueResults.errors
     } else {
       const nothingToDoMessage = 'no non-winning tags found'
-      console.log(nothingToDoMessage)
+      log('nothing to do', nothingToDoMessage)
       results.push(nothingToDoMessage)
     }
   }
@@ -101,13 +102,13 @@ export default async (req: Request) => {
   const { results, errors } = await autoClearQueue(req)
 
   if (results.length) {
-    console.log('queue cleared', { results })
+    log('queue cleared', { results }, 'info')
     
     return new Response(JSON.stringify(results), {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })
   } else {
-    console.log('queue not cleared')
+    log('queue not cleared', 'no results found', 'error')
     return new Response('', {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })

@@ -733,7 +733,7 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
   }
 
   if (!html.length) {
-    console.log(ErrorMessage.NoHtmlLoaded, { templateFilePath, htmlTemplateFilePath })
+    log(ErrorMessage.NoHtmlLoaded, { templateFilePath, htmlTemplateFilePath }, 'error')
     return null
   }
 
@@ -791,7 +791,7 @@ export const sendEmailsToAmbassadors = async (
 
   for (const ambassador of ambassadors) {
     if (ambassador.email) {
-      console.log(`sending ${emailName} email to BikeTag Ambassador: ${ambassador.email}`)
+      log(`sending ${emailName} email to BikeTag Ambassador`, { email: ambassador.email }, 'info')
       emailSent = await sendEmail(
         ambassador.email,
         emailSubject,
@@ -808,7 +808,7 @@ export const sendEmailsToAmbassadors = async (
   if (sendToAdmin) {
     const biketagAdminEmail = process.env.ADMIN_EMAIL ?? ''
     if (biketagAdminEmail?.length) {
-      console.log(`sending ${emailName} email to BikeTag Administrator: ${biketagAdminEmail}`)
+      log(`sending ${emailName} email to BikeTag Administrator:`, {biketagAdminEmail}, 'info')
       emailSent = await sendEmail(
         biketagAdminEmail,
         emailSubject,
@@ -1094,7 +1094,7 @@ export const handleAuth0ProfileRequest = async (req: Request, profile: any): Pro
               const biketagAdminOpts = getBikeTagClientOpts(req, true)
 
               /// Create the player profile in sanity
-              console.log('creating the player in sanity', { data, biketagAdminOpts })
+              log('creating the player in sanity', { data, biketagAdminOpts })
               const updatedPlayerResponse = await createBikeTagPlayerProfile(
                 data,
                 biketagAdminOpts.game,
@@ -1151,7 +1151,7 @@ export const handleAuth0ProfileRequest = async (req: Request, profile: any): Pro
           }
         } else {
           /// Invalid data
-          console.log(ErrorMessage.InvalidRequestData, data, profileType)
+          log(ErrorMessage.InvalidRequestData, { data, profileType }, 'error')
           body = ErrorMessage.InvalidRequestData
           statusCode = HttpStatusCode.BadRequest
         }
@@ -1180,7 +1180,7 @@ export const handleAuth0ProfileRequest = async (req: Request, profile: any): Pro
         if (typeof response.data === 'string') {
           body = response.data
         } else if (Array.isArray(response.data)) {
-          if (response.data?.length) console.log('well how did this happen?')
+          if (response.data?.length) log('well how did this happen?', { 'response.data': response.data }, 'warn')
           body = ''
         } else {
           const profileDataResponse = profile.isBikeTagAmbassador
@@ -1302,7 +1302,7 @@ const uploadImageToBlueSkyFromURL = async (agent: AtpAgent, url: string) => {
 
   const uploadResponse = await agent.uploadBlob(img)
   if (!uploadResponse.success) {
-    console.log(ErrorMessage.ImageUploadFailed, { uploadResponse })
+    log(ErrorMessage.ImageUploadFailed, { uploadResponse }, 'error')
     throw new Error(ErrorMessage.ImageUploadFailed)
   }
   return uploadResponse.data.blob
@@ -1330,7 +1330,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
       const bskyPass = process.env.BSKY_PASS
       const bskyServer = process.env.BSKY_SERVER ?? 'https://bsky.social'
 
-      console.log('sending bluesky on behalf of ' + bskyUser)
+      log('sending bluesky on behalf of ' + bskyUser, {winningTagnumber, bskyUser})
 
       const agent = new AtpAgent({
         service: bskyServer,
@@ -1377,7 +1377,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
       return `bluesky::${postCreated.cid}`
     }
   } catch (e: any) {
-    console.log({ blueskyError: e })
+    log('error sending bluesky notification', { blueskyError: e }, 'error')
   }
 
   return `bluesky::failed`
@@ -1406,13 +1406,11 @@ export const sendBikeTagPostNotificationToWebhook = (
   const mysteryImageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
   const foundImageUrl = getImageSized(imageSource, currentTag.foundImageUrl, 'l')
 
-  if (process.env.DEBUG_A === 'true') {
-    console.log('sending notification webhook timestamp', {
-      timestamp,
-      foundTime: currentTag.foundTime,
-      tz: game.region.tz,
-    })
-  }
+  log('sending notification webhook timestamp', {
+    timestamp,
+    foundTime: currentTag.foundTime,
+    tz: game.region.tz,
+  })
 
   let data = {}
   switch (type) {
@@ -1776,7 +1774,7 @@ const getAuthManagementToken = async () => {
     //   client_secret: process.env.A_M_CS,
     //   audience: process.env.A_AUDIENCE,
     // })
-    console.log(ErrorMessage.getAuthManagementToken, e.message)
+    log(ErrorMessage.getAuthManagementToken, e.message, 'error')
   }
 }
 

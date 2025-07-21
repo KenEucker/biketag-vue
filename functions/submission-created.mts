@@ -5,6 +5,7 @@ import {
   getBikeTagClientOpts,
   getEncodedExpiry,
   getSanityImageUrl,
+  log,
   sendEmailsToAmbassadors,
 } from './common'
 import { HttpStatusCode } from './common/constants'
@@ -14,7 +15,7 @@ export default async (req: Request) => {
   const payload = body.payload
   let success = false
 
-  console.log('submission-created', { payload })
+  log('submission-created', { payload })
   const bannedIPs = await getBannedIPs()
 
   if (bannedIPs.indexOf(payload.ip) !== -1) {
@@ -77,7 +78,7 @@ export default async (req: Request) => {
           : undefined
 
         if (!game || !currentMysteryTag || !thisGamesAmbassadors.length) {
-          console.log('insufficient game data to work with', {
+          log('insufficient game data to work with', {
             gameName,
             game,
             ambassadors,
@@ -122,7 +123,7 @@ export default async (req: Request) => {
         game.settings['emails::sendall'] === 'true' ||
         game.settings['emails::disable']?.split(',').indexOf(formName) === -1
       ) {
-        console.log('processing form::', formName)
+        log('processing form::', formName)
         switch (formName) {
           case 'add-found-tag':
             // send app notification
@@ -286,22 +287,22 @@ export default async (req: Request) => {
             break
         }
       } else {
-        console.log(`Sending of email:${formName} disabled`, {
+        log(`Sending of email:${formName} disabled`, {
           sendAll: game.settings['emails::sendall'],
           disabled: game.settings['emails::disable'],
-        })
+        }, 'info')
       }
 
       if (successfulEmailsSent.length) {
-        console.log('success sending notifications and emails', {
+        log('success sending notifications and emails', {
           successfulEmailsSent,
           rejectedEmails,
-        })
+        }, 'info')
         success = true
       } else if (rejectedEmails.length) {
-        console.log('error sending emails', rejectedEmails)
+        log('error sending emails', rejectedEmails)
       } else {
-        console.log('nothing to do')
+        log('nothing to do')
       }
     } else {
       console.error('no game to work with', payload)

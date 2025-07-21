@@ -263,17 +263,14 @@ const onSubmit = async (e) => {
 
   /// TODO: watch this?
   if (!isAuthenticated.value) {
-    // console.log('player', player.value)
     try {
       const passcodeCheckResponse = await store.checkPasscode({
         name: player.value,
         passcode: passcode.value,
       })
-      // console.log({ passcodeCheckResponse })
       showModal.value = false
       await sleep(100)
     } catch (e) {
-      // console.log('response', e.response)
       const noProfileFound = e.response.status === 404 && e.response.data === 'no profile found'
       const incorrectPasscode = e.response.status === 401
 

@@ -1,6 +1,6 @@
 import BikeTagClient, { Achievement, Game, Player, Tag } from 'biketag'
 import { getSupportedGames } from '../src/common'
-import { getBikeTagClientOpts } from './common'
+import { getBikeTagClientOpts, log } from './common'
 import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'
 
@@ -60,13 +60,13 @@ export const assignAchievements = async (): Promise<BackgroundProcessResults> =>
           if (players.length > 20) {
             /// Only award achievements if at least 20 players have logged in
           } else {
-            console.log(`[${game.name}] does not have enough players to award achievements`)
+            log(`[${game.name}] does not have enough players to award achievements`, { playersCount: players.length }, 'warn')
           }
         }
       }
     }
   } else {
-    console.log('couldnt get games', gamesResponse)
+    log('couldnt get games', gamesResponse, 'error')
   }
 
   return {
@@ -79,12 +79,12 @@ export default async (req: Request) => {
   const { results, errors } = await assignAchievements()
 
   if (results.length) {
-    console.log('achievements assigning attempted', { results })
+    log('achievements assigning attempted', { results }, 'info')
     return new Response(JSON.stringify(results), {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })
   } else {
-    console.log('nothing to report')
+    log('nothing to report')
     return new Response('', {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })

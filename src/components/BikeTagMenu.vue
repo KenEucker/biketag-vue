@@ -244,14 +244,10 @@ async function logoutClick() {
   }
 }
 function closeCollapsible() {
-  // console.log(buttonCollapse.value)
   buttonCollapse.value.click()
-  // navList.value.classList.remove('show')
 }
 function goWorldwide() {
-  // window.location = 'https://biketag.org/'
   router.push({ name: 'Landing' })
-  // router.push('/worldwide')
 }
 function goApprovePage() {
   closeCollapsible()

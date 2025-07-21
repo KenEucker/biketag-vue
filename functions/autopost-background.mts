@@ -3,6 +3,7 @@ import {
   getActiveQueueForGame,
   getBikeTagClientOpts,
   getWinningTagForCurrentRound,
+  log,
   setNewBikeTagPost,
 } from './common'
 import { HttpStatusCode } from './common/constants'
@@ -17,7 +18,6 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
   }
 
   // if (!isRequestAllowed()) {}
-  console.log('Running autoPostNewBikeTags')
 
   const adminBiketagOpts = getBikeTagClientOpts(
     { method: 'get' } as unknown as Request,
@@ -47,10 +47,10 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
           : 0
 
       if (autoPostSetting === 0) {
-        console.log('autopost not set, skipping game', game.name)
+        log('autopost not set, skipping game', game.name)
         continue
       } else {
-        console.log(`autopost set to ${autoPostSetting} minutes, checking game`, game.name)
+        log(`autopost set to ${autoPostSetting} minutes, checking game`, game.name, 'info')
       }
 
       const thisGameConfig = {
@@ -67,7 +67,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
       const activeQueue = await getActiveQueueForGame(game, nonAdminBiketag)
 
       if (activeQueue.completedTags.length && activeQueue.timedOutTags.length === 0) {
-        console.log('completed tags found but none timed out', { game, activeQueue })
+        log('completed tags found but none timed out', { game, activeQueue }, 'info')
       } else if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
         const currentBikeTagResponse = await adminBiketag.getTag(undefined, { source: imageSource }) // the "current" mystery tag to be updated from the main album
         if (!currentBikeTagResponse.success) {
@@ -88,10 +88,10 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
           )
 
           if (autoSelectedWinningTag) {
-            console.log('winning tag found, setting new BikeTag post', {
+            log('winning tag found, setting new BikeTag post', {
               game: game.slug,
               autoSelectedWinningTag,
-            })
+            }, 'info')
             const setNewBikeTagPostResults = await setNewBikeTagPost(
               game,
               autoSelectedWinningTag,
@@ -106,7 +106,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
       }
     }
   } else {
-    console.log('couldnt get games', gamesResponse)
+    log('couldnt get games', gamesResponse, 'error')
   }
 
   return {
@@ -119,13 +119,13 @@ export default async () => {
   const { results, errors } = await autoPostNewBikeTags()
 
   if (results.length) {
-    console.log('autopost attempted', { results })
+    log('autopost attempted', { results }, 'info')
     
     return new Response(JSON.stringify(results), {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })
   } else {
-    console.log('nothing to report')
+    log('nothing to report', 'info')
     return new Response('', {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })

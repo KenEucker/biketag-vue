@@ -136,12 +136,10 @@ function canReset() {
 async function resetToFound() {
   // await store.fetchCredentials()
 
-  console.log('dequeing')
   emit('dequeing')
   return store.dequeueFoundTag().then((dequeueSuccessful) => {
     if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
       /// TODO: this notification needs to be removed before publishing v3.0.0
-      console.log('dequeue-success')
       emit('dequeue-success')
       return emit('dequeue-error', dequeueSuccessful)
     } else {
@@ -153,11 +151,9 @@ async function resetToFound() {
 }
 async function resetToMystery() {
   // await store.fetchCredentials()
-  console.log('dequeing')
   emit('dequeing')
   return store.dequeueMysteryTag().then((dequeueSuccessful) => {
     if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-      console.log('dequeue-success')
       emit('dequeue-success')
       return emit('dequeue-error', dequeueSuccessful)
     } else {

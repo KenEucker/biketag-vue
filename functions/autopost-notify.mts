@@ -1,5 +1,5 @@
 import BikeTagClient, { Game } from 'biketag'
-import { BackgroundProcessResults, getBikeTagClientOpts, getPayloadOpts, isRequestAllowed, sendNewBikeTagNotifications } from './common'
+import { BackgroundProcessResults, getBikeTagClientOpts, getPayloadOpts, isRequestAllowed, log, sendNewBikeTagNotifications } from './common'
 import { HttpStatusCode } from './common/constants'
 
 export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<BackgroundProcessResults> => {
@@ -37,7 +37,7 @@ export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<Backgrou
   )
   if (twoMostRecentTags.data?.length !== 2) {
     const errorMessage = 'Could not retrieve two most recent tags.'
-    console.log(errorMessage, { twoMostRecentTags })
+    log(errorMessage, { twoMostRecentTags }, 'error')
     return {
       results: [errorMessage],
       errors: true,
@@ -49,7 +49,7 @@ export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<Backgrou
 
   if (twentyFourHoursAgo > winningTag.mysteryTime * 1000 && !payloadOpts.force) {
     const errorMessage = 'Most recent tag was created more than 24 hours ago.'
-    console.log(errorMessage)
+    log('cannot continue', errorMessage, 'error')
     return {
       results: [errorMessage],
       errors: true,
@@ -66,14 +66,14 @@ export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<Backgrou
     payloadOpts.skipEmails,
     payloadOpts.skipSocials,
   ).catch((err) => {
-    console.log('error sending notifications', err)
+    log('error sending notifications', err, 'error')
   })
 
   if (notificationsSent?.length) {
     results = await Promise.allSettled(notificationsSent)
       .then((r) => r.map((p: any) => p.value))
       .catch((e) => {
-        console.log('error sending notifications', { e })
+        log('error sending notifications', { e }, 'error')
         return []
       })
   }
@@ -88,12 +88,12 @@ export default async (req: Request) => {
   const { results, errors } = await autoNotifyNewBikeTagPosted(req)
 
   if (results.length) {
-    console.log('notifications sent', { results })
+    log('notifications sent', { results }, 'info')
     return new Response(JSON.stringify(results), {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok
     })
   } else {
-    console.log('no notifications sent')
+    log('no notifications sent', 'info')
     return new Response('', {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })
