@@ -1322,7 +1322,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   const link = `${host}/${winningTagnumber}`
   const gameLinkFacet = getStartAndEndBytesOfStringWithinString(heading, game.name)
   const imageSource = game.awsRegion ? 'aws' : 'imgur'
-  const imageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
+  const imageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'm')
 
   try {
     if (process.env.BSKY_USER && process.env.BSKY_PASS) {
