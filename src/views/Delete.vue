@@ -58,7 +58,6 @@ const router = useRouter()
 const toast = inject('toast')
 const { t } = useI18n()
 
-
 // computed
 const getGameName = computed(() => store.getGameName)
 const getGameNameProper = computed(() => store.getGameNameProper)

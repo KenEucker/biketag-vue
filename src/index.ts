@@ -75,7 +75,8 @@ export {
   // BikeTagGames,
   BikeTagHeader,
   // BikeTagInput,
-  BikeTagLabel, createBikeTag,
+  BikeTagLabel,
+  createBikeTag,
   getBikeTagClientOpts,
   initBikeTagStore,
   // BikeTagLoader,
@@ -83,6 +84,6 @@ export {
   // BikeTagMenu,
   // BikeTagPlayer,
   // BikeTagQueue,
-  Types, useBikeTagStore
+  Types,
+  useBikeTagStore,
 }
-

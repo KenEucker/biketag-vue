@@ -138,7 +138,7 @@ function mergeTags(forward = true) {
         mysteryLocation: pendingEdits.mysteryLocation,
         mysteryImageUrl: pendingEdits.mysteryImageUrl,
       },
-    } 
+    }
   }
 }
 

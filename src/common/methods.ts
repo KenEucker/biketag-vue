@@ -176,15 +176,16 @@ export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
   }
 }
 
-export const setRegionPolygonInCookie = (regionPolygon: any, regionPolygonCookieKey = 'regionPolygon') => {
+export const setRegionPolygonInCookie = (
+  regionPolygon: any,
+  regionPolygonCookieKey = 'regionPolygon',
+) => {
   localStorage.setItem(regionPolygonCookieKey, JSON.stringify(regionPolygon))
 
   return regionPolygon
 }
 
-export const getRegionPolygonFromCookie = (
-  regionPolygonCookieKey = 'regionPolygon',
-): any => {
+export const getRegionPolygonFromCookie = (regionPolygonCookieKey = 'regionPolygon'): any => {
   const regionPolygonString = localStorage.getItem(regionPolygonCookieKey)
   return regionPolygonString?.length ? JSON.parse(regionPolygonString) : undefined
 }
@@ -365,7 +366,7 @@ export const GetQueryString = (win: Window, name: string): string | null => {
 export const getQueryParam = (win: Window, param: string): string | null => {
   const urlParams = new URLSearchParams(win.location.search)
   return urlParams.get(param)
-}    
+}
 
 export const getQueuedTagState = (queuedTag: Tag): BiketagQueueFormSteps => {
   const mysteryImageSet = queuedTag.mysteryImageUrl?.length > 0
@@ -482,8 +483,13 @@ export const exportHtmlToDownload = (filename: string, node?: any, selector?: st
     })
 }
 
-export const debug = (message: string, context?: any, level: 'log' | 'info' | 'warn' | 'error' = 'log') => {
-  const shouldLogBecauseDebugIsSet = getQueryParam(window, 'debug_a') === 'true' || BikeTagEnv.DEBUG_FE === 'true'
+export const debug = (
+  message: string,
+  context?: any,
+  level: 'log' | 'info' | 'warn' | 'error' = 'log',
+) => {
+  const shouldLogBecauseDebugIsSet =
+    getQueryParam(window, 'debug_a') === 'true' || BikeTagEnv.DEBUG_FE === 'true'
   const shouldLogBecauseLevel = level === 'error' || level === 'warn' || level === 'info'
   if (shouldLogBecauseDebugIsSet || shouldLogBecauseLevel) {
     console[level](message, context)
