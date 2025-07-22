@@ -35,6 +35,11 @@ export default async (req: Request) => {
       data: false,
     })
     log('[get-tag-image] Prepared biketag payload', biketagPayload)
+    const biketagConfig = biketag.config({
+      aws: {
+        region: game.awsRegion,
+      }
+    }, false, true)
 
     const imageSource = game.awsRegion ? 'aws' : 'imgur'
     const currentTagResponse = await biketag.getTag(biketagPayload, { source: imageSource })
@@ -43,9 +48,9 @@ export default async (req: Request) => {
       const currentTag = currentTagResponse.data
       const data: any = currentTag
       const domainInfo = getDomainInfo(req)
-      const host = 'i.imgur.com'
+      const host = imageSource ==='imgur' ? 'i.imgur.com' : biketagConfig.aws.endpoint?.replace('digitaloceanspaces.com', 'cdn.digitaloceanspaces.com')
       data.host = domainInfo.host
-      data.imageUri = getImageSized('imgur', data.mysteryImageUrl, biketagPayload.size)
+      data.imageUri = getImageSized(imageSource, data.mysteryImageUrl, biketagPayload.size)
 
       log('[get-tag-image] Current tag details', {
         tag: currentTag.tagnumber,
