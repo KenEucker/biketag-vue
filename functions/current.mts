@@ -49,7 +49,6 @@ export default async (req: Request) => {
       const data: any = currentTag
       const domainInfo = getDomainInfo(req)
       const host = imageSource ==='imgur' ? 'i.imgur.com' : biketagConfig.aws.endpoint?.replace('digitaloceanspaces.com', 'cdn.digitaloceanspaces.com')
-      data.host = domainInfo.host
       data.imageUri = getImageSized(imageSource, data.mysteryImageUrl, biketagPayload.size)
 
       log('[get-tag-image] Current tag details', {
@@ -58,6 +57,7 @@ export default async (req: Request) => {
       })
 
       if (biketagPayload.data) {
+        data.host = domainInfo.host
         return new Response(JSON.stringify(data), {
           status: HttpStatusCode.Ok,
           headers,
@@ -65,18 +65,14 @@ export default async (req: Request) => {
       }
 
       try {
-        const body = Buffer.from(
-          (
-            await axios.get(data.imageUri, {
+        const body =
+            (await axios.get(data.imageUri, {
               responseType: 'arraybuffer',
               headers: {
                 // host,
                 'Content-Type': imageSource ==='imgur' ? `image/jpg` : `image/webp`,
               },
-            })
-          ).data,
-          'utf-8',
-        )
+            })).data
 
         log('[get-tag-image] Image fetched successfully', { imageUri: data.imageUri })
 
