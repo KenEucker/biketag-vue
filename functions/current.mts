@@ -35,11 +35,15 @@ export default async (req: Request) => {
       data: false,
     })
     log('[get-tag-image] Prepared biketag payload', biketagPayload)
-    const biketagConfig = biketag.config({
-      aws: {
-        region: game.awsRegion,
-      }
-    }, false, true)
+    const biketagConfig = biketag.config(
+      {
+        aws: {
+          region: game.awsRegion,
+        },
+      },
+      false,
+      true,
+    )
 
     const imageSource = game.awsRegion ? 'aws' : 'imgur'
     const currentTagResponse = await biketag.getTag(biketagPayload, { source: imageSource })
@@ -48,7 +52,7 @@ export default async (req: Request) => {
       const currentTag = currentTagResponse.data
       const data: any = currentTag
       const domainInfo = getDomainInfo(req)
-      const host = imageSource ==='imgur' ? 'i.imgur.com' : biketagConfig.aws.endpoint?.replace('digitaloceanspaces.com', 'cdn.digitaloceanspaces.com')
+      // const host = imageSource ==='imgur' ? 'i.imgur.com' : biketagConfig.aws.endpoint?.replace('digitaloceanspaces.com', 'cdn.digitaloceanspaces.com')
       data.imageUri = getImageSized(imageSource, data.mysteryImageUrl, biketagPayload.size)
 
       log('[get-tag-image] Current tag details', {
@@ -65,20 +69,28 @@ export default async (req: Request) => {
       }
 
       try {
-        const body =
-            (await axios.get(data.imageUri, {
-              responseType: 'arraybuffer',
-              headers: {
-                // host,
-                'Content-Type': imageSource ==='imgur' ? `image/jpg` : `image/webp`,
-              },
-            })).data
+        const axiosResponse = await axios.get(data.imageUri, {
+          responseType: 'arraybuffer',
+        })
 
-        log('[get-tag-image] Image fetched successfully', { imageUri: data.imageUri })
+        const contentType = imageSource === 'imgur' ? 'image/jpeg' : 'image/webp'
 
-        return new Response(body, {
+        const arrayBuffer = axiosResponse.data.buffer.slice(
+          axiosResponse.data.byteOffset,
+          axiosResponse.data.byteOffset + axiosResponse.data.byteLength,
+        )
+
+        log('[get-tag-image] Image fetched successfully', {
+          imageUri: data.imageUri,
+          contentType,
+        })
+
+        return new Response(arrayBuffer, {
           status: 200,
-          headers,
+          headers: {
+            ...headers,
+            'Content-Type': contentType,
+          },
         })
       } catch (error) {
         log('[get-tag-image] Error fetching image', error, 'error')
