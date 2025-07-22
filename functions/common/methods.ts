@@ -990,6 +990,8 @@ export const getActiveQueueForGame = async (
           const isTimedOut = diff > tagAutoPostTimer
           if (isTimedOut) {
             log('Tag timed out', { tagnumber: t.tagnumber, diff }, 'info')
+          } else {
+            log('Tag not timed out', { now, mysteryTime: t.mysteryTime, diff }, 'info')
           }
           return isTimedOut
         })
