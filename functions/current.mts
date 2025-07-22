@@ -70,8 +70,8 @@ export default async (req: Request) => {
             await axios.get(data.imageUri, {
               responseType: 'arraybuffer',
               headers: {
-                host,
-                'Content-Type': `image/jpg`,
+                // host,
+                'Content-Type': imageSource ==='imgur' ? `image/jpg` : `image/webp`,
               },
             })
           ).data,
