@@ -33,11 +33,13 @@ export default async (req: Request) => {
       const response = await axios.get(url, { responseType: 'arraybuffer' })
       const inputBuffer = Buffer.from(response.data)
 
-      // Resize and convert
-      const outputBuffer = sharp(inputBuffer)
+      // Resize and convert (auto-rotate if EXIF orientation is present)
+      let outputBuffer = sharp(inputBuffer).rotate()
+
       if (widthNum) {
-        outputBuffer.resize({ width: widthNum })
+        outputBuffer = outputBuffer.resize({ width: widthNum })
       }
+
       const output = await outputBuffer.toFormat(format as keyof sharp.FormatEnum).toBuffer()
 
       status = 200
