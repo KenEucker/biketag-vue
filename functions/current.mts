@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { BikeTagClient, Game } from 'biketag'
 import { getDomainInfo, getImageSized } from '../src/common'
-import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadOpts, log } from './common'
+import { acceptCorsHeaders, getBikeTagClientOpts, getImageSource, getPayloadOpts, log } from './common'
 import { HttpStatusCode } from './common/constants'
 
 export default async (req: Request) => {
@@ -45,7 +45,7 @@ export default async (req: Request) => {
       true,
     )
 
-    const imageSource = game.awsRegion ? 'aws' : 'imgur'
+    const imageSource = getImageSource(game)
     const currentTagResponse = await biketag.getTag(biketagPayload, { source: imageSource })
 
     if (currentTagResponse.success) {

@@ -962,7 +962,7 @@ export const getActiveQueueForGame = async (
       : 0
 
   const approvingAmbassadorIsApproved = !!approvingAmbassador?.length
-  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = getImageSource(game)
 
   log('Evaluating active queue for game', { game: game.name, autoPostSetting, imageSource }, 'info')
 
@@ -1323,7 +1323,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
   const link = `${host}/${winningTagnumber}`
   const gameLinkFacet = getStartAndEndBytesOfStringWithinString(heading, game.name)
-  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = getImageSource(game)
   const imageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'm')
 
   try {
@@ -1404,7 +1404,7 @@ export const sendBikeTagPostNotificationToWebhook = (
   const mysteryAltText = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
   const foundAltText = `BikeTag #${currentNumber} found by ${currentTag.foundPlayer}`
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
-  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = getImageSource(game)
   const mysteryImageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'l')
   const foundImageUrl = getImageSized(imageSource, currentTag.foundImageUrl, 'l')
 
@@ -1635,7 +1635,7 @@ export const setNewBikeTagPost = async (
 ): Promise<BackgroundProcessResults> => {
   adminBiketag =
     adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
-  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = getImageSource(game)
   previousBikeTag =
     previousBikeTag ?? ((await adminBiketag.getTag(undefined, { source: imageSource })).data as Tag)
   let errors = false
@@ -1931,4 +1931,13 @@ export const getEnvironmentVariable = (key: string) => {
   if (process.env[key]) {
     return decompress(process.env[key], { inputEncoding: 'Base64' })
   }
+}
+
+export const getImageSource = (game: Game): 'aws' | 'imgur' => {
+  if (game.awsRegion && game.settings['data::aws'] === 'true') {
+    return 'aws'
+  } else if (game.mainhash?.length) {
+    return 'imgur'
+  }
+  return 'imgur'
 }

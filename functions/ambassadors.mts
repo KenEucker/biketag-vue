@@ -2,6 +2,7 @@ import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
+  getImageSource,
   getPayloadOpts,
   HttpStatusCode,
   log,
@@ -42,7 +43,7 @@ export default async (req: Request) => {
     })
     log('[ambassadors] Prepared payload for getAmbassadors', biketagPayload)
 
-    const imageSource = game.awsRegion ? 'aws' : 'imgur'
+    const imageSource = getImageSource(game)
     log('[ambassadors] Using image source', { imageSource })
 
     const ambassadorsResponse = await biketag.getAmbassadors(biketagPayload, {

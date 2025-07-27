@@ -2,6 +2,7 @@ import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
+  getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
   HttpStatusCode,
@@ -52,7 +53,7 @@ export default async (req: Request) => {
 
       log('[delete-tag] Prepared biketag payload', deletePayload)
 
-      const imageSource = game.awsRegion ? 'aws' : 'imgur'
+      const imageSource = getImageSource(game)
       log('[delete-tag] Using image source', { imageSource })
 
       if (imageSource === 'aws') {

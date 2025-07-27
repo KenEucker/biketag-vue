@@ -2,6 +2,7 @@ import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
+  getImageSource,
   getPayloadOpts,
   HttpStatusCode,
   log,
@@ -54,7 +55,7 @@ export default async (req: Request) => {
       const recentResponses: any = []
       for (let i = 0; i < featuredGames.length; i++) {
         const game = featuredGames[i]
-        const imageSource = game.awsRegion ? 'aws' : 'imgur'
+        const imageSource = getImageSource(game)
 
         const biketagPayload = await getPayloadOpts(req, {
           hash: game.mainhash,
@@ -97,7 +98,7 @@ export default async (req: Request) => {
         time: 'day',
       })
 
-      const imageSource = game.awsRegion ? 'aws' : 'imgur'
+      const imageSource = getImageSource(game)
       log('[get-recent-tags] Using image source', { imageSource })
 
       if (imageSource === 'aws') {

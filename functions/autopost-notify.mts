@@ -1,5 +1,5 @@
 import BikeTagClient, { Game } from 'biketag'
-import { BackgroundProcessResults, getBikeTagClientOpts, getPayloadOpts, isRequestAllowed, log, sendNewBikeTagNotifications } from './common'
+import { BackgroundProcessResults, getBikeTagClientOpts, getImageSource, getPayloadOpts, isRequestAllowed, log, sendNewBikeTagNotifications } from './common'
 import { HttpStatusCode } from './common/constants'
 
 export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<BackgroundProcessResults> => {
@@ -24,7 +24,7 @@ export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<Backgrou
     { source: 'sanity' },
   )) as Game
 
-  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = getImageSource(game)
   nonAdminBiketag.config({
     aws: {
       region: game.awsRegion,

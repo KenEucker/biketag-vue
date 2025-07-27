@@ -2,6 +2,7 @@ import BikeTagClient, { Game } from 'biketag'
 import {
   getActiveQueueForGame,
   getBikeTagClientOpts,
+  getImageSource,
   getWinningTagForCurrentRound,
   log,
   setNewBikeTagPost,
@@ -63,7 +64,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
 
       nonAdminBiketag.config(thisGameConfig, false, true)
       adminBiketag.config(thisGameConfig, false, true)
-      const imageSource = game.awsRegion ? 'aws' : 'imgur'
+      const imageSource = getImageSource(game)
       const activeQueue = await getActiveQueueForGame(game, nonAdminBiketag)
 
       if (activeQueue.completedTags.length && activeQueue.timedOutTags.length === 0) {

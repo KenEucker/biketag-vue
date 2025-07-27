@@ -3,6 +3,7 @@ import {
   archiveAndClearQueue,
   getActiveQueueForGame,
   getBikeTagClientOpts,
+  getImageSource,
   isRequestAllowed,
   log,
 } from './common'
@@ -38,7 +39,7 @@ export const autoClearQueue = async (req: Request): Promise<BackgroundProcessRes
   }, false, true)
   const adminBiketagOpts = getBikeTagClientOpts(req, true, true, game)
   const adminBiketag = new BikeTagClient(adminBiketagOpts)
-  const imageSource = game.awsRegion ? 'aws' : 'imgur'
+  const imageSource = getImageSource(game)
   const { data: mostRecentTag } = await adminBiketag.getTag(undefined, { source: imageSource })
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
