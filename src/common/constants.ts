@@ -45,6 +45,7 @@ export const BikeTagEnv = {
   IMAGE_SOURCE: process.env.IMAGE_SOURCE ?? BikeTagDefaults.imageSource ?? null,
   HOST: process.env.HOST ?? BikeTagDefaults.host ?? null,
   BIKETAG_AUTHED: process.env.BIKETAG_AUTHED ?? null,
+  DEFAULT_IMAGE_SOURCE: process.env.DEFAULT_IMAGE_SOURCE ?? BikeTagDefaults.imageSource ?? 'imgur',
   /* Google Configuration */
   G_AKEY:
     process.env.G_AKEY ?? process.env.GOOGLE_ACCESS_TOKEN ?? process.env.GOOGLE_API_KEY ?? null,

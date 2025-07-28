@@ -3,7 +3,7 @@ import sharp from 'sharp'
 import { getPayloadOpts } from './common/methods'
 
 export default async (req: Request) => {
-  const { url, width, format = 'webp' } = await getPayloadOpts(req)
+  const { url, width, format = 'webp', rotate } = await getPayloadOpts(req)
   const headers: any = {
     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
     'Access-Control-Allow-Origin': '*',
@@ -33,8 +33,8 @@ export default async (req: Request) => {
       const response = await axios.get(url, { responseType: 'arraybuffer' })
       const inputBuffer = Buffer.from(response.data)
 
-      // Resize and convert (auto-rotate if EXIF orientation is present)
-      let outputBuffer = sharp(inputBuffer).rotate()
+      // Resize and convert
+      let outputBuffer = sharp(inputBuffer).rotate(rotate)
 
       if (widthNum) {
         outputBuffer = outputBuffer.resize({ width: widthNum })

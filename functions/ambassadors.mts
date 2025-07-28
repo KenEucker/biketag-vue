@@ -34,7 +34,7 @@ export default async (req: Request) => {
     log('[ambassadors] Retrieved game', {
       name: game.name,
       id: game._id,
-      region: game.awsRegion ?? 'imgur',
+      region: game.awsRegion,
     })
 
     const biketagPayload = await getPayloadOpts(req, {

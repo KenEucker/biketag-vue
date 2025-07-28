@@ -41,7 +41,7 @@
     Access-Control-Allow-Credentials = "true"
 
 [functions."autopost-background"]
-  schedule = "*/30 * * * *"
+  schedule = "*/15 * * * *"
   included_files=["functions/emails/*.liquid"]
 
 [functions."achievements-background"]
