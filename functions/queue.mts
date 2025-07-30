@@ -45,7 +45,7 @@ export default async (req: Request) => {
     log('[get-queue] Using image source', { imageSource })
 
     if (imageSource === 'aws') {
-      biketag.config(
+      const updatedConfig = biketag.config(
         {
           biketag: { host: process.env.HOST },
           aws: { region: game.awsRegion },
@@ -53,7 +53,7 @@ export default async (req: Request) => {
         false,
         true,
       )
-      log('[get-queue] AWS config applied', { host: process.env.HOST, region: game.awsRegion })
+      log('[get-queue] AWS config applied', updatedConfig)
     }
 
     const queueResponse = await biketag.getQueue(biketagPayload as getQueuePayload, {
