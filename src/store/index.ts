@@ -64,7 +64,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     fetchingData: false,
     dataFetched: false,
     credentialsFetched: false,
-    auth0Token: '',
     lastCacheResetTime: 0,
     cacheResetInterval: parseInt(BikeTagEnv.CACHE_RESET_INTERVAL),
     gameName,
@@ -80,12 +79,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     players: [] as Player[],
     leaderboard: [] as Player[],
     formStep: BiketagQueueFormSteps.addFoundImage,
-    // queuedTag: getQueuedTagFromCookie() ?? ({} as Tag),
-    playerTag: {} as Tag,
-    profile: getProfileFromCookie(),
-    token: getTokenFromCookie(),
     mostRecentlyViewedTagnumber: getMostRecentlyViewedBikeTagTagnumber(0),
     regionPolygon: getRegionPolygonFromCookie(`${gameName}::regionPolygon`),
+    // queuedTag: getQueuedTagFromCookie() ?? ({} as Tag),
+    playerTag: {} as Tag,
+    auth0Token: '',
+    profile: getProfileFromCookie(),
+    token: getTokenFromCookie(),
   }),
 
   actions: {
@@ -761,9 +761,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         setProfileCookie(profile)
         debug(`${BikeTagDefaults.store}::profile`, profile)
       } else if (!profile) {
-        setProfileCookie(profile)
+        setProfileCookie()
         this.profile = getProfileFromCookie()
-        debug(`${BikeTagDefaults.store}::profile`, profile)
+        debug(`${BikeTagDefaults.store}::profile`, this.profile)
       }
 
       return this.profile
