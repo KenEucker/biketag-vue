@@ -14,6 +14,7 @@ import {
   getImageSized,
   getMostRecentlyViewedBikeTagTagnumber,
   getProfileFromCookie,
+  getQueryParam,
   getQueuedTagState,
   getRegionPolygonFromCookie,
   getSanityImageUrl,
@@ -41,6 +42,7 @@ export const initBikeTagStore = () => {
     gameName = domain.subdomain ?? BikeTagEnv.GAME_NAME ?? BikeTagDefaults.gameName
     biketagClientOpts = {
       cached: true,
+      verbose: getQueryParam(window, 'debug_a') === 'true' || BikeTagEnv.DEBUG_FE === 'true',
       host:
         BikeTagEnv.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.${BikeTagEnv.HOST}/api`,
       clientToken: getTokenFromCookie(),
@@ -353,11 +355,12 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           .queue(undefined, { source: cached ? this.imageSource : 'biketag', cached })
           .then((d) => {
             if ((d as Tag[])?.length > 0) {
-              const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
-                (t) =>
-                  t.tagnumber > this.currentBikeTag.tagnumber ||
-                  (t.tagnumber === this.currentBikeTag.tagnumber && !t.mysteryImageUrl),
-              )
+              const currentBikeTagQueue: Tag[] = (d as Tag[])
+              // const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
+              //   (t) =>
+              //     t.tagnumber > this.currentBikeTag.tagnumber ||
+              //     (t.tagnumber === this.currentBikeTag.tagnumber && !t.mysteryImageUrl),
+              // )
 
               /// Get the player queued tag by player id
               const [playerQueuedTag] = currentBikeTagQueue.filter(

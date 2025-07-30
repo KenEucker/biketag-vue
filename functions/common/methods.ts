@@ -104,6 +104,7 @@ export const getBikeTagClientOpts = (
       domainInfo.subdomain ??
       process.env.GAME_NAME,
     cached: isGET || !isAuthenticatedPOST,
+    // verbose: process.env.DEBUG_BE === 'true',
     // biketag: {
     clientKey: process.env.B_KEY,
     // },
