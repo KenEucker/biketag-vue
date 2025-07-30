@@ -40,6 +40,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
 
   if (gamesResponse.success) {
     const games = gamesResponse.data as unknown as Game[]
+      log(`[autopost] found games`, games.length, 'info')
 
     for (const game of games) {
       const autoPostSetting =
@@ -48,10 +49,10 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
           : 0
 
       if (autoPostSetting === 0) {
-        log('autopost not set, skipping game', game.name)
+        log('[autopost] autoposting not set, skipping game', game.name)
         continue
       } else {
-        log(`autopost set to ${autoPostSetting} minutes, checking game`, game.name, 'info')
+        log(`[autopost] autopost set to ${autoPostSetting} minutes, checking game`, game.name, 'info')
       }
 
       const thisGameConfig = {
@@ -68,7 +69,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
       const activeQueue = await getActiveQueueForGame(game, nonAdminBiketag)
 
       if (activeQueue.completedTags.length && activeQueue.timedOutTags.length === 0) {
-        log('completed tags found but none timed out', { game, activeQueue }, 'info')
+        log('[autopost] completed tags found but none timed out', { game, activeQueue }, 'info')
       } else if (activeQueue.completedTags.length && activeQueue.timedOutTags.length) {
         const currentBikeTagResponse = await adminBiketag.getTag(undefined, { source: imageSource }) // the "current" mystery tag to be updated from the main album
         if (!currentBikeTagResponse.success) {
@@ -89,7 +90,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
           )
 
           if (autoSelectedWinningTag) {
-            log('winning tag found, setting new BikeTag post', {
+            log('[autopost] winning tag found, setting new BikeTag post', {
               game: game.slug,
               autoSelectedWinningTag,
             }, 'info')
@@ -107,7 +108,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
       }
     }
   } else {
-    log('couldnt get games', gamesResponse, 'error')
+    log('[autopost] couldnt get games', gamesResponse, 'error')
   }
 
   return {
@@ -120,13 +121,13 @@ export default async () => {
   const { results, errors } = await autoPostNewBikeTags()
 
   if (results.length) {
-    log('autopost attempted', { results }, 'info')
+    log('[autopost] autopost attempted', { results }, 'info')
     
     return new Response(JSON.stringify(results), {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })
   } else {
-    log('autopost ran', 'nothing to report', 'info')
+    log('[autopost] autopost ran', 'nothing to report', 'info')
     return new Response('', {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })
