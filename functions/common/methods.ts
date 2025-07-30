@@ -499,7 +499,10 @@ export const getPayloadAuthorization = async (
       const { payload } = await jose.jwtVerify(authStr, JWKS)
       return payload
     } catch (e: any) {
-      if (e.code === 'ERR_JWT_EXPIRED') return null
+      if (e.code === 'ERR_JWT_EXPIRED') {
+        log('Auth0 JWT expired', e, 'warn')
+        return null
+      }
       log('Auth0 JWT verification error', e, 'warn')
       return authStr
     }

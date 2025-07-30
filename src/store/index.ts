@@ -172,6 +172,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             },
           })
           .catch((e) => {
+            /// THIS IS COSTLY
+            this.auth0Token = undefined
+            localStorage.clear()            
+            this.SET_PROFILE()
             console.error('error fetching profile', e)
             return e
           })
@@ -745,7 +749,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     // ======= mutations ================================================
     // ==================================================================
 
-    SET_PROFILE(profile: any) {
+    SET_PROFILE(profile?: any) {
       const oldState = this.profile
 
       if (
