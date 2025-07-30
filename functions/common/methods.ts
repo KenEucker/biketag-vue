@@ -14,6 +14,7 @@ import nodemailer from 'nodemailer'
 import { extname, join } from 'path'
 import qs from 'qs'
 import {
+  BikeTagEnv,
   getDomainInfo,
   getImageSized,
   getTagDateISOFromTimezone,
@@ -857,9 +858,14 @@ export const archiveAndClearQueue = async (
       { game: queuedTags[0].game },
       { source: 'sanity' },
     )
-    game = gameResponse.success ? gameResponse.data : undefined
+    if (gameResponse.success) {
+      game = gameResponse.data
+    } else {
+      return  { results: [{ message: ErrorMessage.GameNotSet, game: undefined }], errors: true }
+    }
   }
-  const imageSource = game?.awsRegion ? 'aws' : 'imgur'
+  
+  const imageSource = getImageSource(game)
 
   if (queuedTags.length && game) {
     const nonAdminBikeTagOpts = getBikeTagClientOpts(undefined, true, false, game)
@@ -1939,5 +1945,5 @@ export const getImageSource = (game: Game): 'aws' | 'imgur' => {
   } else if (game.mainhash?.length) {
     return 'imgur'
   }
-  return 'imgur'
+  return BikeTagEnv.IMAGE_SOURCE as 'aws' | 'imgur'
 }
