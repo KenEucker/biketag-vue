@@ -6,7 +6,7 @@ export const BikeTagDefaults = {
   hostKey: 'ItsABikeTagGame',
   logo: '/images/BikeTag.svg',
   jingle: 'media/biketag-jingle-1.mp3',
-  imageSource: 'imgur',
+  imageSource: 'aws',
   gameSource: 'sanity',
   store: 'biketag',
   cacheResetInterval: '5000',
@@ -41,11 +41,10 @@ export const BikeTagEnv = {
   B_KEY: process.env.B_KEY ?? process.env.CLIENT_KEY ?? null,
   /* BikeTag Configuration */
   GAME_NAME: process.env.GAME_NAME ?? null,
-  GAME_SOURCE: process.env.GAME_SOURCE ?? BikeTagDefaults.gameSource ?? null,
-  IMAGE_SOURCE: process.env.IMAGE_SOURCE ?? BikeTagDefaults.imageSource ?? null,
+  GAME_SOURCE: process.env.GAME_SOURCE ?? BikeTagDefaults.gameSource,
+  IMAGE_SOURCE: process.env.IMAGE_SOURCE ?? BikeTagDefaults.imageSource,
   HOST: process.env.HOST ?? BikeTagDefaults.host ?? null,
   BIKETAG_AUTHED: process.env.BIKETAG_AUTHED ?? null,
-  DEFAULT_IMAGE_SOURCE: process.env.DEFAULT_IMAGE_SOURCE ?? BikeTagDefaults.imageSource ?? 'imgur',
   /* Google Configuration */
   G_AKEY:
     process.env.G_AKEY ?? process.env.GOOGLE_ACCESS_TOKEN ?? process.env.GOOGLE_API_KEY ?? null,
