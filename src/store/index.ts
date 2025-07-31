@@ -249,7 +249,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
     },
     async fetchCredentials(fetchNewCredentials = false) {
-      if ((!this.credentialsFetched && !this.token?.length) || fetchNewCredentials) {
+      if (!this.credentialsFetched || fetchNewCredentials) {
         try {
           const biketagConf = await client.fetchCredentials(`player-id ${this.profile.sub}`)
           if (biketagConf?.biketag?.clientToken) {
