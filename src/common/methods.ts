@@ -187,7 +187,14 @@ export const setRegionPolygonInCookie = (
 
 export const getRegionPolygonFromCookie = (regionPolygonCookieKey = 'regionPolygon'): any => {
   const regionPolygonString = localStorage.getItem(regionPolygonCookieKey)
-  return regionPolygonString?.length ? JSON.parse(regionPolygonString) : undefined
+  try {
+    if (regionPolygonString?.length) {
+      const regionPolygon = JSON.parse(regionPolygonString)
+      return regionPolygon
+    }
+  } catch (e: any) {
+    console.error('failed to parse region polygon from cookie', e)
+  }
 }
 
 export const getTokenFromCookie = (tokenCookieKey = 'token'): string => {
