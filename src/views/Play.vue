@@ -296,6 +296,7 @@ async function onQueueSubmit(newTagSubmission) {
       },
     )
   } else {
+    store.fetchCredentials(true)
     const message = `${t('notifications.error')}: ${success}`
     toast.open({
       message,
