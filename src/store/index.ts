@@ -174,10 +174,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             },
           })
           .catch((e) => {
-            /// THIS IS COSTLY
-            this.auth0Token = undefined
-            localStorage.clear()            
-            this.SET_PROFILE()
             console.error('error fetching profile', e)
             return e
           })
