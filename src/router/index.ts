@@ -11,6 +11,7 @@ import Leaderboard from '@/views/Leaderboard.vue'
 import Login from '@/views/Login.vue'
 import Logout from '@/views/Logout.vue'
 import Map from '@/views/Map.vue'
+import New from '@/views/New.vue'
 import Play from '@/views/Play.vue'
 import Player from '@/views/Player.vue'
 import Players from '@/views/Players.vue'
@@ -142,6 +143,12 @@ if (isAuthenticationEnabled()) {
       name: 'Edit',
       beforeEnter: authGuard,
       component: Edit,
+    },
+    {
+      path: '/new',
+      name: 'New',
+      beforeEnter: authGuard,
+      component: New,
     },
   ]
 }
