@@ -422,6 +422,7 @@ const setImage = async (event) => {
         // }
         const results = await exifr.parse(await input.files[0].arrayBuffer())
         const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
+        console.log('exif data:', results)
 
         if (createDate < getCurrentBikeTag.value.mysteryTime) {
           toast.open({
@@ -432,6 +433,7 @@ const setImage = async (event) => {
           })
         } else {
           const GPSData = await exifr.gps(await input.files[0].arrayBuffer())
+          console.log('GPSData from EXIF:', GPSData)
 
           if (GPSData?.latitude && GPSData?.longitude) {
             gps.value = {
