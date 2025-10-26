@@ -976,7 +976,7 @@ export const getActiveQueueForGame = async (
 
   log('Evaluating active queue for game', { game: game.name, autoPostSetting, imageSource }, 'info')
 
-  if ((autoPostSetting && game.queuehash?.length) || approvingAmbassadorIsApproved) {
+  if ((autoPostSetting && (game.queuehash?.length || game.awsRegion?.length)) || approvingAmbassadorIsApproved) {
     adminBikeTag =
       adminBikeTag ??
       new BikeTagClient(getBikeTagClientOpts({ method: 'get' } as Request, true, true, game))
@@ -1011,6 +1011,8 @@ export const getActiveQueueForGame = async (
         }
       }
     }
+  } else {
+    log('Auto-post setting incomplete and no approving ambassador, skipping queue processing', { game: game.name }, 'error')
   }
 
   return { queuedTags, completedTags, timedOutTags }
