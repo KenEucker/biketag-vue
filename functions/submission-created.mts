@@ -1,5 +1,5 @@
 import { Ambassador, BikeTagClient, Game, Tag } from 'biketag'
-import { getBannedIPs, stringifyNumber } from '../src/common'
+import { stringifyNumber } from '../src/common'
 import {
   defaultLogo,
   getBikeTagClientOpts,
@@ -16,15 +16,16 @@ export default async (req: Request) => {
   let success = false
 
   log('submission-created', { payload })
-  const bannedIPs = await getBannedIPs()
+  /// TODO: is this necessary?
+  // const bannedIP = await getIPIsBanned(payload.ip)
 
-  if (bannedIPs.indexOf(payload.ip) !== -1) {
-    console.error('ip address is banned', payload.ip)
-    return {
-      data: false,
-      statusCode: HttpStatusCode.BadRequest,
-    }
-  }
+  // if (bannedIP) {
+  //   console.error('ip address is banned', payload.ip)
+  //   return {
+  //     data: false,
+  //     statusCode: HttpStatusCode.BadRequest,
+  //   }
+  // }
 
   if (payload) {
     const formName = payload.form_name
@@ -287,17 +288,25 @@ export default async (req: Request) => {
             break
         }
       } else {
-        log(`Sending of email:${formName} disabled`, {
-          sendAll: game.settings['emails::sendall'],
-          disabled: game.settings['emails::disable'],
-        }, 'info')
+        log(
+          `Sending of email:${formName} disabled`,
+          {
+            sendAll: game.settings['emails::sendall'],
+            disabled: game.settings['emails::disable'],
+          },
+          'info',
+        )
       }
 
       if (successfulEmailsSent.length) {
-        log('success sending notifications and emails', {
-          successfulEmailsSent,
-          rejectedEmails,
-        }, 'info')
+        log(
+          'success sending notifications and emails',
+          {
+            successfulEmailsSent,
+            rejectedEmails,
+          },
+          'info',
+        )
         success = true
       } else if (rejectedEmails.length) {
         log('error sending emails', rejectedEmails)

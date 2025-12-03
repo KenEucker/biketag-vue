@@ -552,7 +552,25 @@ export const dequeueErrorNotify = (toast: any) => (error: string) => {
   })
 }
 
-export const getBannedIPs = () => {
+/// TODO: move into the store using the client from the biketagclient
+export const getPlayerIsBanned = (playerId: string) => {
+  const sanityInstance = createClient({
+    projectId: BikeTagEnv.S_PID,
+    dataset: BikeTagEnv.S_DSET,
+    apiVersion: '2021-06-07',
+    useCdn: true,
+  })
+  const bannedPlayerIds = sanityInstance.fetch(
+    `*[_type == "setting" && key == "banned:pid"].value`,
+    {},
+  )
+  return bannedPlayerIds.then((bannedPlayerIds: string[]) => {
+    return bannedPlayerIds.includes(playerId)
+  })
+}
+
+/// TODO: move into the store using the client from the biketagclient
+export const getIPIsBanned = (ip: string) => {
   const sanityInstance = createClient({
     projectId: BikeTagEnv.S_PID,
     dataset: BikeTagEnv.S_DSET,
@@ -560,5 +578,8 @@ export const getBannedIPs = () => {
     useCdn: true,
   })
 
-  return sanityInstance.fetch(`*[_type == "setting" && key == "banned:ip"].value`, {})
+  const bannedIPs = sanityInstance.fetch(`*[_type == "setting" && key == "banned:ip"].value`, {})
+  return bannedIPs.then((bannedIPs: string[]) => {
+    return bannedIPs.includes(ip)
+  })
 }
