@@ -1,7 +1,11 @@
 // netlify/edge-functions/fedify-router.mts
-import type { Context } from 'https://edge.netlify.com'
 
-// Content types that indicate an ActivityPub client.
+import type { Context } from 'netlify:edge'
+import { getStore } from '@netlify/blobs'
+
+/**
+ * ActivityPub-ish content types that tell us the client is a fediverse client.
+ */
 const ACTIVITY_ACCEPT_TYPES = [
   'application/activity+json',
   'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
@@ -24,6 +28,11 @@ const wantsActivityJson = (req: Request): boolean => {
  *
  * This gives you case-insensitive, URL-safe IDs while still
  * letting display names keep spaces/punctuation in your app.
+ *
+ * IMPORTANT: This same logic should be used anywhere you:
+ *   - create a new player login
+ *   - attach a login to an existing player
+ * so that "Bike Punk", "bike-punk", "BIKE PUNK!!!" all map to the same slug.
  */
 const normalizeIdentifier = (raw: string): string => {
   const normalized = raw.normalize('NFKC').toLowerCase()
@@ -31,14 +40,71 @@ const normalizeIdentifier = (raw: string): string => {
   return slug || 'player' // avoid empty IDs
 }
 
-// In the future you can wire this to Auth0/Sanity.
-// For now it's a stub that always "finds" the player.
-const findPlayerBySlug = async (slug: string) => {
-  // TODO: Look up player by slug in Sanity/Auth0/Blobs.
-  // Return null if not found.
-  return {
-    slug,
-    displayName: slug, // Replace with stored display/displayName
+/**
+ * Shape of the player data we expect to read from Netlify Blobs.
+ *
+ * This is intentionally minimal for now. You can expand it later as
+ * needed (avatar, bio, gamesPlayed, etc) without changing the fediverse
+ * surface all that much.
+ */
+type PlayerProfile = {
+  /** Stable internal ID (your GUID-based playerID) */
+  id: string
+  /** Canonical slug (lowercase, normalized) */
+  slug: string
+  /** Human-facing display name, can have spaces/emoji/etc */
+  displayName: string
+  /** Optional URL for a web profile page */
+  url?: string
+  /** Optional avatar image URL */
+  avatarUrl?: string
+}
+
+// Use a single site-wide store for fediverse-related player data.
+const playersStore = getStore('players')
+
+/**
+ * Look up a player by slug in Netlify Blobs.
+ *
+ * Expected write side (outside this edge function):
+ *   - When a player successfully attaches a login to a player name
+ *   - Or when a new player profile is created
+ * you write something like:
+ *
+ *   await playersStore.setJSON(`player:${slug}`, {
+ *     id: playerId,           // GUID you generate and keep stable
+ *     slug,
+ *     displayName,            // original player name string
+ *     url,                    // e.g. https://biketag.org/player/<slug>
+ *     avatarUrl,              // optional
+ *   })
+ *
+ * That write logic should live in a regular Netlify Function that already
+ * has access to Auth0 + Sanity, not here at the edge.
+ */
+const findPlayerBySlug = async (slug: string): Promise<PlayerProfile | null> => {
+  try {
+    const data = await playersStore.get(`player:${slug}`, { type: 'json' })
+
+    if (!data) {
+      return null
+    }
+
+    // Basic runtime guard so bad data doesn’t 500 your edge function.
+    if (
+      typeof (data as any).id !== 'string' ||
+      typeof (data as any).slug !== 'string' ||
+      typeof (data as any).displayName !== 'string'
+    ) {
+      // You can context.log() here if you want once you thread Context in.
+      return null
+    }
+
+    return data as PlayerProfile
+  } catch (err) {
+    // Fail closed: if blobs are unavailable or corrupted, we just
+    // say "actor not found" instead of leaking internal errors.
+    return null
   }
 }
 
@@ -46,19 +112,27 @@ const findPlayerBySlug = async (slug: string) => {
 
 export default async (request: Request, context: Context): Promise<Response> => {
   const url = new URL(request.url)
-  const { pathname, host } = url
+  const { pathname } = url
 
   const isWellKnown = pathname.startsWith('/.well-known/')
   const isActor = pathname.startsWith('/players/')
 
-  // SHORT CIRCUIT:
-  // If it's not one of our fediverse endpoints AND the client isn't
-  // explicitly asking for ActivityPub content, pass it through.
+  /**
+   * SHORT CIRCUIT:
+   *
+   * If it's not one of our fediverse endpoints AND the client isn't
+   * explicitly asking for ActivityPub content, pass it through to:
+   *   - your SPA (/* → /)
+   *   - your /api/* Netlify functions
+   *   - anything else you already have configured
+   *
+   * This is what keeps this edge function from hijacking your existing app.
+   */
   if (!isWellKnown && !isActor && !wantsActivityJson(request)) {
     return context.next()
   }
 
-  // Handle WebFinger for player / city actors.
+  // Handle WebFinger for player actors.
   if (pathname === '/.well-known/webfinger') {
     return handleWebFinger(request, url)
   }
@@ -68,14 +142,14 @@ export default async (request: Request, context: Context): Promise<Response> => 
     return handleActor(request, url)
   }
 
-  // Anything else that got this far is fediverse-adjacent but unsupported.
+  // Anything else that got this far is fediverse-ish but unsupported for now.
   return new Response('Not found', { status: 404 })
 }
 
 // --- WebFinger -----------------------------------------------------------
 // Example: GET /.well-known/webfinger?resource=acct:ken@biketag.org
 
-const handleWebFinger = (request: Request, url: URL): Response => {
+const handleWebFinger = (_request: Request, url: URL): Response => {
   const resource = url.searchParams.get('resource')
   if (!resource) {
     return new Response('Missing resource parameter', { status: 400 })
@@ -100,9 +174,7 @@ const handleWebFinger = (request: Request, url: URL): Response => {
   const slug = normalizeIdentifier(rawLocalPart)
   const origin = `${url.protocol}//${url.host}`
   const actorUrl = `${origin}/players/${encodeURIComponent(slug)}`
-
-  // We use the slug in the subject to establish the canonical handle.
-  const subject = `acct:${slug}@${host}`
+  const subject = `acct:${slug}@${url.host}`
 
   const body = {
     subject,
@@ -140,16 +212,34 @@ const handleActor = async (_request: Request, url: URL): Promise<Response> => {
   const origin = `${url.protocol}//${url.host}`
   const actorId = `${origin}/players/${encodeURIComponent(slug)}`
 
-  // In the future, you'll also add publicKey, endpoints.sharedInbox, icon, etc.
-  const person = {
+  // If you later add signing keys, inbox handling, etc., this is the object
+  // Fedify (or your own ActivityPub/ATProto glue) will extend.
+  const person: Record<string, unknown> = {
     '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
     id: actorId,
     type: 'Person',
-    preferredUsername: slug, // canonical handle part (case-insensitive)
-    name: player.displayName || slug, // nice name for humans
+
+    // canonical, case-insensitive handle part:
+    preferredUsername: slug,
+
+    // human-facing, keeps their original capitalization/punctuation:
+    name: player.displayName || slug,
+
+    // Actor endpoints – these URLs don’t have to exist yet, but this
+    // is where you’d point any future inbox/outbox implementation.
     inbox: `${actorId}/inbox`,
     outbox: `${actorId}/outbox`,
-    url: `${origin}/player/${encodeURIComponent(slug)}`, // your web profile route (adjust as needed)
+
+    // Where you’ll eventually show a global player profile.
+    // You can implement this in your SPA when you’re ready.
+    url: player.url || `${origin}/player/${encodeURIComponent(slug)}`,
+  }
+
+  if (player.avatarUrl) {
+    person.icon = {
+      type: 'Image',
+      url: player.avatarUrl,
+    }
   }
 
   return new Response(JSON.stringify(person), {
