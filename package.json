@@ -26,6 +26,7 @@
   "dependencies": {
     "@atproto/api": "^0.13.35",
     "@auth0/auth0-vue": "^2.3.3",
+    "@fedify/fedify": "^1.9.1",
     "@img-comparison-slider/vue": "^8.0.0",
     "@netlify/functions": "^2.5.1",
     "@popperjs/core": "^2.11.8",

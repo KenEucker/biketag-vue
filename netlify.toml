@@ -70,3 +70,12 @@
 
 [[plugins]]
   package = 'netlify-plugin-contextual-env'
+
+[[edge_functions]]
+  path = "/.well-known/atproto-did"
+  function = "fedify-router"
+
+[[edge_functions]]
+  path = "/xrpc/*"
+  function = "fedify-router"
+
