@@ -11,7 +11,7 @@ import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'
 
 export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> => {
-  if (process.env.SKIP_AUTOPOST_FUNCTION === "true") {
+  if (process.env.SKIP_AUTOPOST_FUNCTION === 'true') {
     return Promise.resolve({
       results: ['function skipped'],
       errors: false,
@@ -20,11 +20,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
 
   // if (!isRequestAllowed()) {}
 
-  const adminBiketagOpts = getBikeTagClientOpts(
-    { method: 'get' } as unknown as Request,
-    true,
-    true,
-  )
+  const adminBiketagOpts = getBikeTagClientOpts({ method: 'get' } as unknown as Request, true, true)
   delete adminBiketagOpts.game
   /// Cache what we can here, so that it improves this method's performance
   // biketagOpts.cached = true
@@ -40,7 +36,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
 
   if (gamesResponse.success) {
     const games = gamesResponse.data as unknown as Game[]
-      log(`[autopost] found games`, games.length, 'info')
+    log(`[autopost] found games`, games.length, 'info')
 
     for (const game of games) {
       const autoPostSetting =
@@ -52,7 +48,11 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
         log('[autopost] autoposting not set, skipping game', game.name)
         continue
       } else {
-        log(`[autopost] autopost set to ${autoPostSetting} minutes, checking game`, game.name, 'info')
+        log(
+          `[autopost] autopost set to ${autoPostSetting} minutes, checking game`,
+          game.name,
+          'info',
+        )
       }
 
       const thisGameConfig = {
@@ -90,10 +90,14 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
           )
 
           if (autoSelectedWinningTag) {
-            log('[autopost] winning tag found, setting new BikeTag post', {
-              game: game.slug,
-              autoSelectedWinningTag,
-            }, 'info')
+            log(
+              '[autopost] winning tag found, setting new BikeTag post',
+              {
+                game: game.slug,
+                autoSelectedWinningTag,
+              },
+              'info',
+            )
             const setNewBikeTagPostResults = await setNewBikeTagPost(
               game,
               autoSelectedWinningTag,
@@ -122,7 +126,7 @@ export default async () => {
 
   if (results.length) {
     log('[autopost] autopost attempted', { results }, 'info')
-    
+
     return new Response(JSON.stringify(results), {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })

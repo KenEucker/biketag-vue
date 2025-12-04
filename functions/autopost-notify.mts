@@ -1,8 +1,17 @@
 import BikeTagClient, { Game } from 'biketag'
-import { BackgroundProcessResults, getBikeTagClientOpts, getImageSource, getPayloadOpts, isRequestAllowed, log, sendNewBikeTagNotifications } from './common'
+import {
+  BackgroundProcessResults,
+  getBikeTagClientOpts,
+  getPayloadOpts,
+  isRequestAllowed,
+  log,
+  sendNewBikeTagNotifications,
+} from './common'
 import { HttpStatusCode } from './common/constants'
 
-export const autoNotifyNewBikeTagPosted = async (req: Request): Promise<BackgroundProcessResults> => {
+export const autoNotifyNewBikeTagPosted = async (
+  req: Request,
+): Promise<BackgroundProcessResults> => {
   if (!isRequestAllowed(req, true, true, false, 'post')) {
     return {
       results: ['unauthorized'],
@@ -90,7 +99,7 @@ export default async (req: Request) => {
   if (results.length) {
     log('notifications sent', { results }, 'info')
     return new Response(JSON.stringify(results), {
-      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok
+      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })
   } else {
     log('no notifications sent', 'info')
