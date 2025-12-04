@@ -36,6 +36,7 @@ const worldZoom = 3
 const cityZoom = 10
 const playZoom = 15
 const centerNorthAmerica = [40, -45]
+const markerHeight = 50
 let map
 
 // computed
@@ -48,33 +49,30 @@ const getMarkers = computed(() =>
     ? getTags.value.map((t) => ({
         point: [t.gps.lat ?? 0, t.gps.long ?? t.gps.lng ?? 0],
         logo: Pin,
+        size: [markerHeight, markerHeight],
+        anchor: [markerHeight/2, markerHeight]
       }))
     : getAllGames.value
         .filter((game) => !!game.boundary.lat) // add gps location to all games
-        .map((game) => ({ point: game.boundary, logo: getLogoUrl.value('', game.logo) })),
+        .map((game) => ({
+          point: game.boundary,
+          logo: getLogoUrl.value('', game.logo),
+          size: ['auto', markerHeight],
+          anchor: [0, markerHeight]
+        })),
 )
 
 const mapContainer = ref(null)
 const gameCenter = ref(centerNorthAmerica)
 
-const LeafIcon = L.Icon.extend({
-  options: {
-    iconSize: ['auto', 50],
-    iconAnchor: [0, 50],
-  },
-})
-
-const MarkerIcon = L.Icon.extend({
-  options: {
-    iconSize: ['auto', 50],
-    iconAnchor: [30, 50],
-  },
-})
-
 const addMarkers = () => {
   for (let i = 0; i < getMarkers.value.length; i++) {
     L.marker(getMarkers.value[i].point, {
-      icon: new LeafIcon({ iconUrl: getMarkers.value[i].logo }),
+      icon: new L.Icon({
+        iconUrl: getMarkers.value[i].logo,
+        iconSize: getMarkers.value[i].size,
+        iconAnchor: getMarkers.value[i].anchor
+      }),
     }).addTo(map)
   }
 }
@@ -110,7 +108,11 @@ onMounted(async () => {
 
   if (props.variant == 'play/input') {
     const marker = L.marker(props.start, {
-      icon: new MarkerIcon({ iconUrl: Pin }),
+      icon: new L.Icon({
+        iconUrl: Pin,
+        iconSize: [markerHeight, markerHeight],
+        iconAnchor: [markerHeight/2, markerHeight]
+      }),
       draggable: true,
     }).addTo(map)
     L.control.locate().addTo(map)
