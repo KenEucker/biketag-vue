@@ -60,14 +60,6 @@
           >
             {{ $t('menu.dashboard') }}
           </li>
-          <li
-            v-if="isBikeTagAdmin"
-            class="nav-item"
-            :class="{ 'active-nav': currentRoute === 'Admin' }"
-            @click="goAdminPage"
-          >
-            {{ $t('menu.admin') }}
-          </li>
           <template v-if="isAuthenticated">
             <li class="nav-item" @click="logoutClick">
               {{ $t('menu.logout') }}
@@ -204,7 +196,6 @@ const isAuthenticated = computed(() => (auth0 ? auth0.isAuthenticated.value : fa
 const getGameTitle = computed(() => store.getGameTitle)
 const getLogoUrl = computed(() => store.getLogoUrl)
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
-const isBikeTagAdmin = computed(() => store.isBikeTagAdmin)
 const getQueuedTags = computed(() => store.getQueuedTags)
 const limitQueue = computed(() => (window.innerWidth < 500 ? 2 : 0))
 const isShow = computed(() => {
@@ -265,10 +256,6 @@ function goApprovePage() {
 function goDashboardPage() {
   closeCollapsible()
   router.push('/dashboard')
-}
-function goAdminPage() {
-  closeCollapsible()
-  router.push('/admin')
 }
 function goBikeTagsPage() {
   closeCollapsible()

@@ -44,12 +44,11 @@ export default async (req: Request) => {
           const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
 
           if (profileFound) {
-            body = await getBikeTagPlayerProfile(profileFound, authorized, true)
-            if (profile?.isBikeTagAmbassador) {
-              body.isBikeTagAmbassador = true
-            }
-            if (profile?.isBikeTagAdmin) {
-              body.isBikeTagAdmin = true
+            const mergedProfile = await getBikeTagPlayerProfile(profileFound, authorized, true)
+            body = {
+              ...mergedProfile,
+              ...(profile?.isBikeTagAmbassador ? { isBikeTagAmbassador: true } : {}),
+              ...(profile?.isBikeTagAdmin ? { isBikeTagAdmin: true } : {}),
             }
             log('[profile] Merged profile successfully', { profile: body })
           } else {

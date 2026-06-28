@@ -20,6 +20,7 @@ import {
   getSanityImageUrl,
   getSupportedGames,
   getTokenFromCookie,
+  isGlobalAdminEmail,
   setProfileCookie,
   setRegionPolygonInCookie,
   setTokenInCookie,
@@ -162,7 +163,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (profile) {
         if (profile.token || token) {
           this.auth0Token = token || this.auth0Token || profile.token || ''
-          profile.token = undefined
         }
 
         const response = await client
@@ -466,7 +466,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return 'incorrect permissions'
     },
     async scanQueueIssues() {
-      if (!this.profile?.isBikeTagAdmin) {
+      if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'
       }
 
@@ -490,7 +490,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
     },
     async fixQueueIssues() {
-      if (!this.profile?.isBikeTagAdmin) {
+      if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'
       }
 
@@ -885,6 +885,14 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
     SET_PROFILE(profile?: any) {
       const oldState = this.profile
+
+      if (profile) {
+        profile = { ...profile }
+        if (isGlobalAdminEmail(profile.email)) {
+          profile.isBikeTagAdmin = true
+          profile.isBikeTagAmbassador = true
+        }
+      }
 
       if (
         (profile && profile?.name !== oldState?.name) ||
@@ -1290,17 +1298,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
     },
     isBikeTagAmbassador(state) {
-      return state.profile?.isBikeTagAmbassador
+      return !!state.profile?.isBikeTagAmbassador || isGlobalAdminEmail(state.profile?.email)
     },
     isBikeTagAdmin(state) {
-      if (state.profile?.isBikeTagAdmin) {
-        return true
-      }
-
-      const email = state.profile?.email?.toLowerCase()
-      const adminEmail = BikeTagEnv.ADMIN_EMAIL?.toLowerCase()
-
-      return !!(email?.length && adminEmail?.length && email === adminEmail)
+      return !!state.profile?.isBikeTagAdmin || isGlobalAdminEmail(state.profile?.email)
     },
   },
 })

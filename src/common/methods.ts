@@ -248,6 +248,14 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
   return profile
 }
 
+export const isGlobalAdminEmail = (email?: string | null): boolean => {
+  if (!email?.length || !BikeTagEnv.ADMIN_EMAIL?.length) {
+    return false
+  }
+
+  return email.toLowerCase() === BikeTagEnv.ADMIN_EMAIL.toLowerCase()
+}
+
 export const setProfileCookie = (
   profile?: BikeTagProfile,
   profileCookieKey = 'profile',

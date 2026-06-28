@@ -420,7 +420,7 @@ export const isGlobalAdminEmail = (email?: string | null): boolean => {
 
 export const getProfileAuthorization = async (req: Request): Promise<any> => {
   const authorization = await getPayloadAuthorization(req)
-  let profile: any = authorization?.isValid ? authorization.profile : null
+  let profile: any = authorization?.isValid ? { ...authorization.profile } : null
 
   if (authorization?.isValid && profile) {
     log('Valid authorization received for profile', { email: profile.email }, 'info')
@@ -434,19 +434,21 @@ export const getProfileAuthorization = async (req: Request): Promise<any> => {
 
     const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
     const isABikeTagAmbassador = profileAmbassadorMatch.length > 0 || isGlobalAdmin
+    const roleFlags: Record<string, boolean> = {}
 
     if (isABikeTagAmbassador) {
-      profile.isBikeTagAmbassador = true
-      if (profileAmbassadorMatch.length) {
-        profile = { ...profile, ...profileAmbassadorMatch[0] }
-      }
+      roleFlags.isBikeTagAmbassador = true
       log('Profile marked as BikeTagAmbassador', { email: profile.email }, 'info')
     }
 
     if (isGlobalAdmin) {
-      profile.isBikeTagAdmin = true
+      roleFlags.isBikeTagAdmin = true
       log('Profile marked as BikeTagAdmin', { email: profile.email }, 'info')
     }
+
+    profile = profileAmbassadorMatch.length
+      ? { ...profile, ...profileAmbassadorMatch[0], ...roleFlags }
+      : { ...profile, ...roleFlags }
   }
 
   return profile
