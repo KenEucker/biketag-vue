@@ -4,6 +4,7 @@ import {
   coerceBooleanQueryParam,
   collectQueueIssues,
   getBikeTagClientOpts,
+  getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
@@ -45,9 +46,9 @@ export default async (req: Request) => {
     }
 
     const biketagOpts = getBikeTagClientOpts(req, true)
-    const biketag = new BikeTagClient(biketagOpts)
+    const bootstrap = new BikeTagClient(biketagOpts)
 
-    const game = (await biketag.game(biketagOpts.game, {
+    const game = (await bootstrap.game(biketagOpts.game, {
       source: 'sanity',
       concise: true,
     })) as unknown as Game
@@ -59,7 +60,23 @@ export default async (req: Request) => {
       })
     }
 
+    // Re-init with game so S3 gets the DO Spaces region/endpoint on first use (same as queue.mts).
+    const biketag = new BikeTagClient(getBikeTagClientOpts(req, true, false, game))
+    const imageSource = getImageSource(game)
+
+    if (imageSource === 'aws') {
+      biketag.config(
+        {
+          biketag: { host: process.env.HOST },
+          aws: { region: game.awsRegion },
+        },
+        false,
+        true,
+      )
+    }
+
     const payloadOpts = await getPayloadOpts(req, {
+      imgur: { hash: game.mainhash },
       game: biketagOpts.game,
       host: getQueueApiHost(biketagOpts.game),
       region: game.awsRegion,
@@ -67,24 +84,32 @@ export default async (req: Request) => {
     })
 
     const shouldFix = req.method === 'POST' || coerceBooleanQueryParam(payloadOpts.fix) === true
-    const queueHost = getQueueApiHost(biketagOpts.game)
 
-    log('[queue-fix] Running queue scan', { shouldFix, game: game.name })
+    log('[queue-fix] Running queue scan', {
+      shouldFix,
+      game: game.name,
+      imageSource,
+      awsRegion: game.awsRegion,
+    })
 
-    // Route queue load/fix through /api/queue (same path the app uses) instead of direct S3.
     const queueResponse = await biketag.getQueue(
       {
         game: biketagOpts.game,
-        host: queueHost,
+        host: getQueueApiHost(biketagOpts.game),
         region: game.awsRegion,
         cached: false,
         reindex: true,
         resize: shouldFix,
       },
-      { source: 'biketag' },
+      { source: imageSource },
     )
 
     if (!queueResponse.success) {
+      log(
+        '[queue-fix] getQueue failed',
+        { error: queueResponse.error, status: queueResponse.status, imageSource },
+        'error',
+      )
       return new Response(
         JSON.stringify({
           success: false,
