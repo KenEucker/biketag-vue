@@ -142,7 +142,12 @@ function mergeTags(forward = true) {
   }
 }
 
-async function onFieldUpdate({ field, value }) {
+async function onFieldUpdate({ field, value, tag }) {
+  if (tag) {
+    Object.assign(mergedTag, tag)
+    Object.assign(pendingEdits, tag)
+    return
+  }
   pendingEdits[field] = value
   mergedTag[field] = value // update mergedTag so preview reflects changes live
 }

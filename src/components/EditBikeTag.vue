@@ -50,7 +50,33 @@
 
       <!-- Mystery Player -->
       <template #mysteryPlayer>
-        <div class="edit-field">
+        <div v-if="allowImageUpload" class="edit-field player-picker">
+          <label class="edit-label" :for="inputId('playerSelect')">Player</label>
+          <select
+            :id="inputId('playerSelect')"
+            v-model="playerSelection"
+            class="player-select"
+            @change="onPlayerSelectionChange"
+          >
+            <option value="">Select a player...</option>
+            <option v-for="player in sortedPlayers" :key="player.name" :value="player.name">
+              {{ player.name }}
+            </option>
+            <option value="__new__">Enter new name...</option>
+          </select>
+          <input
+            v-if="playerSelection === '__new__'"
+            :id="inputId('mysteryPlayer')"
+            v-model="customPlayerName"
+            class="player-name-input"
+            placeholder="New player name"
+            @input="onCustomPlayerInput"
+          />
+          <p v-else-if="editableTag.mysteryPlayer" class="player-selected-name">
+            {{ editableTag.mysteryPlayer }}
+          </p>
+        </div>
+        <div v-else class="edit-field">
           <label class="edit-label" :for="inputId('mysteryPlayer')">Mystery Player</label>
           <input
             :id="inputId('mysteryPlayer')"
@@ -80,7 +106,7 @@
           <input
             :id="inputId('foundPlayer')"
             v-model="editableTag.foundPlayer"
-            :readonly="lockPlayers"
+            :readonly="lockPlayers || allowImageUpload"
             @blur="save('foundPlayer')"
           />
         </div>
@@ -133,7 +159,8 @@
 <script setup lang="ts">
 import DatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import type { Tag } from 'biketag'
+import type { Player, Tag } from 'biketag'
+import { useBikeTagStore } from '@/store/index'
 import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue'
 import BikeTag from './BikeTag.vue'
 
@@ -145,6 +172,7 @@ type EditableField =
   | 'foundLocation'
   | 'hint'
   | 'gps'
+  | 'playerId'
   | 'foundImage'
   | 'mysteryImage'
   | 'foundImageUrl'
@@ -179,10 +207,32 @@ const mysteryPreview = computed(
 )
 
 const emit = defineEmits(['update'])
+const store = useBikeTagStore()
 
 const lockPlayers = ref(false)
+const playerSelection = ref('')
+const customPlayerName = ref('')
 
-onMounted(() => {
+const sortedPlayers = computed(() =>
+  [...(store.getPlayers as Player[])].sort((a, b) => a.name.localeCompare(b.name)),
+)
+
+onMounted(async () => {
+  if (props.allowImageUpload) {
+    lockPlayers.value = true
+    if (!store.getPlayers?.length) {
+      await store.fetchPlayers()
+    }
+    if (editableTag.mysteryPlayer?.length) {
+      const isExistingPlayer = sortedPlayers.value.some((p) => p.name === editableTag.mysteryPlayer)
+      playerSelection.value = isExistingPlayer ? editableTag.mysteryPlayer : '__new__'
+      if (playerSelection.value === '__new__') {
+        customPlayerName.value = editableTag.mysteryPlayer
+      }
+    }
+    return
+  }
+
   if (editableTag.foundPlayer === editableTag.mysteryPlayer) {
     lockPlayers.value = true
   } else if (editableTag.foundPlayer || editableTag.mysteryPlayer) {
@@ -191,17 +241,64 @@ onMounted(() => {
       editableTag.mysteryPlayer,
       editableTag.foundPlayer,
     )
-  } else if (props.allowImageUpload) {
-    lockPlayers.value = true
   }
 })
 
-const save = (field: EditableField) => {
+const save = (field?: EditableField) => {
   emit('update', {
     field,
-    value: editableTag[field],
+    value: field ? editableTag[field] : undefined,
     tag: toRaw(editableTag),
   })
+}
+
+const syncLockedPlayers = (name: string, playerId = '') => {
+  editableTag.mysteryPlayer = name
+  editableTag.foundPlayer = name
+  editableTag.playerId = playerId
+  save()
+}
+
+const resolvePlayerId = async (name: string): Promise<string> => {
+  const fromCurrentTag =
+    store.getCurrentBikeTag?.mysteryPlayer === name
+      ? store.getCurrentBikeTag.playerId
+      : undefined
+  if (fromCurrentTag) return fromCurrentTag
+
+  const fromTags = [...store.getTags, ...store.getQueuedTags].find(
+    (tag) => (tag.mysteryPlayer === name || tag.foundPlayer === name) && tag.playerId,
+  )
+  if (fromTags?.playerId) return fromTags.playerId
+
+  const fromPlayer = sortedPlayers.value.find((player) => player.name === name) as Player & {
+    sub?: string
+  }
+  if (fromPlayer?.sub) return fromPlayer.sub
+
+  const profile = await store.fetchPlayerProfile(name)
+  return profile?.sub ?? ''
+}
+
+const onPlayerSelectionChange = async () => {
+  if (!playerSelection.value) {
+    syncLockedPlayers('', '')
+    return
+  }
+
+  if (playerSelection.value === '__new__') {
+    customPlayerName.value = ''
+    syncLockedPlayers('', '')
+    return
+  }
+
+  customPlayerName.value = ''
+  const playerId = await resolvePlayerId(playerSelection.value)
+  syncLockedPlayers(playerSelection.value, playerId)
+}
+
+const onCustomPlayerInput = () => {
+  syncLockedPlayers(customPlayerName.value, '')
 }
 
 const onDateChange = (field: 'mysteryTime' | 'foundTime', date: Date | null) => {
@@ -218,7 +315,7 @@ const onMysteryPlayerInput = (e: Event) => {
   if (lockPlayers.value) {
     editableTag.foundPlayer = val
   }
-  save('mysteryPlayer')
+  save()
 }
 
 const onImageChange = (type: 'found' | 'mystery', event: Event) => {
@@ -268,11 +365,26 @@ const inputId = (field: string) => `edit-biketag-${field}`
   margin-bottom: 0.5rem;
 }
 
-.edit-field input {
+.edit-field input,
+.edit-field select {
   width: 100%;
   font-size: 1rem;
   padding: 0.25rem;
   box-sizing: border-box;
+}
+
+.player-select {
+  margin-bottom: 0.5rem;
+}
+
+.player-name-input {
+  margin-top: 0.5rem;
+}
+
+.player-selected-name {
+  margin: 0.5rem 0 0;
+  font-weight: bold;
+  text-align: center;
 }
 
 .image-upload {

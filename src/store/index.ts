@@ -548,7 +548,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
 
       try {
-        let tag = { ...d, playerId: this.profile.sub, game: this.gameName }
+        let tag = { ...d, game: this.gameName }
+        if (d.playerId?.length) {
+          tag.playerId = d.playerId
+        }
 
         if (d.foundImage && !d.foundImageUrl) {
           const foundUpload = await client.queueTag(
@@ -582,6 +585,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           data: {
             game: tag.game,
             tagnumber: tag.tagnumber,
+            playerId: tag.playerId,
             foundPlayer: tag.foundPlayer,
             foundTime: tag.foundTime,
             foundLocation: tag.foundLocation,

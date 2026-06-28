@@ -82,6 +82,7 @@ const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 const newTag = reactive({
     game: getGameName.value,
     tagnumber: null,
+    playerId: '',
     foundPlayer: '',
     foundTime: 0,
     foundLocation: '',
@@ -95,8 +96,14 @@ const newTag = reactive({
     hint: '',
 })
 
-async function onFieldUpdate({ field, value }) {
-    newTag[field] = value
+async function onFieldUpdate({ field, value, tag }) {
+    if (tag) {
+        Object.assign(newTag, tag)
+        return
+    }
+    if (field) {
+        newTag[field] = value
+    }
 }
 
 async function onSubmitClick() {
@@ -171,6 +178,7 @@ async function onSubmitClick() {
 
 onMounted(async () => {
     await store.isReady()
+    await store.fetchPlayers()
     const currentTagnumber = store.getCurrentBikeTag?.tagnumber ?? 0
     newTag.game = getGameName.value
     newTag.tagnumber = currentTagnumber + 1

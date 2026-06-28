@@ -41,6 +41,7 @@ export default async (req: Request) => {
       ambassadorId,
       game: gameName,
       tagnumber,
+      playerId,
       foundPlayer,
       foundTime,
       foundLocation,
@@ -81,6 +82,7 @@ export default async (req: Request) => {
     const newTag: Tag = createTagObject({
       game: game.name,
       tagnumber,
+      playerId,
       foundPlayer,
       foundTime,
       foundLocation,

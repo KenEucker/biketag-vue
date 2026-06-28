@@ -1654,6 +1654,9 @@ export const setNewBikeTagPost = async (
   const results: any = []
 
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost)
+  if (winningBikeTagPost.playerId) {
+    newBikeTagPost.playerId = winningBikeTagPost.playerId
+  }
   newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
   previousBikeTag.gps = winningBikeTagPost.gps
   previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
