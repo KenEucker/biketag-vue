@@ -542,6 +542,81 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return 'incorrect permissions'
     },
+    async createNewRoundTag(d: any) {
+      if (!this.profile?.isBikeTagAmbassador) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        let tag = { ...d, playerId: this.profile.sub, game: this.gameName }
+
+        if (d.foundImage && !d.foundImageUrl) {
+          const foundUpload = await client.queueTag(
+            { ...tag, foundImage: d.foundImage },
+            { source: this.imageSource },
+          )
+          if (!foundUpload.success) {
+            return foundUpload.error || 'failed to upload found image'
+          }
+          tag = { ...tag, ...foundUpload.data }
+        }
+
+        if (d.mysteryImage && !d.mysteryImageUrl) {
+          const mysteryUpload = await client.queueTag(
+            { ...tag, mysteryImage: d.mysteryImage },
+            { source: this.imageSource },
+          )
+          if (!mysteryUpload.success) {
+            return mysteryUpload.error || 'failed to upload mystery image'
+          }
+          tag = { ...tag, ...mysteryUpload.data }
+        }
+
+        if (!tag.foundImageUrl?.length || !tag.mysteryImageUrl?.length) {
+          return 'found and mystery images are required'
+        }
+
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('new'),
+          data: {
+            game: tag.game,
+            tagnumber: tag.tagnumber,
+            foundPlayer: tag.foundPlayer,
+            foundTime: tag.foundTime,
+            foundLocation: tag.foundLocation,
+            foundImageUrl: tag.foundImageUrl,
+            mysteryPlayer: tag.mysteryPlayer,
+            mysteryTime: tag.mysteryTime,
+            mysteryImageUrl: tag.mysteryImageUrl,
+            hint: tag.hint,
+            ambassadorId: this.profile.sub,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          const result =
+            typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+          if (result.errors) {
+            const errorMessages = result.results
+              ?.filter((r: any) => r.error)
+              ?.map((r: any) => r.message || r.error)
+              ?.join(', ')
+            return errorMessages || 'failed to create new round'
+          }
+          this.resetBikeTagCache()
+          return true
+        }
+
+        return `BikeTag round #${tag.tagnumber} couldn't be created`
+      } catch (e: any) {
+        console.error('error creating new round', e?.message ?? e)
+        return 'error creating new round'
+      }
+    },
     async assignPlayerName(profile: any) {
       const nameAssigned = await client.plainRequest({
         method: 'PUT',

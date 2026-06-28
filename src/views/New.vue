@@ -1,21 +1,30 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-    <loading v-show="submitInProgress" v-model:active="submitInProgress" :is-full-page="true" class="realign-spinner">
+    <loading v-show="isLoading" v-model:active="isLoading" :is-full-page="true" class="realign-spinner">
         <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
     </loading>
 
     <div class="queue-page">
-        <div v-if="submitSuccess">
+        <div v-if="!isBikeTagAmbassador && !pageLoading">
+            <h2>Ambassador Access Required</h2>
+            <p>You must be logged in as a BikeTag Ambassador to create a new round.</p>
+            <bike-tag-button @click="router.push({ name: 'Dashboard' })">
+                Go to Dashboard
+            </bike-tag-button>
+        </div>
+
+        <div v-else-if="submitSuccess">
             A new BikeTag round for {{ getGameNameProper }} has been created!
             <bike-tag-button @click="router.push({ name: 'Home' })">
                 Go to the Home Page
             </bike-tag-button>
         </div>
 
-        <div v-else>
+        <div v-else-if="!pageLoading">
             <h2>Start a New Round for {{ getGameNameProper }}</h2>
+            <p class="round-number">Round #{{ newTag.tagnumber }}</p>
             <div class="biketag-container">
-                <EditBikeTag :tag="newTag" @update="onFieldUpdate" />
+                <EditBikeTag :tag="newTag" allow-image-upload @update="onFieldUpdate" />
             </div>
 
             <bike-tag-button variant="light" class="big-btn" @click="onSubmitClick">
@@ -52,11 +61,23 @@ const { t } = useI18n()
 
 const submitInProgress = ref(false)
 const submitSuccess = ref(false)
+const pageLoading = ref(true)
 const submitError = ref(null)
+
+const isLoading = computed({
+    get: () => submitInProgress.value || pageLoading.value,
+    set: (value) => {
+        if (!value) {
+            submitInProgress.value = false
+            pageLoading.value = false
+        }
+    },
+})
 
 const getGameName = computed(() => store.getGameName)
 const getGameNameProper = computed(() => store.getGameNameProper)
 const getAmbassadorId = computed(() => store.getAmbassadorId)
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 
 const newTag = reactive({
     game: getGameName.value,
@@ -65,10 +86,12 @@ const newTag = reactive({
     foundTime: 0,
     foundLocation: '',
     foundImageUrl: '',
+    foundImage: null,
     mysteryPlayer: '',
     mysteryTime: 0,
     mysteryLocation: '',
     mysteryImageUrl: '',
+    mysteryImage: null,
     hint: '',
 })
 
@@ -77,6 +100,31 @@ async function onFieldUpdate({ field, value }) {
 }
 
 async function onSubmitClick() {
+    if (!newTag.foundImage && !newTag.foundImageUrl) {
+        toast.open({
+            message: 'Please add a found image before submitting.',
+            type: 'error',
+            position: 'top',
+        })
+        return
+    }
+    if (!newTag.mysteryImage && !newTag.mysteryImageUrl) {
+        toast.open({
+            message: 'Please add a mystery image before submitting.',
+            type: 'error',
+            position: 'top',
+        })
+        return
+    }
+    if (!newTag.foundPlayer?.length || !newTag.mysteryPlayer?.length) {
+        toast.open({
+            message: 'Please enter player names before submitting.',
+            type: 'error',
+            position: 'top',
+        })
+        return
+    }
+
     submitInProgress.value = true
     const errorAction = submitError.value.getAttribute('action')
 
@@ -123,7 +171,10 @@ async function onSubmitClick() {
 
 onMounted(async () => {
     await store.isReady()
-    newTag.tagnumber = store.getCurrentBikeTag?.tagnumber ?? 1
+    const currentTagnumber = store.getCurrentBikeTag?.tagnumber ?? 0
+    newTag.game = getGameName.value
+    newTag.tagnumber = currentTagnumber + 1
+    pageLoading.value = false
 })
 </script>
 
@@ -131,5 +182,11 @@ onMounted(async () => {
 .biketag-container {
     max-width: clamp(80vw, 80vw, 500px);
     margin: auto;
+}
+
+.round-number {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 1rem;
 }
 </style>

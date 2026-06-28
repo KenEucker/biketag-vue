@@ -4,7 +4,50 @@
       :tag="editableTag"
       :found-tagnumber="editableTag?.tagnumber - 1"
       :found-description="editableTag?.foundLocation"
+      :always-show-sections="allowImageUpload"
     >
+      <template v-if="allowImageUpload" #foundImage>
+        <div class="image-upload">
+          <img
+            v-if="foundPreview"
+            class="image img-fluid"
+            :src="foundPreview"
+            alt="Found image preview"
+          />
+          <label v-else class="image-upload-label" :for="inputId('foundImage')">
+            Add Found Image
+          </label>
+          <input
+            :id="inputId('foundImage')"
+            type="file"
+            accept="image/*"
+            class="image-upload-input"
+            @change="onImageChange('found', $event)"
+          />
+        </div>
+      </template>
+
+      <template v-if="allowImageUpload" #mysteryImage>
+        <div class="image-upload">
+          <img
+            v-if="mysteryPreview"
+            class="image img-fluid"
+            :src="mysteryPreview"
+            alt="Mystery image preview"
+          />
+          <label v-else class="image-upload-label" :for="inputId('mysteryImage')">
+            Add Mystery Image
+          </label>
+          <input
+            :id="inputId('mysteryImage')"
+            type="file"
+            accept="image/*"
+            class="image-upload-input"
+            @change="onImageChange('mystery', $event)"
+          />
+        </div>
+      </template>
+
       <!-- Mystery Player -->
       <template #mysteryPlayer>
         <div class="edit-field">
@@ -102,10 +145,20 @@ type EditableField =
   | 'foundLocation'
   | 'hint'
   | 'gps'
+  | 'foundImage'
+  | 'mysteryImage'
+  | 'foundImageUrl'
+  | 'mysteryImageUrl'
 
-const props = defineProps<{
-  tag: Tag
-}>()
+const props = withDefaults(
+  defineProps<{
+    tag: Tag
+    allowImageUpload?: boolean
+  }>(),
+  {
+    allowImageUpload: false,
+  },
+)
 
 const editableTag = reactive<Tag>({ ...props.tag })
 
@@ -117,20 +170,29 @@ const foundDate = ref<Date | null>(
   editableTag.foundTime ? new Date(editableTag.foundTime * 1000) : null,
 )
 
+const foundPreview = computed(
+  () => editableTag.foundImageUrl || (editableTag as Tag & { foundPreview?: string }).foundPreview,
+)
+const mysteryPreview = computed(
+  () =>
+    editableTag.mysteryImageUrl || (editableTag as Tag & { mysteryPreview?: string }).mysteryPreview,
+)
+
 const emit = defineEmits(['update'])
 
-// Determine whether players should be locked together:
 const lockPlayers = ref(false)
 
 onMounted(() => {
   if (editableTag.foundPlayer === editableTag.mysteryPlayer) {
     lockPlayers.value = true
-  } else {
+  } else if (editableTag.foundPlayer || editableTag.mysteryPlayer) {
     console.warn(
       '[EditBikeTag] Players initially different, fallback to independent editing:',
       editableTag.mysteryPlayer,
       editableTag.foundPlayer,
     )
+  } else if (props.allowImageUpload) {
+    lockPlayers.value = true
   }
 })
 
@@ -150,12 +212,34 @@ const onDateChange = (field: 'mysteryTime' | 'foundTime', date: Date | null) => 
   }
 }
 
-// Sync foundPlayer when mysteryPlayer is edited if locked:
 const onMysteryPlayerInput = (e: Event) => {
   const val = (e.target as HTMLInputElement).value
+  editableTag.mysteryPlayer = val
   if (lockPlayers.value) {
     editableTag.foundPlayer = val
   }
+  save('mysteryPlayer')
+}
+
+const onImageChange = (type: 'found' | 'mystery', event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  const previewReader = new FileReader()
+  previewReader.onload = (e) => {
+    const previewUrl = e.target?.result as string
+    if (type === 'found') {
+      ;(editableTag as Tag & { foundPreview?: string }).foundPreview = previewUrl
+      editableTag.foundImage = file
+      save('foundImage')
+    } else {
+      ;(editableTag as Tag & { mysteryPreview?: string }).mysteryPreview = previewUrl
+      editableTag.mysteryImage = file
+      save('mysteryImage')
+    }
+  }
+  previewReader.readAsDataURL(file)
 }
 
 watch(
@@ -168,7 +252,6 @@ watch(
   { deep: true },
 )
 
-// Generates a unique id for each input/label pair
 const inputId = (field: string) => `edit-biketag-${field}`
 </script>
 
@@ -190,5 +273,29 @@ const inputId = (field: string) => `edit-biketag-${field}`
   font-size: 1rem;
   padding: 0.25rem;
   box-sizing: border-box;
+}
+
+.image-upload {
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border: 2px dashed #ccc;
+}
+
+.image-upload-label {
+  cursor: pointer;
+  font-weight: bold;
+  padding: 1rem;
+  text-align: center;
+}
+
+.image-upload-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 </style>

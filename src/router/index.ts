@@ -22,17 +22,54 @@ import { authGuard } from '@auth0/auth0-vue'
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router'
 import { debug, isAuthenticationEnabled } from '../common'
 
+const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
+  ? [
+      {
+        path: '/profile',
+        name: 'Profile',
+        beforeEnter: authGuard,
+        component: Profile,
+      },
+      {
+        path: '/approve',
+        name: 'Approve',
+        beforeEnter: authGuard,
+        component: Approve,
+      },
+      {
+        path: '/dashboard',
+        name: 'Dashboard',
+        beforeEnter: authGuard,
+        component: Dashboard,
+      },
+      {
+        path: '/delete',
+        name: 'Delete',
+        beforeEnter: authGuard,
+        component: Delete,
+      },
+      {
+        path: '/edit',
+        name: 'Edit',
+        beforeEnter: authGuard,
+        component: Edit,
+      },
+      {
+        path: '/new',
+        name: 'New',
+        beforeEnter: authGuard,
+        component: New,
+      },
+    ]
+  : []
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Landing',
     component: Landing,
   },
-  {
-    path: '/:tagnumber?',
-    name: 'Home',
-    component: Home,
-  },
+  ...protectedRoutes,
   {
     path: '/biketags',
     name: 'BikeTags',
@@ -108,56 +145,18 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Map',
     component: Map,
   },
+  {
+    path: '/:tagnumber?',
+    name: 'Home',
+    component: Home,
+  },
 ]
-
-let protectedRoutes: Array<RouteRecordRaw> = []
-
-if (isAuthenticationEnabled()) {
-  protectedRoutes = [
-    {
-      path: '/profile',
-      name: 'Profile',
-      beforeEnter: authGuard,
-      component: Profile,
-    },
-    {
-      path: '/approve',
-      name: 'Approve',
-      beforeEnter: authGuard,
-      component: Approve,
-    },
-    {
-      path: '/dashboard',
-      name: 'Dashboard',
-      beforeEnter: authGuard,
-      component: Dashboard,
-    },
-    {
-      path: '/delete',
-      name: 'Delete',
-      beforeEnter: authGuard,
-      component: Delete,
-    },
-    {
-      path: '/edit',
-      name: 'Edit',
-      beforeEnter: authGuard,
-      component: Edit,
-    },
-    {
-      path: '/new',
-      name: 'New',
-      beforeEnter: authGuard,
-      component: New,
-    },
-  ]
-}
 
 debug('router::init', { sitemap: routes.map((r) => r.path) })
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [...routes, ...protectedRoutes],
+  routes,
   scrollBehavior() {
     return { top: 0 }
   },
