@@ -596,7 +596,7 @@ export const loadQueueStorageImages = async (
   for (const key of keys) {
     const parsed = parseQueueImageKey(key)
     if (!parsed) {
-      if (/^queue\//.test(key)) {
+      if (/^queue\//.test(key) && !key.endsWith('/index.json')) {
         unparsedKeys.push(key)
       }
       continue
