@@ -1,5 +1,11 @@
 import { BikeTagClient, Game } from 'biketag'
-import { acceptCorsHeaders, getBikeTagClientOpts, getPayloadAuthorization, log } from './common'
+import {
+  acceptCorsHeaders,
+  getBikeTagClientOpts,
+  getPayloadAuthorization,
+  isGameAmbassadorByPlayerId,
+  log,
+} from './common'
 import { HttpStatusCode } from './common/constants'
 
 export default async (req: Request) => {
@@ -50,7 +56,11 @@ export default async (req: Request) => {
       log('[fetch-signed-url] Parsed request body', { key, game, p_id, contentType })
 
       if (key && game && contentType) {
-        if (p_id === playerId) {
+        const isOwnUpload = p_id === playerId
+        const isAmbassadorUpload =
+          !isOwnUpload && (await isGameAmbassadorByPlayerId(req, playerId))
+
+        if (isOwnUpload || isAmbassadorUpload) {
           const contentKeyMatch = `queue/${adminBiketagOpts.game}-tag`
           if (!key.startsWith(contentKeyMatch)) {
             log(
@@ -75,6 +85,7 @@ export default async (req: Request) => {
           log('[fetch-signed-url] fetchSignedUrl response', {
             success: signedUrlResponse.success,
             status: signedUrlResponse.status,
+            isAmbassadorUpload,
           })
 
           if (signedUrlResponse.success) {
