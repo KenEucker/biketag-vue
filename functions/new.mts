@@ -2,6 +2,7 @@ import { BikeTagClient, createTagObject, Game, Tag } from 'biketag'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
+  getGameStorageSlug,
   getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
@@ -79,8 +80,10 @@ export default async (req: Request) => {
     const currentBikeTag = (await adminBiketag.getTag(undefined, { source: imageSource })).data
     log('[new-tag] Current tag', { current: currentBikeTag?.tagnumber ?? 'none' })
 
+    const gameSlug = getGameStorageSlug(game, gameName)
+
     const newTag: Tag = createTagObject({
-      game: game.name,
+      game: gameSlug,
       tagnumber,
       playerId,
       foundPlayer,
@@ -103,7 +106,12 @@ export default async (req: Request) => {
 
     log('[new-tag] setNewBikeTagPost result', result)
 
-    const status = result.errors ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted
+    const isProcessing = result.results?.some((r: any) => r.status === 'processing')
+    const status = isProcessing
+      ? HttpStatusCode.Accepted
+      : result.errors
+        ? HttpStatusCode.BadRequest
+        : HttpStatusCode.Accepted
 
     return new Response(JSON.stringify(result), {
       headers,

@@ -1,5 +1,12 @@
 import { AtpAgent } from '@atproto/api'
-import { HeadObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3'
+import {
+  CopyObjectCommand,
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3'
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
@@ -483,6 +490,251 @@ const queuePrimaryImageKeyPattern =
 
 export const getGameStorageSlug = (game: Game, fallback = ''): string =>
   (game.slug ?? game.name ?? fallback).toLowerCase()
+
+const getStorageKeyFromUrl = (url: string): string => {
+  try {
+    return new URL(url).pathname.slice(1)
+  } catch {
+    return ''
+  }
+}
+
+const getQueueImageFilenameBase = (imageUrl: string): string => {
+  const filename = getStorageKeyFromUrl(imageUrl).split('/').pop() ?? ''
+  return filename.replace(/\.(webp|jpg|jpeg|png|gif|bmp)$/i, '')
+}
+
+const queueVariantWidths = { medium: 800, small: 300, original: 0 } as const
+
+export const queueImageHasVariants = async (
+  region: string,
+  gameSlug: string,
+  imageUrl: string,
+): Promise<boolean> => {
+  const base = getQueueImageFilenameBase(imageUrl)
+  const bucket = `${gameSlug}-biketag`
+  const client = createQueueStorageClient(region)
+
+  try {
+    await client.send(
+      new HeadObjectCommand({ Bucket: bucket, Key: `queue/${base}_small.webp` }),
+    )
+    await client.send(
+      new HeadObjectCommand({ Bucket: bucket, Key: `queue/${base}_medium.webp` }),
+    )
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** Create _small, _medium, and .webp variants for a queue image via the resize endpoint. */
+export const resizeQueueImageVariants = async (
+  game: Game,
+  tag: Tag,
+  imageType: 'found' | 'mystery',
+): Promise<string> => {
+  const gameSlug = getGameStorageSlug(game)
+  const region = game.awsRegion ?? ''
+  const urlField = imageType === 'found' ? 'foundImageUrl' : 'mysteryImageUrl'
+  const imageUrl = tag[urlField]
+  if (!imageUrl?.length) {
+    throw new Error(`Missing ${imageType} image URL`)
+  }
+
+  if (await queueImageHasVariants(region, gameSlug, imageUrl)) {
+    return imageUrl.replace(/\.\w+(?:\?.*)?$/, '.webp')
+  }
+
+  const bucket = `${gameSlug}-biketag`
+  const client = createQueueStorageClient(region)
+  const filenameBase = getQueueImageFilenameBase(imageUrl)
+  const baseKey = `queue/${filenameBase}`
+  const resizeBackendBase = `${getQueueApiHost(game.name)}/resize`
+  let resizedOriginalUploaded = false
+
+  for (const [variant, width] of Object.entries(queueVariantWidths)) {
+    const variantIsOriginal = variant === 'original'
+    const suffix = variantIsOriginal ? '.webp' : `_${variant}.webp`
+    const key = `${baseKey}${suffix}`
+
+    try {
+      await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }))
+      if (variantIsOriginal) resizedOriginalUploaded = true
+      continue
+    } catch (err: any) {
+      if (err.$metadata?.httpStatusCode !== 404) {
+        throw err
+      }
+    }
+
+    const resizeUrl = `${resizeBackendBase}?url=${encodeURIComponent(imageUrl)}&format=webp${width ? `&width=${width}` : ''}`
+    const res = await fetch(resizeUrl)
+    if (!res.ok) {
+      throw new Error(`Resize backend failed for ${imageType} ${variant}: ${res.statusText}`)
+    }
+
+    const buffer = Buffer.from(await res.arrayBuffer())
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: 'image/webp',
+        ACL: 'public-read',
+      }),
+    )
+    if (variantIsOriginal) resizedOriginalUploaded = true
+  }
+
+  if (resizedOriginalUploaded) {
+    const sourceKey = getStorageKeyFromUrl(imageUrl)
+    if (sourceKey.endsWith('.webp')) {
+      // already webp
+    } else {
+      try {
+        await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: sourceKey }))
+      } catch (err: any) {
+        log('[resize-queue] Could not delete original non-webp file', { sourceKey, err }, 'warn')
+      }
+    }
+  }
+
+  return imageUrl.replace(/\.\w+(?:\?.*)?$/, '.webp')
+}
+
+/** Move a queue image and its variants into main/ under the target tag number. */
+export const moveQueueImageToMainWithVariants = async (
+  gameSlug: string,
+  region: string,
+  sourceUrl: string,
+  targetTagnumber: number,
+  type: 'found' | 'mystery',
+): Promise<string> => {
+  const sourceKey = getStorageKeyFromUrl(sourceUrl)
+  if (!sourceKey.startsWith('queue/')) {
+    return sourceUrl
+  }
+
+  const filenameBase = getQueueImageFilenameBase(sourceUrl)
+  const bucket = `${gameSlug}-biketag`
+  const client = createQueueStorageClient(region)
+  const destBase = `main/${gameSlug}-tag-${targetTagnumber}--${type}`
+  const destUrl = `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${destBase}.webp`
+  const variants = ['', '_small', '_medium'] as const
+
+  for (const variant of variants) {
+    const srcKey =
+      variant === '' ? `queue/${filenameBase}.webp` : `queue/${filenameBase}${variant}.webp`
+    const destKey = variant === '' ? `${destBase}.webp` : `${destBase}${variant}.webp`
+
+    try {
+      await client.send(new HeadObjectCommand({ Bucket: bucket, Key: srcKey }))
+    } catch {
+      continue
+    }
+
+    await client.send(
+      new CopyObjectCommand({
+        Bucket: bucket,
+        CopySource: `${bucket}/${srcKey}`,
+        Key: destKey,
+        ACL: 'public-read',
+        MetadataDirective: 'COPY',
+      }),
+    )
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: srcKey }))
+  }
+
+  return destUrl
+}
+
+export type NewBikeTagPostPipelinePayload = {
+  gameSlug: string
+  winningBikeTagPost: Tag
+  previousBikeTag: Tag
+}
+
+const invokePostTagStep = (game: Game, step: 'resize-found' | 'resize-mystery' | 'finalize', payload: NewBikeTagPostPipelinePayload) => {
+  axios
+    .post(getApiUrl(game.name, 'post-tag-process'), { ...payload, step }, {
+      headers: { 'Content-Type': 'application/json' },
+    })
+    .catch((e) => log('[post-tag] step chain failed', { step, error: e.message ?? e }, 'error'))
+}
+
+export const startNewBikeTagPostPipeline = (
+  game: Game,
+  winningBikeTagPost: Tag,
+  previousBikeTag: Tag,
+): { status: string; step: string } => {
+  const gameSlug = getGameStorageSlug(game)
+  const payload: NewBikeTagPostPipelinePayload = {
+    gameSlug,
+    winningBikeTagPost: { ...winningBikeTagPost, game: gameSlug },
+    previousBikeTag: { ...previousBikeTag, game: gameSlug },
+  }
+
+  invokePostTagStep(game, 'resize-found', payload)
+  return { status: 'processing', step: 'resize-found' }
+}
+
+export const runPostTagProcessStep = async (
+  step: 'resize-found' | 'resize-mystery' | 'finalize',
+  payload: NewBikeTagPostPipelinePayload,
+  game: Game,
+): Promise<BackgroundProcessResults> => {
+  const { winningBikeTagPost, previousBikeTag } = payload
+  const imageSource = getImageSource(game)
+
+  if (imageSource !== 'aws') {
+    return setNewBikeTagPost(game, winningBikeTagPost, previousBikeTag, undefined, undefined, {
+      sync: true,
+    })
+  }
+
+  switch (step) {
+    case 'resize-found':
+      if (winningBikeTagPost.foundImageUrl?.length) {
+        winningBikeTagPost.foundImageUrl = await resizeQueueImageVariants(
+          game,
+          winningBikeTagPost,
+          'found',
+        )
+        log('[post-tag] Queue found image variants ready', {
+          url: winningBikeTagPost.foundImageUrl,
+        })
+      }
+      invokePostTagStep(game, 'resize-mystery', payload)
+      return {
+        results: [{ message: 'queue found image variants ready', step }],
+        errors: false,
+      }
+
+    case 'resize-mystery':
+      if (winningBikeTagPost.mysteryImageUrl?.length) {
+        winningBikeTagPost.mysteryImageUrl = await resizeQueueImageVariants(
+          game,
+          winningBikeTagPost,
+          'mystery',
+        )
+        log('[post-tag] Queue mystery image variants ready', {
+          url: winningBikeTagPost.mysteryImageUrl,
+        })
+      }
+      invokePostTagStep(game, 'finalize', payload)
+      return {
+        results: [{ message: 'queue mystery image variants ready', step }],
+        errors: false,
+      }
+
+    case 'finalize':
+      return finalizeNewBikeTagPost(game, winningBikeTagPost, previousBikeTag)
+
+    default:
+      return { results: [{ message: `unknown step: ${step}` }], errors: true }
+  }
+}
 
 export type QueueStorageImage = {
   key: string
@@ -998,16 +1250,18 @@ export const getMainImageUrlIssues = (tags: Tag | Tag[] = []) => {
   return issues
 }
 
-export const getMainFolderUpdateOpts = (game: Game, imageSource: string) => {
+export const getMainFolderUpdateOpts = (game: Game, imageSource: string, resize = false) => {
   if (imageSource !== 'aws') {
     return { source: imageSource }
   }
 
   return {
     source: imageSource,
-    resize: true,
+    resize,
     host: getQueueApiHost(game.name),
     region: game.awsRegion,
+    folder: 'main',
+    game: getGameStorageSlug(game),
   }
 }
 
@@ -2216,7 +2470,7 @@ export const sendNewBikeTagNotifications = async (
   return notificationPromises
 }
 
-export const setNewBikeTagPost = async (
+export const finalizeNewBikeTagPost = async (
   game: Game,
   winningBikeTagPost: Tag,
   previousBikeTag: Tag,
@@ -2231,18 +2485,43 @@ export const setNewBikeTagPost = async (
   let errors = false
   const results: any = []
 
+  const gameSlug = getGameStorageSlug(game)
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost)
   if (winningBikeTagPost.playerId) {
     newBikeTagPost.playerId = winningBikeTagPost.playerId
   }
+  newBikeTagPost.game = gameSlug
   newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
+  previousBikeTag.game = gameSlug
   previousBikeTag.gps = winningBikeTagPost.gps
-  previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
+  previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
   previousBikeTag.foundTime = winningBikeTagPost.foundTime
   previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
-  previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
 
-  const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource)
+  if (imageSource === 'aws' && game.awsRegion?.length) {
+    if (winningBikeTagPost.foundImageUrl?.length) {
+      previousBikeTag.foundImageUrl = await moveQueueImageToMainWithVariants(
+        gameSlug,
+        game.awsRegion,
+        winningBikeTagPost.foundImageUrl,
+        previousBikeTag.tagnumber,
+        'found',
+      )
+    }
+    if (winningBikeTagPost.mysteryImageUrl?.length) {
+      newBikeTagPost.mysteryImageUrl = await moveQueueImageToMainWithVariants(
+        gameSlug,
+        game.awsRegion,
+        winningBikeTagPost.mysteryImageUrl,
+        newBikeTagPost.tagnumber,
+        'mystery',
+      )
+    }
+  } else {
+    previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
+  }
+
+  const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource, false)
 
   log('Updating current BikeTag with winning tag found info', previousBikeTag, 'info')
   const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, mainUpdateOpts)
@@ -2328,6 +2607,66 @@ export const setNewBikeTagPost = async (
   }
 
   return { results, errors }
+}
+
+export const setNewBikeTagPost = async (
+  game: Game,
+  winningBikeTagPost: Tag,
+  previousBikeTag: Tag,
+  adminBiketag?: BikeTagClient,
+  nonAdminBiketag?: BikeTagClient,
+  options?: { sync?: boolean },
+): Promise<BackgroundProcessResults> => {
+  const imageSource = getImageSource(game)
+
+  if (imageSource === 'aws' && !options?.sync) {
+    const pipeline = startNewBikeTagPostPipeline(game, winningBikeTagPost, previousBikeTag)
+    return {
+      results: [
+        {
+          message: 'BikeTag post processing started',
+          ...pipeline,
+        },
+      ],
+      errors: false,
+    }
+  }
+
+  if (imageSource === 'aws') {
+    const gameSlug = getGameStorageSlug(game)
+    winningBikeTagPost = { ...winningBikeTagPost, game: gameSlug }
+
+    if (winningBikeTagPost.foundImageUrl?.length) {
+      winningBikeTagPost.foundImageUrl = await resizeQueueImageVariants(
+        game,
+        winningBikeTagPost,
+        'found',
+      )
+    }
+    if (winningBikeTagPost.mysteryImageUrl?.length) {
+      winningBikeTagPost.mysteryImageUrl = await resizeQueueImageVariants(
+        game,
+        winningBikeTagPost,
+        'mystery',
+      )
+    }
+
+    return finalizeNewBikeTagPost(
+      game,
+      winningBikeTagPost,
+      previousBikeTag,
+      adminBiketag,
+      nonAdminBiketag,
+    )
+  }
+
+  return finalizeNewBikeTagPost(
+    game,
+    winningBikeTagPost,
+    previousBikeTag,
+    adminBiketag,
+    nonAdminBiketag,
+  )
 }
 
 export const getWinningTagForCurrentRound = (

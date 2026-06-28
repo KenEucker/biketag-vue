@@ -104,6 +104,7 @@ export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> =
               currentBikeTag,
               adminBiketag,
               nonAdminBiketag,
+              { sync: true },
             )
             results = results.concat(setNewBikeTagPostResults.results)
             errors = setNewBikeTagPostResults.errors
