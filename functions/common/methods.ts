@@ -55,6 +55,54 @@ export const getApiUrl = (game = '', path = ''): string => {
     : `https://${game.length ? `${game}.` : ''}${process.env.HOST}/api/${path}`
 }
 
+/** Game site URL, e.g. https://seattle.biketag.org (never inserts www into the subdomain). */
+export const getGameSiteUrl = (gameName = ''): string => {
+  const baseHost = (process.env.HOST ?? 'biketag.org').replace(/^www\./i, '')
+  const gameSlug = gameName.toLowerCase()
+  return process.env.CONTEXT === 'dev'
+    ? `http://${gameSlug.length ? `${gameSlug}.` : ''}${baseHost}:8080`
+    : `https://${gameSlug.length ? `${gameSlug}.` : ''}${baseHost}`
+}
+
+export const getGameSocialLinks = (game: Game) => {
+  const subreddit =
+    game.subreddit?.length
+      ? game.subreddit
+      : game.settings?.['social::reddit']?.length
+        ? game.settings['social::reddit']
+        : game.settings?.['subreddit']?.length
+          ? game.settings['subreddit']
+          : 'biketag'
+
+  const bluesky =
+    game.bluesky?.length
+      ? game.bluesky
+      : game.settings?.['social::bluesky']?.length
+        ? game.settings['social::bluesky']
+        : game.settings?.['bsky']?.length
+          ? game.settings['bsky']
+          : 'biketag.bsky.social'
+
+  const instagramHandle =
+    game.page?.length
+      ? game.page
+      : game.settings?.['social::instagram']?.length
+        ? game.settings['social::instagram']
+        : ''
+
+  const instagramLink = instagramHandle?.length
+    ? instagramHandle.startsWith('http')
+      ? instagramHandle
+      : `https://instagram.com/${instagramHandle.replace(/^@/, '')}`
+    : ''
+
+  return {
+    redditLink: `https://reddit.com/r/${subreddit}`,
+    blueskyLink: `https://bsky.app/profile/${bluesky}`,
+    instagramLink,
+  }
+}
+
 export const isRequestAllowed = (
   req: any,
   authorized?: boolean,
@@ -2194,7 +2242,8 @@ export const sendNewBikeTagNotifications = async (
   })) as Ambassador[]
   const thisGamesAmbassadors = ambassadors.filter((a) => game.ambassadors.indexOf(a.name) !== -1)
   const winningTagnumber = winningTag.tagnumber
-  const host = `https://${game.name.toLowerCase()}.biketag.org`
+  const host = getGameSiteUrl(game.name)
+  const socialLinks = getGameSocialLinks(game)
   const logo = game.logo?.length
     ? game.logo.indexOf('imgur.co') !== -1
       ? game.logo
@@ -2304,7 +2353,10 @@ export const sendNewBikeTagNotifications = async (
           btaDashboardButton: 'BikeTag Ambassador dashboard',
           host,
           game: game.name,
-          blueskyLink: `https://bsky.app/profile/${game.bluesky?.length ? game.bluesky : 'biketag.bsky.social'}`,
+          gameHost: host,
+          redditLink: socialLinks.redditLink,
+          blueskyLink: socialLinks.blueskyLink,
+          instagramLink: socialLinks.instagramLink,
         }),
       ).then((results) => results.accepted.concat(results.rejected)),
     )
@@ -2442,6 +2494,7 @@ export const finalizeNewBikeTagPost = async (
     } else {
       results.push({
         message: ErrorMessage.WinningTagNotDeleted,
+        error: deleteWinningTagFromQueueResult.error,
         game: game.name,
         tag: winningBikeTagPost,
       })
