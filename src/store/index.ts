@@ -889,7 +889,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (
         (profile && profile?.name !== oldState?.name) ||
         profile?.user_metadata?.name !== oldState?.user_metadata?.name ||
-        profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
+        profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador ||
+        profile?.isBikeTagAdmin !== oldState?.isBikeTagAdmin
       ) {
         this.profile = profile
         setProfileCookie(profile)
@@ -1292,7 +1293,14 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return state.profile?.isBikeTagAmbassador
     },
     isBikeTagAdmin(state) {
-      return state.profile?.isBikeTagAdmin
+      if (state.profile?.isBikeTagAdmin) {
+        return true
+      }
+
+      const email = state.profile?.email?.toLowerCase()
+      const adminEmail = BikeTagEnv.ADMIN_EMAIL?.toLowerCase()
+
+      return !!(email?.length && adminEmail?.length && email === adminEmail)
     },
   },
 })

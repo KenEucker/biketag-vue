@@ -425,26 +425,25 @@ export const getProfileAuthorization = async (req: Request): Promise<any> => {
   if (authorization?.isValid && profile) {
     log('Valid authorization received for profile', { email: profile.email }, 'info')
 
+    const isGlobalAdmin = isGlobalAdminEmail(profile.email)
     const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
     const adminBiketag = new BikeTagClient(adminBiketagOpts)
-    const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag, {
+    const thisGamesAmbassadors = ((await getThisGamesAmbassadors(adminBiketag, {
       source: 'sanity',
-    })) as Ambassador[]
-    if (!thisGamesAmbassadors?.length) {
-      return profile
-    }
+    })) ?? []) as Ambassador[]
 
     const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
-    const isABikeTagAmbassador =
-      profileAmbassadorMatch.length > 0 || isGlobalAdminEmail(profile.email)
+    const isABikeTagAmbassador = profileAmbassadorMatch.length > 0 || isGlobalAdmin
 
     if (isABikeTagAmbassador) {
       profile.isBikeTagAmbassador = true
-      profile = { ...profile, ...profileAmbassadorMatch[0] }
+      if (profileAmbassadorMatch.length) {
+        profile = { ...profile, ...profileAmbassadorMatch[0] }
+      }
       log('Profile marked as BikeTagAmbassador', { email: profile.email }, 'info')
     }
 
-    if (isGlobalAdminEmail(profile.email)) {
+    if (isGlobalAdmin) {
       profile.isBikeTagAdmin = true
       log('Profile marked as BikeTagAdmin', { email: profile.email }, 'info')
     }
@@ -2014,6 +2013,7 @@ export const constructAmbassadorProfile = (
     country: profile.country ?? defaults.country ?? '',
     email: profile.email ?? defaults.email ?? '',
     isBikeTagAmbassador: profile.isBikeTagAmbassador ?? defaults?.isBikeTagAmbassador ?? false,
+    isBikeTagAdmin: profile.isBikeTagAdmin ?? defaults?.isBikeTagAdmin ?? false,
     locale: profile.locale ?? defaults.locale ?? '',
     nonce: profile.nonce ?? defaults.nonce ?? '',
     phone: profile.phone ?? defaults.phone ?? '',

@@ -45,6 +45,12 @@ export default async (req: Request) => {
 
           if (profileFound) {
             body = await getBikeTagPlayerProfile(profileFound, authorized, true)
+            if (profile?.isBikeTagAmbassador) {
+              body.isBikeTagAmbassador = true
+            }
+            if (profile?.isBikeTagAdmin) {
+              body.isBikeTagAdmin = true
+            }
             log('[profile] Merged profile successfully', { profile: body })
           } else {
             body = ErrorMessage.ProfileNotFound
