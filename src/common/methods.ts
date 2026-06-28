@@ -1,6 +1,5 @@
 import { DeviceUUID } from '@/common/uuid'
 import { createClient } from '@sanity/client'
-import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
 import { Game, Tag } from 'biketag/dist/common/schema'
 import CryptoJS from 'crypto-js'
 import domtoimage from 'dom-to-image'
@@ -521,29 +520,6 @@ export const debug = (
     console[level](message, context)
   }
   log.debug(message, context)
-}
-
-export const feetToKm = (feets: number) => feets * 0.0003048
-
-export const isPointInPolygon = (
-  geojson: any,
-  gps: { lng: number; lat: number },
-  distanceOffInFeet: number,
-) => {
-  const distanceOffInKilometers = feetToKm(distanceOffInFeet)
-
-  // Create turf.js point and polygon
-  const turfPoint = point([gps.lng, gps.lat])
-  const turfPolygon =
-    geojson.type === 'MultiPolygon'
-      ? multiPolygon(geojson.coordinates)
-      : polygon(geojson.coordinates)
-
-  // Buffer the polygon by the error amount
-  const bufferedPolygon = buffer(turfPolygon, distanceOffInKilometers, { units: 'kilometers' })
-
-  // Check if the point is inside the buffered polygon
-  return booleanPointInPolygon(turfPoint, bufferedPolygon)
 }
 
 export const isOnline = async (checkExternally = false) => {

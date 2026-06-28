@@ -136,7 +136,8 @@
 
 <script setup name="QueueFoundTag">
 import Pin from '@/assets/images/pin.svg'
-import { debug, isAuthenticationEnabled, isGmapsEnabled, isPointInPolygon } from '@/common'
+import { debug, isAuthenticationEnabled, isGmapsEnabled } from '@/common'
+import { isPointInPolygon } from '@/common/geo'
 import { useBikeTagStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
 import exifr from 'exifr'

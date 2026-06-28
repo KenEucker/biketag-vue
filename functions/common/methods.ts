@@ -13,13 +13,13 @@ import lzutf8 from 'lzutf8'
 import nodemailer from 'nodemailer'
 import { extname, join } from 'path'
 import qs from 'qs'
+import { BikeTagEnv } from '../../src/common/constants'
 import {
-  BikeTagEnv,
   getDomainInfo,
   getImageSized,
   getTagDateISOFromTimezone,
   isAuthenticationEnabled,
-} from '../../src/common'
+} from '../../src/common/methods'
 import { BikeTagProfile } from '../../src/common/types'
 import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue } from './types'
