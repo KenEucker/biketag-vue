@@ -458,7 +458,170 @@ export const requireGlobalAdmin = (profile: any): boolean => {
   return isGlobalAdminEmail(profile?.email)
 }
 
+export type QueueIssueCategory =
+  | 'non-webp'
+  | 'missing-variants'
+  | 'wrong-round'
+  | 'duplicate-uploader'
+
+export type QueueIssue = {
+  category: QueueIssueCategory
+  tagnumber: number
+  playerId?: string
+  player?: string
+  type?: 'found' | 'mystery'
+  url?: string
+  issue: string
+  relatedTagnumbers?: number[]
+}
+
+const queuePathPattern = /\/queue\//
 const nonWebpImagePattern = /\.(jpe?g|png|gif|bmp)(?:\?.*)?$/i
+const webpVariantSuffixPattern = /_(medium|small)\.webp(?:\?.*)?$/i
+
+export const getQueueUploaderKey = (tag: Tag): string | undefined => {
+  if (tag.playerId?.length) return `id:${tag.playerId}`
+  const name = (tag.mysteryPlayer || tag.foundPlayer || '').trim().toLowerCase()
+  return name.length ? `name:${name}` : undefined
+}
+
+export const getQueueImageBaseUrl = (url: string): string =>
+  url.replace(/\.(webp|jpe?g|png|gif|bmp)(?:\?.*)?$/i, '').replace(/_(medium|small)$/i, '')
+
+export const getQueueVariantUrls = (url: string): { medium: string; small: string } => {
+  const base = getQueueImageBaseUrl(url)
+  return { medium: `${base}_medium.webp`, small: `${base}_small.webp` }
+}
+
+export const isFixableQueueIssue = (issue: QueueIssue): boolean =>
+  issue.category === 'non-webp' || issue.category === 'missing-variants'
+
+export const summarizeQueueIssues = (issues: QueueIssue[] = []) => {
+  const summary: Record<QueueIssueCategory, number> = {
+    'non-webp': 0,
+    'missing-variants': 0,
+    'wrong-round': 0,
+    'duplicate-uploader': 0,
+  }
+
+  for (const issue of issues) {
+    summary[issue.category]++
+  }
+
+  return summary
+}
+
+export async function collectQueueIssues(
+  queue: Tag[] = [],
+  currentTag?: Tag,
+  options: { checkVariants?: boolean } = {},
+): Promise<QueueIssue[]> {
+  const issues: QueueIssue[] = []
+  const expectedQueueRound = (currentTag?.tagnumber ?? 0) + 1
+  const variantChecks: Promise<void>[] = []
+
+  for (const tag of queue) {
+    const player = tag.foundPlayer || tag.mysteryPlayer
+    const imageFields: Array<{ type: 'found' | 'mystery'; url?: string }> = [
+      { type: 'found', url: tag.foundImageUrl },
+      { type: 'mystery', url: tag.mysteryImageUrl },
+    ]
+
+    if (currentTag && tag.tagnumber !== expectedQueueRound) {
+      issues.push({
+        category: 'wrong-round',
+        tagnumber: tag.tagnumber,
+        playerId: tag.playerId,
+        player,
+        issue: `queue tag is for round #${tag.tagnumber}, expected round #${expectedQueueRound}`,
+      })
+    }
+
+    for (const { type, url } of imageFields) {
+      if (!url?.length || !queuePathPattern.test(url)) continue
+
+      if (nonWebpImagePattern.test(url)) {
+        issues.push({
+          category: 'non-webp',
+          tagnumber: tag.tagnumber,
+          playerId: tag.playerId,
+          player,
+          type,
+          url,
+          issue: 'queue image is not webp',
+        })
+        continue
+      }
+
+      if (
+        options.checkVariants &&
+        /\.webp(?:\?.*)?$/i.test(url) &&
+        !webpVariantSuffixPattern.test(url)
+      ) {
+        variantChecks.push(
+          (async () => {
+            const { medium, small } = getQueueVariantUrls(url)
+            const missing: string[] = []
+
+            for (const variantUrl of [medium, small]) {
+              try {
+                const res = await fetch(variantUrl, { method: 'HEAD' })
+                if (!res.ok) missing.push(variantUrl)
+              } catch {
+                missing.push(variantUrl)
+              }
+            }
+
+            if (missing.length) {
+              issues.push({
+                category: 'missing-variants',
+                tagnumber: tag.tagnumber,
+                playerId: tag.playerId,
+                player,
+                type,
+                url,
+                issue: `missing sized variant${missing.length > 1 ? 's' : ''}: ${missing
+                  .map((variantUrl) => variantUrl.split('/').pop())
+                  .join(', ')}`,
+              })
+            }
+          })(),
+        )
+      }
+    }
+  }
+
+  await Promise.all(variantChecks)
+
+  const uploaderTags = new Map<string, Tag[]>()
+  for (const tag of queue) {
+    const key = getQueueUploaderKey(tag)
+    if (!key) continue
+    uploaderTags.set(key, [...(uploaderTags.get(key) ?? []), tag])
+  }
+
+  for (const tags of uploaderTags.values()) {
+    if (tags.length <= 1) continue
+
+    const tagnumbers = [...new Set(tags.map((tag) => tag.tagnumber))].sort((a, b) => a - b)
+    const exampleTag = tags[0]
+    const player = exampleTag.foundPlayer || exampleTag.mysteryPlayer
+
+    issues.push({
+      category: 'duplicate-uploader',
+      tagnumber: exampleTag.tagnumber,
+      playerId: exampleTag.playerId,
+      player,
+      issue:
+        tagnumbers.length > 1
+          ? `uploader has ${tags.length} queue entries across rounds #${tagnumbers.join(', #')}`
+          : `uploader has ${tags.length} separate queue entries for round #${tagnumbers[0]}`,
+      relatedTagnumbers: tagnumbers,
+    })
+  }
+
+  return issues
+}
 
 export const getQueueImageUrlIssues = (tags: Tag[] = []) => {
   const issues: Array<{

@@ -2,14 +2,16 @@ import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
   coerceBooleanQueryParam,
+  collectQueueIssues,
   getBikeTagClientOpts,
   getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
-  getQueueImageUrlIssues,
+  isFixableQueueIssue,
   log,
   requireGlobalAdmin,
+  summarizeQueueIssues,
 } from './common'
 import { HttpStatusCode } from './common/constants'
 
@@ -112,13 +114,22 @@ export default async (req: Request) => {
     }
 
     const queue = queueResponse.data ?? []
-    const issues = getQueueImageUrlIssues(queue)
+    const currentTagResponse = await adminBiketag.getTag(undefined, { source: imageSource })
+    const currentTag = currentTagResponse.success ? currentTagResponse.data : undefined
+    const issues = await collectQueueIssues(queue, currentTag, { checkVariants: true })
+    const summary = summarizeQueueIssues(issues)
+    const fixableIssueCount = issues.filter(isFixableQueueIssue).length
     const responsePayload = {
       success: true,
       fixed: shouldFix,
       queueReindexed: true,
       queueResized: shouldFix,
+      currentRound: currentTag?.tagnumber,
+      expectedQueueRound: (currentTag?.tagnumber ?? 0) + 1,
+      queueCount: queue.length,
       issueCount: issues.length,
+      fixableIssueCount,
+      summary,
       issues,
       queue,
     }
@@ -126,7 +137,9 @@ export default async (req: Request) => {
     log('[queue-fix] Completed', {
       fixed: shouldFix,
       issueCount: issues.length,
+      fixableIssueCount,
       queueCount: queue.length,
+      summary,
     })
 
     return new Response(JSON.stringify(responsePayload), {
