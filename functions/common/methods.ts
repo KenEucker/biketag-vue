@@ -443,10 +443,117 @@ export const getProfileAuthorization = async (req: Request): Promise<any> => {
       profile = { ...profile, ...profileAmbassadorMatch[0] }
       log('Profile marked as BikeTagAmbassador', { email: profile.email }, 'info')
     }
+
+    if (isGlobalAdminEmail(profile.email)) {
+      profile.isBikeTagAdmin = true
+      log('Profile marked as BikeTagAdmin', { email: profile.email }, 'info')
+    }
   }
 
   return profile
 }
+
+export const requireGlobalAdmin = (profile: any): boolean => {
+  return isGlobalAdminEmail(profile?.email)
+}
+
+const nonWebpImagePattern = /\.(jpe?g|png|gif|bmp)(?:\?.*)?$/i
+
+export const getQueueImageUrlIssues = (tags: Tag[] = []) => {
+  const issues: Array<{
+    tagnumber: number
+    playerId?: string
+    foundPlayer?: string
+    type: 'found' | 'mystery'
+    url: string
+    issue: string
+  }> = []
+
+  for (const tag of tags) {
+    const imageFields: Array<{ type: 'found' | 'mystery'; url?: string }> = [
+      { type: 'found', url: tag.foundImageUrl },
+      { type: 'mystery', url: tag.mysteryImageUrl },
+    ]
+
+    for (const { type, url } of imageFields) {
+      if (!url?.length) continue
+      if (!/\/queue\//.test(url)) continue
+
+      if (nonWebpImagePattern.test(url)) {
+        issues.push({
+          tagnumber: tag.tagnumber,
+          playerId: tag.playerId,
+          foundPlayer: tag.foundPlayer,
+          type,
+          url,
+          issue: 'webp conversion failed or pending',
+        })
+      }
+    }
+  }
+
+  return issues
+}
+
+export const getMainImageUrlIssues = (tags: Tag | Tag[] = []) => {
+  const tagList = Array.isArray(tags) ? tags : [tags]
+  const issues: Array<{
+    tagnumber: number
+    playerId?: string
+    foundPlayer?: string
+    type: 'found' | 'mystery'
+    url: string
+    issue: string
+  }> = []
+
+  for (const tag of tagList) {
+    if (!tag) continue
+
+    const imageFields: Array<{ type: 'found' | 'mystery'; url?: string }> = [
+      { type: 'found', url: tag.foundImageUrl },
+      { type: 'mystery', url: tag.mysteryImageUrl },
+    ]
+
+    for (const { type, url } of imageFields) {
+      if (!url?.length) continue
+      if (!/\/main\//.test(url)) continue
+
+      if (nonWebpImagePattern.test(url)) {
+        issues.push({
+          tagnumber: tag.tagnumber,
+          playerId: tag.playerId,
+          foundPlayer: tag.foundPlayer,
+          type,
+          url,
+          issue: 'main folder must use webp',
+        })
+      }
+    }
+  }
+
+  return issues
+}
+
+export const getMainFolderUpdateOpts = (game: Game, imageSource: string) => {
+  if (imageSource !== 'aws') {
+    return { source: imageSource }
+  }
+
+  return {
+    source: imageSource,
+    resize: true,
+    host: getQueueApiHost(game.name),
+    region: game.awsRegion,
+  }
+}
+
+export const coerceBooleanQueryParam = (value: unknown): boolean | undefined => {
+  if (value === true || value === 'true' || value === '1') return true
+  if (value === false || value === 'false' || value === '0') return false
+  return undefined
+}
+
+export const getQueueApiHost = (game = ''): string => getApiUrl(game, '').replace(/\/$/, '')
 
 export const getPayloadAuthorization = async (
   req: any,
@@ -1671,10 +1778,10 @@ export const setNewBikeTagPost = async (
   previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
   previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
 
+  const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource)
+
   log('Updating current BikeTag with winning tag found info', previousBikeTag, 'info')
-  const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, {
-    source: imageSource,
-  })
+  const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, mainUpdateOpts)
   log('Result of currentBikeTag update', currentBikeTagUpdateResult, 'info')
 
   if (currentBikeTagUpdateResult.success) {
@@ -1689,9 +1796,7 @@ export const setNewBikeTagPost = async (
     errors = true
   }
 
-  const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost, {
-    source: imageSource,
-  })
+  const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost, mainUpdateOpts)
   log('Result of newBikeTag update', newBikeTagUpdateResult, 'info')
 
   if (newBikeTagUpdateResult.success) {

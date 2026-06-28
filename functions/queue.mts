@@ -1,9 +1,11 @@
 import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
+  coerceBooleanQueryParam,
   getBikeTagClientOpts,
   getImageSource,
   getPayloadOpts,
+  getQueueApiHost,
   HttpStatusCode,
   log,
 } from './common'
@@ -38,7 +40,15 @@ export default async (req: Request) => {
     const biketagPayload = await getPayloadOpts(req, {
       imgur: { hash: game.mainhash },
       game: biketagOpts.game,
+      host: getQueueApiHost(biketagOpts.game),
+      region: game.awsRegion,
     })
+    if (coerceBooleanQueryParam(biketagPayload.resize) !== undefined) {
+      biketagPayload.resize = coerceBooleanQueryParam(biketagPayload.resize)
+    }
+    if (coerceBooleanQueryParam(biketagPayload.reindex) !== undefined) {
+      biketagPayload.reindex = coerceBooleanQueryParam(biketagPayload.reindex)
+    }
     log('[get-queue] Prepared biketag payload', biketagPayload)
 
     const imageSource = getImageSource(game)

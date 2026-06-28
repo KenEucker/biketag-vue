@@ -465,6 +465,55 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return 'incorrect permissions'
     },
+    async scanQueueIssues() {
+      if (!this.profile?.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'GET',
+          url: getApiUrl('queue-fix'),
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to scan queue'
+      } catch (e: any) {
+        console.error('error scanning queue', e?.message ?? e)
+        return 'error scanning queue'
+      }
+    },
+    async fixQueueIssues() {
+      if (!this.profile?.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('queue-fix'),
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          this.resetBikeTagCache()
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to fix queue'
+      } catch (e: any) {
+        console.error('error fixing queue', e?.message ?? e)
+        return 'error fixing queue'
+      }
+    },
     async dequeueTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         try {
@@ -690,7 +739,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.deleteTag(queuedTag, { source }).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-found-tag`, this.playerTag)
-            await client.getQueue({ reindex: true }, { source: 'biketag' })
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
             this.SET_QUEUED_TAG({})
             this.RESET_FORM_STEP_TO_FOUND()
 
@@ -718,7 +767,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.deleteTag(queuedMysteryTag, { source }).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-mystery-tag`, 'mystery tag dequeued')
-            await client.getQueue({ reindex: true }, { source: 'biketag' })
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
             this.SET_QUEUED_TAG(queuedFoundTag)
             this.RESET_FORM_STEP_TO_MYSTERY()
 
@@ -1241,6 +1290,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     isBikeTagAmbassador(state) {
       return state.profile?.isBikeTagAmbassador
+    },
+    isBikeTagAdmin(state) {
+      return state.profile?.isBikeTagAdmin
     },
   },
 })

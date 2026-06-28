@@ -67,6 +67,7 @@ export interface AmbassadorProfile extends Profile {
   city: string
   country: string
   isBikeTagAmbassador: boolean
+  isBikeTagAdmin?: boolean
   phone: string
   user_metadata?: AmbassadorMeta
   zipcode: string

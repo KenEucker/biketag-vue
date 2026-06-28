@@ -49,9 +49,26 @@
         </span>
         Create New Round
       </router-link>
+
+      <router-link v-if="isBikeTagAdmin" to="/admin" class="action-button">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7L12 16.8 5.7 21.1 8 14 2 9.4h7.6z" />
+          </svg>
+        </span>
+        Fix Queue Images
+      </router-link>
     </div>
   </div>
 </template>
+
+<script setup name="DashboardView">
+import { useBikeTagStore } from '@/store/index'
+import { computed } from 'vue'
+
+const store = useBikeTagStore()
+const isBikeTagAdmin = computed(() => store.isBikeTagAdmin)
+</script>
 
 <style scoped lang="scss">
 .ambassador-dashboard {

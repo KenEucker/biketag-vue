@@ -1,4 +1,5 @@
 import About from '@/views/About.vue'
+import Admin from '@/views/Admin.vue'
 import Approve from '@/views/Approve.vue'
 import BikeTags from '@/views/BikeTags.vue'
 import Dashboard from '@/views/Dashboard.vue'
@@ -41,6 +42,12 @@ const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
         name: 'Dashboard',
         beforeEnter: authGuard,
         component: Dashboard,
+      },
+      {
+        path: '/admin',
+        name: 'Admin',
+        beforeEnter: authGuard,
+        component: Admin,
       },
       {
         path: '/delete',

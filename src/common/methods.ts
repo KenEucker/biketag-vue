@@ -91,6 +91,25 @@ export const getS3ImageSized = (
 ): string => {
   if (!imageUrl || size === 'original') return imageUrl
 
+  if (/digitaloceanspaces\.com/.test(imageUrl)) {
+    const isMainFolder = /\/main\//.test(imageUrl)
+    const ext = imageUrl.match(/(\.[a-z0-9]+)(?:\?.*)?$/i)?.[1]?.toLowerCase() ?? ''
+    const base = imageUrl.replace(/(_small|_medium)?\.[a-z0-9]+(?:\?.*)?$/i, '')
+
+    // Main folder images are always webp with webp variants.
+    if (isMainFolder) {
+      return `${base}_${size}.webp`
+    }
+
+    // Queue webp images may have webp variants after optional processing.
+    if (ext === '.webp') {
+      return `${base}_${size}.webp`
+    }
+
+    // Queue jpg/png/etc: use the uploaded original as-is.
+    return imageUrl
+  }
+
   return imageUrl.replace(/(_small|_medium)?(\.\w+)$/, `_${size}$2`)
 }
 
