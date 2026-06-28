@@ -3,9 +3,8 @@ import {
   acceptCorsHeaders,
   coerceBooleanQueryParam,
   collectQueueIssuesFromStorage,
-  collectQueueIssuesFromTags,
   getBikeTagClientOpts,
-  getImageSource,
+  getGameStorageSlug,
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
@@ -64,19 +63,24 @@ export default async (req: Request) => {
       })
     }
 
-    const biketag = new BikeTagClient(getBikeTagClientOpts(req, true, false, game))
-    const imageSource = getImageSource(game)
-
-    if (imageSource === 'aws') {
-      biketag.config(
-        {
-          biketag: { host: process.env.HOST },
-          aws: { region: game.awsRegion },
-        },
-        false,
-        true,
-      )
+    if (!game.awsRegion?.length) {
+      return new Response(JSON.stringify({ error: 'game has no aws region configured' }), {
+        headers,
+        status: HttpStatusCode.BadRequest,
+      })
     }
+
+    const gameSlug = getGameStorageSlug(game, biketagOpts.game)
+    const biketag = new BikeTagClient(getBikeTagClientOpts(req, true, false, game))
+
+    biketag.config(
+      {
+        biketag: { host: process.env.HOST },
+        aws: { region: game.awsRegion },
+      },
+      false,
+      true,
+    )
 
     const payloadOpts = await getPayloadOpts(req, {
       imgur: { hash: game.mainhash },
@@ -91,7 +95,7 @@ export default async (req: Request) => {
     log('[queue-fix] Running queue scan', {
       shouldFix,
       game: game.name,
-      imageSource,
+      gameSlug,
       awsRegion: game.awsRegion,
     })
 
@@ -111,13 +115,13 @@ export default async (req: Request) => {
       if (!fixResponse.success) {
         log(
           '[queue-fix] getQueue fix failed',
-          { error: fixResponse.error, status: fixResponse.status, imageSource },
+          { error: fixResponse.error, status: fixResponse.status },
           'error',
         )
         return new Response(
           JSON.stringify({
             success: false,
-            error: fixResponse.error ?? 'failed to fix queue',
+            error: fixResponse.error ?? 'failed to fix queue folder',
           }),
           {
             headers,
@@ -127,64 +131,50 @@ export default async (req: Request) => {
       }
     }
 
-    const currentTagResponse = await biketag.getTag({ slug: 'current' }, { source: 'sanity' })
+    // Current round lives in the main folder index.
+    const currentTagResponse = await biketag.getTag(undefined, { source: 'aws' })
     const currentTag = currentTagResponse.success ? currentTagResponse.data : undefined
 
-    let queue: Tag[] = []
-    let issues: QueueIssue[] = []
-    let storageFileCount = 0
-    let inspectedFrom: 'storage' | 'queue' = 'queue'
-
-    if (imageSource === 'aws' && game.awsRegion?.length) {
-      inspectedFrom = 'storage'
-      const storage = await loadQueueStorageImages(biketagOpts.game, game.awsRegion)
-      storageFileCount = storage.keys.length
-      queue = simulateGetQueueTagsFromStorage(storage.images, biketagOpts.game)
-      issues = collectQueueIssuesFromStorage(
-        storage.images,
-        storage.keys,
-        currentTag,
-        queue,
+    if (!currentTagResponse.success) {
+      log(
+        '[queue-fix] Could not load current tag from main folder',
+        { error: currentTagResponse.error },
+        'warn',
       )
+    }
 
-      log('[queue-fix] Inspected queue storage', {
-        storageFileCount,
-        primaryImages: storage.images.length,
-        simulatedQueueCount: queue.length,
+    // Inspect the queue folder directly — do not rely on getQueue grouping alone.
+    const storage = await loadQueueStorageImages(gameSlug, game.awsRegion)
+    const queue = simulateGetQueueTagsFromStorage(storage.images, gameSlug)
+    const issues: QueueIssue[] = collectQueueIssuesFromStorage(
+      storage.images,
+      storage.keys,
+      currentTag,
+      queue,
+      storage.unparsedKeys,
+    )
+
+    log('[queue-fix] Inspected queue folder', {
+      storageBucket: storage.bucket,
+      storageFileCount: storage.keys.length,
+      primaryImages: storage.images.length,
+      unparsedKeyCount: storage.unparsedKeys.length,
+      simulatedQueueCount: queue.length,
+      currentRound: currentTag?.tagnumber,
+    })
+
+    if (storage.keys.length === 0) {
+      issues.push({
+        category: 'missing-variants',
+        tagnumber: currentTag?.tagnumber ?? 0,
+        issue: `no files found in ${storage.bucket}/queue/ — check bucket, credentials, or region (${game.awsRegion})`,
       })
-    } else {
-      const queueResponse = await biketag.getQueue(
-        {
-          game: biketagOpts.game,
-          host: getQueueApiHost(biketagOpts.game),
-          region: game.awsRegion,
-          cached: false,
-          reindex: !shouldFix,
-          resize: false,
-        },
-        { source: imageSource },
+    } else if (storage.images.length === 0) {
+      log(
+        '[queue-fix] Queue folder files present but none matched expected naming pattern',
+        { sampleKeys: storage.keys.slice(0, 5), unparsedKeys: storage.unparsedKeys.slice(0, 5) },
+        'warn',
       )
-
-      if (!queueResponse.success) {
-        log(
-          '[queue-fix] getQueue failed',
-          { error: queueResponse.error, status: queueResponse.status, imageSource },
-          'error',
-        )
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: queueResponse.error ?? 'failed to load queue',
-          }),
-          {
-            headers,
-            status: queueResponse.status ?? HttpStatusCode.BadRequest,
-          },
-        )
-      }
-
-      queue = queueResponse.data ?? []
-      issues = await collectQueueIssuesFromTags(queue, currentTag)
     }
 
     const summary = summarizeQueueIssues(issues)
@@ -194,10 +184,11 @@ export default async (req: Request) => {
       fixed: shouldFix,
       queueReindexed: shouldFix,
       queueResized: shouldFix,
-      inspectedFrom,
       currentRound: currentTag?.tagnumber,
       expectedQueueRound: (currentTag?.tagnumber ?? 0) + 1,
-      storageFileCount,
+      storageBucket: storage.bucket,
+      storageFileCount: storage.keys.length,
+      unparsedKeyCount: storage.unparsedKeys.length,
       queueCount: queue.length,
       issueCount: issues.length,
       fixableIssueCount,
@@ -208,11 +199,11 @@ export default async (req: Request) => {
 
     log('[queue-fix] Completed', {
       fixed: shouldFix,
-      inspectedFrom,
+      currentRound: currentTag?.tagnumber,
       issueCount: issues.length,
       fixableIssueCount,
       queueCount: queue.length,
-      storageFileCount,
+      storageFileCount: storage.keys.length,
       summary,
     })
 

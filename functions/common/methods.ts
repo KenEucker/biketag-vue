@@ -479,7 +479,10 @@ export type QueueIssue = {
 const queuePathPattern = /\/queue\//
 const nonWebpImagePattern = /\.(jpe?g|png|gif|bmp)(?:\?.*)?$/i
 const queuePrimaryImageKeyPattern =
-  /^queue\/(.+?)--(mystery|found)--([a-z0-9]+)\.(webp|jpg|jpeg|png|gif|bmp)$/i
+  /^queue\/(.+?)--(mystery|found)(?:--([a-z0-9]+))?\.(webp|jpg|jpeg|png|gif|bmp)$/i
+
+export const getGameStorageSlug = (game: Game, fallback = ''): string =>
+  (game.slug ?? game.name ?? fallback).toLowerCase()
 
 export type QueueStorageImage = {
   key: string
@@ -561,24 +564,45 @@ const listQueueObjectKeys = async (
   return keys
 }
 
+const parseQueueImageKey = (key: string) => {
+  if (/_medium\.webp$|_small\.webp$/i.test(key)) return undefined
+  if (key.endsWith('/index.json')) return undefined
+
+  const match = key.match(queuePrimaryImageKeyPattern)
+  if (!match) return undefined
+
+  const [, , type, playerHash = '', extension] = match
+  const tagnumber = parseTagnumberFromQueueKey(key)
+  if (tagnumber === undefined) return undefined
+
+  return {
+    type: type as 'found' | 'mystery',
+    playerHash,
+    extension: extension.toLowerCase(),
+    tagnumber,
+  }
+}
+
 export const loadQueueStorageImages = async (
   game: string,
   region: string,
-): Promise<{ keys: string[]; images: QueueStorageImage[] }> => {
+): Promise<{ bucket: string; keys: string[]; images: QueueStorageImage[]; unparsedKeys: string[] }> => {
   const client = createQueueStorageClient(region)
   const bucket = `${game.toLowerCase()}-biketag`
   const keys = await listQueueObjectKeys(client, bucket, 'queue/')
   const images: QueueStorageImage[] = []
+  const unparsedKeys: string[] = []
 
   for (const key of keys) {
-    if (/_medium\.webp$|_small\.webp$/i.test(key)) continue
+    const parsed = parseQueueImageKey(key)
+    if (!parsed) {
+      if (/^queue\//.test(key)) {
+        unparsedKeys.push(key)
+      }
+      continue
+    }
 
-    const match = key.match(queuePrimaryImageKeyPattern)
-    if (!match) continue
-
-    const [, , type, playerHash, extension] = match
-    const tagnumberFromKey = parseTagnumberFromQueueKey(key)
-    if (tagnumberFromKey === undefined) continue
+    const { type, playerHash, extension, tagnumber: tagnumberFromKey } = parsed
 
     let playerId: string | undefined
     let mysteryPlayer: string | undefined
@@ -610,10 +634,10 @@ export const loadQueueStorageImages = async (
       key,
       url: `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${key}`,
       baseKey,
-      type: type as 'found' | 'mystery',
+      type,
       tagnumber,
       playerHash,
-      extension: extension.toLowerCase(),
+      extension,
       playerId,
       mysteryPlayer,
       foundPlayer,
@@ -622,7 +646,7 @@ export const loadQueueStorageImages = async (
     })
   }
 
-  return { keys, images }
+  return { bucket, keys, images, unparsedKeys }
 }
 
 const getStorageUploaderKey = (image: QueueStorageImage): string | undefined => {
@@ -630,7 +654,7 @@ const getStorageUploaderKey = (image: QueueStorageImage): string | undefined => 
   const name = (image.mysteryPlayer || image.foundPlayer || '').trim().toLowerCase()
   if (name.length) return `name:${name}`
   if (image.playerHash?.length) return `hash:${image.playerHash}`
-  return undefined
+  return `tag:${image.tagnumber}-${image.type}`
 }
 
 export const simulateGetQueueTagsFromStorage = (
@@ -683,11 +707,22 @@ export const collectQueueIssuesFromStorage = (
   allKeys: string[] = [],
   currentTag?: Tag,
   simulatedQueue: Tag[] = [],
+  unparsedKeys: string[] = [],
 ): QueueIssue[] => {
   const issues: QueueIssue[] = []
   const expectedQueueRound = (currentTag?.tagnumber ?? 0) + 1
   const keySet = new Set(allKeys)
   const reportedDuplicateHashes = new Set<string>()
+
+  for (const key of unparsedKeys) {
+    const tagnumber = parseTagnumberFromQueueKey(key) ?? 0
+    issues.push({
+      category: 'non-webp',
+      tagnumber,
+      issue: `unrecognized queue file: ${key.split('/').pop()}`,
+      url: key,
+    })
+  }
 
   for (const image of images) {
     const player = image.foundPlayer || image.mysteryPlayer || image.playerHash

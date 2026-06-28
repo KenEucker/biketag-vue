@@ -44,12 +44,8 @@
           <dd>#{{ report.expectedQueueRound ?? 'unknown' }}</dd>
         </div>
         <div>
-          <dt>Storage files</dt>
-          <dd>{{ report.storageFileCount ?? 'n/a' }}</dd>
-        </div>
-        <div>
-          <dt>Inspected from</dt>
-          <dd>{{ report.inspectedFrom ?? 'queue' }}</dd>
+          <dt>Queue folder files</dt>
+          <dd>{{ report.storageFileCount ?? 0 }}</dd>
         </div>
         <div>
           <dt>Simulated queue entries</dt>
@@ -156,7 +152,7 @@ function applyScanResult(result) {
     expectedQueueRound: result.expectedQueueRound,
     queueCount: result.queueCount,
     storageFileCount: result.storageFileCount,
-    inspectedFrom: result.inspectedFrom,
+    storageBucket: result.storageBucket,
     fixableIssueCount: result.fixableIssueCount ?? 0,
     summary: result.summary ?? {},
   }
