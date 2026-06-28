@@ -1,4 +1,5 @@
 import { AtpAgent } from '@atproto/api'
+import { HeadObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3'
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
@@ -477,20 +478,325 @@ export type QueueIssue = {
 
 const queuePathPattern = /\/queue\//
 const nonWebpImagePattern = /\.(jpe?g|png|gif|bmp)(?:\?.*)?$/i
-const webpVariantSuffixPattern = /_(medium|small)\.webp(?:\?.*)?$/i
+const queuePrimaryImageKeyPattern =
+  /^queue\/(.+?)--(mystery|found)--([a-z0-9]+)\.(webp|jpg|jpeg|png|gif|bmp)$/i
+
+export type QueueStorageImage = {
+  key: string
+  url: string
+  baseKey: string
+  type: 'found' | 'mystery'
+  tagnumber: number
+  playerHash: string
+  extension: string
+  playerId?: string
+  mysteryPlayer?: string
+  foundPlayer?: string
+  title?: string
+  description?: string
+}
+
+export const createQueueStorageClient = (region: string): S3Client => {
+  return new S3Client({
+    region,
+    endpoint: `https://${region}.digitaloceanspaces.com`,
+    credentials: {
+      accessKeyId: process.env.S3_BE_ACCESS_ID ?? '',
+      secretAccessKey: process.env.S3_BE_ACCESS_KEY ?? '',
+    },
+  })
+}
+
+const decodeQueueMetadataValue = (value: string): string => {
+  try {
+    if (!value || !/^[A-Za-z0-9+/=]+$/.test(value)) return value
+    return Buffer.from(value, 'base64').toString('utf-8')
+  } catch {
+    return value
+  }
+}
+
+const parseQueueObjectMetadata = (data?: string) => {
+  if (!data) return undefined
+  try {
+    const tag = JSON.parse(decodeQueueMetadataValue(data))
+    const tagnumber = typeof tag.t === 'number' ? tag.t : undefined
+    if (tagnumber === undefined) return undefined
+    return {
+      tagnumber,
+      playerId: tag.p as string | undefined,
+      mysteryPlayer: tag.mp as string | undefined,
+      foundPlayer: tag.fp as string | undefined,
+    }
+  } catch {
+    return undefined
+  }
+}
+
+const parseTagnumberFromQueueKey = (key: string): number | undefined => {
+  const match = key.match(/-tag-(\d+)--(?:mystery|found)--/i)
+  return match ? parseInt(match[1], 10) : undefined
+}
+
+const listQueueObjectKeys = async (
+  client: S3Client,
+  bucket: string,
+  prefix: string,
+): Promise<string[]> => {
+  const keys: string[] = []
+  let continuationToken: string | undefined
+
+  do {
+    const response = await client.send(
+      new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      }),
+    )
+    keys.push(...(response.Contents?.map((obj) => obj.Key).filter(Boolean) as string[]) ?? [])
+    continuationToken = response.NextContinuationToken
+  } while (continuationToken)
+
+  return keys
+}
+
+export const loadQueueStorageImages = async (
+  game: string,
+  region: string,
+): Promise<{ keys: string[]; images: QueueStorageImage[] }> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${game.toLowerCase()}-biketag`
+  const keys = await listQueueObjectKeys(client, bucket, 'queue/')
+  const images: QueueStorageImage[] = []
+
+  for (const key of keys) {
+    if (/_medium\.webp$|_small\.webp$/i.test(key)) continue
+
+    const match = key.match(queuePrimaryImageKeyPattern)
+    if (!match) continue
+
+    const [, , type, playerHash, extension] = match
+    const tagnumberFromKey = parseTagnumberFromQueueKey(key)
+    if (tagnumberFromKey === undefined) continue
+
+    let playerId: string | undefined
+    let mysteryPlayer: string | undefined
+    let foundPlayer: string | undefined
+    let tagnumber = tagnumberFromKey
+    let title: string | undefined
+    let description: string | undefined
+
+    try {
+      const head = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }))
+      title = head.Metadata?.title ? decodeQueueMetadataValue(head.Metadata.title) : undefined
+      description = head.Metadata?.description
+        ? decodeQueueMetadataValue(head.Metadata.description)
+        : undefined
+      const meta = parseQueueObjectMetadata(head.Metadata?.data)
+      if (meta) {
+        playerId = meta.playerId
+        mysteryPlayer = meta.mysteryPlayer
+        foundPlayer = meta.foundPlayer
+        tagnumber = meta.tagnumber
+      }
+    } catch {
+      // keep key-derived values
+    }
+
+    const baseKey = key.replace(/\.(webp|jpe?g|png|gif|bmp)$/i, '').replace(/_(medium|small)$/i, '')
+
+    images.push({
+      key,
+      url: `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${key}`,
+      baseKey,
+      type: type as 'found' | 'mystery',
+      tagnumber,
+      playerHash,
+      extension: extension.toLowerCase(),
+      playerId,
+      mysteryPlayer,
+      foundPlayer,
+      title,
+      description,
+    })
+  }
+
+  return { keys, images }
+}
+
+const getStorageUploaderKey = (image: QueueStorageImage): string | undefined => {
+  if (image.playerId?.length) return `id:${image.playerId}`
+  const name = (image.mysteryPlayer || image.foundPlayer || '').trim().toLowerCase()
+  if (name.length) return `name:${name}`
+  if (image.playerHash?.length) return `hash:${image.playerHash}`
+  return undefined
+}
+
+export const simulateGetQueueTagsFromStorage = (
+  images: QueueStorageImage[] = [],
+  game = '',
+): Tag[] => {
+  const byTagnumber = new Map<number, QueueStorageImage[]>()
+
+  for (const image of images) {
+    byTagnumber.set(image.tagnumber, [...(byTagnumber.get(image.tagnumber) ?? []), image])
+  }
+
+  const tagnumbers = [...byTagnumber.keys()].sort((a, b) => a - b)
+  if (!tagnumbers.length) return []
+
+  const highest = tagnumbers[tagnumbers.length - 1]
+  const relevantTagnumbers = [highest, highest - 1].filter((n) => n > 0 && byTagnumber.has(n))
+  const playerImages = new Map<string, QueueStorageImage[]>()
+
+  for (const tagnumber of relevantTagnumbers) {
+    for (const image of byTagnumber.get(tagnumber) ?? []) {
+      const key = getStorageUploaderKey(image)
+      if (!key) continue
+      playerImages.set(key, [...(playerImages.get(key) ?? []), image])
+    }
+  }
+
+  const tags: Tag[] = []
+  for (const group of playerImages.values()) {
+    const mystery = group.find((image) => image.type === 'mystery')
+    const found = group.find((image) => image.type === 'found')
+    const tagnumber = mystery?.tagnumber ?? found?.tagnumber ?? 0
+
+    tags.push({
+      tagnumber,
+      game,
+      playerId: mystery?.playerId ?? found?.playerId,
+      mysteryPlayer: mystery?.mysteryPlayer,
+      foundPlayer: found?.foundPlayer,
+      mysteryImageUrl: mystery?.url,
+      foundImageUrl: found?.url,
+    } as Tag)
+  }
+
+  return tags
+}
+
+export const collectQueueIssuesFromStorage = (
+  images: QueueStorageImage[] = [],
+  allKeys: string[] = [],
+  currentTag?: Tag,
+  simulatedQueue: Tag[] = [],
+): QueueIssue[] => {
+  const issues: QueueIssue[] = []
+  const expectedQueueRound = (currentTag?.tagnumber ?? 0) + 1
+  const keySet = new Set(allKeys)
+  const reportedDuplicateHashes = new Set<string>()
+
+  for (const image of images) {
+    const player = image.foundPlayer || image.mysteryPlayer || image.playerHash
+
+    if (currentTag && image.tagnumber !== expectedQueueRound) {
+      issues.push({
+        category: 'wrong-round',
+        tagnumber: image.tagnumber,
+        playerId: image.playerId,
+        player,
+        type: image.type,
+        url: image.url,
+        issue: `queue file is for round #${image.tagnumber}, expected round #${expectedQueueRound}`,
+      })
+    }
+
+    if (image.extension !== 'webp') {
+      issues.push({
+        category: 'non-webp',
+        tagnumber: image.tagnumber,
+        playerId: image.playerId,
+        player,
+        type: image.type,
+        url: image.url,
+        issue: `queue file is ${image.extension}, not webp`,
+      })
+      continue
+    }
+
+    const missing: string[] = []
+    if (!keySet.has(`${image.baseKey}_medium.webp`)) {
+      missing.push(`${image.baseKey.split('/').pop()}_medium.webp`)
+    }
+    if (!keySet.has(`${image.baseKey}_small.webp`)) {
+      missing.push(`${image.baseKey.split('/').pop()}_small.webp`)
+    }
+
+    if (missing.length) {
+      issues.push({
+        category: 'missing-variants',
+        tagnumber: image.tagnumber,
+        playerId: image.playerId,
+        player,
+        type: image.type,
+        url: image.url,
+        issue: `missing sized variant${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}`,
+      })
+    }
+  }
+
+  const uploaderImages = new Map<string, QueueStorageImage[]>()
+  for (const image of images) {
+    const key = getStorageUploaderKey(image)
+    if (!key) continue
+    uploaderImages.set(key, [...(uploaderImages.get(key) ?? []), image])
+  }
+
+  for (const group of uploaderImages.values()) {
+    const tagnumbers = [...new Set(group.map((image) => image.tagnumber))].sort((a, b) => a - b)
+    if (tagnumbers.length <= 1) continue
+
+    const example = group[0]
+    const player = example.foundPlayer || example.mysteryPlayer || example.playerHash
+    issues.push({
+      category: 'duplicate-uploader',
+      tagnumber: example.tagnumber,
+      playerId: example.playerId,
+      player,
+      issue: `uploader has queue files across rounds #${tagnumbers.join(', #')}`,
+      relatedTagnumbers: tagnumbers,
+    })
+  }
+
+  const hashToSimulatedTags = new Map<string, Tag[]>()
+  for (const tag of simulatedQueue) {
+    for (const image of images) {
+      if (image.url !== tag.mysteryImageUrl && image.url !== tag.foundImageUrl) continue
+      const existing = hashToSimulatedTags.get(image.playerHash) ?? []
+      if (!existing.some((entry) => entry.tagnumber === tag.tagnumber)) {
+        hashToSimulatedTags.set(image.playerHash, [...existing, tag])
+      }
+    }
+  }
+
+  for (const [playerHash, tags] of hashToSimulatedTags) {
+    if (tags.length <= 1 || reportedDuplicateHashes.has(playerHash)) continue
+
+    reportedDuplicateHashes.add(playerHash)
+    const tagnumbers = [...new Set(tags.map((tag) => tag.tagnumber))].sort((a, b) => a - b)
+    const example = tags[0]
+    const player = example.foundPlayer || example.mysteryPlayer || playerHash
+
+    issues.push({
+      category: 'duplicate-uploader',
+      tagnumber: example.tagnumber,
+      playerId: example.playerId,
+      player,
+      issue: `getQueue would group this uploader into ${tags.length} separate tags (rounds #${tagnumbers.join(', #')})`,
+      relatedTagnumbers: tagnumbers,
+    })
+  }
+
+  return issues
+}
 
 export const getQueueUploaderKey = (tag: Tag): string | undefined => {
   if (tag.playerId?.length) return `id:${tag.playerId}`
   const name = (tag.mysteryPlayer || tag.foundPlayer || '').trim().toLowerCase()
   return name.length ? `name:${name}` : undefined
-}
-
-export const getQueueImageBaseUrl = (url: string): string =>
-  url.replace(/\.(webp|jpe?g|png|gif|bmp)(?:\?.*)?$/i, '').replace(/_(medium|small)$/i, '')
-
-export const getQueueVariantUrls = (url: string): { medium: string; small: string } => {
-  const base = getQueueImageBaseUrl(url)
-  return { medium: `${base}_medium.webp`, small: `${base}_small.webp` }
 }
 
 export const isFixableQueueIssue = (issue: QueueIssue): boolean =>
@@ -511,14 +817,12 @@ export const summarizeQueueIssues = (issues: QueueIssue[] = []) => {
   return summary
 }
 
-export async function collectQueueIssues(
+export async function collectQueueIssuesFromTags(
   queue: Tag[] = [],
   currentTag?: Tag,
-  options: { checkVariants?: boolean } = {},
 ): Promise<QueueIssue[]> {
   const issues: QueueIssue[] = []
   const expectedQueueRound = (currentTag?.tagnumber ?? 0) + 1
-  const variantChecks: Promise<void>[] = []
 
   for (const tag of queue) {
     const player = tag.foundPlayer || tag.mysteryPlayer
@@ -550,48 +854,9 @@ export async function collectQueueIssues(
           url,
           issue: 'queue image is not webp',
         })
-        continue
-      }
-
-      if (
-        options.checkVariants &&
-        /\.webp(?:\?.*)?$/i.test(url) &&
-        !webpVariantSuffixPattern.test(url)
-      ) {
-        variantChecks.push(
-          (async () => {
-            const { medium, small } = getQueueVariantUrls(url)
-            const missing: string[] = []
-
-            for (const variantUrl of [medium, small]) {
-              try {
-                const res = await fetch(variantUrl, { method: 'HEAD' })
-                if (!res.ok) missing.push(variantUrl)
-              } catch {
-                missing.push(variantUrl)
-              }
-            }
-
-            if (missing.length) {
-              issues.push({
-                category: 'missing-variants',
-                tagnumber: tag.tagnumber,
-                playerId: tag.playerId,
-                player,
-                type,
-                url,
-                issue: `missing sized variant${missing.length > 1 ? 's' : ''}: ${missing
-                  .map((variantUrl) => variantUrl.split('/').pop())
-                  .join(', ')}`,
-              })
-            }
-          })(),
-        )
       }
     }
   }
-
-  await Promise.all(variantChecks)
 
   const uploaderTags = new Map<string, Tag[]>()
   for (const tag of queue) {

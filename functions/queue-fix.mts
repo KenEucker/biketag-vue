@@ -1,16 +1,20 @@
-import { BikeTagClient, Game } from 'biketag'
+import { BikeTagClient, Game, Tag } from 'biketag'
 import {
   acceptCorsHeaders,
   coerceBooleanQueryParam,
-  collectQueueIssues,
+  collectQueueIssuesFromStorage,
+  collectQueueIssuesFromTags,
   getBikeTagClientOpts,
   getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
   isFixableQueueIssue,
+  loadQueueStorageImages,
   log,
+  QueueIssue,
   requireGlobalAdmin,
+  simulateGetQueueTagsFromStorage,
   summarizeQueueIssues,
 } from './common'
 import { HttpStatusCode } from './common/constants'
@@ -60,7 +64,6 @@ export default async (req: Request) => {
       })
     }
 
-    // Re-init with game so S3 gets the DO Spaces region/endpoint on first use (same as queue.mts).
     const biketag = new BikeTagClient(getBikeTagClientOpts(req, true, false, game))
     const imageSource = getImageSource(game)
 
@@ -92,49 +95,109 @@ export default async (req: Request) => {
       awsRegion: game.awsRegion,
     })
 
-    const queueResponse = await biketag.getQueue(
-      {
-        game: biketagOpts.game,
-        host: getQueueApiHost(biketagOpts.game),
-        region: game.awsRegion,
-        cached: false,
-        reindex: true,
-        resize: shouldFix,
-      },
-      { source: imageSource },
-    )
-
-    if (!queueResponse.success) {
-      log(
-        '[queue-fix] getQueue failed',
-        { error: queueResponse.error, status: queueResponse.status, imageSource },
-        'error',
-      )
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: queueResponse.error ?? 'failed to load queue',
-        }),
+    if (shouldFix) {
+      const fixResponse = await biketag.getQueue(
         {
-          headers,
-          status: queueResponse.status ?? HttpStatusCode.BadRequest,
+          game: biketagOpts.game,
+          host: getQueueApiHost(biketagOpts.game),
+          region: game.awsRegion,
+          cached: false,
+          reindex: true,
+          resize: true,
         },
+        { source: imageSource },
       )
+
+      if (!fixResponse.success) {
+        log(
+          '[queue-fix] getQueue fix failed',
+          { error: fixResponse.error, status: fixResponse.status, imageSource },
+          'error',
+        )
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: fixResponse.error ?? 'failed to fix queue',
+          }),
+          {
+            headers,
+            status: fixResponse.status ?? HttpStatusCode.BadRequest,
+          },
+        )
+      }
     }
 
-    const queue = queueResponse.data ?? []
     const currentTagResponse = await biketag.getTag({ slug: 'current' }, { source: 'sanity' })
     const currentTag = currentTagResponse.success ? currentTagResponse.data : undefined
-    const issues = await collectQueueIssues(queue, currentTag, { checkVariants: true })
+
+    let queue: Tag[] = []
+    let issues: QueueIssue[] = []
+    let storageFileCount = 0
+    let inspectedFrom: 'storage' | 'queue' = 'queue'
+
+    if (imageSource === 'aws' && game.awsRegion?.length) {
+      inspectedFrom = 'storage'
+      const storage = await loadQueueStorageImages(biketagOpts.game, game.awsRegion)
+      storageFileCount = storage.keys.length
+      queue = simulateGetQueueTagsFromStorage(storage.images, biketagOpts.game)
+      issues = collectQueueIssuesFromStorage(
+        storage.images,
+        storage.keys,
+        currentTag,
+        queue,
+      )
+
+      log('[queue-fix] Inspected queue storage', {
+        storageFileCount,
+        primaryImages: storage.images.length,
+        simulatedQueueCount: queue.length,
+      })
+    } else {
+      const queueResponse = await biketag.getQueue(
+        {
+          game: biketagOpts.game,
+          host: getQueueApiHost(biketagOpts.game),
+          region: game.awsRegion,
+          cached: false,
+          reindex: !shouldFix,
+          resize: false,
+        },
+        { source: imageSource },
+      )
+
+      if (!queueResponse.success) {
+        log(
+          '[queue-fix] getQueue failed',
+          { error: queueResponse.error, status: queueResponse.status, imageSource },
+          'error',
+        )
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: queueResponse.error ?? 'failed to load queue',
+          }),
+          {
+            headers,
+            status: queueResponse.status ?? HttpStatusCode.BadRequest,
+          },
+        )
+      }
+
+      queue = queueResponse.data ?? []
+      issues = await collectQueueIssuesFromTags(queue, currentTag)
+    }
+
     const summary = summarizeQueueIssues(issues)
     const fixableIssueCount = issues.filter(isFixableQueueIssue).length
     const responsePayload = {
       success: true,
       fixed: shouldFix,
-      queueReindexed: true,
+      queueReindexed: shouldFix,
       queueResized: shouldFix,
+      inspectedFrom,
       currentRound: currentTag?.tagnumber,
       expectedQueueRound: (currentTag?.tagnumber ?? 0) + 1,
+      storageFileCount,
       queueCount: queue.length,
       issueCount: issues.length,
       fixableIssueCount,
@@ -145,9 +208,11 @@ export default async (req: Request) => {
 
     log('[queue-fix] Completed', {
       fixed: shouldFix,
+      inspectedFrom,
       issueCount: issues.length,
       fixableIssueCount,
       queueCount: queue.length,
+      storageFileCount,
       summary,
     })
 
