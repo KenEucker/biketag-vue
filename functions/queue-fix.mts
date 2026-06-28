@@ -4,7 +4,6 @@ import {
   coerceBooleanQueryParam,
   collectQueueIssues,
   getBikeTagClientOpts,
-  getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
@@ -14,19 +13,6 @@ import {
   summarizeQueueIssues,
 } from './common'
 import { HttpStatusCode } from './common/constants'
-
-const configureAwsClient = (biketag: BikeTagClient, game: Game, imageSource: string) => {
-  if (imageSource === 'aws') {
-    biketag.config(
-      {
-        biketag: { host: process.env.HOST },
-        aws: { region: game.awsRegion },
-      },
-      false,
-      true,
-    )
-  }
-}
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -58,10 +44,10 @@ export default async (req: Request) => {
       })
     }
 
-    const biketagOpts = getBikeTagClientOpts(req, true, true)
-    const adminBiketag = new BikeTagClient(biketagOpts)
+    const biketagOpts = getBikeTagClientOpts(req, true)
+    const biketag = new BikeTagClient(biketagOpts)
 
-    const game = (await adminBiketag.game(biketagOpts.game, {
+    const game = (await biketag.game(biketagOpts.game, {
       source: 'sanity',
       concise: true,
     })) as unknown as Game
@@ -72,9 +58,6 @@ export default async (req: Request) => {
         status: HttpStatusCode.BadRequest,
       })
     }
-
-    const imageSource = getImageSource(game)
-    configureAwsClient(adminBiketag, game, imageSource)
 
     const payloadOpts = await getPayloadOpts(req, {
       game: biketagOpts.game,
@@ -88,7 +71,8 @@ export default async (req: Request) => {
 
     log('[queue-fix] Running queue scan', { shouldFix, game: game.name })
 
-    const queueResponse = await adminBiketag.getQueue(
+    // Route queue load/fix through /api/queue (same path the app uses) instead of direct S3.
+    const queueResponse = await biketag.getQueue(
       {
         game: biketagOpts.game,
         host: queueHost,
@@ -97,7 +81,7 @@ export default async (req: Request) => {
         reindex: true,
         resize: shouldFix,
       },
-      { source: imageSource },
+      { source: 'biketag' },
     )
 
     if (!queueResponse.success) {
@@ -114,7 +98,7 @@ export default async (req: Request) => {
     }
 
     const queue = queueResponse.data ?? []
-    const currentTagResponse = await adminBiketag.getTag(undefined, { source: imageSource })
+    const currentTagResponse = await biketag.getTag({ slug: 'current' }, { source: 'sanity' })
     const currentTag = currentTagResponse.success ? currentTagResponse.data : undefined
     const issues = await collectQueueIssues(queue, currentTag, { checkVariants: true })
     const summary = summarizeQueueIssues(issues)

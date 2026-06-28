@@ -74,7 +74,7 @@
     >
       <b-card class="polaroid mystery-tag">
         <bike-tag-button
-          v-if="props.tagnumber || _tagnumber"
+          v-if="props.tagnumber"
           v-b-popover.click.left="_getHint"
           class="btn-hint btn-circle"
           text="?"
