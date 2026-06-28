@@ -45,7 +45,7 @@
 
     <div v-else-if="scanned" class="issues-panel issues-panel--clear">
       <h2>No image conversion issues detected</h2>
-      <p>Queue and main-folder images are webp as expected.</p>
+      <p>Queue images are webp as expected.</p>
     </div>
   </div>
 </template>
@@ -115,7 +115,7 @@ async function fixQueue() {
   issues.value = result.issues ?? []
   lastAction.value = result.issueCount
     ? `Fix attempted, but ${result.issueCount} conversion issue${result.issueCount === 1 ? '' : 's'} remain.`
-    : 'Queue and main-folder images converted to webp successfully.'
+    : 'Queue images converted to webp successfully.'
 
   toast.open({
     message: lastAction.value,

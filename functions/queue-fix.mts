@@ -1,11 +1,9 @@
-import { BikeTagClient, Game, Tag } from 'biketag'
+import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
   coerceBooleanQueryParam,
   getBikeTagClientOpts,
   getImageSource,
-  getMainFolderUpdateOpts,
-  getMainImageUrlIssues,
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
@@ -26,36 +24,6 @@ const configureAwsClient = (biketag: BikeTagClient, game: Game, imageSource: str
       true,
     )
   }
-}
-
-const fixMainFolderImages = async (
-  adminBiketag: BikeTagClient,
-  game: Game,
-  imageSource: string,
-  currentTag?: Tag,
-) => {
-  if (imageSource !== 'aws' || !currentTag) {
-    return { fixed: false, issues: getMainImageUrlIssues(currentTag ?? []) }
-  }
-
-  const issues = getMainImageUrlIssues(currentTag)
-  if (!issues.length) {
-    return { fixed: false, issues }
-  }
-
-  const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource)
-  const updateResult = await adminBiketag.updateTag({ ...currentTag, ...mainUpdateOpts }, mainUpdateOpts)
-
-  const refreshedTag = updateResult.success ? updateResult.data : currentTag
-  return {
-    fixed: updateResult.success,
-    issues: getMainImageUrlIssues(refreshedTag ?? currentTag),
-    error: updateResult.success ? undefined : updateResult.error,
-  }
-}
-
-const collectImageIssues = (queue: Tag[], currentTag?: Tag) => {
-  return [...getQueueImageUrlIssues(queue), ...getMainImageUrlIssues(currentTag ?? [])]
 }
 
 export default async (req: Request) => {
@@ -144,36 +112,21 @@ export default async (req: Request) => {
     }
 
     const queue = queueResponse.data ?? []
-    const currentTagResponse = await adminBiketag.getTag(undefined, { source: imageSource })
-    const currentTag = currentTagResponse.success ? currentTagResponse.data : undefined
-
-    let mainFixResult = {
-      fixed: false,
-      error: undefined as string | undefined,
-    }
-
-    if (shouldFix) {
-      mainFixResult = await fixMainFolderImages(adminBiketag, game, imageSource, currentTag)
-    }
-
-    const issues = collectImageIssues(queue, currentTag)
+    const issues = getQueueImageUrlIssues(queue)
     const responsePayload = {
       success: true,
       fixed: shouldFix,
       queueReindexed: true,
       queueResized: shouldFix,
-      mainFixed: mainFixResult.fixed,
       issueCount: issues.length,
       issues,
       queue,
-      error: mainFixResult.error,
     }
 
     log('[queue-fix] Completed', {
       fixed: shouldFix,
       issueCount: issues.length,
       queueCount: queue.length,
-      mainFixed: mainFixResult.fixed,
     })
 
     return new Response(JSON.stringify(responsePayload), {

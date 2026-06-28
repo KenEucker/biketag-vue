@@ -1,12 +1,12 @@
 import { BikeTagClient, createTagObject, Game, Tag } from 'biketag'
 import {
-    acceptCorsHeaders,
-    getBikeTagClientOpts,
-    getImageSource,
-    getPayloadOpts,
-    getProfileAuthorization,
-    log,
-    setNewBikeTagPost,
+  acceptCorsHeaders,
+  getBikeTagClientOpts,
+  getImageSource,
+  getPayloadOpts,
+  getProfileAuthorization,
+  log,
+  setNewBikeTagPost,
 } from './common'
 import { ErrorMessage, HttpStatusCode } from './common/constants'
 
@@ -103,15 +103,12 @@ export default async (req: Request) => {
 
     log('[new-tag] setNewBikeTagPost result', result)
 
-    const status = result.errors
-      ? HttpStatusCode.BadRequest
-      : HttpStatusCode.Accepted
+    const status = result.errors ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted
 
     return new Response(JSON.stringify(result), {
       headers,
       status,
     })
-
   } catch (err: any) {
     log('[new-tag] Unhandled error', err, 'error')
     return new Response(
@@ -122,7 +119,7 @@ export default async (req: Request) => {
       {
         status: HttpStatusCode.InternalServerError,
         headers,
-      }
+      },
     )
   }
 }
