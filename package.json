@@ -37,7 +37,7 @@
     "@vueuse/head": "^2.0.0",
     "ajv": "^8.17.1",
     "autoprefixer": "^10.4.17",
-    "biketag": "^3.5.41",
+    "biketag": "^3.5.42",
     "bootstrap": "^5.3.3",
     "bootstrap-vue-next": "^0.15.5",
     "crypto-js": "^4.2.0",
