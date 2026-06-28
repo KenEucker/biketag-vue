@@ -3,7 +3,7 @@ import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
   getPayloadAuthorization,
-  isGameAmbassadorByPlayerId,
+  getProfileAuthorization,
   log,
 } from './common'
 import { HttpStatusCode } from './common/constants'
@@ -26,17 +26,17 @@ export default async (req: Request) => {
 
   try {
     const authProfile = await getPayloadAuthorization(req)
+    const profile = await getProfileAuthorization(req)
     log('[fetch-signed-url] Authorization profile', {
       isValid: authProfile?.isValid,
       type: authProfile?.type,
+      isAmbassador: profile?.isBikeTagAmbassador,
     })
 
-    if (!authProfile?.isValid || authProfile?.type !== 'jwt' || !authProfile?.profile) {
+    if (!authProfile?.isValid || !authProfile?.profile) {
       body = authProfile.reason === 'expired' ? 'Token expired' : 'Unauthorized or invalid token'
       log('[fetch-signed-url] Authorization failed', { reason: authProfile?.reason })
-    } else if (authProfile?.isValid && authProfile?.profile) {
-      const { client_id: clientId, p_id: playerId } = authProfile.profile
-
+    } else {
       const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
       const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
       const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
@@ -56,11 +56,11 @@ export default async (req: Request) => {
       log('[fetch-signed-url] Parsed request body', { key, game, p_id, contentType })
 
       if (key && game && contentType) {
-        const isOwnUpload = p_id === playerId
-        const isAmbassadorUpload =
-          !isOwnUpload && (await isGameAmbassadorByPlayerId(req, playerId))
+        const playerValid =
+          authProfile.type === 'jwt' && p_id === authProfile.profile.p_id
+        const ambassadorValid = profile?.isBikeTagAmbassador
 
-        if (isOwnUpload || isAmbassadorUpload) {
+        if (playerValid || ambassadorValid) {
           const contentKeyMatch = `queue/${adminBiketagOpts.game}-tag`
           if (!key.startsWith(contentKeyMatch)) {
             log(
@@ -85,7 +85,8 @@ export default async (req: Request) => {
           log('[fetch-signed-url] fetchSignedUrl response', {
             success: signedUrlResponse.success,
             status: signedUrlResponse.status,
-            isAmbassadorUpload,
+            playerValid,
+            ambassadorValid,
           })
 
           if (signedUrlResponse.success) {
@@ -100,7 +101,11 @@ export default async (req: Request) => {
           body = 'Player id does not match'
           log(
             '[fetch-signed-url] Player ID mismatch',
-            { expected: playerId, received: p_id },
+            {
+              jwtPlayerId: authProfile.profile.p_id,
+              requestedPlayerId: p_id,
+              isAmbassador: profile?.isBikeTagAmbassador,
+            },
             'warn',
           )
         }
@@ -109,8 +114,6 @@ export default async (req: Request) => {
         body = 'Missing or invalid key combination'
         log('[fetch-signed-url] Invalid key combination', { key, game, contentType })
       }
-    } else {
-      log('[fetch-signed-url] Unauthorized request fallback', { authProfile }, 'warn')
     }
   } catch (err: any) {
     log('[fetch-signed-url] Unexpected error', err, 'error')

@@ -418,18 +418,6 @@ export const isGlobalAdminEmail = (email?: string | null): boolean => {
   return email.toLowerCase() === BikeTagEnv.ADMIN_EMAIL.toLowerCase()
 }
 
-export const isGameAmbassadorEmail = async (req: Request, email: string): Promise<boolean> => {
-  if (isGlobalAdminEmail(email)) {
-    return true
-  }
-
-  const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
-  const adminBiketag = new BikeTagClient(adminBiketagOpts)
-  const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag)) as Ambassador[]
-
-  return thisGamesAmbassadors.some((ambassador) => ambassador.email === email)
-}
-
 export const getProfileAuthorization = async (req: Request): Promise<any> => {
   const authorization = await getPayloadAuthorization(req)
   let profile: any = authorization?.isValid ? authorization.profile : null
@@ -458,43 +446,6 @@ export const getProfileAuthorization = async (req: Request): Promise<any> => {
   }
 
   return profile
-}
-
-export const isGameAmbassadorByPlayerId = async (
-  req: Request,
-  playerId: string,
-): Promise<boolean> => {
-  if (!playerId?.length || !(await isAuthenticationEnabled())) {
-    return false
-  }
-
-  try {
-    const authorizationHeaders = await auth0Headers()
-    if (!authorizationHeaders.Authorization) {
-      return false
-    }
-
-    const userResponse = await axios.request({
-      method: 'GET',
-      url: `https://${process.env.A_DOMAIN}/api/v2/users/${encodeURIComponent(playerId)}`,
-      headers: authorizationHeaders,
-      params: { fields: 'email' },
-    })
-
-    const email = userResponse.data?.email
-    if (!email) {
-      return false
-    }
-
-    return isGameAmbassadorEmail(req, email)
-  } catch (e: any) {
-    log(
-      'Unable to verify ambassador by player id',
-      { playerId, error: e.message ?? e },
-      'warn',
-    )
-    return false
-  }
 }
 
 export const getPayloadAuthorization = async (

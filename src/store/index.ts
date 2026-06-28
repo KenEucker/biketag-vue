@@ -548,10 +548,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
 
       try {
-        let tag = { ...d, game: this.gameName }
-        if (d.playerId?.length) {
-          tag.playerId = d.playerId
+        const uploadPlayerId = d.playerId?.length ? d.playerId : this.profile.sub
+        const biketagConf = await client.fetchCredentials(`player-id ${uploadPlayerId}`)
+        if (biketagConf?.biketag?.clientToken) {
+          this.token = setTokenInCookie(biketagConf.biketag.clientToken)
         }
+
+        let tag = { ...d, game: this.gameName, playerId: uploadPlayerId }
 
         if (d.foundImage && !d.foundImageUrl) {
           const foundUpload = await client.queueTag(
@@ -585,7 +588,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           data: {
             game: tag.game,
             tagnumber: tag.tagnumber,
-            playerId: tag.playerId,
+            playerId: uploadPlayerId,
             foundPlayer: tag.foundPlayer,
             foundTime: tag.foundTime,
             foundLocation: tag.foundLocation,
@@ -619,6 +622,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       } catch (e: any) {
         console.error('error creating new round', e?.message ?? e)
         return 'error creating new round'
+      } finally {
+        if (this.profile?.sub) {
+          await client.fetchCredentials(`player-id ${this.profile.sub}`)
+        }
       }
     },
     async assignPlayerName(profile: any) {
