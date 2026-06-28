@@ -141,16 +141,13 @@ export default async (req: Request) => {
     }
 
     const responsePayload = results.length ? results : errors
-    const isProcessing = results.some((r: any) => r.status === 'processing')
-    const responseStatus = isProcessing
-      ? HttpStatusCode.Accepted
-      : results.length
-        ? errors[0]
-          ? HttpStatusCode.BadRequest
-          : HttpStatusCode.Accepted
-        : errors.length
-          ? HttpStatusCode.BadRequest
-          : HttpStatusCode.Ok
+    const responseStatus = results.length
+      ? errors[0]
+        ? HttpStatusCode.BadRequest
+        : HttpStatusCode.Accepted
+      : errors.length
+        ? HttpStatusCode.BadRequest
+        : HttpStatusCode.Ok
 
     log('[approve-tag] Response summary', {
       status: responseStatus,

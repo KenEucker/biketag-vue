@@ -614,6 +614,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             return foundUpload.error || 'failed to upload found image'
           }
           tag = { ...tag, ...foundUpload.data }
+          await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
         }
 
         if (d.mysteryImage && !d.mysteryImageUrl) {
@@ -625,6 +626,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             return mysteryUpload.error || 'failed to upload mystery image'
           }
           tag = { ...tag, ...mysteryUpload.data }
+          await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
         }
 
         if (!tag.foundImageUrl?.length || !tag.mysteryImageUrl?.length) {

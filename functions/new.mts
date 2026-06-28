@@ -106,12 +106,7 @@ export default async (req: Request) => {
 
     log('[new-tag] setNewBikeTagPost result', result)
 
-    const isProcessing = result.results?.some((r: any) => r.status === 'processing')
-    const status = isProcessing
-      ? HttpStatusCode.Accepted
-      : result.errors
-        ? HttpStatusCode.BadRequest
-        : HttpStatusCode.Accepted
+    const status = result.errors ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted
 
     return new Response(JSON.stringify(result), {
       headers,
