@@ -28,9 +28,11 @@
       data-netlify-honeypot="bot-field"
       hidden
     >
-      <input type="hidden" name="form-name" value="post-tag-error" />
+      <input type="hidden" name="form-name" value="approve-tag-error" />
       <input type="hidden" name="submission" />
+      <input type="hidden" name="tag" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
+      <input type="hidden" name="game" :value="getGameName" />
       <input type="hidden" name="message" />
       <input type="hidden" name="ip" value="" />
     </form>
@@ -92,7 +94,12 @@ async function onApproveSubmit(newTagSubmission) {
     type: 'info',
     position: 'top',
   })
-  const errorAction = queueError.value.getAttribute('action')
+  const errorFields = {
+    game: getGameName.value,
+    tag: JSON.stringify(getPlayerTag.value),
+    submission: `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
+  }
+
   uploadInProgress.value = true
   const success = await store[storeAction](tag)
   uploadInProgress.value = false
@@ -133,7 +140,7 @@ async function onApproveSubmit(newTagSubmission) {
           timeout: false,
           position: 'bottom',
         })
-        return sendNetlifyError(m, undefined, errorAction)
+        return sendNetlifyError(m, queueError.value, errorFields)
       },
     )
   } else {
@@ -145,7 +152,7 @@ async function onApproveSubmit(newTagSubmission) {
       timeout: false,
       position: 'bottom',
     })
-    return sendNetlifyError(message, undefined, errorAction)
+    return sendNetlifyError(message, queueError.value, errorFields)
   }
 }
 

@@ -102,6 +102,7 @@
         <input type="hidden" name="form-name" value="post-tag-error" />
         <input type="hidden" name="submission" />
         <input type="hidden" name="playerId" :value="getPlayerId" />
+        <input type="hidden" name="game" :value="getGameName" />
         <input type="hidden" name="message" />
         <input type="hidden" name="ip" value="" />
       </form>
@@ -246,7 +247,11 @@ async function onQueueSubmit(newTagSubmission) {
     type: 'info',
     position: 'bottom',
   })
-  const errorAction = queueError.value.getAttribute('action')
+  const errorFields = {
+    game: getGameName.value,
+    submission: `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
+    ip: ipAddress,
+  }
 
   uploadInProgress.value = true
   const success = await store[storeAction](tag)
@@ -297,7 +302,7 @@ async function onQueueSubmit(newTagSubmission) {
           timeout: false,
           position: 'bottom',
         })
-        return sendNetlifyError(m, undefined, errorAction)
+        return sendNetlifyError(m, queueError.value, errorFields)
       },
     )
   } else {
@@ -310,7 +315,7 @@ async function onQueueSubmit(newTagSubmission) {
       duration: 10000,
       position: 'bottom',
     })
-    return sendNetlifyError(message, undefined, errorAction)
+    return sendNetlifyError(message, queueError.value, errorFields)
   }
 }
 

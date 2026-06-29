@@ -31,6 +31,7 @@
       <input type="hidden" name="form-name" value="delete-tag-error" />
       <input type="hidden" name="tagnumber" :value="getCurrentBikeTag.tagnumber" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
+      <input type="hidden" name="game" :value="getGameName" />
       <input type="hidden" name="message" />
       <input type="hidden" name="ip" value="" />
     </form>
@@ -76,7 +77,7 @@ async function onDeleteSubmit() {
     type: 'info',
     position: 'top',
   })
-  const errorAction = queueError.value.getAttribute('action')
+  const errorFields = { game: getGameName.value }
 
   deleteInProgress.value = true
   const result = await store.deleteCurrentTag(getCurrentBikeTag.value)
@@ -104,7 +105,7 @@ async function onDeleteSubmit() {
           timeout: false,
           position: 'bottom',
         })
-        return sendNetlifyError(m, undefined, errorAction)
+        return sendNetlifyError(m, queueError.value, errorFields)
       },
     )
   } else {
@@ -116,7 +117,7 @@ async function onDeleteSubmit() {
       timeout: false,
       position: 'bottom',
     })
-    return sendNetlifyError(message, undefined, errorAction)
+    return sendNetlifyError(message, queueError.value, errorFields)
   }
 }
 

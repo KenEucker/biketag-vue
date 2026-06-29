@@ -36,6 +36,7 @@
             data-netlify-honeypot="bot-field" hidden>
             <input type="hidden" name="form-name" value="new-round-error" />
             <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
+            <input type="hidden" name="game" :value="getGameName" />
             <input type="hidden" name="message" />
             <input type="hidden" name="ip" value="" />
         </form>
@@ -133,7 +134,7 @@ async function onSubmitClick() {
     }
 
     submitInProgress.value = true
-    const errorAction = submitError.value.getAttribute('action')
+    const errorFields = { game: getGameName.value }
 
     const result = await store.createNewRoundTag(newTag)
     submitInProgress.value = false
@@ -159,7 +160,7 @@ async function onSubmitClick() {
                     timeout: false,
                     position: 'bottom',
                 })
-                return sendNetlifyError(m, undefined, errorAction)
+                return sendNetlifyError(m, submitError.value, errorFields)
             }
         )
     } else {
@@ -172,7 +173,7 @@ async function onSubmitClick() {
             position: 'bottom',
         })
         console.error(message)
-        return sendNetlifyError(message, undefined, errorAction)
+        return sendNetlifyError(message, submitError.value, errorFields)
     }
 }
 

@@ -344,26 +344,37 @@ export const getMostRecentlyViewedBikeTagTagnumber = (
 
 export const sendNetlifyError = function (
   message: any,
-  then?: (value: Response) => Response | PromiseLike<Response>,
-  action = 'post-tag-error',
+  errorForm?: HTMLFormElement | null,
+  fields: Record<string, string> = {},
 ) {
-  const body = new URLSearchParams({
-    message,
-  }).toString()
+  const action = errorForm?.getAttribute('action') ?? 'post-tag-error'
+  const params = new URLSearchParams()
+  params.set('form-name', action)
+  params.set('message', String(message))
 
-  const netlifyRequest = fetch(action, {
+  if (errorForm) {
+    const formData = new FormData(errorForm)
+    for (const [key, value] of formData.entries()) {
+      if (key !== 'form-name' && key !== 'message' && String(value).length) {
+        params.set(key, String(value))
+      }
+    }
+  }
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (value?.length) {
+      params.set(key, value)
+    }
+  }
+
+  return fetch(action, {
     method: 'POST',
     headers: {
       Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
     },
-    body,
+    body: params.toString(),
   })
-
-  if (then) {
-    netlifyRequest.then(then)
-  }
-  return netlifyRequest
 }
 
 export const sendNetlifyForm = function (
