@@ -605,6 +605,39 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return 'error moving queue found image to main'
       }
     },
+    async resendLatestPostNotifications() {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('autopost-notify'),
+          data: {
+            force: true,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          return typeof response.data === 'string' && response.data.length
+            ? JSON.parse(response.data)
+            : response.data || []
+        }
+
+        return Array.isArray(response.data)
+          ? response.data.join(' ')
+          : response.data?.error || response.data || 'failed to resend post notifications'
+      } catch (e: any) {
+        console.error('error resending post notifications', e?.message ?? e)
+        return Array.isArray(e.response?.data)
+          ? e.response.data.join(' ')
+          : e.response?.data?.error || e.response?.data || 'error resending post notifications'
+      }
+    },
     async dequeueTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         try {

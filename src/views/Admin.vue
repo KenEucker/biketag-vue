@@ -33,6 +33,12 @@
         :disabled="!deletableIssueCount"
         @click="deleteAllWrongRound"
       />
+      <bike-tag-button
+        variant="medium-orange"
+        text="Resend Post Notifications"
+        :disabled="working"
+        @click="resendPostNotifications"
+      />
     </div>
 
     <div v-if="lastAction" class="status-banner">
@@ -358,6 +364,35 @@ async function deleteAllWrongRound() {
       : 'Wrong-round queue files deleted successfully.',
     !!result.issueCount,
   )
+}
+
+async function resendPostNotifications() {
+  if (!window.confirm('Resend notifications for the most recently created BikeTag post?')) {
+    return
+  }
+
+  working.value = true
+  lastAction.value = ''
+
+  const result = await store.resendLatestPostNotifications()
+  working.value = false
+
+  if (typeof result === 'string') {
+    toast.open({
+      message: result,
+      type: 'error',
+      duration: 10000,
+      position: 'top',
+    })
+    return
+  }
+
+  const completedCount = Array.isArray(result) ? result.filter(Boolean).length : 0
+  const message = completedCount
+    ? `Post notifications resent: ${completedCount} notification task${completedCount === 1 ? '' : 's'} completed.`
+    : 'Post notification resend completed.'
+
+  notifyAction(message)
 }
 
 onMounted(async () => {
