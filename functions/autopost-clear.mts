@@ -32,11 +32,15 @@ export const autoClearQueue = async (req: Request): Promise<BackgroundProcessRes
     { source: 'sanity' },
   )) as Game
 
-  nonAdminBiketag.config({
-    aws: {
-      region: game.awsRegion,
-    }
-  }, false, true)
+  nonAdminBiketag.config(
+    {
+      aws: {
+        region: game.awsRegion,
+      },
+    },
+    false,
+    true,
+  )
   const adminBiketagOpts = getBikeTagClientOpts(req, true, true, game)
   const adminBiketag = new BikeTagClient(adminBiketagOpts)
   const imageSource = getImageSource(game)
@@ -54,7 +58,9 @@ export const autoClearQueue = async (req: Request): Promise<BackgroundProcessRes
   }
 
   if (clearAll) {
-    const allTags = (await nonAdminBiketag.getQueue({ game: adminBiketagOpts.game }, { source: imageSource })).data
+    const allTags = (
+      await nonAdminBiketag.getQueue({ game: adminBiketagOpts.game }, { source: imageSource })
+    ).data
 
     if (allTags.length) {
       log('all tags found', { game, allTags }, 'info')
@@ -104,7 +110,7 @@ export default async (req: Request) => {
 
   if (results.length) {
     log('queue cleared', { results }, 'info')
-    
+
     return new Response(JSON.stringify(results), {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })

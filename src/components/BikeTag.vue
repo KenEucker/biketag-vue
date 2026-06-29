@@ -1,17 +1,20 @@
 <template>
   <b-row :class="`center-flx ${reverse ? 'reversed' : ''}`">
     <!-- FOUND IMAGE SECTION -->
-    <b-col v-show="_foundImageUrl" md="6" class="mb-3 max-w">
+    <b-col v-show="!hideFoundSection && (_foundImageUrl || alwaysShowSections)" md="6" class="mb-3 max-w">
       <b-card class="polaroid found-tag">
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
-          <expandable-image
-            class="image img-fluid"
-            :source="getFoundImageSrc"
-            :full-source="_foundImageUrl"
-            :alt="props.foundDescription"
-            @loaded="tagImageLoaded('found')"
-          ></expandable-image>
+          <slot name="foundImage">
+            <expandable-image
+              v-if="_foundImageUrl"
+              class="image img-fluid"
+              :source="getFoundImageSrc"
+              :full-source="_foundImageUrl"
+              :alt="props.foundDescription"
+              @loaded="tagImageLoaded('found')"
+            ></expandable-image>
+          </slot>
         </div>
         <div class="card-bottom">
           <div v-if="props.foundDescription?.length" class="description">
@@ -64,7 +67,11 @@
     </b-col>
 
     <!-- MYSTERY IMAGE SECTION -->
-    <b-col v-show="_mysteryImageUrl" :md="_foundImageUrl ? 6 : 12" class="mb-3 max-w">
+    <b-col
+      v-show="_mysteryImageUrl || alwaysShowSections"
+      :md="hideFoundSection || !(_foundImageUrl || alwaysShowSections) ? 12 : 6"
+      class="mb-3 max-w"
+    >
       <b-card class="polaroid mystery-tag">
         <bike-tag-button
           v-if="props.tagnumber"
@@ -75,12 +82,15 @@
         />
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _tagnumber }}</span>
-          <expandable-image
-            :source="getMysteryImageSrc"
-            :full-source="_mysteryImageUrl"
-            :alt="_mysteryDescription"
-            @loaded="tagImageLoaded('mystery')"
-          />
+          <slot name="mysteryImage">
+            <expandable-image
+              v-if="_mysteryImageUrl"
+              :source="getMysteryImageSrc"
+              :full-source="_mysteryImageUrl"
+              :alt="_mysteryDescription"
+              @loaded="tagImageLoaded('mystery')"
+            />
+          </slot>
         </div>
         <div class="card-bottom">
           <div class="description">
@@ -139,6 +149,8 @@ export interface BikeTagProps {
   mysteryImageUrl?: string
   foundDescription?: string
   mysteryDescription?: string
+  alwaysShowSections?: boolean
+  hideFoundSection?: boolean
 }
 
 // components
@@ -161,6 +173,8 @@ const props = withDefaults(defineProps<BikeTagProps>(), {
   mysteryImageUrl: '',
   foundDescription: '',
   mysteryDescription: '',
+  alwaysShowSections: false,
+  hideFoundSection: false,
 })
 
 // state
@@ -302,7 +316,6 @@ onMounted(() => {
 .img-wrapper {
   position: relative;
   width: 100%;
-  height: 100%;
 }
 
 .tag-number {

@@ -5,7 +5,7 @@ import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'
 
 export const assignAchievements = async (): Promise<BackgroundProcessResults> => {
-  if (process.env.SKIP_ACHIEVEMENTS_FUNCTION === "true") {
+  if (process.env.SKIP_ACHIEVEMENTS_FUNCTION === 'true') {
     return Promise.resolve({
       results: ['function skipped'],
       errors: false,
@@ -60,7 +60,11 @@ export const assignAchievements = async (): Promise<BackgroundProcessResults> =>
           if (players.length > 20) {
             /// Only award achievements if at least 20 players have logged in
           } else {
-            log(`[${game.name}] does not have enough players to award achievements`, { playersCount: players.length }, 'warn')
+            log(
+              `[${game.name}] does not have enough players to award achievements`,
+              { playersCount: players.length },
+              'warn',
+            )
           }
         }
       }

@@ -1,4 +1,5 @@
 import About from '@/views/About.vue'
+import Admin from '@/views/Admin.vue'
 import Approve from '@/views/Approve.vue'
 import BikeTags from '@/views/BikeTags.vue'
 import Dashboard from '@/views/Dashboard.vue'
@@ -7,6 +8,7 @@ import Edit from '@/views/Edit.vue'
 import Home from '@/views/Home.vue'
 import HowToPlay from '@/views/HowToPlay.vue'
 import Landing from '@/views/Landing.vue'
+import Launch from '@/views/Launch.vue'
 import Leaderboard from '@/views/Leaderboard.vue'
 import Login from '@/views/Login.vue'
 import Logout from '@/views/Logout.vue'
@@ -22,17 +24,66 @@ import { authGuard } from '@auth0/auth0-vue'
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router'
 import { debug, isAuthenticationEnabled } from '../common'
 
+const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
+  ? [
+      {
+        path: '/profile',
+        name: 'Profile',
+        beforeEnter: authGuard,
+        component: Profile,
+      },
+      {
+        path: '/approve',
+        name: 'Approve',
+        beforeEnter: authGuard,
+        component: Approve,
+      },
+      {
+        path: '/dashboard',
+        name: 'Dashboard',
+        beforeEnter: authGuard,
+        component: Dashboard,
+      },
+      {
+        path: '/admin',
+        name: 'Admin',
+        beforeEnter: authGuard,
+        component: Admin,
+      },
+      {
+        path: '/delete',
+        name: 'Delete',
+        beforeEnter: authGuard,
+        component: Delete,
+      },
+      {
+        path: '/edit',
+        name: 'Edit',
+        beforeEnter: authGuard,
+        component: Edit,
+      },
+      {
+        path: '/new',
+        name: 'New',
+        beforeEnter: authGuard,
+        component: New,
+      },
+      {
+        path: '/launch',
+        name: 'Launch',
+        beforeEnter: authGuard,
+        component: Launch,
+      },
+    ]
+  : []
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Landing',
     component: Landing,
   },
-  {
-    path: '/:tagnumber?',
-    name: 'Home',
-    component: Home,
-  },
+  ...protectedRoutes,
   {
     path: '/biketags',
     name: 'BikeTags',
@@ -108,56 +159,18 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Map',
     component: Map,
   },
+  {
+    path: '/:tagnumber?',
+    name: 'Home',
+    component: Home,
+  },
 ]
-
-let protectedRoutes: Array<RouteRecordRaw> = []
-
-if (isAuthenticationEnabled()) {
-  protectedRoutes = [
-    {
-      path: '/profile',
-      name: 'Profile',
-      beforeEnter: authGuard,
-      component: Profile,
-    },
-    {
-      path: '/approve',
-      name: 'Approve',
-      beforeEnter: authGuard,
-      component: Approve,
-    },
-    {
-      path: '/dashboard',
-      name: 'Dashboard',
-      beforeEnter: authGuard,
-      component: Dashboard,
-    },
-    {
-      path: '/delete',
-      name: 'Delete',
-      beforeEnter: authGuard,
-      component: Delete,
-    },
-    {
-      path: '/edit',
-      name: 'Edit',
-      beforeEnter: authGuard,
-      component: Edit,
-    },
-    {
-      path: '/new',
-      name: 'New',
-      beforeEnter: authGuard,
-      component: New,
-    },
-  ]
-}
 
 debug('router::init', { sitemap: routes.map((r) => r.path) })
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [...routes, ...protectedRoutes],
+  routes,
   scrollBehavior() {
     return { top: 0 }
   },

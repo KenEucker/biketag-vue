@@ -52,16 +52,21 @@ export default async (req: Request) => {
       log('[approve-tag] Retrieved game', { name: game?.name ?? 'none' })
 
       if (game) {
-        const nonAdminBiketagOptsUpdated = nonAdminBiketag.config({
-          aws: {
-            region: game.awsRegion,
-          }
-        }, false, true)
+        const nonAdminBiketagOptsUpdated = nonAdminBiketag.config(
+          {
+            aws: {
+              region: game.awsRegion,
+            },
+          },
+          false,
+          true,
+        )
         log('[approve-tag] Non-admin BikeTagClient options', nonAdminBiketagOptsUpdated)
 
         const imageSource = getImageSource(game)
         log('[approve-tag] Using image source', { imageSource }, 'info')
-        const currentBikeTag = (await nonAdminBiketag.getTag(undefined, { source: imageSource })).data
+        const currentBikeTag = (await nonAdminBiketag.getTag(undefined, { source: imageSource }))
+          .data
         log('[approve-tag] Current bike tag', { tagnumber: currentBikeTag?.tagnumber })
 
         const adminBiketagOpts = getBikeTagClientOpts(req, true, true, game)

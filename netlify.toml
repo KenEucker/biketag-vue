@@ -15,6 +15,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api"
+  to = "/.netlify/functions/api"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/"
   status = 200
@@ -28,7 +33,7 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-    
+
 [[headers]]
   for = "/worker.js"
   [headers.values]
@@ -65,3 +70,12 @@
 
 [[plugins]]
   package = 'netlify-plugin-contextual-env'
+
+[[edge_functions]]
+  path = "/.well-known/atproto-did"
+  function = "fedify-router"
+
+[[edge_functions]]
+  path = "/xrpc/*"
+  function = "fedify-router"
+

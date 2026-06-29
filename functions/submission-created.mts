@@ -1,9 +1,12 @@
 import { Ambassador, BikeTagClient, Game, Tag } from 'biketag'
-import { getBannedIPs, stringifyNumber } from '../src/common'
+import { stringifyNumber } from '../src/common'
 import {
   defaultLogo,
   getBikeTagClientOpts,
   getEncodedExpiry,
+  getGameSiteUrl,
+  getGameSocialLinks,
+  getImageSource,
   getSanityImageUrl,
   log,
   sendEmailsToAmbassadors,
@@ -16,21 +19,21 @@ export default async (req: Request) => {
   let success = false
 
   log('submission-created', { payload })
-  const bannedIPs = await getBannedIPs()
+  /// TODO: is this necessary?
+  // const bannedIP = await getIPIsBanned(payload.ip)
 
-  if (bannedIPs.indexOf(payload.ip) !== -1) {
-    console.error('ip address is banned', payload.ip)
-    return {
-      data: false,
-      statusCode: HttpStatusCode.BadRequest,
-    }
-  }
+  // if (bannedIP) {
+  //   console.error('ip address is banned', payload.ip)
+  //   return {
+  //     data: false,
+  //     statusCode: HttpStatusCode.BadRequest,
+  //   }
+  // }
 
   if (payload) {
     const formName = payload.form_name
-    const host = payload.site_url
     const playerID = payload.data?.playerId
-    const playerIP = payload.data?.playerIP
+    const playerIP = payload.data?.playerIP ?? payload.data?.ip ?? payload.ip
     const tag = JSON.parse(payload.data?.tag ?? '{}')
     const gameName = payload.data?.game ?? tag.game ?? null
     let successfulEmailsSent: any = []
@@ -65,6 +68,26 @@ export default async (req: Request) => {
           }
         }
 
+        const imageSource = getImageSource(game)
+        if (imageSource === 'aws' && game.awsRegion?.length) {
+          nonAdminBiketag.config(
+            {
+              biketag: { host: process.env.HOST },
+              aws: { region: game.awsRegion },
+            },
+            false,
+            true,
+          )
+          adminBiketag.config(
+            {
+              biketag: { host: process.env.HOST },
+              aws: { region: game.awsRegion },
+            },
+            false,
+            true,
+          )
+        }
+
         const ambassadors = (await adminBiketag.ambassadors(undefined, {
           source: 'sanity',
         })) as Ambassador[]
@@ -72,12 +95,27 @@ export default async (req: Request) => {
           ? ambassadors.filter((a) => game!.ambassadors.indexOf(a?.name) !== -1)
           : []
 
-        const currentMysteryTagResponse = (await nonAdminBiketag.tags()) as Tag[]
-        currentMysteryTag = currentMysteryTagResponse?.length
-          ? currentMysteryTagResponse[0]
+        const currentMysteryTagResponse = await nonAdminBiketag.getTag(undefined, {
+          source: imageSource,
+        })
+        currentMysteryTag = currentMysteryTagResponse.success
+          ? (currentMysteryTagResponse.data as Tag)
           : undefined
 
-        if (!game || !currentMysteryTag || !thisGamesAmbassadors.length) {
+        const requiresAmbassadorEmail =
+          formName === 'post-new-biketag' ||
+          formName === 'approve-tag-error' ||
+          formName === 'post-tag-error'
+
+        if (requiresAmbassadorEmail && !thisGamesAmbassadors.length) {
+          log('no ambassadors configured for game', { gameName, formName })
+          return {
+            data: false,
+            statusCode: HttpStatusCode.BadRequest,
+          }
+        }
+
+        if (!requiresAmbassadorEmail && (!currentMysteryTag || !thisGamesAmbassadors.length)) {
           log('insufficient game data to work with', {
             gameName,
             game,
@@ -91,11 +129,21 @@ export default async (req: Request) => {
           }
         }
 
-        queuedTags = (await nonAdminBiketag.queue()) as Tag[]
-        numberInQueue = queuedTags.reduce((o: number, t: Tag, i: number) => {
-          o = t.foundPlayer === tag.foundPlayer && t.mysteryPlayer === tag.mysteryPlayer ? i + 1 : o
-          return o
-        }, 1)
+        if (!currentMysteryTag) {
+          log('current mystery tag unavailable; continuing with submission email', { gameName }, 'warn')
+        }
+
+        try {
+          const queueResponse = await nonAdminBiketag.getQueue(undefined, { source: imageSource })
+          queuedTags = queueResponse.success ? (queueResponse.data as Tag[]) : []
+          numberInQueue = queuedTags.reduce((o: number, t: Tag, i: number) => {
+            o =
+              t.foundPlayer === tag.foundPlayer && t.mysteryPlayer === tag.mysteryPlayer ? i + 1 : o
+            return o
+          }, 1)
+        } catch (err) {
+          log('could not load queue for submission email', { gameName, err }, 'warn')
+        }
       } else {
         /// doing nothing, eh?
         success = true
@@ -109,13 +157,19 @@ export default async (req: Request) => {
         }
       }
 
-      const autoPostEnabled = true
+      const autoPostSetting =
+        game.settings?.['queue::autoPost']?.length
+          ? parseInt(game.settings['queue::autoPost'])
+          : 0
+      const autoPostEnabled = autoPostSetting > 0
+      const gameHost = getGameSiteUrl(gameName)
+      const host = gameHost
+      const socialLinks = getGameSocialLinks(game)
       const logo = game.logo?.length
         ? game.logo.indexOf('imgur.co') !== -1
           ? game.logo
           : getSanityImageUrl(game.logo)
         : `${host}${defaultLogo}`
-      const gameHost = `${host.replace('://', `://${gameName}.`)}`
       const tagQueuedNumber = stringifyNumber(numberInQueue)
 
       if (
@@ -144,8 +198,10 @@ export default async (req: Request) => {
                     host,
                     logo,
                     gameHost,
+                    game: game.name ?? gameName,
                     region: gameName,
                     playerIP,
+                    playerIp: playerIP,
                     playerID,
                     currentMysteryImageUrl: currentMysteryTag?.mysteryImageUrl?.length
                       ? currentMysteryTag.mysteryImageUrl
@@ -153,32 +209,28 @@ export default async (req: Request) => {
                     mysteryImageUrl: tag?.mysteryImageUrl?.length ? tag.mysteryImageUrl : '',
                     foundImageUrl: tag?.foundImageUrl?.length ? tag.foundImageUrl : '',
                     goCurrentMystery: 'SEE CURRENT MYSTERY',
-                    currentMysteryHint: `current hint: "${currentMysteryTag?.hint}"`,
+                    currentMysteryHint: currentMysteryTag?.hint?.length
+                      ? `current hint: "${currentMysteryTag.hint}"`
+                      : '',
                     footerText:
                       'BikeTag is an OpenSource project that you can contribute to anytime',
                     goToQueueButton: 'GO TO QUEUE',
                     newBikeTagPlayedText: 'A new round of BikeTag has been queued!',
                     mainTitleText: `this is the ${tagQueuedNumber} tag to be queue for round #${tag?.tagnumber}`,
                     mainParagraphText: autoPostEnabled
-                      ? 'Your game of BikeTag has AutoPost enabled, and the first tag submitted will be chosen as the winner at the end of the AutoPost timer of 15 minutes.'
+                      ? `Your game of BikeTag has AutoPost enabled, and the first tag submitted will be chosen as the winner at the end of the AutoPost timer of ${autoPostSetting} minutes.`
                       : 'You must approve the winning tag before the game can move on to the next round.',
                     goToApproveButton: 'Go to the Queue now to approve/dequeue this submission',
-                    goToWebsiteLink: `or go to ${gameHost}/login`,
+                    goToWebsiteLink: `Go to ${gameHost}/login to sign in`,
                     comparisonText: 'FOUND TAG COMPARED TO CURRENT MYSTERY LOCATION',
                     foundLocation: 'FOUND HERE',
                     foundTagBlurb: `This is what the player [${tag.foundPlayer}] submitted as the found location image and information. If there is a problem with this submission, please go to the Queue to resolve the issue.`,
                     currentMysteryBlurb:
                       'This is the current mystery location. You can see the full screen image in the app, if you need to, by clicking the button below.',
                     ambassadorsUrl: `${gameHost}/queue?btaId=${a.id}`,
-                    redditLink: `https://reddit.com/r/${
-                      game!.settings['subreddit']?.length ? game!.settings['subreddit'] : 'biketag'
-                    }`,
-                    blueskyLink: `https://bsky.app/profile/${
-                      game!.settings['bsky']?.length
-                        ? game!.settings['bsky']
-                        : 'biketag.bsky.social'
-                    }`,
-                    // instagramLink: `https://www.reddit.com/r/${game. ?? 'biketag'}`,
+                    redditLink: socialLinks.redditLink,
+                    blueskyLink: socialLinks.blueskyLink,
+                    instagramLink: socialLinks.instagramLink,
                     expiryHash: getEncodedExpiry({
                       btaId: a.id,
                       game: gameName,
@@ -190,8 +242,9 @@ export default async (req: Request) => {
                     payload: JSON.stringify(payload),
                     game: gameName,
                     tagnumber: tag.tagnumber,
-                    host,
+                    host: gameHost,
                     playerIP,
+                    playerIp: playerIP,
                     playerID,
                   }
                 }
@@ -276,8 +329,9 @@ export default async (req: Request) => {
                 return {
                   payload: JSON.stringify(payload),
                   game: gameName,
-                  host,
+                  host: gameHost,
                   playerIP,
+                  playerIp: playerIP,
                   playerID,
                 }
               },
@@ -287,17 +341,25 @@ export default async (req: Request) => {
             break
         }
       } else {
-        log(`Sending of email:${formName} disabled`, {
-          sendAll: game.settings['emails::sendall'],
-          disabled: game.settings['emails::disable'],
-        }, 'info')
+        log(
+          `Sending of email:${formName} disabled`,
+          {
+            sendAll: game.settings['emails::sendall'],
+            disabled: game.settings['emails::disable'],
+          },
+          'info',
+        )
       }
 
       if (successfulEmailsSent.length) {
-        log('success sending notifications and emails', {
-          successfulEmailsSent,
-          rejectedEmails,
-        }, 'info')
+        log(
+          'success sending notifications and emails',
+          {
+            successfulEmailsSent,
+            rejectedEmails,
+          },
+          'info',
+        )
         success = true
       } else if (rejectedEmails.length) {
         log('error sending emails', rejectedEmails)

@@ -1,6 +1,5 @@
 import { DeviceUUID } from '@/common/uuid'
 import { createClient } from '@sanity/client'
-import { booleanPointInPolygon, buffer, multiPolygon, point, polygon } from '@turf/turf'
 import { Game, Tag } from 'biketag/dist/common/schema'
 import CryptoJS from 'crypto-js'
 import domtoimage from 'dom-to-image'
@@ -90,6 +89,25 @@ export const getS3ImageSized = (
   size: 'small' | 'medium' | 'original' = 'original',
 ): string => {
   if (!imageUrl || size === 'original') return imageUrl
+
+  if (/digitaloceanspaces\.com/.test(imageUrl)) {
+    const isMainFolder = /\/main\//.test(imageUrl)
+    const ext = imageUrl.match(/(\.[a-z0-9]+)(?:\?.*)?$/i)?.[1]?.toLowerCase() ?? ''
+    const base = imageUrl.replace(/(_small|_medium)?\.[a-z0-9]+(?:\?.*)?$/i, '')
+
+    // Main folder images are always webp with webp variants.
+    if (isMainFolder) {
+      return `${base}_${size}.webp`
+    }
+
+    // Queue webp images may have webp variants after optional processing.
+    if (ext === '.webp') {
+      return `${base}_${size}.webp`
+    }
+
+    // Queue jpg/png/etc: use the uploaded original as-is.
+    return imageUrl
+  }
 
   return imageUrl.replace(/(_small|_medium)?(\.\w+)$/, `_${size}$2`)
 }
@@ -228,6 +246,14 @@ export const getProfileFromCookie = (profileCookieKey = 'profile'): BikeTagProfi
   setProfileCookie(profile)
 
   return profile
+}
+
+export const isGlobalAdminEmail = (email?: string | null): boolean => {
+  if (!email?.length || !BikeTagEnv.ADMIN_EMAIL?.length) {
+    return false
+  }
+
+  return email.toLowerCase() === BikeTagEnv.ADMIN_EMAIL.toLowerCase()
 }
 
 export const setProfileCookie = (
@@ -504,29 +530,6 @@ export const debug = (
   log.debug(message, context)
 }
 
-export const feetToKm = (feets: number) => feets * 0.0003048
-
-export const isPointInPolygon = (
-  geojson: any,
-  gps: { lng: number; lat: number },
-  distanceOffInFeet: number,
-) => {
-  const distanceOffInKilometers = feetToKm(distanceOffInFeet)
-
-  // Create turf.js point and polygon
-  const turfPoint = point([gps.lng, gps.lat])
-  const turfPolygon =
-    geojson.type === 'MultiPolygon'
-      ? multiPolygon(geojson.coordinates)
-      : polygon(geojson.coordinates)
-
-  // Buffer the polygon by the error amount
-  const bufferedPolygon = buffer(turfPolygon, distanceOffInKilometers, { units: 'kilometers' })
-
-  // Check if the point is inside the buffered polygon
-  return booleanPointInPolygon(turfPoint, bufferedPolygon)
-}
-
 export const isOnline = async (checkExternally = false) => {
   if (navigator.onLine && !checkExternally) {
     return true
@@ -552,7 +555,25 @@ export const dequeueErrorNotify = (toast: any) => (error: string) => {
   })
 }
 
-export const getBannedIPs = () => {
+/// TODO: move into the store using the client from the biketagclient
+export const getPlayerIsBanned = (playerId: string) => {
+  const sanityInstance = createClient({
+    projectId: BikeTagEnv.S_PID,
+    dataset: BikeTagEnv.S_DSET,
+    apiVersion: '2021-06-07',
+    useCdn: true,
+  })
+  const bannedPlayerIds = sanityInstance.fetch(
+    `*[_type == "setting" && key == "banned:pid"].value`,
+    {},
+  )
+  return bannedPlayerIds.then((bannedPlayerIds: string[]) => {
+    return bannedPlayerIds.includes(playerId)
+  })
+}
+
+/// TODO: move into the store using the client from the biketagclient
+export const getIPIsBanned = (ip: string) => {
   const sanityInstance = createClient({
     projectId: BikeTagEnv.S_PID,
     dataset: BikeTagEnv.S_DSET,
@@ -560,5 +581,8 @@ export const getBannedIPs = () => {
     useCdn: true,
   })
 
-  return sanityInstance.fetch(`*[_type == "setting" && key == "banned:ip"].value`, {})
+  const bannedIPs = sanityInstance.fetch(`*[_type == "setting" && key == "banned:ip"].value`, {})
+  return bannedIPs.then((bannedIPs: string[]) => {
+    return bannedIPs.includes(ip)
+  })
 }

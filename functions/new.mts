@@ -1,12 +1,13 @@
 import { BikeTagClient, createTagObject, Game, Tag } from 'biketag'
 import {
-    acceptCorsHeaders,
-    getBikeTagClientOpts,
-    getImageSource,
-    getPayloadOpts,
-    getProfileAuthorization,
-    log,
-    setNewBikeTagPost,
+  acceptCorsHeaders,
+  getBikeTagClientOpts,
+  getGameStorageSlug,
+  getImageSource,
+  getPayloadOpts,
+  getProfileAuthorization,
+  log,
+  setNewBikeTagPost,
 } from './common'
 import { ErrorMessage, HttpStatusCode } from './common/constants'
 
@@ -41,6 +42,7 @@ export default async (req: Request) => {
       ambassadorId,
       game: gameName,
       tagnumber,
+      playerId,
       foundPlayer,
       foundTime,
       foundLocation,
@@ -78,9 +80,12 @@ export default async (req: Request) => {
     const currentBikeTag = (await adminBiketag.getTag(undefined, { source: imageSource })).data
     log('[new-tag] Current tag', { current: currentBikeTag?.tagnumber ?? 'none' })
 
+    const gameSlug = getGameStorageSlug(game, gameName)
+
     const newTag: Tag = createTagObject({
-      game: game.name,
+      game: gameSlug,
       tagnumber,
+      playerId,
       foundPlayer,
       foundTime,
       foundLocation,
@@ -101,15 +106,12 @@ export default async (req: Request) => {
 
     log('[new-tag] setNewBikeTagPost result', result)
 
-    const status = result.errors
-      ? HttpStatusCode.BadRequest
-      : HttpStatusCode.Accepted
+    const status = result.errors ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted
 
     return new Response(JSON.stringify(result), {
       headers,
       status,
     })
-
   } catch (err: any) {
     log('[new-tag] Unhandled error', err, 'error')
     return new Response(
@@ -120,7 +122,7 @@ export default async (req: Request) => {
       {
         status: HttpStatusCode.InternalServerError,
         headers,
-      }
+      },
     )
   }
 }

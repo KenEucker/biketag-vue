@@ -7,34 +7,52 @@
     <div class="queue-page">
         <div v-if="!isBikeTagAmbassador && !pageLoading">
             <h2>Ambassador Access Required</h2>
-            <p>You must be logged in as a BikeTag Ambassador to create a new round.</p>
+            <p>You must be logged in as a BikeTag Ambassador to launch a game.</p>
+            <bike-tag-button @click="router.push({ name: 'Dashboard' })">
+                Go to Dashboard
+            </bike-tag-button>
+        </div>
+
+        <div v-else-if="!canLaunchGame && !pageLoading">
+            <h2>Game Already Started</h2>
+            <p>This game already has a tag #1. Use Create New Round to post the next tag.</p>
             <bike-tag-button @click="router.push({ name: 'Dashboard' })">
                 Go to Dashboard
             </bike-tag-button>
         </div>
 
         <div v-else-if="submitSuccess">
-            A new BikeTag round for {{ getGameNameProper }} has been created!
+            {{ getGameNameProper }} has been launched with tag #1!
             <bike-tag-button @click="router.push({ name: 'Home' })">
                 Go to the Home Page
             </bike-tag-button>
         </div>
 
-        <div v-else-if="!pageLoading">
-            <h2>Start a New Round for {{ getGameNameProper }}</h2>
-            <p class="round-number">Round #{{ newTag.tagnumber }}</p>
+        <div v-else-if="!pageLoading" class="launch-form">
+            <h2>Launch {{ getGameNameProper }}</h2>
+            <p class="round-number">Tag #1 — Mystery Image</p>
+            <p class="launch-description">
+                Set the first mystery image, hint, and credit to start the game.
+            </p>
             <div class="biketag-container">
-                <EditBikeTag :tag="newTag" allow-image-upload @update="onFieldUpdate" />
+                <EditBikeTag
+                    :tag="launchTag"
+                    allow-image-upload
+                    mystery-only
+                    @update="onFieldUpdate"
+                />
             </div>
 
-            <bike-tag-button variant="light" class="big-btn" @click="onSubmitClick">
-                Submit New Round
-            </bike-tag-button>
+            <div class="launch-actions">
+                <bike-tag-button variant="light" class="big-btn" @click="onSubmitClick">
+                    Launch Game
+                </bike-tag-button>
+            </div>
         </div>
 
-        <form ref="submitError" name="new-round-error" action="new-round-error" method="POST" data-netlify="true"
+        <form ref="submitError" name="launch-game-error" action="launch-game-error" method="POST" data-netlify="true"
             data-netlify-honeypot="bot-field" hidden>
-            <input type="hidden" name="form-name" value="new-round-error" />
+            <input type="hidden" name="form-name" value="launch-game-error" />
             <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
             <input type="hidden" name="message" />
             <input type="hidden" name="ip" value="" />
@@ -42,7 +60,7 @@
     </div>
 </template>
 
-<script setup name="NewRound">
+<script setup name="LaunchGame">
 import { computed, inject, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -78,19 +96,14 @@ const getGameName = computed(() => store.getGameName)
 const getGameNameProper = computed(() => store.getGameNameProper)
 const getAmbassadorId = computed(() => store.getAmbassadorId)
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const canLaunchGame = computed(() => store.canLaunchGame)
 
-const newTag = reactive({
+const launchTag = reactive({
     game: getGameName.value,
-    tagnumber: null,
+    tagnumber: 1,
     playerId: '',
-    foundPlayer: '',
-    foundTime: 0,
-    foundLocation: '',
-    foundImageUrl: '',
-    foundImage: null,
     mysteryPlayer: '',
-    mysteryTime: 0,
-    mysteryLocation: '',
+    mysteryTime: Math.floor(Date.now() / 1000),
     mysteryImageUrl: '',
     mysteryImage: null,
     hint: '',
@@ -98,34 +111,30 @@ const newTag = reactive({
 
 async function onFieldUpdate({ field, value, tag }) {
     if (tag) {
-        Object.assign(newTag, tag)
+        Object.assign(launchTag, tag)
         return
     }
     if (field) {
-        newTag[field] = value
+        launchTag[field] = value
     }
 }
 
 async function onSubmitClick() {
-    if (!newTag.foundImage && !newTag.foundImageUrl) {
+    if (submitInProgress.value) {
+        return
+    }
+
+    if (!launchTag.mysteryImage && !launchTag.mysteryImageUrl) {
         toast.open({
-            message: 'Please add a found image before submitting.',
+            message: 'Please add a mystery image before launching.',
             type: 'error',
             position: 'top',
         })
         return
     }
-    if (!newTag.mysteryImage && !newTag.mysteryImageUrl) {
+    if (!launchTag.mysteryPlayer?.length) {
         toast.open({
-            message: 'Please add a mystery image before submitting.',
-            type: 'error',
-            position: 'top',
-        })
-        return
-    }
-    if (!newTag.foundPlayer?.length || !newTag.mysteryPlayer?.length) {
-        toast.open({
-            message: 'Please enter player names before submitting.',
+            message: 'Please select or enter a player name for credit.',
             type: 'error',
             position: 'top',
         })
@@ -135,17 +144,17 @@ async function onSubmitClick() {
     submitInProgress.value = true
     const errorAction = submitError.value.getAttribute('action')
 
-    const result = await store.createNewRoundTag(newTag)
+    const result = await store.launchGameTag(launchTag)
     submitInProgress.value = false
 
     if (result === true) {
         store.resetBikeTagCache()
         return sendNetlifyForm(
-            'new-round-success',
+            'launch-game-success',
             `game=${getGameName.value}`,
             () => {
                 toast.open({
-                    message: 'New round submitted!',
+                    message: 'Game launched!',
                     type: 'success',
                     position: 'top',
                 })
@@ -163,7 +172,7 @@ async function onSubmitClick() {
             }
         )
     } else {
-        const message = `Error creating new round: ${result}`
+        const message = `Error launching game: ${result}`
         toast.open({
             message,
             type: 'error',
@@ -179,22 +188,41 @@ async function onSubmitClick() {
 onMounted(async () => {
     await store.isReady()
     await store.fetchPlayers()
-    const currentTagnumber = store.getCurrentBikeTag?.tagnumber ?? 0
-    newTag.game = getGameName.value
-    newTag.tagnumber = currentTagnumber + 1
+    launchTag.game = getGameName.value
+    launchTag.tagnumber = 1
+    launchTag.mysteryTime = Math.floor(Date.now() / 1000)
     pageLoading.value = false
 })
 </script>
 
 <style scoped>
+.launch-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 2rem;
+}
+
 .biketag-container {
-    max-width: clamp(80vw, 80vw, 500px);
-    margin: auto;
+    width: 100%;
 }
 
 .round-number {
     text-align: center;
     font-weight: bold;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.launch-description {
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.launch-actions {
+    width: 100%;
+    text-align: center;
 }
 </style>

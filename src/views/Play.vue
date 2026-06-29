@@ -112,7 +112,13 @@
 <script setup name="QueueBikeTagView">
 import ArrowSvg from '@/assets/images/arrow.svg'
 import LineSvg from '@/assets/images/line.svg'
-import { dequeueErrorNotify, getBannedIPs, sendNetlifyError, sendNetlifyForm } from '@/common'
+import {
+  dequeueErrorNotify,
+  getIPIsBanned,
+  getPlayerIsBanned,
+  sendNetlifyError,
+  sendNetlifyForm,
+} from '@/common'
 import { BiketagQueueFormSteps } from '@/common/types'
 import { useBikeTagStore } from '@/store/index'
 import { publicIp } from 'public-ip'
@@ -174,10 +180,9 @@ const isSubmittingData = () =>
 async function onQueueSubmit(newTagSubmission) {
   let isFoundTag = true
   const ipAddress = await publicIp()
-  const bannedIPs = await getBannedIPs()
 
-  // Check to see if IP address is banned
-  if (bannedIPs.indexOf(ipAddress) !== -1) {
+  // Check to see if player is banned
+  if ((await getIPIsBanned(ipAddress)) || (await getPlayerIsBanned(getPlayerId.value))) {
     localStorage.setItem('banned', 'true')
     return
   }

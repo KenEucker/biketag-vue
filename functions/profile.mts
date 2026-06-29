@@ -44,7 +44,12 @@ export default async (req: Request) => {
           const profileFound = success ? (dataIsString ? JSON.parse(data) : data) : null
 
           if (profileFound) {
-            body = await getBikeTagPlayerProfile(profileFound, authorized, true)
+            const mergedProfile = await getBikeTagPlayerProfile(profileFound, authorized, false)
+            body = {
+              ...mergedProfile,
+              ...(profile?.isBikeTagAmbassador ? { isBikeTagAmbassador: true } : {}),
+              ...(profile?.isBikeTagAdmin ? { isBikeTagAdmin: true } : {}),
+            }
             log('[profile] Merged profile successfully', { profile: body })
           } else {
             body = ErrorMessage.ProfileNotFound
@@ -107,7 +112,9 @@ export default async (req: Request) => {
     body = 'Internal server error'
   }
 
-  return new Response(body, {
+  const responseBody = typeof body === 'string' ? body : JSON.stringify(body)
+
+  return new Response(responseBody, {
     status,
     headers,
   })

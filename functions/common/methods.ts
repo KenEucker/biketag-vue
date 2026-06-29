@@ -1,4 +1,13 @@
 import { AtpAgent } from '@atproto/api'
+import {
+  CopyObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3'
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
@@ -13,13 +22,13 @@ import lzutf8 from 'lzutf8'
 import nodemailer from 'nodemailer'
 import { extname, join } from 'path'
 import qs from 'qs'
+import { BikeTagEnv } from '../../src/common/constants'
 import {
-  BikeTagEnv,
   getDomainInfo,
   getImageSized,
   getTagDateISOFromTimezone,
   isAuthenticationEnabled,
-} from '../../src/common'
+} from '../../src/common/methods'
 import { BikeTagProfile } from '../../src/common/types'
 import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue } from './types'
@@ -46,6 +55,54 @@ export const getApiUrl = (game = '', path = ''): string => {
   return process.env.CONTEXT === 'dev'
     ? `http://${game.length ? `${game}.` : ''}${process.env.HOST}:7200/.netlify/functions/${path}`
     : `https://${game.length ? `${game}.` : ''}${process.env.HOST}/api/${path}`
+}
+
+/** Game site URL, e.g. https://seattle.biketag.org (never inserts www into the subdomain). */
+export const getGameSiteUrl = (gameName = ''): string => {
+  const baseHost = (process.env.HOST ?? 'biketag.org').replace(/^www\./i, '')
+  const gameSlug = gameName.toLowerCase()
+  return process.env.CONTEXT === 'dev'
+    ? `http://${gameSlug.length ? `${gameSlug}.` : ''}${baseHost}:8080`
+    : `https://${gameSlug.length ? `${gameSlug}.` : ''}${baseHost}`
+}
+
+export const getGameSocialLinks = (game: Game) => {
+  const subreddit =
+    game.subreddit?.length
+      ? game.subreddit
+      : game.settings?.['social::reddit']?.length
+        ? game.settings['social::reddit']
+        : game.settings?.['subreddit']?.length
+          ? game.settings['subreddit']
+          : 'biketag'
+
+  const bluesky =
+    game.bluesky?.length
+      ? game.bluesky
+      : game.settings?.['social::bluesky']?.length
+        ? game.settings['social::bluesky']
+        : game.settings?.['bsky']?.length
+          ? game.settings['bsky']
+          : 'biketag.bsky.social'
+
+  const instagramHandle =
+    game.page?.length
+      ? game.page
+      : game.settings?.['social::instagram']?.length
+        ? game.settings['social::instagram']
+        : ''
+
+  const instagramLink = instagramHandle?.length
+    ? instagramHandle.startsWith('http')
+      ? instagramHandle
+      : `https://instagram.com/${instagramHandle.replace(/^@/, '')}`
+    : ''
+
+  return {
+    redditLink: `https://reddit.com/r/${subreddit}`,
+    blueskyLink: `https://bsky.app/profile/${bluesky}`,
+    instagramLink,
+  }
 }
 
 export const isRequestAllowed = (
@@ -410,36 +467,1589 @@ export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTa
   return thisGamesAmbassadors
 }
 
+export const isGlobalAdminEmail = (email?: string | null): boolean => {
+  if (!email?.length || !BikeTagEnv.ADMIN_EMAIL?.length) {
+    return false
+  }
+
+  return email.toLowerCase() === BikeTagEnv.ADMIN_EMAIL.toLowerCase()
+}
+
 export const getProfileAuthorization = async (req: Request): Promise<any> => {
   const authorization = await getPayloadAuthorization(req)
-  let profile: any = authorization?.isValid ? authorization.profile : null
+  let profile: any = authorization?.isValid ? { ...authorization.profile } : null
 
   if (authorization?.isValid && profile) {
     log('Valid authorization received for profile', { email: profile.email }, 'info')
 
+    const isGlobalAdmin = isGlobalAdminEmail(profile.email)
     const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
     const adminBiketag = new BikeTagClient(adminBiketagOpts)
-    const thisGamesAmbassadors = (await getThisGamesAmbassadors(adminBiketag, {
+    const thisGamesAmbassadors = ((await getThisGamesAmbassadors(adminBiketag, {
       source: 'sanity',
-    })) as Ambassador[]
-    if (!thisGamesAmbassadors?.length) {
-      return profile
-    }
+    })) ?? []) as Ambassador[]
 
-    const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
-    const isABikeTagAmbassador = profileAmbassadorMatch.length
-      ? true
-      : profile.email && profile.email === process.env.ADMIN_EMAIL
+    const profileId = profile.sub ?? profile.p_id
+    const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => {
+      if (profile.email && a.email === profile.email) return true
+      if (profileId && (a.id === profileId || a.player?.sub === profileId)) return true
+      return false
+    })
+    const isABikeTagAmbassador = profileAmbassadorMatch.length > 0 || isGlobalAdmin
+    const roleFlags: Record<string, boolean> = {}
 
     if (isABikeTagAmbassador) {
-      profile.isBikeTagAmbassador = true
-      profile = { ...profile, ...profileAmbassadorMatch[0] }
+      roleFlags.isBikeTagAmbassador = true
       log('Profile marked as BikeTagAmbassador', { email: profile.email }, 'info')
     }
+
+    if (isGlobalAdmin) {
+      roleFlags.isBikeTagAdmin = true
+      log('Profile marked as BikeTagAdmin', { email: profile.email }, 'info')
+    }
+
+    profile = profileAmbassadorMatch.length
+      ? { ...profile, ...profileAmbassadorMatch[0], ...roleFlags, sub: profile.sub ?? profile.p_id }
+      : { ...profile, ...roleFlags, sub: profile.sub ?? profile.p_id }
   }
 
   return profile
 }
+
+export const requireGlobalAdmin = (profile: any): boolean => {
+  return isGlobalAdminEmail(profile?.email)
+}
+
+/**
+ * ─── queue-fix helpers (used by functions/queue-fix.mts) ───
+ *
+ * Storage layout (AWS games):
+ *   queue/{game}-tag-{N}--{found|mystery}--{hash}.webp (+ _medium, _small)
+ *   main/{game}-tag-{N}--{found|mystery}.webp (+ variants)
+ *   main/index.json, queue/index.json — tag metadata arrays (biketag format)
+ *
+ * Round rules for queue/ validation:
+ *   found image filename round → current live round
+ *   mystery image filename round → current live round + 1
+ *
+ * Orphan found: queue file is a found image for a past round whose main/ --found slot is empty.
+ * Misfiled case: filename uses live round (N) but metadata t=N-1 → target round is metadata.
+ */
+export type QueueIssueCategory =
+  | 'non-webp'
+  | 'missing-variants'
+  | 'wrong-round'
+  | 'duplicate-uploader'
+  | 'orphaned-main-found'
+
+export type OrphanedQueueFoundComparePreview = {
+  mysteryImageUrl: string
+  candidateFoundUrl: string
+  expectedFoundPlayer?: string
+  queueFoundPlayer?: string
+  expectedFoundPlayerId?: string
+  queueFoundPlayerId?: string
+  playerVerified?: boolean
+  playerConflict?: boolean
+}
+
+export type QueueIssue = {
+  category: QueueIssueCategory
+  tagnumber: number
+  playerId?: string
+  player?: string
+  type?: 'found' | 'mystery'
+  url?: string
+  key?: string
+  deletable?: boolean
+  repairable?: boolean
+  targetTagnumber?: number
+  metadataTagnumber?: number
+  comparePreview?: OrphanedQueueFoundComparePreview
+  issue: string
+  relatedTagnumbers?: number[]
+}
+
+export type MainFolderContext = {
+  gameSlug: string
+  mainKeys: string[]
+  mainTagsByRound: Map<number, Tag>
+  currentTag?: Tag
+}
+
+export type OrphanedQueueFoundCheck = {
+  structural: boolean
+  playerVerified: boolean
+  playerConflict: boolean
+  targetRound?: number
+  reasons: string[]
+  comparePreview?: OrphanedQueueFoundComparePreview
+}
+
+const queuePathPattern = /\/queue\//
+const nonWebpImagePattern = /\.(jpe?g|png|gif|bmp)(?:\?.*)?$/i
+const queueSizedVariantKeyPattern = /_(medium|small)\.webp$/i
+const queuePrimaryImageKeyPattern =
+  /^queue\/(.+?)--(mystery|found)(?:--([a-z0-9]+))?\.(webp|jpg|jpeg|png|gif|bmp)$/i
+
+const isQueueSizedVariantKey = (key: string): boolean =>
+  queueSizedVariantKeyPattern.test(key.split('/').pop() ?? '')
+
+const getAllowedQueueRoundForImage = (
+  currentTag: Tag | undefined,
+  type: 'found' | 'mystery',
+): number | undefined => {
+  if (currentTag?.tagnumber === undefined) return undefined
+  return type === 'found' ? currentTag.tagnumber : currentTag.tagnumber + 1
+}
+
+const isNormalFoundMysteryPair = (group: QueueStorageImage[]): boolean => {
+  const tagnumbers = [...new Set(group.map((image) => image.tagnumber))].sort((a, b) => a - b)
+  if (tagnumbers.length !== 2 || tagnumbers[1] - tagnumbers[0] !== 1) return false
+  const foundCount = group.filter((image) => image.type === 'found').length
+  const mysteryCount = group.filter((image) => image.type === 'mystery').length
+  return foundCount === 1 && mysteryCount === 1
+}
+
+export const getGameStorageSlug = (game: Game, fallback = ''): string =>
+  (game.slug ?? game.name ?? fallback).toLowerCase()
+
+export const getMainTagIdentity = (
+  gameSlug: string,
+  tagnumber: number,
+): { slug: string; name: string } => {
+  const slug = `${gameSlug}-tag-${tagnumber}`
+  return { slug, name: slug }
+}
+
+export const getExpectedMainTagSlug = (gameSlug: string, tagnumber: number): string =>
+  getMainTagIdentity(gameSlug, tagnumber).slug
+
+const getStorageKeyFromUrl = (url: string): string => {
+  try {
+    return new URL(url).pathname.slice(1)
+  } catch {
+    return ''
+  }
+}
+
+const getQueueImageFilenameBase = (imageUrl: string): string => {
+  const filename = getStorageKeyFromUrl(imageUrl).split('/').pop() ?? ''
+  return filename.replace(/\.(webp|jpg|jpeg|png|gif|bmp)$/i, '')
+}
+
+export const queueImageHasVariants = async (
+  region: string,
+  gameSlug: string,
+  imageUrl: string,
+): Promise<boolean> => {
+  const base = getQueueImageFilenameBase(imageUrl)
+  const bucket = `${gameSlug}-biketag`
+  const client = createQueueStorageClient(region)
+
+  try {
+    await client.send(
+      new HeadObjectCommand({ Bucket: bucket, Key: `queue/${base}_small.webp` }),
+    )
+    await client.send(
+      new HeadObjectCommand({ Bucket: bucket, Key: `queue/${base}_medium.webp` }),
+    )
+    return true
+  } catch {
+    return false
+  }
+}
+
+const requireQueueImageVariants = async (
+  game: Game,
+  imageUrl: string,
+  label: string,
+): Promise<void> => {
+  const gameSlug = getGameStorageSlug(game)
+  const region = game.awsRegion ?? ''
+  if (!(await queueImageHasVariants(region, gameSlug, imageUrl))) {
+    throw new Error(
+      `${label} image is missing queue size variants — upload processing may still be in progress`,
+    )
+  }
+}
+
+const isStorageObjectNotFound = (error: unknown): boolean => {
+  const name = (error as { name?: string })?.name
+  const code = (error as { Code?: string; $metadata?: { httpStatusCode?: number } })?.Code
+  const status = (error as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode
+  return name === 'NotFound' || name === 'NoSuchKey' || code === 'NotFound' || status === 404
+}
+
+type QueueToMainCopyPair = { srcKey: string; destKey: string }
+
+const listExistingQueueToMainCopyPairs = (
+  filenameBase: string,
+  destBase: string,
+): QueueToMainCopyPair[] => {
+  const variants = ['', '_small', '_medium'] as const
+  const pairs: QueueToMainCopyPair[] = []
+
+  for (const variant of variants) {
+    const srcKey =
+      variant === '' ? `queue/${filenameBase}.webp` : `queue/${filenameBase}${variant}.webp`
+    const destKey = variant === '' ? `${destBase}.webp` : `${destBase}${variant}.webp`
+    pairs.push({ srcKey, destKey })
+  }
+
+  return pairs
+}
+
+const executeQueueToMainCopies = async (
+  client: S3Client,
+  bucket: string,
+  pairs: QueueToMainCopyPair[],
+  sourceKey: string,
+): Promise<void> => {
+  if (!pairs.length) {
+    throw new Error(`no queue variants found to copy from ${sourceKey}`)
+  }
+
+  for (const { srcKey, destKey } of pairs) {
+    await client.send(
+      new CopyObjectCommand({
+        Bucket: bucket,
+        CopySource: `${bucket}/${srcKey}`,
+        Key: destKey,
+        ACL: 'public-read',
+        MetadataDirective: 'COPY',
+      }),
+    )
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: srcKey }))
+  }
+}
+
+const assertMainDestKeysAbsent = async (
+  client: S3Client,
+  bucket: string,
+  destKeys: string[],
+  gameSlug: string,
+  targetTagnumber: number,
+  type: 'found' | 'mystery',
+): Promise<void> => {
+  for (const destKey of destKeys) {
+    try {
+      await client.send(new HeadObjectCommand({ Bucket: bucket, Key: destKey }))
+      throw new Error(
+        `refusing to overwrite existing main file ${destKey} — destination main/${gameSlug}-tag-${targetTagnumber}--${type} must be empty`,
+      )
+    } catch (error) {
+      if (!isStorageObjectNotFound(error)) {
+        throw error instanceof Error ? error : new Error(`storage check failed for ${destKey}`)
+      }
+    }
+  }
+}
+
+const copyQueueImageToMainIfAbsent = async (
+  gameSlug: string,
+  region: string,
+  sourceUrl: string,
+  targetTagnumber: number,
+  type: 'found' | 'mystery',
+): Promise<string> => {
+  const sourceKey = getStorageKeyFromUrl(sourceUrl)
+  if (!sourceKey.startsWith('queue/')) {
+    return sourceUrl
+  }
+
+  const filenameBase = getQueueImageFilenameBase(sourceUrl)
+  const bucket = `${gameSlug}-biketag`
+  const client = createQueueStorageClient(region)
+  const destBase = `main/${gameSlug}-tag-${targetTagnumber}--${type}`
+  const destUrl = `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${destBase}.webp`
+
+  const pairs: QueueToMainCopyPair[] = []
+  for (const { srcKey, destKey } of listExistingQueueToMainCopyPairs(filenameBase, destBase)) {
+    try {
+      await client.send(new HeadObjectCommand({ Bucket: bucket, Key: srcKey }))
+    } catch {
+      continue
+    }
+    pairs.push({ srcKey, destKey })
+  }
+
+  await assertMainDestKeysAbsent(
+    client,
+    bucket,
+    pairs.map(({ destKey }) => destKey),
+    gameSlug,
+    targetTagnumber,
+    type,
+  )
+  await executeQueueToMainCopies(client, bucket, pairs, sourceKey)
+  return destUrl
+}
+
+/**
+ * Copy queue/ image (+ _medium, _small) to main/{game}-tag-{N}--{type}.webp, then delete queue copies.
+ * Used by approve. Refuses if destination main/ keys already exist (S3 CopyObject would replace them otherwise).
+ * Does not update main/index.json.
+ */
+export const moveQueueImageToMainWithVariants = async (
+  gameSlug: string,
+  region: string,
+  sourceUrl: string,
+  targetTagnumber: number,
+  type: 'found' | 'mystery',
+): Promise<string> =>
+  copyQueueImageToMainIfAbsent(gameSlug, region, sourceUrl, targetTagnumber, type)
+
+/** queue-fix Move to main — same as moveQueueImageToMainWithVariants but found images only. */
+export const copyQueueFoundToMainIfAbsent = async (
+  gameSlug: string,
+  region: string,
+  sourceUrl: string,
+  targetTagnumber: number,
+): Promise<string> =>
+  copyQueueImageToMainIfAbsent(gameSlug, region, sourceUrl, targetTagnumber, 'found')
+
+export type QueueStorageImage = {
+  key: string
+  url: string
+  baseKey: string
+  type: 'found' | 'mystery'
+  tagnumber: number
+  metadataTagnumber?: number
+  playerHash: string
+  extension: string
+  playerId?: string
+  mysteryPlayer?: string
+  foundPlayer?: string
+  title?: string
+  description?: string
+}
+
+export const createQueueStorageClient = (region: string): S3Client => {
+  return new S3Client({
+    region,
+    endpoint: `https://${region}.digitaloceanspaces.com`,
+    credentials: {
+      accessKeyId: process.env.S3_BE_ACCESS_ID ?? '',
+      secretAccessKey: process.env.S3_BE_ACCESS_KEY ?? '',
+    },
+  })
+}
+
+const decodeQueueMetadataValue = (value: string): string => {
+  try {
+    if (!value || !/^[A-Za-z0-9+/=]+$/.test(value)) return value
+    return Buffer.from(value, 'base64').toString('utf-8')
+  } catch {
+    return value
+  }
+}
+
+const parseQueueObjectMetadata = (data?: string) => {
+  if (!data) return undefined
+  try {
+    const tag = JSON.parse(decodeQueueMetadataValue(data))
+    const tagnumber = typeof tag.t === 'number' ? tag.t : undefined
+    if (tagnumber === undefined) return undefined
+    return {
+      tagnumber,
+      playerId: tag.p as string | undefined,
+      mysteryPlayer: tag.mp as string | undefined,
+      foundPlayer: tag.fp as string | undefined,
+    }
+  } catch {
+    return undefined
+  }
+}
+
+const parseTagnumberFromQueueKey = (key: string): number | undefined => {
+  const match = key.match(/-tag-(\d+)--(?:mystery|found)--/i)
+  return match ? parseInt(match[1], 10) : undefined
+}
+
+export const parseTagnumberFromStorageKey = parseTagnumberFromQueueKey
+
+const getMainFoundFileKey = (gameSlug: string, tagnumber: number): string =>
+  `main/${gameSlug}-tag-${tagnumber}--found.webp`
+
+const getMainMysteryFileKey = (gameSlug: string, tagnumber: number): string =>
+  `main/${gameSlug}-tag-${tagnumber}--mystery.webp`
+
+const parseRoundFromMainImageUrl = (url?: string): number | undefined => {
+  if (!url?.length) return undefined
+  const match = url.match(/-tag-(\d+)--(?:mystery|found)/i)
+  return match ? parseInt(match[1], 10) : undefined
+}
+
+const buildMainImageUrlFromReference = (
+  referenceUrl: string,
+  gameSlug: string,
+  tagnumber: number,
+  type: 'mystery' | 'found',
+): string => {
+  try {
+    const url = new URL(referenceUrl)
+    url.pathname = `/main/${gameSlug}-tag-${tagnumber}--${type}.webp`
+    return url.toString()
+  } catch {
+    return ''
+  }
+}
+
+/** Prefer the main/ file for this round; index mysteryImageUrl can be wrong after partial approve. */
+const getMainMysteryImageUrlForRound = (
+  gameSlug: string,
+  targetRound: number,
+  mainTag: Tag,
+  mainKeys: string[],
+  referenceUrl?: string,
+): string | undefined => {
+  const mysteryKey = getMainMysteryFileKey(gameSlug, targetRound)
+  const indexUrl = mainTag.mysteryImageUrl?.trim()
+  const indexRound = parseRoundFromMainImageUrl(indexUrl)
+
+  if (indexUrl && indexRound === targetRound) {
+    return indexUrl
+  }
+
+  if (mainKeys.includes(mysteryKey)) {
+    const reference = referenceUrl || indexUrl
+    if (reference?.length) {
+      return buildMainImageUrlFromReference(reference, gameSlug, targetRound, 'mystery')
+    }
+  }
+
+  return undefined
+}
+
+const normalizePlayerName = (name?: string): string => (name ?? '').trim().toLowerCase()
+
+const getMainTagForRound = (
+  round: number,
+  main: MainFolderContext,
+): Tag | undefined => {
+  if (main.currentTag?.tagnumber === round) return main.currentTag
+  return main.mainTagsByRound.get(round)
+}
+
+const foundImageUrlPointsToMain = (url?: string): boolean =>
+  !!url?.trim() && /\/main\//.test(url) && /--found/.test(url)
+
+const mainTagMissingFoundImage = (
+  gameSlug: string,
+  targetRound: number,
+  mainTag: Tag,
+  mainKeys: string[],
+): boolean => {
+  const hasMainFile = mainKeys.includes(getMainFoundFileKey(gameSlug, targetRound))
+  const urlPointsToMain = foundImageUrlPointsToMain(mainTag.foundImageUrl)
+  return !hasMainFile || !urlPointsToMain
+}
+
+const resolveQueueFoundPlayerInfo = (
+  image: QueueStorageImage,
+  simulatedQueue: Tag[] = [],
+): { foundPlayer?: string; playerId?: string } => {
+  for (const tag of simulatedQueue) {
+    const tagKey = tag.foundImageUrl ? getStorageKeyFromUrl(tag.foundImageUrl) : ''
+    if (tagKey === image.key || tag.foundImageUrl === image.url) {
+      return {
+        foundPlayer: tag.foundPlayer?.trim() || image.foundPlayer?.trim(),
+        playerId: tag.playerId ?? image.playerId,
+      }
+    }
+  }
+
+  return {
+    foundPlayer: image.foundPlayer?.trim(),
+    playerId: image.playerId,
+  }
+}
+
+const resolveExpectedFinderForFoundRound = (
+  targetRound: number,
+  mainTag: Tag,
+  main: MainFolderContext,
+): { foundPlayer?: string; playerId?: string } => {
+  const nextTag = getMainTagForRound(targetRound + 1, main)
+  const fromNext = nextTag?.mysteryPlayer?.trim()
+  if (fromNext?.length) {
+    return { foundPlayer: fromNext, playerId: nextTag?.playerId }
+  }
+
+  const fromMainTag = mainTag.foundPlayer?.trim()
+  if (fromMainTag?.length) {
+    return { foundPlayer: fromMainTag, playerId: mainTag.playerId ?? nextTag?.playerId }
+  }
+
+  return { foundPlayer: undefined, playerId: nextTag?.playerId ?? mainTag.playerId }
+}
+
+const evaluatePlayerMatch = (
+  queue: { foundPlayer?: string; playerId?: string },
+  expected: { foundPlayer?: string; playerId?: string },
+): { verified: boolean; conflict: boolean } => {
+  const queueName = normalizePlayerName(queue.foundPlayer)
+  const expectedName = normalizePlayerName(expected.foundPlayer)
+
+  if (queueName && expectedName && queueName !== expectedName) {
+    return { verified: false, conflict: true }
+  }
+
+  if (queue.playerId && expected.playerId && queue.playerId !== expected.playerId) {
+    return { verified: false, conflict: true }
+  }
+
+  if (queueName && expectedName && queueName === expectedName) {
+    return { verified: true, conflict: false }
+  }
+
+  if (queue.playerId && expected.playerId && queue.playerId === expected.playerId) {
+    return { verified: true, conflict: false }
+  }
+
+  return { verified: false, conflict: false }
+}
+
+/** Live-round found submission: filename is current and metadata is absent or also at/above current. */
+const isCurrentRoundQueueFoundSubmission = (
+  keyRound: number,
+  metaRound: number | undefined,
+  currentRound: number,
+): boolean => {
+  if (keyRound !== currentRound) return false
+  if (metaRound === undefined) return true
+  return metaRound >= currentRound
+}
+
+/** Rounds in main/ a queue found image may belong to (filename and/or metadata). */
+export const resolveOrphanTargetsForImage = (
+  image: QueueStorageImage,
+  currentRound: number,
+): number[] => {
+  if (image.type !== 'found') return []
+
+  const keyRound = parseTagnumberFromQueueKey(image.key) ?? image.tagnumber
+  const metaRound = image.metadataTagnumber
+
+  // Both filename and metadata point at the live round — normal queue submission.
+  if (isCurrentRoundQueueFoundSubmission(keyRound, metaRound, currentRound)) {
+    return []
+  }
+
+  const targets = new Set<number>()
+
+  // Either number below the live round may name a past-round orphan.
+  if (keyRound < currentRound) {
+    targets.add(keyRound)
+  }
+  if (metaRound !== undefined && metaRound < currentRound) {
+    targets.add(metaRound)
+  }
+
+  return [...targets]
+}
+
+/** Validates moving a queue found image onto a specific past main tag round. */
+export const evaluateOrphanedQueueFoundForTarget = (
+  image: QueueStorageImage,
+  targetRound: number,
+  main: MainFolderContext,
+  simulatedQueue: Tag[] = [],
+): OrphanedQueueFoundCheck => {
+  const currentTag = main.currentTag
+  if (image.type !== 'found') {
+    return { structural: false, playerVerified: false, playerConflict: false, reasons: ['not a found image'] }
+  }
+  if (currentTag?.tagnumber === undefined) {
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      reasons: ['current round is unknown'],
+    }
+  }
+
+  const keyRound = parseTagnumberFromQueueKey(image.key) ?? image.tagnumber
+
+  if (targetRound >= currentTag.tagnumber) {
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      targetRound,
+      reasons: [
+        `target round #${targetRound} is the current or a future round`,
+      ],
+    }
+  }
+
+  const allowedTargets = resolveOrphanTargetsForImage(image, currentTag.tagnumber)
+  if (!allowedTargets.includes(targetRound)) {
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      targetRound,
+      reasons: [
+        `queue filename #${keyRound} and metadata #${image.metadataTagnumber ?? 'none'} do not indicate orphan target #${targetRound}`,
+      ],
+    }
+  }
+
+  const mainTag = getMainTagForRound(targetRound, main)
+  if (!mainTag) {
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      targetRound,
+      reasons: [`main index has no tag for round #${targetRound}`],
+    }
+  }
+
+  if (!mainTagMissingFoundImage(main.gameSlug, targetRound, mainTag, main.mainKeys)) {
+    const hasMainFile = main.mainKeys.includes(getMainFoundFileKey(main.gameSlug, targetRound))
+    const urlPointsToMain = foundImageUrlPointsToMain(mainTag.foundImageUrl)
+    const detail =
+      hasMainFile && urlPointsToMain
+        ? 'file and index entry'
+        : hasMainFile
+          ? 'main file'
+          : urlPointsToMain
+            ? 'main index foundImageUrl'
+            : 'unknown state'
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      targetRound,
+      reasons: [`main already has a found image (${detail}) for round #${targetRound}`],
+    }
+  }
+
+  const mysteryUrl = getMainMysteryImageUrlForRound(
+    main.gameSlug,
+    targetRound,
+    mainTag,
+    main.mainKeys,
+    image.url,
+  )
+  if (!mysteryUrl?.length) {
+    const indexRound = parseRoundFromMainImageUrl(mainTag.mysteryImageUrl)
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      targetRound,
+      reasons: [
+        indexRound !== undefined && indexRound !== targetRound
+          ? `main index mysteryImageUrl points at round #${indexRound}, not #${targetRound}, and main/${main.gameSlug}-tag-${targetRound}--mystery.webp was not found in storage`
+          : `main tag #${targetRound} has no mystery image to compare against`,
+      ],
+    }
+  }
+
+  const queuePlayerInfo = resolveQueueFoundPlayerInfo(image, simulatedQueue)
+  const expectedPlayerInfo = resolveExpectedFinderForFoundRound(targetRound, mainTag, main)
+  const playerMatch = evaluatePlayerMatch(queuePlayerInfo, expectedPlayerInfo)
+
+  return {
+    structural: true,
+    playerVerified: playerMatch.verified,
+    playerConflict: playerMatch.conflict,
+    targetRound,
+    reasons: playerMatch.conflict
+      ? [
+          `foundPlayer "${queuePlayerInfo.foundPlayer ?? 'unknown'}" conflicts with expected finder "${expectedPlayerInfo.foundPlayer ?? 'unknown'}" (planter of round #${targetRound + 1})`,
+        ]
+      : [],
+    comparePreview: {
+      mysteryImageUrl: mysteryUrl,
+      candidateFoundUrl: image.url,
+      expectedFoundPlayer: expectedPlayerInfo.foundPlayer,
+      queueFoundPlayer: queuePlayerInfo.foundPlayer,
+      expectedFoundPlayerId: expectedPlayerInfo.playerId,
+      queueFoundPlayerId: queuePlayerInfo.playerId,
+      playerVerified: playerMatch.verified,
+      playerConflict: playerMatch.conflict,
+    },
+  }
+}
+
+/** Validates a past-round queue found image that should have been copied into main/. */
+export const evaluateOrphanedQueueFoundForMain = (
+  image: QueueStorageImage,
+  main: MainFolderContext,
+  simulatedQueue: Tag[] = [],
+): OrphanedQueueFoundCheck => {
+  const currentTag = main.currentTag
+  const keyRound = parseTagnumberFromQueueKey(image.key) ?? image.tagnumber
+
+  if (currentTag?.tagnumber === undefined) {
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      reasons: ['current round is unknown'],
+    }
+  }
+
+  const orphanTargets = resolveOrphanTargetsForImage(image, currentTag.tagnumber)
+  if (!orphanTargets.length) {
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      targetRound: keyRound,
+      reasons: [
+        isCurrentRoundQueueFoundSubmission(
+          keyRound,
+          image.metadataTagnumber,
+          currentTag.tagnumber,
+        )
+          ? 'current-round queue submission — not an orphan'
+          : 'filename and metadata do not indicate a past-round orphan',
+      ],
+    }
+  }
+
+  return evaluateOrphanedQueueFoundForTarget(
+    image,
+    orphanTargets[0],
+    main,
+    simulatedQueue,
+  )
+}
+
+const listQueueObjectKeys = async (
+  client: S3Client,
+  bucket: string,
+  prefix: string,
+): Promise<string[]> => {
+  const keys: string[] = []
+  let continuationToken: string | undefined
+
+  do {
+    const response = await client.send(
+      new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      }),
+    )
+    keys.push(...(response.Contents?.map((obj) => obj.Key).filter(Boolean) as string[]) ?? [])
+    continuationToken = response.NextContinuationToken
+  } while (continuationToken)
+
+  return keys
+}
+
+const parseQueueImageKey = (key: string) => {
+  if (isQueueSizedVariantKey(key)) return undefined
+  if (key.endsWith('/index.json')) return undefined
+
+  const match = key.match(queuePrimaryImageKeyPattern)
+  if (!match) return undefined
+
+  const [, , type, playerHash = '', extension] = match
+  const tagnumber = parseTagnumberFromQueueKey(key)
+  if (tagnumber === undefined) return undefined
+
+  return {
+    type: type as 'found' | 'mystery',
+    playerHash,
+    extension: extension.toLowerCase(),
+    tagnumber,
+  }
+}
+
+/**
+ * List and parse all objects under queue/. One HeadObject per primary file for S3 metadata (t, mp, fp).
+ * Filename round comes from key; metadataTagnumber from object metadata when present.
+ */
+export const loadQueueStorageImages = async (
+  game: string,
+  region: string,
+): Promise<{ bucket: string; keys: string[]; images: QueueStorageImage[]; unparsedKeys: string[] }> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${game.toLowerCase()}-biketag`
+  const keys = await listQueueObjectKeys(client, bucket, 'queue/')
+  const images: QueueStorageImage[] = []
+  const unparsedKeys: string[] = []
+
+  for (const key of keys) {
+    const parsed = parseQueueImageKey(key)
+    if (!parsed) {
+      if (/^queue\//.test(key) && !key.endsWith('/index.json') && !isQueueSizedVariantKey(key)) {
+        unparsedKeys.push(key)
+      }
+      continue
+    }
+
+    const { type, playerHash, extension, tagnumber: tagnumberFromKey } = parsed
+
+    let playerId: string | undefined
+    let mysteryPlayer: string | undefined
+    let foundPlayer: string | undefined
+    let tagnumber = tagnumberFromKey
+    let metadataTagnumber: number | undefined
+    let title: string | undefined
+    let description: string | undefined
+
+    try {
+      const head = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }))
+      title = head.Metadata?.title ? decodeQueueMetadataValue(head.Metadata.title) : undefined
+      description = head.Metadata?.description
+        ? decodeQueueMetadataValue(head.Metadata.description)
+        : undefined
+      const meta = parseQueueObjectMetadata(head.Metadata?.data)
+      if (meta) {
+        playerId = meta.playerId
+        mysteryPlayer = meta.mysteryPlayer
+        foundPlayer = meta.foundPlayer
+        metadataTagnumber = meta.tagnumber
+      }
+    } catch {
+      // keep key-derived values
+    }
+
+    const baseKey = key.replace(/\.(webp|jpe?g|png|gif|bmp)$/i, '').replace(/_(medium|small)$/i, '')
+
+    images.push({
+      key,
+      url: `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${key}`,
+      baseKey,
+      type,
+      tagnumber,
+      metadataTagnumber,
+      playerHash,
+      extension,
+      playerId,
+      mysteryPlayer,
+      foundPlayer,
+      title,
+      description,
+    })
+  }
+
+  return { bucket, keys, images, unparsedKeys }
+}
+
+/** List object keys under main/ (no parsing). Used for orphan detection only. */
+export const loadMainStorageKeys = async (game: string, region: string): Promise<string[]> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${game.toLowerCase()}-biketag`
+  return listQueueObjectKeys(client, bucket, 'main/')
+}
+
+export const getQueueImageFromStorage = (
+  images: QueueStorageImage[] = [],
+  primaryKey: string,
+): QueueStorageImage | undefined => images.find((image) => image.key === primaryKey)
+
+const getStorageUploaderKey = (image: QueueStorageImage): string | undefined => {
+  if (image.playerId?.length) return `id:${image.playerId}`
+  const name = (image.mysteryPlayer || image.foundPlayer || '').trim().toLowerCase()
+  if (name.length) return `name:${name}`
+  if (image.playerHash?.length) return `hash:${image.playerHash}`
+  return `tag:${image.tagnumber}-${image.type}`
+}
+
+/**
+ * Build synthetic Tag[] from queue/ files (highest round ±1, grouped by uploader).
+ * Approximates what biketag getQueue returns without calling queue/index.json.
+ */
+export const simulateGetQueueTagsFromStorage = (
+  images: QueueStorageImage[] = [],
+  game = '',
+): Tag[] => {
+  const byTagnumber = new Map<number, QueueStorageImage[]>()
+
+  for (const image of images) {
+    byTagnumber.set(image.tagnumber, [...(byTagnumber.get(image.tagnumber) ?? []), image])
+  }
+
+  const tagnumbers = [...byTagnumber.keys()].sort((a, b) => a - b)
+  if (!tagnumbers.length) return []
+
+  const highest = tagnumbers[tagnumbers.length - 1]
+  const relevantTagnumbers = [highest, highest - 1].filter((n) => n > 0 && byTagnumber.has(n))
+  const playerImages = new Map<string, QueueStorageImage[]>()
+
+  for (const tagnumber of relevantTagnumbers) {
+    for (const image of byTagnumber.get(tagnumber) ?? []) {
+      const key = getStorageUploaderKey(image)
+      if (!key) continue
+      playerImages.set(key, [...(playerImages.get(key) ?? []), image])
+    }
+  }
+
+  const tags: Tag[] = []
+  for (const group of playerImages.values()) {
+    const mystery = group.find((image) => image.type === 'mystery')
+    const found = group.find((image) => image.type === 'found')
+    const tagnumber = mystery?.tagnumber ?? found?.tagnumber ?? 0
+
+    tags.push({
+      tagnumber,
+      game,
+      playerId: mystery?.playerId ?? found?.playerId,
+      mysteryPlayer: mystery?.mysteryPlayer,
+      foundPlayer: found?.foundPlayer,
+      mysteryImageUrl: mystery?.url,
+      foundImageUrl: found?.url,
+    } as Tag)
+  }
+
+  return tags
+}
+
+/**
+ * Scan queue/ images and return all detected issues. Read-only except issue list.
+ *
+ * Order per image: orphaned-main-found (if main context) → wrong-round → non-webp →
+ * missing-variants. Then bucket-level duplicate-uploader checks.
+ *
+ * Orphan is shown when evaluateOrphanedQueueFoundForTarget.structural is true (main missing
+ * --found, mystery exists for comparison). Player mismatch marks repairable:false but still shown.
+ */
+export const collectQueueIssuesFromStorage = (
+  images: QueueStorageImage[] = [],
+  allKeys: string[] = [],
+  currentTag?: Tag,
+  simulatedQueue: Tag[] = [],
+  unparsedKeys: string[] = [],
+  main?: MainFolderContext,
+): QueueIssue[] => {
+  const issues: QueueIssue[] = []
+  const keySet = new Set(allKeys)
+  const reportedDuplicateHashes = new Set<string>()
+  const orphanedKeys = new Set<string>()
+
+  for (const key of unparsedKeys) {
+    const tagnumber = parseTagnumberFromQueueKey(key) ?? 0
+    issues.push({
+      category: 'non-webp',
+      tagnumber,
+      issue: `unrecognized queue file: ${key.split('/').pop()}`,
+      url: key,
+    })
+  }
+
+  for (const image of images) {
+    const player = image.foundPlayer || image.mysteryPlayer || image.playerHash
+
+    if (main && currentTag?.tagnumber) {
+      const keyRound = parseTagnumberFromQueueKey(image.key) ?? image.tagnumber
+      const orphanTargets = resolveOrphanTargetsForImage(image, currentTag.tagnumber)
+
+      for (const targetRound of orphanTargets) {
+        if (orphanedKeys.has(image.key)) break
+
+        const orphaned = evaluateOrphanedQueueFoundForTarget(
+          image,
+          targetRound,
+          main,
+          simulatedQueue,
+        )
+        if (!orphaned.structural || !orphaned.comparePreview) continue
+
+        orphanedKeys.add(image.key)
+        const roundNote =
+          keyRound !== targetRound && image.metadataTagnumber === targetRound
+            ? ` — metadata says found for round #${targetRound}, filename uses new-round #${keyRound}`
+            : keyRound !== targetRound
+              ? ` — filename says round #${keyRound}, main/ is missing found for round #${targetRound}`
+              : image.metadataTagnumber !== undefined &&
+                  image.metadataTagnumber !== targetRound
+                ? ` (metadata lists round #${image.metadataTagnumber})`
+                : ''
+        const finder =
+          orphaned.comparePreview.queueFoundPlayer ??
+          orphaned.comparePreview.expectedFoundPlayer ??
+          player
+        const playerNote = orphaned.playerConflict
+          ? ' — player name/id conflicts with expected finder; review images before moving'
+          : orphaned.playerVerified
+            ? ` — matches expected finder "${orphaned.comparePreview.expectedFoundPlayer}"`
+            : ' — player could not be verified from metadata; compare images before moving'
+        issues.push({
+          category: 'orphaned-main-found',
+          tagnumber: targetRound,
+          playerId: image.playerId ?? orphaned.comparePreview.expectedFoundPlayerId,
+          player: finder,
+          type: 'found',
+          url: image.url,
+          key: image.key,
+          repairable: !orphaned.playerConflict,
+          targetTagnumber: targetRound,
+          metadataTagnumber: image.metadataTagnumber,
+          comparePreview: orphaned.comparePreview,
+          issue: `main/ is missing the found photo for round #${targetRound}${roundNote}${playerNote} — compare tag #${targetRound} mystery with the queue candidate`,
+        })
+      }
+    }
+
+    const expectedRound = getAllowedQueueRoundForImage(currentTag, image.type)
+
+    if (
+      !orphanedKeys.has(image.key) &&
+      expectedRound !== undefined &&
+      image.tagnumber !== expectedRound
+    ) {
+      issues.push({
+        category: 'wrong-round',
+        tagnumber: image.tagnumber,
+        playerId: image.playerId,
+        player,
+        type: image.type,
+        url: image.url,
+        key: image.key,
+        deletable: true,
+        issue: `queue file is for round #${image.tagnumber}, expected round #${expectedRound} (${image.type} image)`,
+      })
+    }
+
+    if (image.extension !== 'webp') {
+      issues.push({
+        category: 'non-webp',
+        tagnumber: image.tagnumber,
+        playerId: image.playerId,
+        player,
+        type: image.type,
+        url: image.url,
+        issue: `queue file is ${image.extension}, not webp`,
+      })
+      continue
+    }
+
+    const missing: string[] = []
+    if (!keySet.has(`${image.baseKey}_medium.webp`)) {
+      missing.push(`${image.baseKey.split('/').pop()}_medium.webp`)
+    }
+    if (!keySet.has(`${image.baseKey}_small.webp`)) {
+      missing.push(`${image.baseKey.split('/').pop()}_small.webp`)
+    }
+
+    if (missing.length) {
+      issues.push({
+        category: 'missing-variants',
+        tagnumber: image.tagnumber,
+        playerId: image.playerId,
+        player,
+        type: image.type,
+        url: image.url,
+        issue: `missing sized variant${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}`,
+      })
+    }
+  }
+
+  const uploaderImages = new Map<string, QueueStorageImage[]>()
+  for (const image of images) {
+    const key = getStorageUploaderKey(image)
+    if (!key) continue
+    uploaderImages.set(key, [...(uploaderImages.get(key) ?? []), image])
+  }
+
+  for (const group of uploaderImages.values()) {
+    const tagnumbers = [...new Set(group.map((image) => image.tagnumber))].sort((a, b) => a - b)
+    if (tagnumbers.length <= 1 || isNormalFoundMysteryPair(group)) continue
+
+    const example = group[0]
+    const player = example.foundPlayer || example.mysteryPlayer || example.playerHash
+    issues.push({
+      category: 'duplicate-uploader',
+      tagnumber: example.tagnumber,
+      playerId: example.playerId,
+      player,
+      issue: `uploader has queue files across rounds #${tagnumbers.join(', #')}`,
+      relatedTagnumbers: tagnumbers,
+    })
+  }
+
+  const hashToSimulatedTags = new Map<string, Tag[]>()
+  for (const tag of simulatedQueue) {
+    for (const image of images) {
+      if (image.url !== tag.mysteryImageUrl && image.url !== tag.foundImageUrl) continue
+      const existing = hashToSimulatedTags.get(image.playerHash) ?? []
+      if (!existing.some((entry) => entry.tagnumber === tag.tagnumber)) {
+        hashToSimulatedTags.set(image.playerHash, [...existing, tag])
+      }
+    }
+  }
+
+  for (const [playerHash, tags] of hashToSimulatedTags) {
+    if (tags.length <= 1 || reportedDuplicateHashes.has(playerHash)) continue
+
+    reportedDuplicateHashes.add(playerHash)
+    const tagnumbers = [...new Set(tags.map((tag) => tag.tagnumber))].sort((a, b) => a - b)
+    const example = tags[0]
+    const player = example.foundPlayer || example.mysteryPlayer || playerHash
+
+    issues.push({
+      category: 'duplicate-uploader',
+      tagnumber: example.tagnumber,
+      playerId: example.playerId,
+      player,
+      issue: `getQueue would group this uploader into ${tags.length} separate tags (rounds #${tagnumbers.join(', #')})`,
+      relatedTagnumbers: tagnumbers,
+    })
+  }
+
+  return issues
+}
+
+export const getQueueUploaderKey = (tag: Tag): string | undefined => {
+  if (tag.playerId?.length) return `id:${tag.playerId}`
+  const name = (tag.mysteryPlayer || tag.foundPlayer || '').trim().toLowerCase()
+  return name.length ? `name:${name}` : undefined
+}
+
+export const isFixableQueueIssue = (issue: QueueIssue): boolean =>
+  issue.category === 'non-webp' || issue.category === 'missing-variants'
+
+export const isDeletableQueueIssue = (issue: QueueIssue): boolean =>
+  issue.category === 'wrong-round' && issue.deletable === true && !!issue.key?.length
+
+export const isRepairableQueueIssue = (issue: QueueIssue): boolean =>
+  issue.category === 'orphaned-main-found' && issue.repairable === true && !!issue.key?.length
+
+const MAIN_INDEX_KEY = 'main/index.json'
+
+const loadMainTagIndex = async (gameSlug: string, region: string): Promise<Tag[]> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+
+  try {
+    const response = await client.send(
+      new GetObjectCommand({ Bucket: bucket, Key: MAIN_INDEX_KEY }),
+    )
+    const body = await response.Body?.transformToString('utf-8')
+    const index = JSON.parse(body ?? '[]')
+    if (!Array.isArray(index)) {
+      throw new Error('invalid main index format')
+    }
+    return index as Tag[]
+  } catch (error) {
+    if (isStorageObjectNotFound(error)) return []
+    throw error
+  }
+}
+
+const saveMainTagIndex = async (
+  gameSlug: string,
+  region: string,
+  tags: Tag[],
+): Promise<void> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: MAIN_INDEX_KEY,
+      Body: JSON.stringify(tags),
+      ContentType: 'application/json',
+      ACL: 'public-read',
+      CacheControl: 'no-cache, no-store, must-revalidate',
+    }),
+  )
+}
+
+/**
+ * Patch found fields on one main/index.json entry. Never touches storage objects.
+ * Refuses if foundImageUrl already points at main/ (no index overwrite).
+ * Do NOT use biketag updateTag for Move to main — see completeOrphanedQueueFoundMoveToMain.
+ */
+const patchMainTagFoundFieldsIfAbsent = async (
+  gameSlug: string,
+  region: string,
+  tagnumber: number,
+  patch: Partial<Tag>,
+): Promise<{ success: boolean; error?: string; tag?: Tag }> => {
+  try {
+    const index = await loadMainTagIndex(gameSlug, region)
+    const entryIndex = index.findIndex((tag) => tag.tagnumber === tagnumber)
+    if (entryIndex === -1) {
+      return { success: false, error: `main index has no entry for tag #${tagnumber}` }
+    }
+
+    const existing = index[entryIndex]
+    if (foundImageUrlPointsToMain(existing.foundImageUrl)) {
+      return {
+        success: false,
+        error: `main index tag #${tagnumber} already has foundImageUrl in main/ — refusing to overwrite`,
+      }
+    }
+
+    const updated = { ...existing, ...patch, tagnumber } as Tag
+    index[entryIndex] = updated
+    await saveMainTagIndex(gameSlug, region, index)
+    return { success: true, tag: updated }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'failed to patch main index',
+    }
+  }
+}
+
+/**
+ * Repair: copy one orphaned queue found image into main/ for targetRound, then patch index.
+ *
+ * Preconditions (when main context provided):
+ *   - evaluateOrphanedQueueFoundForTarget passes (structural, no player conflict)
+ *   - main/{game}-tag-{targetRound}--found.webp does not already exist
+ *
+ * Storage steps:
+ *   1. copyQueueFoundToMainIfAbsent — never overwrites main/ storage
+ *   2. patchMainTagFoundFieldsIfAbsent — sets found fields only when index has no main found URL
+ *
+ * Never calls biketag updateTag. Never overwrites existing main/ files or index found URLs.
+ * targetRoundOverride is required — never derived from filename alone.
+ */
+export const completeOrphanedQueueFoundMoveToMain = async (
+  game: Game,
+  gameSlug: string,
+  queueImage: QueueStorageImage,
+  biketag: BikeTagClient,
+  imageSource: string,
+  main?: MainFolderContext,
+  targetRoundOverride?: number,
+): Promise<{ success: boolean; error?: string; mainUrl?: string }> => {
+  if (targetRoundOverride === undefined) {
+    return {
+      success: false,
+      error:
+        'target round is required — never infer from queue filename alone (misfiled orphans use metadata round)',
+    }
+  }
+
+  const targetRound = targetRoundOverride
+
+  if (!game.awsRegion?.length) {
+    return { success: false, error: 'game has no aws region configured' }
+  }
+
+  if (queueImage.type !== 'found') {
+    return { success: false, error: 'only queue found images can be moved to main via this repair' }
+  }
+
+  const keyRound = parseTagnumberFromQueueKey(queueImage.key) ?? queueImage.tagnumber
+  if (keyRound !== targetRound && queueImage.metadataTagnumber !== targetRound) {
+    return {
+      success: false,
+      error: `target round #${targetRound} does not match queue filename #${keyRound} or metadata #${queueImage.metadataTagnumber ?? 'none'}`,
+    }
+  }
+
+  if (main) {
+    const check = evaluateOrphanedQueueFoundForTarget(queueImage, targetRound, main)
+    if (!check.structural) {
+      return {
+        success: false,
+        error: check.reasons.join('; ') || 'queue found image failed orphaned-main-found validation',
+      }
+    }
+    if (check.playerConflict) {
+      return {
+        success: false,
+        error:
+          check.reasons.join('; ') ||
+          'queue found image player conflicts with expected finder for this round',
+      }
+    }
+
+    const foundKey = getMainFoundFileKey(gameSlug, targetRound)
+    if (main.mainKeys.includes(foundKey)) {
+      return {
+        success: false,
+        error: `${foundKey} already exists in main/ — refusing to overwrite existing storage files`,
+      }
+    }
+  } else {
+    const mainKeys = await loadMainStorageKeys(gameSlug, game.awsRegion)
+    const foundKey = getMainFoundFileKey(gameSlug, targetRound)
+    if (mainKeys.includes(foundKey)) {
+      return {
+        success: false,
+        error: `${foundKey} already exists in main/ — refusing to overwrite existing storage files`,
+      }
+    }
+  }
+
+  let mainUrl: string
+  try {
+    mainUrl = await copyQueueFoundToMainIfAbsent(
+      gameSlug,
+      game.awsRegion,
+      queueImage.url,
+      targetRound,
+    )
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'failed to copy queue found image to main',
+    }
+  }
+
+  const mainTagResponse = await biketag.getTag({ tagnumber: targetRound }, { source: imageSource })
+  const fetchedTag = mainTagResponse.success ? (mainTagResponse.data as Tag) : undefined
+  const identity = getMainTagIdentity(gameSlug, targetRound)
+
+  // Patch main/index.json only when found URL not already set. Storage copy above is the sole main/ object write.
+  const patchResult = await patchMainTagFoundFieldsIfAbsent(gameSlug, game.awsRegion, targetRound, {
+    ...identity,
+    game: gameSlug,
+    foundImageUrl: mainUrl,
+    foundPlayer: queueImage.foundPlayer || fetchedTag?.foundPlayer,
+    playerId: queueImage.playerId || fetchedTag?.playerId,
+  })
+
+  if (!patchResult.success) {
+    return {
+      success: false,
+      error: patchResult.error ?? 'failed to update main tag index',
+      mainUrl,
+    }
+  }
+
+  return { success: true, mainUrl }
+}
+
+export const getQueueImageDeleteKeys = (primaryKey: string, allKeys: string[] = []): string[] => {
+  const base = primaryKey.replace(/\.(webp|jpe?g|png|gif|bmp)$/i, '')
+  const candidates = [
+    primaryKey,
+    `${base}.webp`,
+    `${base}.jpg`,
+    `${base}.jpeg`,
+    `${base}.png`,
+    `${base}_medium.webp`,
+    `${base}_small.webp`,
+  ]
+  const unique = [...new Set(candidates)]
+  if (!allKeys.length) return unique
+  const keySet = new Set(allKeys)
+  return unique.filter((key) => keySet.has(key))
+}
+
+/** Delete primary queue image and its _medium/_small variants from queue/ only. */
+export const deleteQueueImageGroupFromStorage = async (
+  gameSlug: string,
+  region: string,
+  primaryKey: string,
+  allKeys: string[] = [],
+): Promise<{ deleted: string[] }> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+  const keys = getQueueImageDeleteKeys(primaryKey, allKeys)
+  const deleted: string[] = []
+
+  for (const key of keys) {
+    try {
+      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+      deleted.push(key)
+    } catch {
+      // object may not exist
+    }
+  }
+
+  return { deleted }
+}
+
+export const summarizeQueueIssues = (issues: QueueIssue[] = []) => {
+  const summary: Record<QueueIssueCategory, number> = {
+    'non-webp': 0,
+    'missing-variants': 0,
+    'wrong-round': 0,
+    'duplicate-uploader': 0,
+    'orphaned-main-found': 0,
+  }
+
+  for (const issue of issues) {
+    summary[issue.category]++
+  }
+
+  return summary
+}
+
+export async function collectQueueIssuesFromTags(
+  queue: Tag[] = [],
+  currentTag?: Tag,
+): Promise<QueueIssue[]> {
+  const issues: QueueIssue[] = []
+
+  for (const tag of queue) {
+    const player = tag.foundPlayer || tag.mysteryPlayer
+    const imageFields: Array<{ type: 'found' | 'mystery'; url?: string }> = [
+      { type: 'found', url: tag.foundImageUrl },
+      { type: 'mystery', url: tag.mysteryImageUrl },
+    ]
+
+    for (const { type, url } of imageFields) {
+      if (!url?.length || !queuePathPattern.test(url)) continue
+
+      const storageKey = getStorageKeyFromUrl(url)
+      const imageRound = parseTagnumberFromQueueKey(storageKey)
+      const expectedRound = getAllowedQueueRoundForImage(currentTag, type)
+
+      if (expectedRound !== undefined && imageRound !== undefined && imageRound !== expectedRound) {
+        issues.push({
+          category: 'wrong-round',
+          tagnumber: imageRound,
+          playerId: tag.playerId,
+          player,
+          type,
+          url,
+          key: storageKey,
+          deletable: true,
+          issue: `queue file is for round #${imageRound}, expected round #${expectedRound} (${type} image)`,
+        })
+      }
+
+      if (nonWebpImagePattern.test(url)) {
+        issues.push({
+          category: 'non-webp',
+          tagnumber: tag.tagnumber,
+          playerId: tag.playerId,
+          player,
+          type,
+          url,
+          issue: 'queue image is not webp',
+        })
+      }
+    }
+  }
+
+  const uploaderTags = new Map<string, Tag[]>()
+  for (const tag of queue) {
+    const key = getQueueUploaderKey(tag)
+    if (!key) continue
+    uploaderTags.set(key, [...(uploaderTags.get(key) ?? []), tag])
+  }
+
+  for (const tags of uploaderTags.values()) {
+    if (tags.length <= 1) continue
+
+    const tagnumbers = [...new Set(tags.map((tag) => tag.tagnumber))].sort((a, b) => a - b)
+    const exampleTag = tags[0]
+    const player = exampleTag.foundPlayer || exampleTag.mysteryPlayer
+
+    issues.push({
+      category: 'duplicate-uploader',
+      tagnumber: exampleTag.tagnumber,
+      playerId: exampleTag.playerId,
+      player,
+      issue:
+        tagnumbers.length > 1
+          ? `uploader has ${tags.length} queue entries across rounds #${tagnumbers.join(', #')}`
+          : `uploader has ${tags.length} separate queue entries for round #${tagnumbers[0]}`,
+      relatedTagnumbers: tagnumbers,
+    })
+  }
+
+  return issues
+}
+
+export const getQueueImageUrlIssues = (tags: Tag[] = []) => {
+  const issues: Array<{
+    tagnumber: number
+    playerId?: string
+    foundPlayer?: string
+    type: 'found' | 'mystery'
+    url: string
+    issue: string
+  }> = []
+
+  for (const tag of tags) {
+    const imageFields: Array<{ type: 'found' | 'mystery'; url?: string }> = [
+      { type: 'found', url: tag.foundImageUrl },
+      { type: 'mystery', url: tag.mysteryImageUrl },
+    ]
+
+    for (const { type, url } of imageFields) {
+      if (!url?.length) continue
+      if (!/\/queue\//.test(url)) continue
+
+      if (nonWebpImagePattern.test(url)) {
+        issues.push({
+          tagnumber: tag.tagnumber,
+          playerId: tag.playerId,
+          foundPlayer: tag.foundPlayer,
+          type,
+          url,
+          issue: 'webp conversion failed or pending',
+        })
+      }
+    }
+  }
+
+  return issues
+}
+
+export const getMainImageUrlIssues = (tags: Tag | Tag[] = []) => {
+  const tagList = Array.isArray(tags) ? tags : [tags]
+  const issues: Array<{
+    tagnumber: number
+    playerId?: string
+    foundPlayer?: string
+    type: 'found' | 'mystery'
+    url: string
+    issue: string
+  }> = []
+
+  for (const tag of tagList) {
+    if (!tag) continue
+
+    const imageFields: Array<{ type: 'found' | 'mystery'; url?: string }> = [
+      { type: 'found', url: tag.foundImageUrl },
+      { type: 'mystery', url: tag.mysteryImageUrl },
+    ]
+
+    for (const { type, url } of imageFields) {
+      if (!url?.length) continue
+      if (!/\/main\//.test(url)) continue
+
+      if (nonWebpImagePattern.test(url)) {
+        issues.push({
+          tagnumber: tag.tagnumber,
+          playerId: tag.playerId,
+          foundPlayer: tag.foundPlayer,
+          type,
+          url,
+          issue: 'main folder must use webp',
+        })
+      }
+    }
+  }
+
+  return issues
+}
+
+export const getMainFolderUpdateOpts = (game: Game, imageSource: string, resize = false) => {
+  if (imageSource !== 'aws') {
+    return { source: imageSource }
+  }
+
+  return {
+    source: imageSource,
+    resize,
+    host: getQueueApiHost(game.name),
+    region: game.awsRegion,
+    folder: 'main',
+    game: getGameStorageSlug(game),
+  }
+}
+
+export const coerceBooleanQueryParam = (value: unknown): boolean | undefined => {
+  if (value === true || value === 'true' || value === '1') return true
+  if (value === false || value === 'false' || value === '0') return false
+  return undefined
+}
+
+export const getQueueApiHost = (game = ''): string => getApiUrl(game, '').replace(/\/$/, '')
 
 export const getPayloadAuthorization = async (
   req: any,
@@ -1513,7 +3123,8 @@ export const sendNewBikeTagNotifications = async (
   })) as Ambassador[]
   const thisGamesAmbassadors = ambassadors.filter((a) => game.ambassadors.indexOf(a.name) !== -1)
   const winningTagnumber = winningTag.tagnumber
-  const host = `https://${game.name.toLowerCase()}.biketag.org`
+  const host = getGameSiteUrl(game.name)
+  const socialLinks = getGameSocialLinks(game)
   const logo = game.logo?.length
     ? game.logo.indexOf('imgur.co') !== -1
       ? game.logo
@@ -1623,7 +3234,10 @@ export const sendNewBikeTagNotifications = async (
           btaDashboardButton: 'BikeTag Ambassador dashboard',
           host,
           game: game.name,
-          blueskyLink: `https://bsky.app/profile/${game.bluesky?.length ? game.bluesky : 'biketag.bsky.social'}`,
+          gameHost: host,
+          redditLink: socialLinks.redditLink,
+          blueskyLink: socialLinks.blueskyLink,
+          instagramLink: socialLinks.instagramLink,
         }),
       ).then((results) => results.accepted.concat(results.rejected)),
     )
@@ -1638,7 +3252,7 @@ export const sendNewBikeTagNotifications = async (
   return notificationPromises
 }
 
-export const setNewBikeTagPost = async (
+export const finalizeNewBikeTagPost = async (
   game: Game,
   winningBikeTagPost: Tag,
   previousBikeTag: Tag,
@@ -1653,18 +3267,48 @@ export const setNewBikeTagPost = async (
   let errors = false
   const results: any = []
 
+  const gameSlug = getGameStorageSlug(game)
   const newBikeTagPost = BikeTagClient.getters.getOnlyMysteryTagFromTagData(winningBikeTagPost)
+  if (winningBikeTagPost.playerId) {
+    newBikeTagPost.playerId = winningBikeTagPost.playerId
+  }
+  newBikeTagPost.game = gameSlug
   newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
+  previousBikeTag.game = gameSlug
   previousBikeTag.gps = winningBikeTagPost.gps
-  previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
+  previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
   previousBikeTag.foundTime = winningBikeTagPost.foundTime
   previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
-  previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
+
+  if (imageSource === 'aws' && game.awsRegion?.length) {
+    if (winningBikeTagPost.foundImageUrl?.length) {
+      await requireQueueImageVariants(game, winningBikeTagPost.foundImageUrl, 'Found')
+      previousBikeTag.foundImageUrl = await moveQueueImageToMainWithVariants(
+        gameSlug,
+        game.awsRegion,
+        winningBikeTagPost.foundImageUrl,
+        previousBikeTag.tagnumber,
+        'found',
+      )
+    }
+    if (winningBikeTagPost.mysteryImageUrl?.length) {
+      await requireQueueImageVariants(game, winningBikeTagPost.mysteryImageUrl, 'Mystery')
+      newBikeTagPost.mysteryImageUrl = await moveQueueImageToMainWithVariants(
+        gameSlug,
+        game.awsRegion,
+        winningBikeTagPost.mysteryImageUrl,
+        newBikeTagPost.tagnumber,
+        'mystery',
+      )
+    }
+  } else {
+    previousBikeTag.foundImageUrl = winningBikeTagPost.foundImageUrl
+  }
+
+  const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource, false)
 
   log('Updating current BikeTag with winning tag found info', previousBikeTag, 'info')
-  const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, {
-    source: imageSource,
-  })
+  const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, mainUpdateOpts)
   log('Result of currentBikeTag update', currentBikeTagUpdateResult, 'info')
 
   if (currentBikeTagUpdateResult.success) {
@@ -1679,9 +3323,7 @@ export const setNewBikeTagPost = async (
     errors = true
   }
 
-  const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost, {
-    source: imageSource,
-  })
+  const newBikeTagUpdateResult = await adminBiketag.updateTag(newBikeTagPost, mainUpdateOpts)
   log('Result of newBikeTag update', newBikeTagUpdateResult, 'info')
 
   if (newBikeTagUpdateResult.success) {
@@ -1733,6 +3375,7 @@ export const setNewBikeTagPost = async (
     } else {
       results.push({
         message: ErrorMessage.WinningTagNotDeleted,
+        error: deleteWinningTagFromQueueResult.error,
         game: game.name,
         tag: winningBikeTagPost,
       })
@@ -1749,6 +3392,171 @@ export const setNewBikeTagPost = async (
   }
 
   return { results, errors }
+}
+
+export const launchGameTag = async (
+  game: Game,
+  launchTag: Tag,
+  adminBiketag?: BikeTagClient,
+): Promise<BackgroundProcessResults> => {
+  adminBiketag =
+    adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
+  const imageSource = getImageSource(game)
+  const gameSlug = getGameStorageSlug(game)
+
+  if (!launchTag.mysteryImageUrl?.length) {
+    return {
+      results: [{ message: 'Mystery image is required to launch the game', error: 'missing image' }],
+      errors: true,
+    }
+  }
+
+  const sourceKey = getStorageKeyFromUrl(launchTag.mysteryImageUrl)
+  if (!sourceKey.startsWith('main/')) {
+    return {
+      results: [
+        {
+          message: 'Mystery image must be uploaded directly to main storage',
+          error: 'invalid image location',
+        },
+      ],
+      errors: true,
+    }
+  }
+
+  const newTag = BikeTagClient.getters.getOnlyMysteryTagFromTagData(launchTag)
+  newTag.tagnumber = 1
+  newTag.game = gameSlug
+  newTag.gps = { lat: 0, long: 0, alt: 0 }
+  newTag.mysteryImageUrl = launchTag.mysteryImageUrl
+  if (!newTag.mysteryTime) {
+    newTag.mysteryTime = Math.floor(Date.now() / 1000)
+  }
+
+  if (imageSource === 'aws' && game.awsRegion?.length) {
+    try {
+      const index = await loadMainTagIndex(gameSlug, game.awsRegion)
+      if (index.some((t) => (t.tagnumber ?? 0) >= 1)) {
+        return {
+          results: [
+            {
+              message: 'main/index.json already has tag #1',
+              error: 'tag already exists',
+            },
+          ],
+          errors: true,
+        }
+      }
+      await saveMainTagIndex(gameSlug, game.awsRegion, [...index, newTag])
+      log('Created main/index.json with tag #1', { game: gameSlug, tag: newTag.tagnumber }, 'info')
+    } catch (err: any) {
+      return {
+        results: [{ message: 'Failed to create main index', error: err.message ?? String(err) }],
+        errors: true,
+      }
+    }
+
+    const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource, true)
+    const resizeResult = await adminBiketag.updateTag(newTag, mainUpdateOpts)
+    log('Result of launch tag #1 resize', resizeResult, 'info')
+    if (!resizeResult.success) {
+      log('main index created but image resize failed', { error: resizeResult.error }, 'warn')
+      return {
+        results: [
+          {
+            message: 'main index created but image resize failed',
+            error: resizeResult.error,
+            game: game.name,
+            tag: newTag,
+          },
+        ],
+        errors: true,
+      }
+    }
+
+    axios
+      .post(
+        getApiUrl(game.name, 'autopost-notify'),
+        {},
+        { headers: { 'Content-Type': 'application/json' } },
+      )
+      .catch((e) => log(ErrorMessage.NotificationsNotSent, e.message ?? e, 'warn'))
+
+    return {
+      results: [
+        {
+          message: 'game launched with tag #1',
+          game: game.name,
+          tag: resizeResult.success ? resizeResult.data : newTag,
+        },
+      ],
+      errors: false,
+    }
+  }
+
+  const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource, true)
+  const newBikeTagUpdateResult = await adminBiketag.updateTag(newTag, mainUpdateOpts)
+  log('Result of launch tag #1 update', newBikeTagUpdateResult, 'info')
+
+  if (newBikeTagUpdateResult.success) {
+    axios
+      .post(
+        getApiUrl(game.name, 'autopost-notify'),
+        {},
+        { headers: { 'Content-Type': 'application/json' } },
+      )
+      .catch((e) => log(ErrorMessage.NotificationsNotSent, e.message ?? e, 'warn'))
+
+    return {
+      results: [
+        {
+          message: 'game launched with tag #1',
+          game: game.name,
+          tag: newBikeTagUpdateResult.data,
+        },
+      ],
+      errors: false,
+    }
+  }
+
+  return {
+    results: [
+      {
+        message: ErrorMessage.BikeTagNotPosted,
+        error: newBikeTagUpdateResult.error,
+        game: game.name,
+        tag: newTag,
+      },
+    ],
+    errors: true,
+  }
+}
+
+export const setNewBikeTagPost = async (
+  game: Game,
+  winningBikeTagPost: Tag,
+  previousBikeTag: Tag,
+  adminBiketag?: BikeTagClient,
+  nonAdminBiketag?: BikeTagClient,
+): Promise<BackgroundProcessResults> => {
+  const gameSlug = getGameStorageSlug(game)
+  winningBikeTagPost = { ...winningBikeTagPost, game: gameSlug }
+
+  try {
+    return await finalizeNewBikeTagPost(
+      game,
+      winningBikeTagPost,
+      previousBikeTag,
+      adminBiketag,
+      nonAdminBiketag,
+    )
+  } catch (err: any) {
+    log('setNewBikeTagPost failed', err, 'error')
+    return {
+      results: [{ message: 'BikeTag post failed', error: err.message ?? String(err) }],
+      errors: true,
+    }
+  }
 }
 
 export const getWinningTagForCurrentRound = (
@@ -1899,6 +3707,7 @@ export const constructAmbassadorProfile = (
     country: profile.country ?? defaults.country ?? '',
     email: profile.email ?? defaults.email ?? '',
     isBikeTagAmbassador: profile.isBikeTagAmbassador ?? defaults?.isBikeTagAmbassador ?? false,
+    isBikeTagAdmin: profile.isBikeTagAdmin ?? defaults?.isBikeTagAdmin ?? false,
     locale: profile.locale ?? defaults.locale ?? '',
     nonce: profile.nonce ?? defaults.nonce ?? '',
     phone: profile.phone ?? defaults.phone ?? '',

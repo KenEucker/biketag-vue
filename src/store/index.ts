@@ -20,6 +20,7 @@ import {
   getSanityImageUrl,
   getSupportedGames,
   getTokenFromCookie,
+  isGlobalAdminEmail,
   setProfileCookie,
   setRegionPolygonInCookie,
   setTokenInCookie,
@@ -162,7 +163,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (profile) {
         if (profile.token || token) {
           this.auth0Token = token || this.auth0Token || profile.token || ''
-          profile.token = undefined
         }
 
         const response = await client
@@ -465,6 +465,146 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return 'incorrect permissions'
     },
+    async scanQueueIssues() {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'GET',
+          url: getApiUrl('queue-fix'),
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to scan queue'
+      } catch (e: any) {
+        console.error('error scanning queue', e?.message ?? e)
+        return 'error scanning queue'
+      }
+    },
+    async fixQueueIssues() {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('queue-fix'),
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          this.resetBikeTagCache()
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to fix queue'
+      } catch (e: any) {
+        console.error('error fixing queue', e?.message ?? e)
+        return 'error fixing queue'
+      }
+    },
+    async deleteQueueIssue(issue: { key?: string; url?: string }) {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('queue-fix'),
+          data: {
+            deleteKey: issue.key,
+            deleteUrl: issue.url,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          this.resetBikeTagCache()
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to delete queue file'
+      } catch (e: any) {
+        console.error('error deleting queue file', e?.message ?? e)
+        return 'error deleting queue file'
+      }
+    },
+    async deleteWrongRoundQueueFiles() {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('queue-fix'),
+          data: {
+            deleteWrongRound: true,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          this.resetBikeTagCache()
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to delete wrong-round queue files'
+      } catch (e: any) {
+        console.error('error deleting wrong-round queue files', e?.message ?? e)
+        return 'error deleting wrong-round queue files'
+      }
+    },
+    async moveQueueFoundToMain(issue: {
+      key?: string
+      url?: string
+      targetTagnumber?: number
+    }) {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('queue-fix'),
+          data: {
+            moveToMainKey: issue.key,
+            moveToMainUrl: issue.url,
+            moveToMainTargetRound: issue.targetTagnumber,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          this.resetBikeTagCache()
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to move queue found image to main'
+      } catch (e: any) {
+        console.error('error moving queue found image to main', e?.message ?? e)
+        return 'error moving queue found image to main'
+      }
+    },
     async dequeueTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         try {
@@ -542,6 +682,154 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return 'incorrect permissions'
     },
+    async launchGameTag(d: any) {
+      if (!this.profile?.isBikeTagAmbassador) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        await this.fetchCredentials(true)
+
+        const uploadPlayerId = d.playerId?.length ? d.playerId : this.profile.sub
+        let tag = { ...d, game: this.gameName, tagnumber: 1, playerId: uploadPlayerId, folder: 'main' }
+
+        if (d.mysteryImage && !d.mysteryImageUrl) {
+          const upload = await client.uploadTagImage(
+            {
+              ...tag,
+              mysteryImage: d.mysteryImage,
+              contentType: d.mysteryImage.type ?? 'image/jpeg',
+            },
+            { source: this.imageSource },
+          )
+          if (!upload.success) {
+            return upload.error || 'failed to upload mystery image'
+          }
+          tag = { ...tag, ...upload.data }
+        }
+
+        if (!tag.mysteryImageUrl?.length) {
+          return 'mystery image is required'
+        }
+
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('launch'),
+          data: {
+            game: tag.game,
+            playerId: uploadPlayerId,
+            mysteryPlayer: tag.mysteryPlayer,
+            mysteryTime: tag.mysteryTime,
+            mysteryImageUrl: tag.mysteryImageUrl,
+            hint: tag.hint,
+            ambassadorId: this.profile.sub,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          const result =
+            typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+          if (result.errors) {
+            const errorMessages = result.results
+              ?.filter((r: any) => r.error)
+              ?.map((r: any) => r.message || r.error)
+              ?.join(', ')
+            return errorMessages || 'failed to launch game'
+          }
+          this.resetBikeTagCache()
+          return true
+        }
+
+        return 'BikeTag game could not be launched'
+      } catch (e: any) {
+        console.error('error launching game', e?.message ?? e)
+        return 'error launching game'
+      }
+    },
+    async createNewRoundTag(d: any) {
+      if (!this.profile?.isBikeTagAmbassador) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        await this.fetchCredentials(true)
+
+        const uploadPlayerId = d.playerId?.length ? d.playerId : this.profile.sub
+        let tag = { ...d, game: this.gameName, playerId: uploadPlayerId }
+
+        if (d.foundImage && !d.foundImageUrl) {
+          const foundUpload = await client.queueTag(
+            { ...tag, foundImage: d.foundImage },
+            { source: this.imageSource },
+          )
+          if (!foundUpload.success) {
+            return foundUpload.error || 'failed to upload found image'
+          }
+          tag = { ...tag, ...foundUpload.data }
+          await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+        }
+
+        if (d.mysteryImage && !d.mysteryImageUrl) {
+          const mysteryUpload = await client.queueTag(
+            { ...tag, mysteryImage: d.mysteryImage },
+            { source: this.imageSource },
+          )
+          if (!mysteryUpload.success) {
+            return mysteryUpload.error || 'failed to upload mystery image'
+          }
+          tag = { ...tag, ...mysteryUpload.data }
+          await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+        }
+
+        if (!tag.foundImageUrl?.length || !tag.mysteryImageUrl?.length) {
+          return 'found and mystery images are required'
+        }
+
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('new'),
+          data: {
+            game: tag.game,
+            tagnumber: tag.tagnumber,
+            playerId: uploadPlayerId,
+            foundPlayer: tag.foundPlayer,
+            foundTime: tag.foundTime,
+            foundLocation: tag.foundLocation,
+            foundImageUrl: tag.foundImageUrl,
+            mysteryPlayer: tag.mysteryPlayer,
+            mysteryTime: tag.mysteryTime,
+            mysteryImageUrl: tag.mysteryImageUrl,
+            hint: tag.hint,
+            ambassadorId: this.profile.sub,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          const result =
+            typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+          if (result.errors) {
+            const errorMessages = result.results
+              ?.filter((r: any) => r.error)
+              ?.map((r: any) => r.message || r.error)
+              ?.join(', ')
+            return errorMessages || 'failed to create new round'
+          }
+          this.resetBikeTagCache()
+          return true
+        }
+
+        return `BikeTag round #${tag.tagnumber} couldn't be created`
+      } catch (e: any) {
+        console.error('error creating new round', e?.message ?? e)
+        return 'error creating new round'
+      }
+    },
     async assignPlayerName(profile: any) {
       const nameAssigned = await client.plainRequest({
         method: 'PUT',
@@ -604,7 +892,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.deleteTag(queuedTag, { source }).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-found-tag`, this.playerTag)
-            await client.getQueue({ reindex: true }, { source: 'biketag' })
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
             this.SET_QUEUED_TAG({})
             this.RESET_FORM_STEP_TO_FOUND()
 
@@ -632,7 +920,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.deleteTag(queuedMysteryTag, { source }).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-mystery-tag`, 'mystery tag dequeued')
-            await client.getQueue({ reindex: true }, { source: 'biketag' })
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
             this.SET_QUEUED_TAG(queuedFoundTag)
             this.RESET_FORM_STEP_TO_MYSTERY()
 
@@ -751,10 +1039,19 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     SET_PROFILE(profile?: any) {
       const oldState = this.profile
 
+      if (profile) {
+        profile = { ...profile }
+        if (isGlobalAdminEmail(profile.email)) {
+          profile.isBikeTagAdmin = true
+          profile.isBikeTagAmbassador = true
+        }
+      }
+
       if (
         (profile && profile?.name !== oldState?.name) ||
         profile?.user_metadata?.name !== oldState?.user_metadata?.name ||
-        profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador
+        profile?.isBikeTagAmbassador !== oldState?.isBikeTagAmbassador ||
+        profile?.isBikeTagAdmin !== oldState?.isBikeTagAdmin
       ) {
         this.profile = profile
         setProfileCookie(profile)
@@ -1154,7 +1451,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
     },
     isBikeTagAmbassador(state) {
-      return state.profile?.isBikeTagAmbassador
+      return !!state.profile?.isBikeTagAmbassador || isGlobalAdminEmail(state.profile?.email)
+    },
+    isBikeTagAdmin(state) {
+      return !!state.profile?.isBikeTagAdmin || isGlobalAdminEmail(state.profile?.email)
+    },
+    canLaunchGame(state) {
+      return !!state.currentBikeTag && 'tagnumber' in state.currentBikeTag && !state.currentBikeTag.tagnumber
     },
   },
 })
