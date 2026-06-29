@@ -3432,9 +3432,6 @@ export const launchGameTag = async (
   if (!newTag.mysteryTime) {
     newTag.mysteryTime = Math.floor(Date.now() / 1000)
   }
-  if (launchTag.playerId) {
-    newTag.playerId = launchTag.playerId
-  }
 
   if (imageSource === 'aws' && game.awsRegion?.length) {
     try {
@@ -3489,6 +3486,8 @@ export const launchGameTag = async (
   const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource, true)
   const newBikeTagUpdateResult = await adminBiketag.updateTag(newTag, mainUpdateOpts)
   log('Result of launch tag #1 update', newBikeTagUpdateResult, 'info')
+
+  console.log({newBikeTagUpdateResult})
 
   if (newBikeTagUpdateResult.success) {
     axios
