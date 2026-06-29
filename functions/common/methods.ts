@@ -3404,16 +3404,6 @@ export const launchGameTag = async (
   const imageSource = getImageSource(game)
   const gameSlug = getGameStorageSlug(game)
 
-  const currentTagResponse = await adminBiketag.getTag(undefined, { source: imageSource })
-  const currentTag = currentTagResponse.data as Tag | undefined
-
-  if ((currentTag?.tagnumber ?? 0) >= 1) {
-    return {
-      results: [{ message: 'Game already has tag #1', error: 'tag already exists' }],
-      errors: true,
-    }
-  }
-
   if (!launchTag.mysteryImageUrl?.length) {
     return {
       results: [{ message: 'Mystery image is required to launch the game', error: 'missing image' }],
@@ -3451,7 +3441,12 @@ export const launchGameTag = async (
       const index = await loadMainTagIndex(gameSlug, game.awsRegion)
       if (index.some((t) => (t.tagnumber ?? 0) >= 1)) {
         return {
-          results: [{ message: 'Game already has tag #1', error: 'tag already exists' }],
+          results: [
+            {
+              message: 'main/index.json already has tag #1',
+              error: 'tag already exists',
+            },
+          ],
           errors: true,
         }
       }
