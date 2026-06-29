@@ -15,7 +15,7 @@
     <p>
       Scan the queue for image conversion problems, missing sized variants, wrong-round entries,
       and duplicate uploader splits. Use Fix Queue Images to re-run webp conversion and variant
-      generation for fixable issues.
+      generation for fixable issues. Wrong-round files can be deleted individually or in bulk.
     </p>
 
     <div class="actions">
@@ -25,6 +25,12 @@
         text="Fix Queue Images"
         :disabled="!fixableIssueCount"
         @click="fixQueue"
+      />
+      <bike-tag-button
+        variant="medium-orange"
+        text="Delete All Wrong-Round Files"
+        :disabled="!deletableIssueCount"
+        @click="deleteAllWrongRound"
       />
     </div>
 
@@ -59,6 +65,10 @@
           <dt>Fixable issues</dt>
           <dd>{{ fixableIssueCount }}</dd>
         </div>
+        <div>
+          <dt>Deletable issues</dt>
+          <dd>{{ deletableIssueCount }}</dd>
+        </div>
       </dl>
 
       <ul class="summary-list">
@@ -89,6 +99,14 @@
             </span>
             : {{ issue.issue }}
             <code v-if="issue.url">{{ issue.url }}</code>
+            <button
+              v-if="issue.deletable"
+              type="button"
+              class="issue-delete"
+              @click="deleteIssue(issue)"
+            >
+              Delete file
+            </button>
           </li>
         </ul>
       </section>
@@ -128,6 +146,7 @@ const toast = inject('toast')
 const isBikeTagAdmin = computed(() => store.isBikeTagAdmin)
 const issueCount = computed(() => issues.value.length)
 const fixableIssueCount = computed(() => report.value.fixableIssueCount ?? 0)
+const deletableIssueCount = computed(() => report.value.deletableIssueCount ?? 0)
 
 const summaryItems = computed(() =>
   ISSUE_SECTIONS.map((section) => ({
@@ -154,8 +173,40 @@ function applyScanResult(result) {
     storageFileCount: result.storageFileCount,
     storageBucket: result.storageBucket,
     fixableIssueCount: result.fixableIssueCount ?? 0,
+    deletableIssueCount: result.deletableIssueCount ?? 0,
     summary: result.summary ?? {},
   }
+}
+
+async function runQueueAction(action) {
+  working.value = true
+  lastAction.value = ''
+
+  const result = await action()
+  working.value = false
+
+  if (typeof result === 'string') {
+    toast.open({
+      message: result,
+      type: 'error',
+      duration: 10000,
+      position: 'top',
+    })
+    return null
+  }
+
+  applyScanResult(result)
+  return result
+}
+
+function notifyAction(message, hasRemainingIssues = false) {
+  lastAction.value = message
+  toast.open({
+    message,
+    type: hasRemainingIssues ? 'info' : 'success',
+    duration: 10000,
+    position: 'top',
+  })
 }
 
 async function scanQueue() {
@@ -177,38 +228,45 @@ async function scanQueue() {
 
   applyScanResult(result)
   lastAction.value = result.issueCount
-    ? `Scan complete: ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} found (${result.fixableIssueCount ?? 0} fixable).`
+    ? `Scan complete: ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} found (${result.fixableIssueCount ?? 0} fixable, ${result.deletableIssueCount ?? 0} deletable).`
     : 'Scan complete: no queue issues detected.'
 }
 
 async function fixQueue() {
-  working.value = true
-  lastAction.value = ''
+  const result = await runQueueAction(() => store.fixQueueIssues())
+  if (!result) return
 
-  const result = await store.fixQueueIssues()
-  working.value = false
+  notifyAction(
+    result.issueCount
+      ? `Fix attempted, but ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} remain (${result.fixableIssueCount ?? 0} fixable).`
+      : 'Queue images converted and variants generated successfully.',
+    !!result.issueCount,
+  )
+}
 
-  if (typeof result === 'string') {
-    toast.open({
-      message: result,
-      type: 'error',
-      duration: 10000,
-      position: 'top',
-    })
-    return
-  }
+async function deleteIssue(issue) {
+  const deletedLabel = issue.key?.split('/').pop() ?? 'queue file'
+  const result = await runQueueAction(() => store.deleteQueueIssue(issue))
+  if (!result) return
 
-  applyScanResult(result)
-  lastAction.value = result.issueCount
-    ? `Fix attempted, but ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} remain (${result.fixableIssueCount ?? 0} fixable).`
-    : 'Queue images converted and variants generated successfully.'
+  notifyAction(
+    result.issueCount
+      ? `Deleted ${deletedLabel}, but ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} remain.`
+      : `Deleted ${deletedLabel}.`,
+    !!result.issueCount,
+  )
+}
 
-  toast.open({
-    message: lastAction.value,
-    type: result.issueCount ? 'info' : 'success',
-    duration: 10000,
-    position: 'top',
-  })
+async function deleteAllWrongRound() {
+  const result = await runQueueAction(() => store.deleteWrongRoundQueueFiles())
+  if (!result) return
+
+  notifyAction(
+    result.issueCount
+      ? `Deleted wrong-round files, but ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} remain.`
+      : 'Wrong-round queue files deleted successfully.',
+    !!result.issueCount,
+  )
 }
 
 onMounted(async () => {
@@ -344,6 +402,21 @@ onMounted(async () => {
       margin-top: 0.5rem;
       word-break: break-all;
       font-size: 0.85rem;
+    }
+
+    .issue-delete {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.35rem 0.75rem;
+      border: 1px solid #000;
+      background: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+
+      &:hover {
+        background: #f5f5f5;
+      }
     }
 
     &--clear {

@@ -514,6 +514,63 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return 'error fixing queue'
       }
     },
+    async deleteQueueIssue(issue: { key?: string; url?: string }) {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('queue-fix'),
+          data: {
+            deleteKey: issue.key,
+            deleteUrl: issue.url,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          this.resetBikeTagCache()
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to delete queue file'
+      } catch (e: any) {
+        console.error('error deleting queue file', e?.message ?? e)
+        return 'error deleting queue file'
+      }
+    },
+    async deleteWrongRoundQueueFiles() {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('queue-fix'),
+          data: {
+            deleteWrongRound: true,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          this.resetBikeTagCache()
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to delete wrong-round queue files'
+      } catch (e: any) {
+        console.error('error deleting wrong-round queue files', e?.message ?? e)
+        return 'error deleting wrong-round queue files'
+      }
+    },
     async dequeueTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         try {

@@ -3,12 +3,14 @@ import {
   acceptCorsHeaders,
   coerceBooleanQueryParam,
   collectQueueIssuesFromStorage,
+  deleteQueueImageGroupFromStorage,
   getBikeTagClientOpts,
   getGameStorageSlug,
   getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
+  isDeletableQueueIssue,
   isFixableQueueIssue,
   loadQueueStorageImages,
   log,
@@ -18,6 +20,46 @@ import {
   summarizeQueueIssues,
 } from './common'
 import { HttpStatusCode } from './common/constants'
+
+const getStorageKeyFromUrl = (url: string): string => {
+  try {
+    return new URL(url).pathname.slice(1)
+  } catch {
+    return ''
+  }
+}
+
+const inspectQueueFolder = async (
+  gameSlug: string,
+  awsRegion: string,
+  currentTag?: Tag,
+) => {
+  const storage = await loadQueueStorageImages(gameSlug, awsRegion)
+  const queue = simulateGetQueueTagsFromStorage(storage.images, gameSlug)
+  const issues: QueueIssue[] = collectQueueIssuesFromStorage(
+    storage.images,
+    storage.keys,
+    currentTag,
+    queue,
+    storage.unparsedKeys,
+  )
+
+  if (storage.keys.length === 0) {
+    issues.push({
+      category: 'missing-variants',
+      tagnumber: currentTag?.tagnumber ?? 0,
+      issue: `no files found in ${storage.bucket}/queue/ — check bucket, credentials, or region (${awsRegion})`,
+    })
+  } else if (storage.images.length === 0) {
+    log(
+      '[queue-fix] Queue folder files present but none matched expected naming pattern',
+      { sampleKeys: storage.keys.slice(0, 5), unparsedKeys: storage.unparsedKeys.slice(0, 5) },
+      'warn',
+    )
+  }
+
+  return { storage, queue, issues }
+}
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -91,15 +133,81 @@ export default async (req: Request) => {
       cached: false,
     })
 
-    const shouldFix = req.method === 'POST' || coerceBooleanQueryParam(payloadOpts.fix) === true
+    const deleteUrl = typeof payloadOpts.deleteUrl === 'string' ? payloadOpts.deleteUrl : undefined
+    const deleteKey =
+      typeof payloadOpts.deleteKey === 'string'
+        ? payloadOpts.deleteKey
+        : deleteUrl
+          ? getStorageKeyFromUrl(deleteUrl)
+          : undefined
+    const deleteWrongRound = coerceBooleanQueryParam(payloadOpts.deleteWrongRound) === true
+    const shouldFix =
+      !deleteKey &&
+      !deleteWrongRound &&
+      (req.method === 'POST' || coerceBooleanQueryParam(payloadOpts.fix) === true)
     const imageSource = getImageSource(game)
 
     log('[queue-fix] Running queue scan', {
       shouldFix,
+      deleteKey,
+      deleteWrongRound,
       game: game.name,
       gameSlug,
       awsRegion: game.awsRegion,
     })
+
+    const currentTagResponse = await biketag.getTag(undefined, { source: imageSource })
+    const currentTag = currentTagResponse.success ? currentTagResponse.data : undefined
+
+    if (!currentTagResponse.success) {
+      log(
+        '[queue-fix] Could not load current tag from main folder',
+        { error: currentTagResponse.error },
+        'warn',
+      )
+    }
+
+    let deletedKeys: string[] = []
+
+    if (deleteWrongRound) {
+      const preDelete = await inspectQueueFolder(gameSlug, game.awsRegion, currentTag)
+      const wrongRoundKeys = [
+        ...new Set(
+          preDelete.issues.filter(isDeletableQueueIssue).map((issue) => issue.key as string),
+        ),
+      ]
+
+      for (const key of wrongRoundKeys) {
+        const result = await deleteQueueImageGroupFromStorage(
+          gameSlug,
+          game.awsRegion,
+          key,
+          preDelete.storage.keys,
+        )
+        deletedKeys.push(...result.deleted)
+      }
+
+      deletedKeys = [...new Set(deletedKeys)]
+      log('[queue-fix] Deleted wrong-round queue files', {
+        primaryKeys: wrongRoundKeys,
+        deletedKeys,
+      })
+    } else if (deleteKey?.startsWith('queue/')) {
+      const preDelete = await loadQueueStorageImages(gameSlug, game.awsRegion)
+      const result = await deleteQueueImageGroupFromStorage(
+        gameSlug,
+        game.awsRegion,
+        deleteKey,
+        preDelete.keys,
+      )
+      deletedKeys = result.deleted
+      log('[queue-fix] Deleted queue image group', { deleteKey, deletedKeys })
+    } else if (deleteKey || deleteUrl) {
+      return new Response(JSON.stringify({ error: 'invalid queue file key' }), {
+        headers,
+        status: HttpStatusCode.BadRequest,
+      })
+    }
 
     if (shouldFix) {
       const fixResponse = await biketag.getQueue(
@@ -133,27 +241,10 @@ export default async (req: Request) => {
       }
     }
 
-    // Current round lives in the main folder index.
-    const currentTagResponse = await biketag.getTag(undefined, { source: 'aws' })
-    const currentTag = currentTagResponse.success ? currentTagResponse.data : undefined
-
-    if (!currentTagResponse.success) {
-      log(
-        '[queue-fix] Could not load current tag from main folder',
-        { error: currentTagResponse.error },
-        'warn',
-      )
-    }
-
-    // Inspect the queue folder directly — do not rely on getQueue grouping alone.
-    const storage = await loadQueueStorageImages(gameSlug, game.awsRegion)
-    const queue = simulateGetQueueTagsFromStorage(storage.images, gameSlug)
-    const issues: QueueIssue[] = collectQueueIssuesFromStorage(
-      storage.images,
-      storage.keys,
+    const { storage, queue, issues } = await inspectQueueFolder(
+      gameSlug,
+      game.awsRegion,
       currentTag,
-      queue,
-      storage.unparsedKeys,
     )
 
     log('[queue-fix] Inspected queue folder', {
@@ -165,25 +256,14 @@ export default async (req: Request) => {
       currentRound: currentTag?.tagnumber,
     })
 
-    if (storage.keys.length === 0) {
-      issues.push({
-        category: 'missing-variants',
-        tagnumber: currentTag?.tagnumber ?? 0,
-        issue: `no files found in ${storage.bucket}/queue/ — check bucket, credentials, or region (${game.awsRegion})`,
-      })
-    } else if (storage.images.length === 0) {
-      log(
-        '[queue-fix] Queue folder files present but none matched expected naming pattern',
-        { sampleKeys: storage.keys.slice(0, 5), unparsedKeys: storage.unparsedKeys.slice(0, 5) },
-        'warn',
-      )
-    }
-
     const summary = summarizeQueueIssues(issues)
     const fixableIssueCount = issues.filter(isFixableQueueIssue).length
+    const deletableIssueCount = issues.filter(isDeletableQueueIssue).length
     const responsePayload = {
       success: true,
       fixed: shouldFix,
+      deleted: deletedKeys.length > 0,
+      deletedKeys,
       queueReindexed: shouldFix,
       queueResized: shouldFix,
       currentRound: currentTag?.tagnumber,
@@ -194,6 +274,7 @@ export default async (req: Request) => {
       queueCount: queue.length,
       issueCount: issues.length,
       fixableIssueCount,
+      deletableIssueCount,
       summary,
       issues,
       queue,
@@ -201,9 +282,11 @@ export default async (req: Request) => {
 
     log('[queue-fix] Completed', {
       fixed: shouldFix,
+      deleted: deletedKeys.length,
       currentRound: currentTag?.tagnumber,
       issueCount: issues.length,
       fixableIssueCount,
+      deletableIssueCount,
       queueCount: queue.length,
       storageFileCount: storage.keys.length,
       summary,

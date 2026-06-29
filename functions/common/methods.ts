@@ -526,6 +526,8 @@ export type QueueIssue = {
   player?: string
   type?: 'found' | 'mystery'
   url?: string
+  key?: string
+  deletable?: boolean
   issue: string
   relatedTagnumbers?: number[]
 }
@@ -539,9 +541,12 @@ const queuePrimaryImageKeyPattern =
 const isQueueSizedVariantKey = (key: string): boolean =>
   queueSizedVariantKeyPattern.test(key.split('/').pop() ?? '')
 
-const getAllowedQueueRounds = (currentTag?: Tag): number[] => {
-  if (currentTag?.tagnumber === undefined) return []
-  return [currentTag.tagnumber, currentTag.tagnumber + 1]
+const getAllowedQueueRoundForImage = (
+  currentTag: Tag | undefined,
+  type: 'found' | 'mystery',
+): number | undefined => {
+  if (currentTag?.tagnumber === undefined) return undefined
+  return type === 'found' ? currentTag.tagnumber : currentTag.tagnumber + 1
 }
 
 const isNormalFoundMysteryPair = (group: QueueStorageImage[]): boolean => {
@@ -788,7 +793,6 @@ export const loadQueueStorageImages = async (
         playerId = meta.playerId
         mysteryPlayer = meta.mysteryPlayer
         foundPlayer = meta.foundPlayer
-        tagnumber = meta.tagnumber
       }
     } catch {
       // keep key-derived values
@@ -876,7 +880,6 @@ export const collectQueueIssuesFromStorage = (
   unparsedKeys: string[] = [],
 ): QueueIssue[] => {
   const issues: QueueIssue[] = []
-  const allowedQueueRounds = getAllowedQueueRounds(currentTag)
   const keySet = new Set(allKeys)
   const reportedDuplicateHashes = new Set<string>()
 
@@ -892,12 +895,9 @@ export const collectQueueIssuesFromStorage = (
 
   for (const image of images) {
     const player = image.foundPlayer || image.mysteryPlayer || image.playerHash
+    const expectedRound = getAllowedQueueRoundForImage(currentTag, image.type)
 
-    if (allowedQueueRounds.length && !allowedQueueRounds.includes(image.tagnumber)) {
-      const expectedLabel =
-        allowedQueueRounds.length === 1
-          ? `#${allowedQueueRounds[0]}`
-          : `#${allowedQueueRounds[0]} or #${allowedQueueRounds[1]}`
+    if (expectedRound !== undefined && image.tagnumber !== expectedRound) {
       issues.push({
         category: 'wrong-round',
         tagnumber: image.tagnumber,
@@ -905,7 +905,9 @@ export const collectQueueIssuesFromStorage = (
         player,
         type: image.type,
         url: image.url,
-        issue: `queue file is for round #${image.tagnumber}, expected round ${expectedLabel}`,
+        key: image.key,
+        deletable: true,
+        issue: `queue file is for round #${image.tagnumber}, expected round #${expectedRound} (${image.type} image)`,
       })
     }
 
@@ -1007,6 +1009,49 @@ export const getQueueUploaderKey = (tag: Tag): string | undefined => {
 export const isFixableQueueIssue = (issue: QueueIssue): boolean =>
   issue.category === 'non-webp' || issue.category === 'missing-variants'
 
+export const isDeletableQueueIssue = (issue: QueueIssue): boolean =>
+  issue.category === 'wrong-round' && issue.deletable === true && !!issue.key?.length
+
+export const getQueueImageDeleteKeys = (primaryKey: string, allKeys: string[] = []): string[] => {
+  const base = primaryKey.replace(/\.(webp|jpe?g|png|gif|bmp)$/i, '')
+  const candidates = [
+    primaryKey,
+    `${base}.webp`,
+    `${base}.jpg`,
+    `${base}.jpeg`,
+    `${base}.png`,
+    `${base}_medium.webp`,
+    `${base}_small.webp`,
+  ]
+  const unique = [...new Set(candidates)]
+  if (!allKeys.length) return unique
+  const keySet = new Set(allKeys)
+  return unique.filter((key) => keySet.has(key))
+}
+
+export const deleteQueueImageGroupFromStorage = async (
+  gameSlug: string,
+  region: string,
+  primaryKey: string,
+  allKeys: string[] = [],
+): Promise<{ deleted: string[] }> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+  const keys = getQueueImageDeleteKeys(primaryKey, allKeys)
+  const deleted: string[] = []
+
+  for (const key of keys) {
+    try {
+      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+      deleted.push(key)
+    } catch {
+      // object may not exist
+    }
+  }
+
+  return { deleted }
+}
+
 export const summarizeQueueIssues = (issues: QueueIssue[] = []) => {
   const summary: Record<QueueIssueCategory, number> = {
     'non-webp': 0,
@@ -1027,7 +1072,6 @@ export async function collectQueueIssuesFromTags(
   currentTag?: Tag,
 ): Promise<QueueIssue[]> {
   const issues: QueueIssue[] = []
-  const allowedQueueRounds = getAllowedQueueRounds(currentTag)
 
   for (const tag of queue) {
     const player = tag.foundPlayer || tag.mysteryPlayer
@@ -1036,22 +1080,26 @@ export async function collectQueueIssuesFromTags(
       { type: 'mystery', url: tag.mysteryImageUrl },
     ]
 
-    if (allowedQueueRounds.length && !allowedQueueRounds.includes(tag.tagnumber)) {
-      const expectedLabel =
-        allowedQueueRounds.length === 1
-          ? `#${allowedQueueRounds[0]}`
-          : `#${allowedQueueRounds[0]} or #${allowedQueueRounds[1]}`
-      issues.push({
-        category: 'wrong-round',
-        tagnumber: tag.tagnumber,
-        playerId: tag.playerId,
-        player,
-        issue: `queue tag is for round #${tag.tagnumber}, expected round ${expectedLabel}`,
-      })
-    }
-
     for (const { type, url } of imageFields) {
       if (!url?.length || !queuePathPattern.test(url)) continue
+
+      const storageKey = getStorageKeyFromUrl(url)
+      const imageRound = parseTagnumberFromQueueKey(storageKey)
+      const expectedRound = getAllowedQueueRoundForImage(currentTag, type)
+
+      if (expectedRound !== undefined && imageRound !== undefined && imageRound !== expectedRound) {
+        issues.push({
+          category: 'wrong-round',
+          tagnumber: imageRound,
+          playerId: tag.playerId,
+          player,
+          type,
+          url,
+          key: storageKey,
+          deletable: true,
+          issue: `queue file is for round #${imageRound}, expected round #${expectedRound} (${type} image)`,
+        })
+      }
 
       if (nonWebpImagePattern.test(url)) {
         issues.push({
