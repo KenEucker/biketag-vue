@@ -329,6 +329,10 @@ async function moveToMain(issue) {
 
 async function deleteIssue(issue) {
   const deletedLabel = issue.key?.split('/').pop() ?? 'queue file'
+  if (!window.confirm(`Delete ${deletedLabel}?`)) {
+    return
+  }
+
   const result = await runQueueAction(() => store.deleteQueueIssue(issue))
   if (!result) return
 
@@ -341,6 +345,10 @@ async function deleteIssue(issue) {
 }
 
 async function deleteAllWrongRound() {
+  if (!window.confirm('Delete all wrong-round queue files?')) {
+    return
+  }
+
   const result = await runQueueAction(() => store.deleteWrongRoundQueueFiles())
   if (!result) return
 

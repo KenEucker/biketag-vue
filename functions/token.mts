@@ -56,23 +56,36 @@ export default async (req: Request) => {
       log('[fetch-signed-url] Parsed request body', { key, game, p_id, contentType })
 
       if (key && game && contentType) {
-        const playerValid =
-          authProfile.type === 'jwt' && p_id === authProfile.profile.p_id
+        const playerValid = authProfile.type === 'jwt' && p_id === authProfile.profile.p_id
         const ambassadorValid = profile?.isBikeTagAmbassador
 
         if (playerValid || ambassadorValid) {
           const gameSlug = adminBiketagOpts.game
           const queuePrefix = `queue/${gameSlug}-tag`
           const mainPrefix = `main/${gameSlug}-tag`
+          const gameMatches = game === gameSlug
           const isQueueKey = key.startsWith(queuePrefix)
           const isMainKey = key.startsWith(mainPrefix)
-          const isLaunchMysteryKey = isMainKey && key.includes('-tag-1--mystery')
+          const isLaunchMysteryKey = key.startsWith(`${mainPrefix}-1--mystery.`)
           const keyAllowed =
             (isQueueKey && (playerValid || ambassadorValid)) ||
             (isMainKey && ambassadorValid) ||
             (isLaunchMysteryKey && playerValid)
 
-          if (!keyAllowed) {
+          if (!gameMatches) {
+            status = HttpStatusCode.Forbidden
+            body = 'Game does not match'
+            log(
+              '[fetch-signed-url] Game mismatch',
+              {
+                requestedGame: game,
+                authorizedGame: gameSlug,
+              },
+              'warn',
+            )
+          } else if (!keyAllowed) {
+            status = HttpStatusCode.Forbidden
+            body = 'Invalid key prefix'
             log(
               '[fetch-signed-url] Key prefix mismatch',
               {
@@ -84,36 +97,35 @@ export default async (req: Request) => {
               },
               'warn',
             )
-            throw new Error('Invalid key prefix')
-          }
-
-          const signedUrlResponse = await adminBiketag.fetchSignedUrl(
-            {
-              key,
-              bucket: `${game}-biketag`,
-              contentType,
-              game,
-              p_id,
-            },
-            { source: 'aws' },
-          )
-
-          log('[fetch-signed-url] fetchSignedUrl response', {
-            success: signedUrlResponse.success,
-            status: signedUrlResponse.status,
-            playerValid,
-            ambassadorValid,
-          })
-
-          if (signedUrlResponse.success) {
-            status = HttpStatusCode.Ok
-            body = signedUrlResponse.data
           } else {
-            body = signedUrlResponse.error
-            status = signedUrlResponse.status
+            const signedUrlResponse = await adminBiketag.fetchSignedUrl(
+              {
+                key,
+                bucket: `${gameSlug}-biketag`,
+                contentType,
+                game: gameSlug,
+                p_id,
+              },
+              { source: 'aws' },
+            )
+
+            log('[fetch-signed-url] fetchSignedUrl response', {
+              success: signedUrlResponse.success,
+              status: signedUrlResponse.status,
+              playerValid,
+              ambassadorValid,
+            })
+
+            if (signedUrlResponse.success) {
+              status = HttpStatusCode.Ok
+              body = signedUrlResponse.data
+            } else {
+              body = signedUrlResponse.error
+              status = signedUrlResponse.status
+            }
           }
         } else {
-          status = 400
+          status = HttpStatusCode.Forbidden
           body = 'Player id does not match'
           log(
             '[fetch-signed-url] Player ID mismatch',

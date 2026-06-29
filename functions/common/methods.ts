@@ -3461,6 +3461,17 @@ export const launchGameTag = async (
     log('Result of launch tag #1 resize', resizeResult, 'info')
     if (!resizeResult.success) {
       log('main index created but image resize failed', { error: resizeResult.error }, 'warn')
+      return {
+        results: [
+          {
+            message: 'main index created but image resize failed',
+            error: resizeResult.error,
+            game: game.name,
+            tag: newTag,
+          },
+        ],
+        errors: true,
+      }
     }
 
     axios
@@ -3486,8 +3497,6 @@ export const launchGameTag = async (
   const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource, true)
   const newBikeTagUpdateResult = await adminBiketag.updateTag(newTag, mainUpdateOpts)
   log('Result of launch tag #1 update', newBikeTagUpdateResult, 'info')
-
-  console.log({newBikeTagUpdateResult})
 
   if (newBikeTagUpdateResult.success) {
     axios

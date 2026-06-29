@@ -120,6 +120,10 @@ async function onFieldUpdate({ field, value, tag }) {
 }
 
 async function onSubmitClick() {
+    if (submitInProgress.value) {
+        return
+    }
+
     if (!launchTag.mysteryImage && !launchTag.mysteryImageUrl) {
         toast.open({
             message: 'Please add a mystery image before launching.',

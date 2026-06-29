@@ -1457,7 +1457,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return !!state.profile?.isBikeTagAdmin || isGlobalAdminEmail(state.profile?.email)
     },
     canLaunchGame(state) {
-      return !state.currentBikeTag?.tagnumber
+      return !!state.currentBikeTag && 'tagnumber' in state.currentBikeTag && !state.currentBikeTag.tagnumber
     },
   },
 })
