@@ -316,6 +316,7 @@ onMounted(() => {
 .img-wrapper {
   position: relative;
   width: 100%;
+  height: 100%;
 }
 
 .tag-number {
