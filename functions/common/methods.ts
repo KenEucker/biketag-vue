@@ -527,6 +527,8 @@ export type OrphanedQueueFoundComparePreview = {
   queueFoundPlayer?: string
   expectedFoundPlayerId?: string
   queueFoundPlayerId?: string
+  playerVerified?: boolean
+  playerConflict?: boolean
 }
 
 export type QueueIssue = {
@@ -554,7 +556,9 @@ export type MainFolderContext = {
 }
 
 export type OrphanedQueueFoundCheck = {
-  valid: boolean
+  structural: boolean
+  playerVerified: boolean
+  playerConflict: boolean
   targetRound?: number
   reasons: string[]
   comparePreview?: OrphanedQueueFoundComparePreview
@@ -756,27 +760,119 @@ const getMainTagForRound = (
   return main.mainTagsByRound.get(round)
 }
 
+const foundImageUrlPointsToMain = (url?: string): boolean =>
+  !!url?.trim() && /\/main\//.test(url) && /--found/.test(url)
+
+const mainTagMissingFoundImage = (
+  gameSlug: string,
+  targetRound: number,
+  mainTag: Tag,
+  mainKeys: string[],
+): boolean => {
+  const hasMainFile = mainKeys.includes(getMainFoundFileKey(gameSlug, targetRound))
+  const urlPointsToMain = foundImageUrlPointsToMain(mainTag.foundImageUrl)
+  return !hasMainFile || !urlPointsToMain
+}
+
+const resolveQueueFoundPlayerInfo = (
+  image: QueueStorageImage,
+  simulatedQueue: Tag[] = [],
+): { foundPlayer?: string; playerId?: string } => {
+  for (const tag of simulatedQueue) {
+    const tagKey = tag.foundImageUrl ? getStorageKeyFromUrl(tag.foundImageUrl) : ''
+    if (tagKey === image.key || tag.foundImageUrl === image.url) {
+      return {
+        foundPlayer: tag.foundPlayer?.trim() || image.foundPlayer?.trim(),
+        playerId: tag.playerId ?? image.playerId,
+      }
+    }
+  }
+
+  return {
+    foundPlayer: image.foundPlayer?.trim(),
+    playerId: image.playerId,
+  }
+}
+
+const resolveExpectedFinderForFoundRound = (
+  targetRound: number,
+  mainTag: Tag,
+  main: MainFolderContext,
+): { foundPlayer?: string; playerId?: string } => {
+  const nextTag = getMainTagForRound(targetRound + 1, main)
+  const fromNext = nextTag?.mysteryPlayer?.trim()
+  if (fromNext?.length) {
+    return { foundPlayer: fromNext, playerId: nextTag?.playerId }
+  }
+
+  const fromMainTag = mainTag.foundPlayer?.trim()
+  if (fromMainTag?.length) {
+    return { foundPlayer: fromMainTag, playerId: mainTag.playerId ?? nextTag?.playerId }
+  }
+
+  return { foundPlayer: undefined, playerId: nextTag?.playerId ?? mainTag.playerId }
+}
+
+const evaluatePlayerMatch = (
+  queue: { foundPlayer?: string; playerId?: string },
+  expected: { foundPlayer?: string; playerId?: string },
+): { verified: boolean; conflict: boolean } => {
+  const queueName = normalizePlayerName(queue.foundPlayer)
+  const expectedName = normalizePlayerName(expected.foundPlayer)
+
+  if (queueName && expectedName && queueName !== expectedName) {
+    return { verified: false, conflict: true }
+  }
+
+  if (queue.playerId && expected.playerId && queue.playerId !== expected.playerId) {
+    return { verified: false, conflict: true }
+  }
+
+  if (queueName && expectedName && queueName === expectedName) {
+    return { verified: true, conflict: false }
+  }
+
+  if (queue.playerId && expected.playerId && queue.playerId === expected.playerId) {
+    return { verified: true, conflict: false }
+  }
+
+  return { verified: false, conflict: false }
+}
+
 /** Validates a queue found image that should have been copied into main/ for a past round. */
 export const evaluateOrphanedQueueFoundForMain = (
   image: QueueStorageImage,
   main: MainFolderContext,
+  simulatedQueue: Tag[] = [],
 ): OrphanedQueueFoundCheck => {
   const currentTag = main.currentTag
   if (image.type !== 'found') {
-    return { valid: false, reasons: ['not a found image'] }
+    return { structural: false, playerVerified: false, playerConflict: false, reasons: ['not a found image'] }
   }
   if (currentTag?.tagnumber === undefined) {
-    return { valid: false, reasons: ['current round is unknown'] }
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      reasons: ['current round is unknown'],
+    }
   }
 
   const keyRound = parseTagnumberFromQueueKey(image.key)
   if (keyRound === undefined) {
-    return { valid: false, reasons: ['filename has no round number'] }
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      reasons: ['filename has no round number'],
+    }
   }
 
   if (image.tagnumber !== keyRound) {
     return {
-      valid: false,
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
       targetRound: keyRound,
       reasons: [
         `filename round #${keyRound} does not match parsed round #${image.tagnumber}`,
@@ -787,7 +883,9 @@ export const evaluateOrphanedQueueFoundForMain = (
   const targetRound = keyRound
   if (targetRound >= currentTag.tagnumber) {
     return {
-      valid: false,
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
       targetRound,
       reasons: [
         `round #${targetRound} is not before the current round #${currentTag.tagnumber}`,
@@ -798,23 +896,29 @@ export const evaluateOrphanedQueueFoundForMain = (
   const mainTag = getMainTagForRound(targetRound, main)
   if (!mainTag) {
     return {
-      valid: false,
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
       targetRound,
       reasons: [`main index has no tag for round #${targetRound}`],
     }
   }
 
-  const hasMainFile = main.mainKeys.includes(getMainFoundFileKey(main.gameSlug, targetRound))
-  const hasMainUrl = !!mainTag.foundImageUrl?.length
-  if (hasMainFile || hasMainUrl) {
+  if (!mainTagMissingFoundImage(main.gameSlug, targetRound, mainTag, main.mainKeys)) {
+    const hasMainFile = main.mainKeys.includes(getMainFoundFileKey(main.gameSlug, targetRound))
+    const urlPointsToMain = foundImageUrlPointsToMain(mainTag.foundImageUrl)
     const detail =
-      hasMainFile && hasMainUrl
+      hasMainFile && urlPointsToMain
         ? 'file and index entry'
         : hasMainFile
           ? 'main file'
-          : 'main index foundImageUrl'
+          : urlPointsToMain
+            ? 'main index foundImageUrl'
+            : 'unknown state'
     return {
-      valid: false,
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
       targetRound,
       reasons: [`main already has a found image (${detail}) for round #${targetRound}`],
     }
@@ -823,67 +927,37 @@ export const evaluateOrphanedQueueFoundForMain = (
   const mysteryUrl = mainTag.mysteryImageUrl
   if (!mysteryUrl?.length) {
     return {
-      valid: false,
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
       targetRound,
       reasons: [`main tag #${targetRound} has no mystery image to compare against`],
     }
   }
 
-  const nextTag = getMainTagForRound(targetRound + 1, main)
-  const expectedPlayer = nextTag?.mysteryPlayer?.trim()
-  const expectedPlayerId = nextTag?.playerId
-  const queuePlayer = image.foundPlayer?.trim()
-  const queuePlayerId = image.playerId
-
-  if (!expectedPlayer?.length) {
-    return {
-      valid: false,
-      targetRound,
-      reasons: [
-        `cannot verify finder — main tag #${targetRound + 1} has no mysteryPlayer (expected winner who found round #${targetRound})`,
-      ],
-    }
-  }
-
-  if (!queuePlayer?.length) {
-    return {
-      valid: false,
-      targetRound,
-      reasons: ['queue found image has no foundPlayer name in metadata'],
-    }
-  }
-
-  if (normalizePlayerName(queuePlayer) !== normalizePlayerName(expectedPlayer)) {
-    return {
-      valid: false,
-      targetRound,
-      reasons: [
-        `foundPlayer "${queuePlayer}" does not match expected finder "${expectedPlayer}" (planter of round #${targetRound + 1})`,
-      ],
-    }
-  }
-
-  if (queuePlayerId && expectedPlayerId && queuePlayerId !== expectedPlayerId) {
-    return {
-      valid: false,
-      targetRound,
-      reasons: [
-        `playerId on queue found does not match round #${targetRound + 1} tag`,
-      ],
-    }
-  }
+  const queuePlayerInfo = resolveQueueFoundPlayerInfo(image, simulatedQueue)
+  const expectedPlayerInfo = resolveExpectedFinderForFoundRound(targetRound, mainTag, main)
+  const playerMatch = evaluatePlayerMatch(queuePlayerInfo, expectedPlayerInfo)
 
   return {
-    valid: true,
+    structural: true,
+    playerVerified: playerMatch.verified,
+    playerConflict: playerMatch.conflict,
     targetRound,
-    reasons: [],
+    reasons: playerMatch.conflict
+      ? [
+          `foundPlayer "${queuePlayerInfo.foundPlayer ?? 'unknown'}" conflicts with expected finder "${expectedPlayerInfo.foundPlayer ?? 'unknown'}" (planter of round #${targetRound + 1})`,
+        ]
+      : [],
     comparePreview: {
       mysteryImageUrl: mysteryUrl,
       candidateFoundUrl: image.url,
-      expectedFoundPlayer: expectedPlayer,
-      queueFoundPlayer: queuePlayer,
-      expectedFoundPlayerId: expectedPlayerId,
-      queueFoundPlayerId: queuePlayerId,
+      expectedFoundPlayer: expectedPlayerInfo.foundPlayer,
+      queueFoundPlayer: queuePlayerInfo.foundPlayer,
+      expectedFoundPlayerId: expectedPlayerInfo.playerId,
+      queueFoundPlayerId: queuePlayerInfo.playerId,
+      playerVerified: playerMatch.verified,
+      playerConflict: playerMatch.conflict,
     },
   }
 }
@@ -1089,15 +1163,23 @@ export const collectQueueIssuesFromStorage = (
     const player = image.foundPlayer || image.mysteryPlayer || image.playerHash
 
     if (main) {
-      const orphaned = evaluateOrphanedQueueFoundForMain(image, main)
-      if (orphaned.valid && orphaned.targetRound !== undefined && orphaned.comparePreview) {
+      const orphaned = evaluateOrphanedQueueFoundForMain(image, main, simulatedQueue)
+      if (orphaned.structural && orphaned.targetRound !== undefined && orphaned.comparePreview) {
         orphanedKeys.add(image.key)
         const metadataNote =
           image.metadataTagnumber !== undefined &&
           image.metadataTagnumber !== orphaned.targetRound
             ? ` (metadata lists round #${image.metadataTagnumber})`
             : ''
-        const finder = orphaned.comparePreview.expectedFoundPlayer ?? player
+        const finder =
+          orphaned.comparePreview.queueFoundPlayer ??
+          orphaned.comparePreview.expectedFoundPlayer ??
+          player
+        const playerNote = orphaned.playerConflict
+          ? ' — player name/id conflicts with expected finder; review images before moving'
+          : orphaned.playerVerified
+            ? ` — matches expected finder "${orphaned.comparePreview.expectedFoundPlayer}"`
+            : ' — player could not be verified from metadata; compare images before moving'
         issues.push({
           category: 'orphaned-main-found',
           tagnumber: orphaned.targetRound,
@@ -1106,11 +1188,11 @@ export const collectQueueIssuesFromStorage = (
           type: 'found',
           url: image.url,
           key: image.key,
-          repairable: true,
+          repairable: !orphaned.playerConflict,
           targetTagnumber: orphaned.targetRound,
           metadataTagnumber: image.metadataTagnumber,
           comparePreview: orphaned.comparePreview,
-          issue: `queue found for round #${orphaned.targetRound} matches expected finder "${finder}" and main/ is missing the found photo — compare the mystery image below with the queue candidate before moving${metadataNote}`,
+          issue: `queue found for round #${orphaned.targetRound} and main/ is missing the found photo${playerNote}${metadataNote}`,
         })
       }
     }
@@ -1255,10 +1337,18 @@ export const completeOrphanedQueueFoundMoveToMain = async (
 
   if (main) {
     const check = evaluateOrphanedQueueFoundForMain(queueImage, main)
-    if (!check.valid) {
+    if (!check.structural) {
       return {
         success: false,
         error: check.reasons.join('; ') || 'queue found image failed orphaned-main-found validation',
+      }
+    }
+    if (check.playerConflict) {
+      return {
+        success: false,
+        error:
+          check.reasons.join('; ') ||
+          'queue found image player conflicts with expected finder for this round',
       }
     }
   }

@@ -130,6 +130,23 @@
                   <span v-if="issue.comparePreview.queueFoundPlayer">
                     — {{ issue.comparePreview.queueFoundPlayer }}
                   </span>
+                  <span
+                    v-if="issue.comparePreview.playerConflict"
+                    class="orphan-compare__warn"
+                  >
+                    Player conflicts with expected finder
+                    {{
+                      issue.comparePreview.expectedFoundPlayer
+                        ? ` (${issue.comparePreview.expectedFoundPlayer})`
+                        : ''
+                    }}
+                  </span>
+                  <span
+                    v-else-if="!issue.comparePreview.playerVerified"
+                    class="orphan-compare__note"
+                  >
+                    Player not verified from metadata — compare visually
+                  </span>
                 </figcaption>
               </figure>
             </div>
@@ -141,6 +158,12 @@
             >
               Move to main
             </button>
+            <span
+              v-else-if="issue.comparePreview?.playerConflict"
+              class="issue-action issue-action--blocked"
+            >
+              Move blocked — player mismatch
+            </span>
             <button
               v-if="issue.deletable"
               type="button"
@@ -470,6 +493,13 @@ onMounted(async () => {
       &--repair {
         background: #e8f5e9;
       }
+
+      &--blocked {
+        display: inline-block;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #c0392b;
+      }
     }
 
     &--clear {
@@ -518,6 +548,18 @@ onMounted(async () => {
         margin-top: 0.35rem;
         line-height: 1.35;
       }
+    }
+
+    &__warn {
+      display: block;
+      color: #c0392b;
+      margin-top: 0.25rem;
+    }
+
+    &__note {
+      display: block;
+      color: #666;
+      margin-top: 0.25rem;
     }
   }
 }

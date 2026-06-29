@@ -5,6 +5,7 @@ import {
   collectQueueIssuesFromStorage,
   completeOrphanedQueueFoundMoveToMain,
   deleteQueueImageGroupFromStorage,
+  evaluateOrphanedQueueFoundForMain,
   getBikeTagClientOpts,
   getGameStorageSlug,
   getImageSource,
@@ -405,6 +406,20 @@ export default async (req: Request) => {
       simulatedQueueCount: queue.length,
       reindexedQueueCount: reportedQueue.length,
       currentRound: currentTag?.tagnumber,
+      mainTagsLoaded: [...mainContext.mainTagsByRound.keys()],
+      orphanedFoundCandidates: storage.images
+        .filter((image) => image.type === 'found')
+        .map((image) => {
+          const check = evaluateOrphanedQueueFoundForMain(image, mainContext, queue)
+          return {
+            key: image.key,
+            targetRound: check.targetRound,
+            structural: check.structural,
+            playerVerified: check.playerVerified,
+            playerConflict: check.playerConflict,
+            reasons: check.reasons,
+          }
+        }),
     })
 
     const summary = summarizeQueueIssues(issues)
