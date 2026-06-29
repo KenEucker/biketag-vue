@@ -5,6 +5,7 @@ import {
   collectQueueIssuesFromStorage,
   getBikeTagClientOpts,
   getGameStorageSlug,
+  getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
@@ -91,6 +92,7 @@ export default async (req: Request) => {
     })
 
     const shouldFix = req.method === 'POST' || coerceBooleanQueryParam(payloadOpts.fix) === true
+    const imageSource = getImageSource(game)
 
     log('[queue-fix] Running queue scan', {
       shouldFix,
