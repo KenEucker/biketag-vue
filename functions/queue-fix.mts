@@ -6,6 +6,8 @@ import {
   completeOrphanedQueueFoundMoveToMain,
   deleteQueueImageGroupFromStorage,
   evaluateOrphanedQueueFoundForMain,
+  evaluateOrphanedQueueFoundForTarget,
+  resolveOrphanTargetsForImage,
   getBikeTagClientOpts,
   getGameStorageSlug,
   getImageSource,
@@ -53,6 +55,9 @@ const loadMainFolderContext = async (
   }
 
   const roundsToCheck = new Set<number>()
+  if (currentTag.tagnumber > 1) {
+    roundsToCheck.add(currentTag.tagnumber - 1)
+  }
   for (const image of queueImages) {
     if (image.type !== 'found') continue
     const round = parseTagnumberFromStorageKey(image.key) ?? image.tagnumber
@@ -205,6 +210,10 @@ export default async (req: Request) => {
         : typeof payloadOpts.moveToMainUrl === 'string'
           ? getStorageKeyFromUrl(payloadOpts.moveToMainUrl)
           : undefined
+    const moveToMainTargetRound =
+      typeof payloadOpts.moveToMainTargetRound === 'number'
+        ? payloadOpts.moveToMainTargetRound
+        : undefined
     const deleteWrongRound = coerceBooleanQueryParam(payloadOpts.deleteWrongRound) === true
     const shouldFix =
       !deleteKey &&
@@ -264,6 +273,7 @@ export default async (req: Request) => {
         adminBiketag,
         imageSource,
         preMoveMain,
+        moveToMainTargetRound,
       )
 
       if (!moveResult.success) {
@@ -410,16 +420,44 @@ export default async (req: Request) => {
       mainTagsLoaded: [...mainContext.mainTagsByRound.keys()],
       orphanedFoundCandidates: storage.images
         .filter((image) => image.type === 'found')
-        .map((image) => {
-          const check = evaluateOrphanedQueueFoundForMain(image, mainContext, queue)
-          return {
-            key: image.key,
-            targetRound: check.targetRound,
-            structural: check.structural,
-            playerVerified: check.playerVerified,
-            playerConflict: check.playerConflict,
-            reasons: check.reasons,
+        .flatMap((image) => {
+          const targets =
+            currentTag?.tagnumber !== undefined
+              ? resolveOrphanTargetsForImage(image, currentTag.tagnumber)
+              : []
+          if (!targets.length) {
+            const check = evaluateOrphanedQueueFoundForMain(image, mainContext, queue)
+            return [
+              {
+                key: image.key,
+                filenameRound: image.tagnumber,
+                metadataRound: image.metadataTagnumber,
+                targetRound: check.targetRound,
+                structural: check.structural,
+                playerVerified: check.playerVerified,
+                playerConflict: check.playerConflict,
+                reasons: check.reasons,
+              },
+            ]
           }
+          return targets.map((targetRound) => {
+            const check = evaluateOrphanedQueueFoundForTarget(
+              image,
+              targetRound,
+              mainContext,
+              queue,
+            )
+            return {
+              key: image.key,
+              filenameRound: image.tagnumber,
+              metadataRound: image.metadataTagnumber,
+              targetRound,
+              structural: check.structural,
+              playerVerified: check.playerVerified,
+              playerConflict: check.playerConflict,
+              reasons: check.reasons,
+            }
+          })
         }),
     })
 

@@ -839,9 +839,49 @@ const evaluatePlayerMatch = (
   return { verified: false, conflict: false }
 }
 
-/** Validates a past-round queue found image that should have been copied into main/. */
-export const evaluateOrphanedQueueFoundForMain = (
+/** Live-round found submission: filename is current and metadata is absent or also at/above current. */
+const isCurrentRoundQueueFoundSubmission = (
+  keyRound: number,
+  metaRound: number | undefined,
+  currentRound: number,
+): boolean => {
+  if (keyRound !== currentRound) return false
+  if (metaRound === undefined) return true
+  return metaRound >= currentRound
+}
+
+/** Rounds in main/ a queue found image may belong to (filename and/or metadata). */
+export const resolveOrphanTargetsForImage = (
   image: QueueStorageImage,
+  currentRound: number,
+): number[] => {
+  if (image.type !== 'found') return []
+
+  const keyRound = parseTagnumberFromQueueKey(image.key) ?? image.tagnumber
+  const metaRound = image.metadataTagnumber
+
+  // Both filename and metadata point at the live round — normal queue submission.
+  if (isCurrentRoundQueueFoundSubmission(keyRound, metaRound, currentRound)) {
+    return []
+  }
+
+  const targets = new Set<number>()
+
+  // Either number below the live round may name a past-round orphan.
+  if (keyRound < currentRound) {
+    targets.add(keyRound)
+  }
+  if (metaRound !== undefined && metaRound < currentRound) {
+    targets.add(metaRound)
+  }
+
+  return [...targets]
+}
+
+/** Validates moving a queue found image onto a specific past main tag round. */
+export const evaluateOrphanedQueueFoundForTarget = (
+  image: QueueStorageImage,
+  targetRound: number,
   main: MainFolderContext,
   simulatedQueue: Tag[] = [],
 ): OrphanedQueueFoundCheck => {
@@ -858,29 +898,8 @@ export const evaluateOrphanedQueueFoundForMain = (
     }
   }
 
-  const keyRound = parseTagnumberFromQueueKey(image.key)
-  if (keyRound === undefined) {
-    return {
-      structural: false,
-      playerVerified: false,
-      playerConflict: false,
-      reasons: ['filename has no round number'],
-    }
-  }
+  const keyRound = parseTagnumberFromQueueKey(image.key) ?? image.tagnumber
 
-  if (image.tagnumber !== keyRound) {
-    return {
-      structural: false,
-      playerVerified: false,
-      playerConflict: false,
-      targetRound: keyRound,
-      reasons: [
-        `filename round #${keyRound} does not match parsed round #${image.tagnumber}`,
-      ],
-    }
-  }
-
-  const targetRound = keyRound
   if (targetRound >= currentTag.tagnumber) {
     return {
       structural: false,
@@ -888,7 +907,20 @@ export const evaluateOrphanedQueueFoundForMain = (
       playerConflict: false,
       targetRound,
       reasons: [
-        `round #${targetRound} is the current or a future round — valid queue submissions are not orphans`,
+        `target round #${targetRound} is the current or a future round`,
+      ],
+    }
+  }
+
+  const allowedTargets = resolveOrphanTargetsForImage(image, currentTag.tagnumber)
+  if (!allowedTargets.includes(targetRound)) {
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      targetRound,
+      reasons: [
+        `queue filename #${keyRound} and metadata #${image.metadataTagnumber ?? 'none'} do not indicate orphan target #${targetRound}`,
       ],
     }
   }
@@ -960,6 +992,51 @@ export const evaluateOrphanedQueueFoundForMain = (
       playerConflict: playerMatch.conflict,
     },
   }
+}
+
+/** Validates a past-round queue found image that should have been copied into main/. */
+export const evaluateOrphanedQueueFoundForMain = (
+  image: QueueStorageImage,
+  main: MainFolderContext,
+  simulatedQueue: Tag[] = [],
+): OrphanedQueueFoundCheck => {
+  const currentTag = main.currentTag
+  const keyRound = parseTagnumberFromQueueKey(image.key) ?? image.tagnumber
+
+  if (currentTag?.tagnumber === undefined) {
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      reasons: ['current round is unknown'],
+    }
+  }
+
+  const orphanTargets = resolveOrphanTargetsForImage(image, currentTag.tagnumber)
+  if (!orphanTargets.length) {
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      targetRound: keyRound,
+      reasons: [
+        isCurrentRoundQueueFoundSubmission(
+          keyRound,
+          image.metadataTagnumber,
+          currentTag.tagnumber,
+        )
+          ? 'current-round queue submission — not an orphan'
+          : 'filename and metadata do not indicate a past-round orphan',
+      ],
+    }
+  }
+
+  return evaluateOrphanedQueueFoundForTarget(
+    image,
+    orphanTargets[0],
+    main,
+    simulatedQueue,
+  )
 }
 
 const listQueueObjectKeys = async (
@@ -1162,15 +1239,31 @@ export const collectQueueIssuesFromStorage = (
   for (const image of images) {
     const player = image.foundPlayer || image.mysteryPlayer || image.playerHash
 
-    if (main) {
-      const orphaned = evaluateOrphanedQueueFoundForMain(image, main, simulatedQueue)
-      if (orphaned.structural && orphaned.targetRound !== undefined && orphaned.comparePreview) {
+    if (main && currentTag?.tagnumber) {
+      const keyRound = parseTagnumberFromQueueKey(image.key) ?? image.tagnumber
+      const orphanTargets = resolveOrphanTargetsForImage(image, currentTag.tagnumber)
+
+      for (const targetRound of orphanTargets) {
+        if (orphanedKeys.has(image.key)) break
+
+        const orphaned = evaluateOrphanedQueueFoundForTarget(
+          image,
+          targetRound,
+          main,
+          simulatedQueue,
+        )
+        if (!orphaned.structural || !orphaned.comparePreview) continue
+
         orphanedKeys.add(image.key)
-        const metadataNote =
-          image.metadataTagnumber !== undefined &&
-          image.metadataTagnumber !== orphaned.targetRound
-            ? ` (metadata lists round #${image.metadataTagnumber})`
-            : ''
+        const roundNote =
+          keyRound !== targetRound && image.metadataTagnumber === targetRound
+            ? ` — metadata says found for round #${targetRound}, filename uses new-round #${keyRound}`
+            : keyRound !== targetRound
+              ? ` — filename says round #${keyRound}, main/ is missing found for round #${targetRound}`
+              : image.metadataTagnumber !== undefined &&
+                  image.metadataTagnumber !== targetRound
+                ? ` (metadata lists round #${image.metadataTagnumber})`
+                : ''
         const finder =
           orphaned.comparePreview.queueFoundPlayer ??
           orphaned.comparePreview.expectedFoundPlayer ??
@@ -1182,17 +1275,17 @@ export const collectQueueIssuesFromStorage = (
             : ' — player could not be verified from metadata; compare images before moving'
         issues.push({
           category: 'orphaned-main-found',
-          tagnumber: orphaned.targetRound,
+          tagnumber: targetRound,
           playerId: image.playerId ?? orphaned.comparePreview.expectedFoundPlayerId,
           player: finder,
           type: 'found',
           url: image.url,
           key: image.key,
           repairable: !orphaned.playerConflict,
-          targetTagnumber: orphaned.targetRound,
+          targetTagnumber: targetRound,
           metadataTagnumber: image.metadataTagnumber,
           comparePreview: orphaned.comparePreview,
-          issue: `queue found for round #${orphaned.targetRound} and main/ is missing the found photo${playerNote}${metadataNote}`,
+          issue: `main/ is missing the found photo for round #${targetRound}${roundNote}${playerNote} — compare tag #${targetRound} mystery with the queue candidate`,
         })
       }
     }
@@ -1328,15 +1421,19 @@ export const completeOrphanedQueueFoundMoveToMain = async (
   biketag: BikeTagClient,
   imageSource: string,
   main?: MainFolderContext,
+  targetRoundOverride?: number,
 ): Promise<{ success: boolean; error?: string; mainUrl?: string }> => {
-  const targetRound = parseTagnumberFromQueueKey(queueImage.key) ?? queueImage.tagnumber
+  const targetRound =
+    targetRoundOverride ??
+    parseTagnumberFromQueueKey(queueImage.key) ??
+    queueImage.tagnumber
 
   if (!game.awsRegion?.length) {
     return { success: false, error: 'game has no aws region configured' }
   }
 
   if (main) {
-    const check = evaluateOrphanedQueueFoundForMain(queueImage, main)
+    const check = evaluateOrphanedQueueFoundForTarget(queueImage, targetRound, main)
     if (!check.structural) {
       return {
         success: false,

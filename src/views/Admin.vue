@@ -127,7 +127,12 @@
                 />
                 <figcaption>
                   Queue found candidate
-                  <span v-if="issue.comparePreview.queueFoundPlayer">
+                  <span v-if="filenameRoundFromKey(issue.key) !== issue.tagnumber">
+                    — filename #{{ filenameRoundFromKey(issue.key) }}, metadata #{{
+                      issue.metadataTagnumber ?? 'unknown'
+                    }}, belongs on #{{ issue.tagnumber }}
+                  </span>
+                  <span v-else-if="issue.comparePreview.queueFoundPlayer">
                     — {{ issue.comparePreview.queueFoundPlayer }}
                   </span>
                   <span
@@ -233,6 +238,11 @@ const issueSections = computed(() =>
 
 function previewUrl(url) {
   return getS3ImageSized(url, 'medium')
+}
+
+function filenameRoundFromKey(key) {
+  const match = key?.match(/-tag-(\d+)--found/i)
+  return match ? Number(match[1]) : undefined
 }
 
 function applyScanResult(result) {

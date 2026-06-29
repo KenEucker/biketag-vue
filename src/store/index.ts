@@ -571,7 +571,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return 'error deleting wrong-round queue files'
       }
     },
-    async moveQueueFoundToMain(issue: { key?: string; url?: string }) {
+    async moveQueueFoundToMain(issue: {
+      key?: string
+      url?: string
+      targetTagnumber?: number
+    }) {
       if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'
       }
@@ -583,6 +587,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           data: {
             moveToMainKey: issue.key,
             moveToMainUrl: issue.url,
+            moveToMainTargetRound: issue.targetTagnumber,
           },
           headers: {
             authorization: `Bearer ${this.auth0Token}`,
