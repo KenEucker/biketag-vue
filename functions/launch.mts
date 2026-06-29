@@ -7,6 +7,7 @@ import {
   getProfileAuthorization,
   launchGameTag,
   log,
+  getImageSource,
 } from './common'
 import { ErrorMessage, HttpStatusCode } from './common/constants'
 
