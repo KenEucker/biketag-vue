@@ -57,7 +57,6 @@ export const getApiUrl = (game = '', path = ''): string => {
     : `https://${game.length ? `${game}.` : ''}${process.env.HOST}/api/${path}`
 }
 
-/** Game site URL, e.g. https://seattle.biketag.org (never inserts www into the subdomain). */
 export const getGameSiteUrl = (gameName = ''): string => {
   const baseHost = (process.env.HOST ?? 'biketag.org').replace(/^www\./i, '')
   const gameSlug = gameName.toLowerCase()
