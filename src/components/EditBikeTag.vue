@@ -5,8 +5,9 @@
       :found-tagnumber="editableTag?.tagnumber - 1"
       :found-description="editableTag?.foundLocation"
       :always-show-sections="allowImageUpload"
+      :hide-found-section="mysteryOnly"
     >
-      <template v-if="allowImageUpload" #foundImage>
+      <template v-if="allowImageUpload && !mysteryOnly" #foundImage>
         <div class="image-upload">
           <img
             v-if="foundPreview"
@@ -51,7 +52,9 @@
       <!-- Mystery Player -->
       <template #mysteryPlayer>
         <div v-if="allowImageUpload" class="edit-field player-picker">
-          <label class="edit-label" :for="inputId('playerSelect')">Player</label>
+          <label class="edit-label" :for="inputId('playerSelect')">
+            {{ mysteryOnly ? 'Credit' : 'Player' }}
+          </label>
           <select
             :id="inputId('playerSelect')"
             v-model="playerSelection"
@@ -100,7 +103,7 @@
       </template>
 
       <!-- Found Player -->
-      <template #foundPlayer>
+      <template v-if="!mysteryOnly" #foundPlayer>
         <div class="edit-field">
           <label class="edit-label" :for="inputId('foundPlayer')">Found Player</label>
           <input
@@ -113,7 +116,7 @@
       </template>
 
       <!-- Found Time -->
-      <template #foundTime>
+      <template v-if="!mysteryOnly" #foundTime>
         <div class="edit-field">
           <label class="edit-label" :for="inputId('foundTime')">Found Time</label>
           <DatePicker
@@ -126,7 +129,7 @@
       </template>
 
       <!-- Found Location -->
-      <template #foundLocation>
+      <template v-if="!mysteryOnly" #foundLocation>
         <div class="edit-field">
           <label class="edit-label" :for="inputId('foundLocation')">Found Location</label>
           <input
@@ -182,9 +185,11 @@ const props = withDefaults(
   defineProps<{
     tag: Tag
     allowImageUpload?: boolean
+    mysteryOnly?: boolean
   }>(),
   {
     allowImageUpload: false,
+    mysteryOnly: false,
   },
 )
 
@@ -219,7 +224,7 @@ const sortedPlayers = computed(() =>
 
 onMounted(async () => {
   if (props.allowImageUpload) {
-    lockPlayers.value = true
+    lockPlayers.value = !props.mysteryOnly
     if (!store.getPlayers?.length) {
       await store.fetchPlayers()
     }
@@ -254,8 +259,10 @@ const save = (field?: EditableField) => {
 
 const syncLockedPlayers = (name: string, playerId = '') => {
   editableTag.mysteryPlayer = name
-  editableTag.foundPlayer = name
   editableTag.playerId = playerId
+  if (!props.mysteryOnly) {
+    editableTag.foundPlayer = name
+  }
   save()
 }
 

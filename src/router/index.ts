@@ -8,6 +8,7 @@ import Edit from '@/views/Edit.vue'
 import Home from '@/views/Home.vue'
 import HowToPlay from '@/views/HowToPlay.vue'
 import Landing from '@/views/Landing.vue'
+import Launch from '@/views/Launch.vue'
 import Leaderboard from '@/views/Leaderboard.vue'
 import Login from '@/views/Login.vue'
 import Logout from '@/views/Logout.vue'
@@ -66,6 +67,12 @@ const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
         name: 'New',
         beforeEnter: authGuard,
         component: New,
+      },
+      {
+        path: '/launch',
+        name: 'Launch',
+        beforeEnter: authGuard,
+        component: Launch,
       },
     ]
   : []

@@ -1,7 +1,7 @@
 <template>
   <b-row :class="`center-flx ${reverse ? 'reversed' : ''}`">
     <!-- FOUND IMAGE SECTION -->
-    <b-col v-show="_foundImageUrl || alwaysShowSections" md="6" class="mb-3 max-w">
+    <b-col v-show="!hideFoundSection && (_foundImageUrl || alwaysShowSections)" md="6" class="mb-3 max-w">
       <b-card class="polaroid found-tag">
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>
@@ -150,6 +150,7 @@ export interface BikeTagProps {
   foundDescription?: string
   mysteryDescription?: string
   alwaysShowSections?: boolean
+  hideFoundSection?: boolean
 }
 
 // components
@@ -173,6 +174,7 @@ const props = withDefaults(defineProps<BikeTagProps>(), {
   foundDescription: '',
   mysteryDescription: '',
   alwaysShowSections: false,
+  hideFoundSection: false,
 })
 
 // state

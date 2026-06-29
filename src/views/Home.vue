@@ -47,6 +47,11 @@
         <div v-else>
           <span>{{ t('pages.play.game_not_exists') }}</span>
           <span>{{ t('pages.play.send_hello_email') }}</span>
+          <div v-if="isBikeTagAmbassador && canLaunchGame" class="launch-cta">
+            <bike-tag-button @click="router.push({ name: 'Launch' })">
+              Launch Game with Tag #1
+            </bike-tag-button>
+          </div>
         </div>
       </div>
     </div>
@@ -92,6 +97,8 @@ const tagnumber = computed(() => {
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getImageSized = computed(() => store.getImageSized)
 const getTags = computed(() => store.getTags)
+const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
+const canLaunchGame = computed(() => store.canLaunchGame)
 
 const tag = computed(() => {
   if (tagnumber.value !== 0) {
@@ -138,6 +145,11 @@ onMounted(async () => {
   visibility: hidden;
   opacity: 0.1;
   height: 500px;
+}
+
+.launch-cta {
+  margin-top: 1.5rem;
+  text-align: center;
 }
 
 .play-screen {

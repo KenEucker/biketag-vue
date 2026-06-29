@@ -2,8 +2,10 @@ import { AtpAgent } from '@atproto/api'
 import {
   CopyObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
+  PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
@@ -513,6 +515,21 @@ export const requireGlobalAdmin = (profile: any): boolean => {
   return isGlobalAdminEmail(profile?.email)
 }
 
+/**
+ * ─── queue-fix helpers (used by functions/queue-fix.mts) ───
+ *
+ * Storage layout (AWS games):
+ *   queue/{game}-tag-{N}--{found|mystery}--{hash}.webp (+ _medium, _small)
+ *   main/{game}-tag-{N}--{found|mystery}.webp (+ variants)
+ *   main/index.json, queue/index.json — tag metadata arrays (biketag format)
+ *
+ * Round rules for queue/ validation:
+ *   found image filename round → current live round
+ *   mystery image filename round → current live round + 1
+ *
+ * Orphan found: queue file is a found image for a past round whose main/ --found slot is empty.
+ * Misfiled case: filename uses live round (N) but metadata t=N-1 → target round is metadata.
+ */
 export type QueueIssueCategory =
   | 'non-webp'
   | 'missing-variants'
@@ -592,6 +609,17 @@ const isNormalFoundMysteryPair = (group: QueueStorageImage[]): boolean => {
 export const getGameStorageSlug = (game: Game, fallback = ''): string =>
   (game.slug ?? game.name ?? fallback).toLowerCase()
 
+export const getMainTagIdentity = (
+  gameSlug: string,
+  tagnumber: number,
+): { slug: string; name: string } => {
+  const slug = `${gameSlug}-tag-${tagnumber}`
+  return { slug, name: slug }
+}
+
+export const getExpectedMainTagSlug = (gameSlug: string, tagnumber: number): string =>
+  getMainTagIdentity(gameSlug, tagnumber).slug
+
 const getStorageKeyFromUrl = (url: string): string => {
   try {
     return new URL(url).pathname.slice(1)
@@ -641,8 +669,79 @@ const requireQueueImageVariants = async (
   }
 }
 
-/** Move a queue image and its variants into main/ under the target tag number. */
-export const moveQueueImageToMainWithVariants = async (
+const isStorageObjectNotFound = (error: unknown): boolean => {
+  const name = (error as { name?: string })?.name
+  const code = (error as { Code?: string; $metadata?: { httpStatusCode?: number } })?.Code
+  const status = (error as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode
+  return name === 'NotFound' || name === 'NoSuchKey' || code === 'NotFound' || status === 404
+}
+
+type QueueToMainCopyPair = { srcKey: string; destKey: string }
+
+const listExistingQueueToMainCopyPairs = (
+  filenameBase: string,
+  destBase: string,
+): QueueToMainCopyPair[] => {
+  const variants = ['', '_small', '_medium'] as const
+  const pairs: QueueToMainCopyPair[] = []
+
+  for (const variant of variants) {
+    const srcKey =
+      variant === '' ? `queue/${filenameBase}.webp` : `queue/${filenameBase}${variant}.webp`
+    const destKey = variant === '' ? `${destBase}.webp` : `${destBase}${variant}.webp`
+    pairs.push({ srcKey, destKey })
+  }
+
+  return pairs
+}
+
+const executeQueueToMainCopies = async (
+  client: S3Client,
+  bucket: string,
+  pairs: QueueToMainCopyPair[],
+  sourceKey: string,
+): Promise<void> => {
+  if (!pairs.length) {
+    throw new Error(`no queue variants found to copy from ${sourceKey}`)
+  }
+
+  for (const { srcKey, destKey } of pairs) {
+    await client.send(
+      new CopyObjectCommand({
+        Bucket: bucket,
+        CopySource: `${bucket}/${srcKey}`,
+        Key: destKey,
+        ACL: 'public-read',
+        MetadataDirective: 'COPY',
+      }),
+    )
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: srcKey }))
+  }
+}
+
+const assertMainDestKeysAbsent = async (
+  client: S3Client,
+  bucket: string,
+  destKeys: string[],
+  gameSlug: string,
+  targetTagnumber: number,
+  type: 'found' | 'mystery',
+): Promise<void> => {
+  for (const destKey of destKeys) {
+    try {
+      await client.send(new HeadObjectCommand({ Bucket: bucket, Key: destKey }))
+      throw new Error(
+        `refusing to overwrite existing main file ${destKey} — destination main/${gameSlug}-tag-${targetTagnumber}--${type} must be empty`,
+      )
+    } catch (error) {
+      if (!isStorageObjectNotFound(error)) {
+        throw error instanceof Error ? error : new Error(`storage check failed for ${destKey}`)
+      }
+    }
+  }
+}
+
+const copyQueueImageToMainIfAbsent = async (
   gameSlug: string,
   region: string,
   sourceUrl: string,
@@ -659,33 +758,51 @@ export const moveQueueImageToMainWithVariants = async (
   const client = createQueueStorageClient(region)
   const destBase = `main/${gameSlug}-tag-${targetTagnumber}--${type}`
   const destUrl = `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${destBase}.webp`
-  const variants = ['', '_small', '_medium'] as const
 
-  for (const variant of variants) {
-    const srcKey =
-      variant === '' ? `queue/${filenameBase}.webp` : `queue/${filenameBase}${variant}.webp`
-    const destKey = variant === '' ? `${destBase}.webp` : `${destBase}${variant}.webp`
-
+  const pairs: QueueToMainCopyPair[] = []
+  for (const { srcKey, destKey } of listExistingQueueToMainCopyPairs(filenameBase, destBase)) {
     try {
       await client.send(new HeadObjectCommand({ Bucket: bucket, Key: srcKey }))
     } catch {
       continue
     }
-
-    await client.send(
-      new CopyObjectCommand({
-        Bucket: bucket,
-        CopySource: `${bucket}/${srcKey}`,
-        Key: destKey,
-        ACL: 'public-read',
-        MetadataDirective: 'COPY',
-      }),
-    )
-    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: srcKey }))
+    pairs.push({ srcKey, destKey })
   }
 
+  await assertMainDestKeysAbsent(
+    client,
+    bucket,
+    pairs.map(({ destKey }) => destKey),
+    gameSlug,
+    targetTagnumber,
+    type,
+  )
+  await executeQueueToMainCopies(client, bucket, pairs, sourceKey)
   return destUrl
 }
+
+/**
+ * Copy queue/ image (+ _medium, _small) to main/{game}-tag-{N}--{type}.webp, then delete queue copies.
+ * Used by approve. Refuses if destination main/ keys already exist (S3 CopyObject would replace them otherwise).
+ * Does not update main/index.json.
+ */
+export const moveQueueImageToMainWithVariants = async (
+  gameSlug: string,
+  region: string,
+  sourceUrl: string,
+  targetTagnumber: number,
+  type: 'found' | 'mystery',
+): Promise<string> =>
+  copyQueueImageToMainIfAbsent(gameSlug, region, sourceUrl, targetTagnumber, type)
+
+/** queue-fix Move to main — same as moveQueueImageToMainWithVariants but found images only. */
+export const copyQueueFoundToMainIfAbsent = async (
+  gameSlug: string,
+  region: string,
+  sourceUrl: string,
+  targetTagnumber: number,
+): Promise<string> =>
+  copyQueueImageToMainIfAbsent(gameSlug, region, sourceUrl, targetTagnumber, 'found')
 
 export type QueueStorageImage = {
   key: string
@@ -1142,6 +1259,10 @@ const parseQueueImageKey = (key: string) => {
   }
 }
 
+/**
+ * List and parse all objects under queue/. One HeadObject per primary file for S3 metadata (t, mp, fp).
+ * Filename round comes from key; metadataTagnumber from object metadata when present.
+ */
 export const loadQueueStorageImages = async (
   game: string,
   region: string,
@@ -1210,6 +1331,7 @@ export const loadQueueStorageImages = async (
   return { bucket, keys, images, unparsedKeys }
 }
 
+/** List object keys under main/ (no parsing). Used for orphan detection only. */
 export const loadMainStorageKeys = async (game: string, region: string): Promise<string[]> => {
   const client = createQueueStorageClient(region)
   const bucket = `${game.toLowerCase()}-biketag`
@@ -1229,6 +1351,10 @@ const getStorageUploaderKey = (image: QueueStorageImage): string | undefined => 
   return `tag:${image.tagnumber}-${image.type}`
 }
 
+/**
+ * Build synthetic Tag[] from queue/ files (highest round ±1, grouped by uploader).
+ * Approximates what biketag getQueue returns without calling queue/index.json.
+ */
 export const simulateGetQueueTagsFromStorage = (
   images: QueueStorageImage[] = [],
   game = '',
@@ -1274,6 +1400,15 @@ export const simulateGetQueueTagsFromStorage = (
   return tags
 }
 
+/**
+ * Scan queue/ images and return all detected issues. Read-only except issue list.
+ *
+ * Order per image: orphaned-main-found (if main context) → wrong-round → non-webp →
+ * missing-variants. Then bucket-level duplicate-uploader checks.
+ *
+ * Orphan is shown when evaluateOrphanedQueueFoundForTarget.structural is true (main missing
+ * --found, mystery exists for comparison). Player mismatch marks repairable:false but still shown.
+ */
 export const collectQueueIssuesFromStorage = (
   images: QueueStorageImage[] = [],
   allKeys: string[] = [],
@@ -1475,6 +1610,100 @@ export const isDeletableQueueIssue = (issue: QueueIssue): boolean =>
 export const isRepairableQueueIssue = (issue: QueueIssue): boolean =>
   issue.category === 'orphaned-main-found' && issue.repairable === true && !!issue.key?.length
 
+const MAIN_INDEX_KEY = 'main/index.json'
+
+const loadMainTagIndex = async (gameSlug: string, region: string): Promise<Tag[]> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+
+  try {
+    const response = await client.send(
+      new GetObjectCommand({ Bucket: bucket, Key: MAIN_INDEX_KEY }),
+    )
+    const body = await response.Body?.transformToString('utf-8')
+    const index = JSON.parse(body ?? '[]')
+    if (!Array.isArray(index)) {
+      throw new Error('invalid main index format')
+    }
+    return index as Tag[]
+  } catch (error) {
+    if (isStorageObjectNotFound(error)) return []
+    throw error
+  }
+}
+
+const saveMainTagIndex = async (
+  gameSlug: string,
+  region: string,
+  tags: Tag[],
+): Promise<void> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: MAIN_INDEX_KEY,
+      Body: JSON.stringify(tags),
+      ContentType: 'application/json',
+      ACL: 'public-read',
+      CacheControl: 'no-cache, no-store, must-revalidate',
+    }),
+  )
+}
+
+/**
+ * Patch found fields on one main/index.json entry. Never touches storage objects.
+ * Refuses if foundImageUrl already points at main/ (no index overwrite).
+ * Do NOT use biketag updateTag for Move to main — see completeOrphanedQueueFoundMoveToMain.
+ */
+const patchMainTagFoundFieldsIfAbsent = async (
+  gameSlug: string,
+  region: string,
+  tagnumber: number,
+  patch: Partial<Tag>,
+): Promise<{ success: boolean; error?: string; tag?: Tag }> => {
+  try {
+    const index = await loadMainTagIndex(gameSlug, region)
+    const entryIndex = index.findIndex((tag) => tag.tagnumber === tagnumber)
+    if (entryIndex === -1) {
+      return { success: false, error: `main index has no entry for tag #${tagnumber}` }
+    }
+
+    const existing = index[entryIndex]
+    if (foundImageUrlPointsToMain(existing.foundImageUrl)) {
+      return {
+        success: false,
+        error: `main index tag #${tagnumber} already has foundImageUrl in main/ — refusing to overwrite`,
+      }
+    }
+
+    const updated = { ...existing, ...patch, tagnumber } as Tag
+    index[entryIndex] = updated
+    await saveMainTagIndex(gameSlug, region, index)
+    return { success: true, tag: updated }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'failed to patch main index',
+    }
+  }
+}
+
+/**
+ * Repair: copy one orphaned queue found image into main/ for targetRound, then patch index.
+ *
+ * Preconditions (when main context provided):
+ *   - evaluateOrphanedQueueFoundForTarget passes (structural, no player conflict)
+ *   - main/{game}-tag-{targetRound}--found.webp does not already exist
+ *
+ * Storage steps:
+ *   1. copyQueueFoundToMainIfAbsent — never overwrites main/ storage
+ *   2. patchMainTagFoundFieldsIfAbsent — sets found fields only when index has no main found URL
+ *
+ * Never calls biketag updateTag. Never overwrites existing main/ files or index found URLs.
+ * targetRoundOverride is required — never derived from filename alone.
+ */
 export const completeOrphanedQueueFoundMoveToMain = async (
   game: Game,
   gameSlug: string,
@@ -1484,13 +1713,30 @@ export const completeOrphanedQueueFoundMoveToMain = async (
   main?: MainFolderContext,
   targetRoundOverride?: number,
 ): Promise<{ success: boolean; error?: string; mainUrl?: string }> => {
-  const targetRound =
-    targetRoundOverride ??
-    parseTagnumberFromQueueKey(queueImage.key) ??
-    queueImage.tagnumber
+  if (targetRoundOverride === undefined) {
+    return {
+      success: false,
+      error:
+        'target round is required — never infer from queue filename alone (misfiled orphans use metadata round)',
+    }
+  }
+
+  const targetRound = targetRoundOverride
 
   if (!game.awsRegion?.length) {
     return { success: false, error: 'game has no aws region configured' }
+  }
+
+  if (queueImage.type !== 'found') {
+    return { success: false, error: 'only queue found images can be moved to main via this repair' }
+  }
+
+  const keyRound = parseTagnumberFromQueueKey(queueImage.key) ?? queueImage.tagnumber
+  if (keyRound !== targetRound && queueImage.metadataTagnumber !== targetRound) {
+    return {
+      success: false,
+      error: `target round #${targetRound} does not match queue filename #${keyRound} or metadata #${queueImage.metadataTagnumber ?? 'none'}`,
+    }
   }
 
   if (main) {
@@ -1509,37 +1755,57 @@ export const completeOrphanedQueueFoundMoveToMain = async (
           'queue found image player conflicts with expected finder for this round',
       }
     }
+
+    const foundKey = getMainFoundFileKey(gameSlug, targetRound)
+    if (main.mainKeys.includes(foundKey)) {
+      return {
+        success: false,
+        error: `${foundKey} already exists in main/ — refusing to overwrite existing storage files`,
+      }
+    }
+  } else {
+    const mainKeys = await loadMainStorageKeys(gameSlug, game.awsRegion)
+    const foundKey = getMainFoundFileKey(gameSlug, targetRound)
+    if (mainKeys.includes(foundKey)) {
+      return {
+        success: false,
+        error: `${foundKey} already exists in main/ — refusing to overwrite existing storage files`,
+      }
+    }
   }
 
-  const mainUrl = await moveQueueImageToMainWithVariants(
-    gameSlug,
-    game.awsRegion,
-    queueImage.url,
-    targetRound,
-    'found',
-  )
-
-  const mainTagResponse = await biketag.getTag({ tagnumber: targetRound }, { source: imageSource })
-  const mainTag = (mainTagResponse.success ? mainTagResponse.data : {}) as Tag
-
-  const updatePayload = {
-    ...mainTag,
-    tagnumber: targetRound,
-    game: gameSlug,
-    foundImageUrl: mainUrl,
-    foundPlayer: queueImage.foundPlayer || mainTag.foundPlayer,
-    playerId: queueImage.playerId || mainTag.playerId,
-  }
-
-  const updateResult = await biketag.updateTag(
-    updatePayload,
-    getMainFolderUpdateOpts(game, imageSource),
-  )
-
-  if (!updateResult.success) {
+  let mainUrl: string
+  try {
+    mainUrl = await copyQueueFoundToMainIfAbsent(
+      gameSlug,
+      game.awsRegion,
+      queueImage.url,
+      targetRound,
+    )
+  } catch (error) {
     return {
       success: false,
-      error: updateResult.error ?? 'failed to update main tag index',
+      error: error instanceof Error ? error.message : 'failed to copy queue found image to main',
+    }
+  }
+
+  const mainTagResponse = await biketag.getTag({ tagnumber: targetRound }, { source: imageSource })
+  const fetchedTag = mainTagResponse.success ? (mainTagResponse.data as Tag) : undefined
+  const identity = getMainTagIdentity(gameSlug, targetRound)
+
+  // Patch main/index.json only when found URL not already set. Storage copy above is the sole main/ object write.
+  const patchResult = await patchMainTagFoundFieldsIfAbsent(gameSlug, game.awsRegion, targetRound, {
+    ...identity,
+    game: gameSlug,
+    foundImageUrl: mainUrl,
+    foundPlayer: queueImage.foundPlayer || fetchedTag?.foundPlayer,
+    playerId: queueImage.playerId || fetchedTag?.playerId,
+  })
+
+  if (!patchResult.success) {
+    return {
+      success: false,
+      error: patchResult.error ?? 'failed to update main tag index',
       mainUrl,
     }
   }
@@ -1564,6 +1830,7 @@ export const getQueueImageDeleteKeys = (primaryKey: string, allKeys: string[] = 
   return unique.filter((key) => keySet.has(key))
 }
 
+/** Delete primary queue image and its _medium/_small variants from queue/ only. */
 export const deleteQueueImageGroupFromStorage = async (
   gameSlug: string,
   region: string,
@@ -3120,6 +3387,96 @@ export const finalizeNewBikeTagPost = async (
   }
 
   return { results, errors }
+}
+
+export const launchGameTag = async (
+  game: Game,
+  launchTag: Tag,
+  adminBiketag?: BikeTagClient,
+): Promise<BackgroundProcessResults> => {
+  adminBiketag =
+    adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
+  const imageSource = getImageSource(game)
+  const gameSlug = getGameStorageSlug(game)
+
+  const currentTagResponse = await adminBiketag.getTag(undefined, { source: imageSource })
+  const currentTag = currentTagResponse.data as Tag | undefined
+
+  if ((currentTag?.tagnumber ?? 0) >= 1) {
+    return {
+      results: [{ message: 'Game already has tag #1', error: 'tag already exists' }],
+      errors: true,
+    }
+  }
+
+  if (!launchTag.mysteryImageUrl?.length) {
+    return {
+      results: [{ message: 'Mystery image is required to launch the game', error: 'missing image' }],
+      errors: true,
+    }
+  }
+
+  const sourceKey = getStorageKeyFromUrl(launchTag.mysteryImageUrl)
+  if (!sourceKey.startsWith('main/')) {
+    return {
+      results: [
+        {
+          message: 'Mystery image must be uploaded directly to main storage',
+          error: 'invalid image location',
+        },
+      ],
+      errors: true,
+    }
+  }
+
+  const newTag = BikeTagClient.getters.getOnlyMysteryTagFromTagData(launchTag)
+  newTag.tagnumber = 1
+  newTag.game = gameSlug
+  newTag.gps = { lat: 0, long: 0, alt: 0 }
+  newTag.mysteryImageUrl = launchTag.mysteryImageUrl
+  if (!newTag.mysteryTime) {
+    newTag.mysteryTime = Math.floor(Date.now() / 1000)
+  }
+  if (launchTag.playerId) {
+    newTag.playerId = launchTag.playerId
+  }
+
+  const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource, true)
+  const newBikeTagUpdateResult = await adminBiketag.updateTag(newTag, mainUpdateOpts)
+  log('Result of launch tag #1 update', newBikeTagUpdateResult, 'info')
+
+  if (newBikeTagUpdateResult.success) {
+    axios
+      .post(
+        getApiUrl(game.name, 'autopost-notify'),
+        {},
+        { headers: { 'Content-Type': 'application/json' } },
+      )
+      .catch((e) => log(ErrorMessage.NotificationsNotSent, e.message ?? e, 'warn'))
+
+    return {
+      results: [
+        {
+          message: 'game launched with tag #1',
+          game: game.name,
+          tag: newBikeTagUpdateResult.data,
+        },
+      ],
+      errors: false,
+    }
+  }
+
+  return {
+    results: [
+      {
+        message: ErrorMessage.BikeTagNotPosted,
+        error: newBikeTagUpdateResult.error,
+        game: game.name,
+        tag: newTag,
+      },
+    ],
+    errors: true,
+  }
 }
 
 export const setNewBikeTagPost = async (

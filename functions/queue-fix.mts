@@ -1,3 +1,58 @@
+/**
+ * queue-fix — Admin API for AWS queue/ folder inspection and repairs.
+ *
+ * Scope: `{game}-biketag` bucket, `queue/` prefix (plus read-only peeks at `main/` for
+ * orphan detection and one index patch after Move to main). Global admin only.
+ *
+ * ─── Request modes (POST body / query via getPayloadOpts) ───
+ *
+ * | Mode              | Trigger                          | Mutations |
+ * |-------------------|----------------------------------|-----------|
+ * | Scan              | GET, or POST without action flags| None      |
+ * | Fix queue images  | POST, no action flags (shouldFix)| queue/ via biketag getQueue(reindex, resize) |
+ * | Delete one file   | deleteKey / deleteUrl            | queue/ delete |
+ * | Delete wrong-round| deleteWrongRound: true           | queue/ delete (all wrong-round issues) |
+ * | Move to main      | moveToMainKey + moveToMainTargetRound | queue/ copy→main/ found slot; main/index.json patch |
+ *
+ * Every request ends with a fresh scan and JSON report (issues, summary, queue snapshot).
+ *
+ * ─── Handler order (single request) ───
+ *
+ * 1. Auth (global admin), load game + AWS region, configure BikeTagClient.
+ * 2. Parse action flags from payload (delete, move, fix).
+ * 3. Load current live tag from main/ (biketag getTag).
+ * 4. If moveToMainKey: validate → completeOrphanedQueueFoundMoveToMain (see methods.ts).
+ * 5. If deleteWrongRound or deleteKey: deleteQueueImageGroupFromStorage on queue/ only.
+ * 6. If any mutation or shouldFix: biketag getQueue({ reindex: true, resize: shouldFix }).
+ *    - Rebuilds queue/index.json from queue/ objects (biketag, not this file).
+ *    - resize only when Fix Queue Images (shouldFix); runs game resize API for webp variants.
+ * 7. inspectQueueFolder: list queue/, simulate queue tags, collect issues (read-only on main/).
+ * 8. Return report JSON.
+ *
+ * ─── Issue categories (from collectQueueIssuesFromStorage) ───
+ *
+ * - non-webp: file in queue/ is not .webp (or unparsed name).
+ * - missing-variants: primary .webp exists but _medium/_small siblings missing in queue/.
+ * - wrong-round: filename round ≠ expected (found=current, mystery=current+1). Deletable.
+ * - duplicate-uploader: same player has files spanning rounds without a normal found+mystery pair.
+ * - orphaned-main-found: past-round found still in queue/, main/ missing that round's --found.
+ *   Side-by-side preview uses main/ --mystery file for comparison. Move to main if repairable.
+ *
+ * ─── Move to main (orphaned found only) ───
+ *
+ * Does NOT call biketag updateTag (that adapter renames/moves main/ files when image URLs are set).
+ * Steps: copy queue/...--found → main/...--found (no overwrite) → delete queue copies →
+ * patch foundImageUrl on that tagnumber in main/index.json only if not already set.
+ *
+ * moveToMainTargetRound is required (usually metadata round when filename uses live round).
+ *
+ * ─── Known limitations / tech debt ───
+ *
+ * - main/index.json read/write duplicated here; belongs in biketag as a safe indexOnly update.
+ * - loadQueueStorageImages may HeadObject every queue file; called multiple times per request.
+ * - loadMainFolderContext fetches getTag per relevant past round for orphan checks.
+ * - Orphan detection reads main/ keys + index via getTag; does not repair main/ index otherwise.
+ */
 import { BikeTagClient, Game, Tag } from 'biketag'
 import {
   acceptCorsHeaders,
@@ -47,6 +102,8 @@ const loadMainFolderContext = async (
   queueImages: QueueStorageImage[],
   imageSource: string,
 ): Promise<MainFolderContext> => {
+  // mainKeys: S3 list of main/ (for --found / --mystery presence checks)
+  // mainTagsByRound: biketag getTag for previous round + any past rounds referenced by queue found files
   const mainKeys = await loadMainStorageKeys(gameSlug, awsRegion)
   const mainTagsByRound = new Map<number, Tag>()
 
@@ -87,6 +144,7 @@ const inspectQueueFolder = async (
   currentTag: Tag | undefined,
   main?: MainFolderContext,
 ) => {
+  // 1. List + parse queue/  2. Simulate queue tags  3. collectQueueIssuesFromStorage
   const storage = await loadQueueStorageImages(gameSlug, awsRegion)
   const queue = simulateGetQueueTagsFromStorage(storage.images, gameSlug)
   const allKeys = [...storage.keys, ...(main?.mainKeys ?? [])]
@@ -247,6 +305,19 @@ export default async (req: Request) => {
     let movedToMain: { key: string; mainUrl?: string } | undefined
 
     if (moveToMainKey?.startsWith('queue/')) {
+      if (moveToMainTargetRound === undefined) {
+        return new Response(
+          JSON.stringify({
+            error:
+              'moveToMainTargetRound is required — the orphan target round must be explicit (usually from metadata, not the queue filename)',
+          }),
+          {
+            headers,
+            status: HttpStatusCode.BadRequest,
+          },
+        )
+      }
+
       const preMoveStorage = await loadQueueStorageImages(gameSlug, game.awsRegion)
       const queueImage = getQueueImageFromStorage(preMoveStorage.images, moveToMainKey)
 

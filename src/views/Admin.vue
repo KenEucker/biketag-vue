@@ -156,7 +156,7 @@
               </figure>
             </div>
             <button
-              v-if="issue.repairable"
+              v-if="issue.repairable && issue.category === 'orphaned-main-found'"
               type="button"
               class="issue-action issue-action--repair"
               @click="moveToMain(issue)"
@@ -292,6 +292,7 @@ function notifyAction(message, hasRemainingIssues = false) {
   })
 }
 
+// Queue-fix admin actions — all call POST/GET /api/queue-fix (see functions/queue-fix.mts).
 async function scanQueue() {
   const result = await runQueueAction(() => store.scanQueueIssues())
   if (!result) return
