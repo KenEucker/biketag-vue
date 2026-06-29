@@ -66,8 +66,11 @@ export default async (req: Request) => {
           const mainPrefix = `main/${gameSlug}-tag`
           const isQueueKey = key.startsWith(queuePrefix)
           const isMainKey = key.startsWith(mainPrefix)
+          const isLaunchMysteryKey = isMainKey && key.includes('-tag-1--mystery')
           const keyAllowed =
-            (isQueueKey && (playerValid || ambassadorValid)) || (isMainKey && ambassadorValid)
+            (isQueueKey && (playerValid || ambassadorValid)) ||
+            (isMainKey && ambassadorValid) ||
+            (isLaunchMysteryKey && playerValid)
 
           if (!keyAllowed) {
             log(
