@@ -69,7 +69,7 @@
     <!-- MYSTERY IMAGE SECTION -->
     <b-col
       v-show="_mysteryImageUrl || alwaysShowSections"
-      :md="_foundImageUrl || alwaysShowSections ? 6 : 12"
+      :md="hideFoundSection || !(_foundImageUrl || alwaysShowSections) ? 12 : 6"
       class="mb-3 max-w"
     >
       <b-card class="polaroid mystery-tag">

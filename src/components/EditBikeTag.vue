@@ -402,6 +402,7 @@ const inputId = (field: string) => `edit-biketag-${field}`
   justify-content: center;
   background: #f5f5f5;
   border: 2px dashed #ccc;
+  overflow: hidden;
 }
 
 .image-upload-label {

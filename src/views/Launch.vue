@@ -28,7 +28,7 @@
             </bike-tag-button>
         </div>
 
-        <div v-else-if="!pageLoading">
+        <div v-else-if="!pageLoading" class="launch-form">
             <h2>Launch {{ getGameNameProper }}</h2>
             <p class="round-number">Tag #1 — Mystery Image</p>
             <p class="launch-description">
@@ -192,9 +192,18 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.launch-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 2rem;
+}
+
 .biketag-container {
-    max-width: clamp(80vw, 80vw, 500px);
-    margin: auto;
+    width: 100%;
 }
 
 .round-number {
@@ -205,13 +214,11 @@ onMounted(async () => {
 
 .launch-description {
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
 }
 
 .launch-actions {
-    position: relative;
-    z-index: 2;
-    margin-top: 1.5rem;
+    width: 100%;
     text-align: center;
 }
 </style>
