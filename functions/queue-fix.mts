@@ -3,6 +3,7 @@ import {
   acceptCorsHeaders,
   coerceBooleanQueryParam,
   collectQueueIssuesFromStorage,
+  completeOrphanedQueueFoundMoveToMain,
   deleteQueueImageGroupFromStorage,
   getBikeTagClientOpts,
   getGameStorageSlug,
@@ -10,10 +11,15 @@ import {
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
+  getQueueImageFromStorage,
   isDeletableQueueIssue,
   isFixableQueueIssue,
+  isRepairableQueueIssue,
+  loadMainStorageKeys,
   loadQueueStorageImages,
   log,
+  MainFolderContext,
+  parseTagnumberFromStorageKey,
   QueueIssue,
   requireGlobalAdmin,
   simulateGetQueueTagsFromStorage,
@@ -29,19 +35,61 @@ const getStorageKeyFromUrl = (url: string): string => {
   }
 }
 
+const loadMainFolderContext = async (
+  biketag: BikeTagClient,
+  gameSlug: string,
+  awsRegion: string,
+  currentTag: Tag | undefined,
+  queueImages: { key: string; type: string; tagnumber: number }[],
+  imageSource: string,
+): Promise<MainFolderContext> => {
+  const mainKeys = await loadMainStorageKeys(gameSlug, awsRegion)
+  const mainTagsByRound = new Map<number, Tag>()
+
+  if (!currentTag?.tagnumber) {
+    return { gameSlug, mainKeys, mainTagsByRound, currentTag }
+  }
+
+  const roundsToCheck = new Set<number>()
+  for (const image of queueImages) {
+    if (image.type !== 'found') continue
+    const round = parseTagnumberFromStorageKey(image.key) ?? image.tagnumber
+    if (round === undefined || round >= currentTag.tagnumber) continue
+    roundsToCheck.add(round)
+    const nextRound = round + 1
+    if (nextRound < currentTag.tagnumber) {
+      roundsToCheck.add(nextRound)
+    }
+  }
+
+  await Promise.all(
+    [...roundsToCheck].map(async (round) => {
+      const response = await biketag.getTag({ tagnumber: round }, { source: imageSource })
+      if (response.success && response.data) {
+        mainTagsByRound.set(round, response.data as Tag)
+      }
+    }),
+  )
+
+  return { gameSlug, mainKeys, mainTagsByRound, currentTag }
+}
+
 const inspectQueueFolder = async (
   gameSlug: string,
   awsRegion: string,
-  currentTag?: Tag,
+  currentTag: Tag | undefined,
+  main?: MainFolderContext,
 ) => {
   const storage = await loadQueueStorageImages(gameSlug, awsRegion)
   const queue = simulateGetQueueTagsFromStorage(storage.images, gameSlug)
+  const allKeys = [...storage.keys, ...(main?.mainKeys ?? [])]
   const issues: QueueIssue[] = collectQueueIssuesFromStorage(
     storage.images,
-    storage.keys,
+    allKeys,
     currentTag,
     queue,
     storage.unparsedKeys,
+    main,
   )
 
   if (storage.keys.length === 0) {
@@ -115,8 +163,17 @@ export default async (req: Request) => {
 
     const gameSlug = getGameStorageSlug(game, biketagOpts.game)
     const biketag = new BikeTagClient(getBikeTagClientOpts(req, true, false, game))
+    const adminBiketag = new BikeTagClient(getBikeTagClientOpts(req, true, true, game))
 
     biketag.config(
+      {
+        biketag: { host: process.env.HOST },
+        aws: { region: game.awsRegion },
+      },
+      false,
+      true,
+    )
+    adminBiketag.config(
       {
         biketag: { host: process.env.HOST },
         aws: { region: game.awsRegion },
@@ -140,10 +197,17 @@ export default async (req: Request) => {
         : deleteUrl
           ? getStorageKeyFromUrl(deleteUrl)
           : undefined
+    const moveToMainKey =
+      typeof payloadOpts.moveToMainKey === 'string'
+        ? payloadOpts.moveToMainKey
+        : typeof payloadOpts.moveToMainUrl === 'string'
+          ? getStorageKeyFromUrl(payloadOpts.moveToMainUrl)
+          : undefined
     const deleteWrongRound = coerceBooleanQueryParam(payloadOpts.deleteWrongRound) === true
     const shouldFix =
       !deleteKey &&
       !deleteWrongRound &&
+      !moveToMainKey &&
       (req.method === 'POST' || coerceBooleanQueryParam(payloadOpts.fix) === true)
     const imageSource = getImageSource(game)
 
@@ -151,6 +215,7 @@ export default async (req: Request) => {
       shouldFix,
       deleteKey,
       deleteWrongRound,
+      moveToMainKey,
       game: game.name,
       gameSlug,
       awsRegion: game.awsRegion,
@@ -168,9 +233,74 @@ export default async (req: Request) => {
     }
 
     let deletedKeys: string[] = []
+    let movedToMain: { key: string; mainUrl?: string } | undefined
+
+    if (moveToMainKey?.startsWith('queue/')) {
+      const preMoveStorage = await loadQueueStorageImages(gameSlug, game.awsRegion)
+      const queueImage = getQueueImageFromStorage(preMoveStorage.images, moveToMainKey)
+
+      if (!queueImage || queueImage.type !== 'found') {
+        return new Response(JSON.stringify({ error: 'queue found image not found' }), {
+          headers,
+          status: HttpStatusCode.BadRequest,
+        })
+      }
+
+      const preMoveMain = await loadMainFolderContext(
+        biketag,
+        gameSlug,
+        game.awsRegion,
+        currentTag,
+        preMoveStorage.images,
+        imageSource,
+      )
+
+      const moveResult = await completeOrphanedQueueFoundMoveToMain(
+        game,
+        gameSlug,
+        queueImage,
+        adminBiketag,
+        imageSource,
+        preMoveMain,
+      )
+
+      if (!moveResult.success) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: moveResult.error ?? 'failed to move queue found image to main',
+          }),
+          {
+            headers,
+            status: HttpStatusCode.BadRequest,
+          },
+        )
+      }
+
+      movedToMain = { key: moveToMainKey, mainUrl: moveResult.mainUrl }
+      log('[queue-fix] Moved orphaned queue found image to main', movedToMain)
+    } else if (moveToMainKey) {
+      return new Response(JSON.stringify({ error: 'invalid queue file key for main move' }), {
+        headers,
+        status: HttpStatusCode.BadRequest,
+      })
+    }
 
     if (deleteWrongRound) {
-      const preDelete = await inspectQueueFolder(gameSlug, game.awsRegion, currentTag)
+      const preDeleteMain = await loadMainFolderContext(
+        biketag,
+        gameSlug,
+        game.awsRegion,
+        currentTag,
+        (await loadQueueStorageImages(gameSlug, game.awsRegion)).images,
+        imageSource,
+      )
+      const preDelete = await inspectQueueFolder(
+        gameSlug,
+        game.awsRegion,
+        currentTag,
+        preDeleteMain,
+      )
       const wrongRoundKeys = [
         ...new Set(
           preDelete.issues.filter(isDeletableQueueIssue).map((issue) => issue.key as string),
@@ -209,43 +339,63 @@ export default async (req: Request) => {
       })
     }
 
-    if (shouldFix) {
-      const fixResponse = await biketag.getQueue(
+    const shouldReindex = shouldFix || deletedKeys.length > 0 || !!movedToMain
+    let reindexedQueue: Tag[] | undefined
+
+    if (shouldReindex) {
+      const queueResponse = await biketag.getQueue(
         {
           game: biketagOpts.game,
           host: getQueueApiHost(biketagOpts.game),
           region: game.awsRegion,
           cached: false,
           reindex: true,
-          resize: true,
+          resize: shouldFix,
         },
         { source: imageSource },
       )
 
-      if (!fixResponse.success) {
+      if (!queueResponse.success) {
         log(
-          '[queue-fix] getQueue fix failed',
-          { error: fixResponse.error, status: fixResponse.status },
+          '[queue-fix] getQueue reindex failed',
+          { error: queueResponse.error, status: queueResponse.status, shouldFix, deletedKeys },
           'error',
         )
         return new Response(
           JSON.stringify({
             success: false,
-            error: fixResponse.error ?? 'failed to fix queue folder',
+            error: queueResponse.error ?? 'failed to reindex queue folder',
           }),
           {
             headers,
-            status: fixResponse.status ?? HttpStatusCode.BadRequest,
+            status: queueResponse.status ?? HttpStatusCode.BadRequest,
           },
         )
       }
+
+      reindexedQueue = queueResponse.data
+      log('[queue-fix] Queue reindexed', {
+        queueCount: reindexedQueue?.length ?? 0,
+        resized: shouldFix,
+      })
     }
 
+    const preInspectStorage = await loadQueueStorageImages(gameSlug, game.awsRegion)
+    const mainContext = await loadMainFolderContext(
+      biketag,
+      gameSlug,
+      game.awsRegion,
+      currentTag,
+      preInspectStorage.images,
+      imageSource,
+    )
     const { storage, queue, issues } = await inspectQueueFolder(
       gameSlug,
       game.awsRegion,
       currentTag,
+      mainContext,
     )
+    const reportedQueue = reindexedQueue ?? queue
 
     log('[queue-fix] Inspected queue folder', {
       storageBucket: storage.bucket,
@@ -253,41 +403,48 @@ export default async (req: Request) => {
       primaryImages: storage.images.length,
       unparsedKeyCount: storage.unparsedKeys.length,
       simulatedQueueCount: queue.length,
+      reindexedQueueCount: reportedQueue.length,
       currentRound: currentTag?.tagnumber,
     })
 
     const summary = summarizeQueueIssues(issues)
     const fixableIssueCount = issues.filter(isFixableQueueIssue).length
     const deletableIssueCount = issues.filter(isDeletableQueueIssue).length
+    const repairableIssueCount = issues.filter(isRepairableQueueIssue).length
     const responsePayload = {
       success: true,
       fixed: shouldFix,
       deleted: deletedKeys.length > 0,
       deletedKeys,
-      queueReindexed: shouldFix,
+      movedToMain,
+      queueReindexed: shouldReindex,
       queueResized: shouldFix,
       currentRound: currentTag?.tagnumber,
       expectedQueueRound: (currentTag?.tagnumber ?? 0) + 1,
       storageBucket: storage.bucket,
       storageFileCount: storage.keys.length,
       unparsedKeyCount: storage.unparsedKeys.length,
-      queueCount: queue.length,
+      queueCount: reportedQueue.length,
       issueCount: issues.length,
       fixableIssueCount,
       deletableIssueCount,
+      repairableIssueCount,
       summary,
       issues,
-      queue,
+      queue: reportedQueue,
     }
 
     log('[queue-fix] Completed', {
       fixed: shouldFix,
       deleted: deletedKeys.length,
+      movedToMain: !!movedToMain,
+      queueReindexed: shouldReindex,
       currentRound: currentTag?.tagnumber,
       issueCount: issues.length,
       fixableIssueCount,
       deletableIssueCount,
-      queueCount: queue.length,
+      repairableIssueCount,
+      queueCount: reportedQueue.length,
       storageFileCount: storage.keys.length,
       summary,
     })

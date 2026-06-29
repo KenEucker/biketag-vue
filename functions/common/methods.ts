@@ -518,6 +518,16 @@ export type QueueIssueCategory =
   | 'missing-variants'
   | 'wrong-round'
   | 'duplicate-uploader'
+  | 'orphaned-main-found'
+
+export type OrphanedQueueFoundComparePreview = {
+  mysteryImageUrl: string
+  candidateFoundUrl: string
+  expectedFoundPlayer?: string
+  queueFoundPlayer?: string
+  expectedFoundPlayerId?: string
+  queueFoundPlayerId?: string
+}
 
 export type QueueIssue = {
   category: QueueIssueCategory
@@ -528,8 +538,26 @@ export type QueueIssue = {
   url?: string
   key?: string
   deletable?: boolean
+  repairable?: boolean
+  targetTagnumber?: number
+  metadataTagnumber?: number
+  comparePreview?: OrphanedQueueFoundComparePreview
   issue: string
   relatedTagnumbers?: number[]
+}
+
+export type MainFolderContext = {
+  gameSlug: string
+  mainKeys: string[]
+  mainTagsByRound: Map<number, Tag>
+  currentTag?: Tag
+}
+
+export type OrphanedQueueFoundCheck = {
+  valid: boolean
+  targetRound?: number
+  reasons: string[]
+  comparePreview?: OrphanedQueueFoundComparePreview
 }
 
 const queuePathPattern = /\/queue\//
@@ -661,6 +689,7 @@ export type QueueStorageImage = {
   baseKey: string
   type: 'found' | 'mystery'
   tagnumber: number
+  metadataTagnumber?: number
   playerHash: string
   extension: string
   playerId?: string
@@ -710,6 +739,153 @@ const parseQueueObjectMetadata = (data?: string) => {
 const parseTagnumberFromQueueKey = (key: string): number | undefined => {
   const match = key.match(/-tag-(\d+)--(?:mystery|found)--/i)
   return match ? parseInt(match[1], 10) : undefined
+}
+
+export const parseTagnumberFromStorageKey = parseTagnumberFromQueueKey
+
+const getMainFoundFileKey = (gameSlug: string, tagnumber: number): string =>
+  `main/${gameSlug}-tag-${tagnumber}--found.webp`
+
+const normalizePlayerName = (name?: string): string => (name ?? '').trim().toLowerCase()
+
+const getMainTagForRound = (
+  round: number,
+  main: MainFolderContext,
+): Tag | undefined => {
+  if (main.currentTag?.tagnumber === round) return main.currentTag
+  return main.mainTagsByRound.get(round)
+}
+
+/** Validates a queue found image that should have been copied into main/ for a past round. */
+export const evaluateOrphanedQueueFoundForMain = (
+  image: QueueStorageImage,
+  main: MainFolderContext,
+): OrphanedQueueFoundCheck => {
+  const currentTag = main.currentTag
+  if (image.type !== 'found') {
+    return { valid: false, reasons: ['not a found image'] }
+  }
+  if (currentTag?.tagnumber === undefined) {
+    return { valid: false, reasons: ['current round is unknown'] }
+  }
+
+  const keyRound = parseTagnumberFromQueueKey(image.key)
+  if (keyRound === undefined) {
+    return { valid: false, reasons: ['filename has no round number'] }
+  }
+
+  if (image.tagnumber !== keyRound) {
+    return {
+      valid: false,
+      targetRound: keyRound,
+      reasons: [
+        `filename round #${keyRound} does not match parsed round #${image.tagnumber}`,
+      ],
+    }
+  }
+
+  const targetRound = keyRound
+  if (targetRound >= currentTag.tagnumber) {
+    return {
+      valid: false,
+      targetRound,
+      reasons: [
+        `round #${targetRound} is not before the current round #${currentTag.tagnumber}`,
+      ],
+    }
+  }
+
+  const mainTag = getMainTagForRound(targetRound, main)
+  if (!mainTag) {
+    return {
+      valid: false,
+      targetRound,
+      reasons: [`main index has no tag for round #${targetRound}`],
+    }
+  }
+
+  const hasMainFile = main.mainKeys.includes(getMainFoundFileKey(main.gameSlug, targetRound))
+  const hasMainUrl = !!mainTag.foundImageUrl?.length
+  if (hasMainFile || hasMainUrl) {
+    const detail =
+      hasMainFile && hasMainUrl
+        ? 'file and index entry'
+        : hasMainFile
+          ? 'main file'
+          : 'main index foundImageUrl'
+    return {
+      valid: false,
+      targetRound,
+      reasons: [`main already has a found image (${detail}) for round #${targetRound}`],
+    }
+  }
+
+  const mysteryUrl = mainTag.mysteryImageUrl
+  if (!mysteryUrl?.length) {
+    return {
+      valid: false,
+      targetRound,
+      reasons: [`main tag #${targetRound} has no mystery image to compare against`],
+    }
+  }
+
+  const nextTag = getMainTagForRound(targetRound + 1, main)
+  const expectedPlayer = nextTag?.mysteryPlayer?.trim()
+  const expectedPlayerId = nextTag?.playerId
+  const queuePlayer = image.foundPlayer?.trim()
+  const queuePlayerId = image.playerId
+
+  if (!expectedPlayer?.length) {
+    return {
+      valid: false,
+      targetRound,
+      reasons: [
+        `cannot verify finder — main tag #${targetRound + 1} has no mysteryPlayer (expected winner who found round #${targetRound})`,
+      ],
+    }
+  }
+
+  if (!queuePlayer?.length) {
+    return {
+      valid: false,
+      targetRound,
+      reasons: ['queue found image has no foundPlayer name in metadata'],
+    }
+  }
+
+  if (normalizePlayerName(queuePlayer) !== normalizePlayerName(expectedPlayer)) {
+    return {
+      valid: false,
+      targetRound,
+      reasons: [
+        `foundPlayer "${queuePlayer}" does not match expected finder "${expectedPlayer}" (planter of round #${targetRound + 1})`,
+      ],
+    }
+  }
+
+  if (queuePlayerId && expectedPlayerId && queuePlayerId !== expectedPlayerId) {
+    return {
+      valid: false,
+      targetRound,
+      reasons: [
+        `playerId on queue found does not match round #${targetRound + 1} tag`,
+      ],
+    }
+  }
+
+  return {
+    valid: true,
+    targetRound,
+    reasons: [],
+    comparePreview: {
+      mysteryImageUrl: mysteryUrl,
+      candidateFoundUrl: image.url,
+      expectedFoundPlayer: expectedPlayer,
+      queueFoundPlayer: queuePlayer,
+      expectedFoundPlayerId: expectedPlayerId,
+      queueFoundPlayerId: queuePlayerId,
+    },
+  }
 }
 
 const listQueueObjectKeys = async (
@@ -779,6 +955,7 @@ export const loadQueueStorageImages = async (
     let mysteryPlayer: string | undefined
     let foundPlayer: string | undefined
     let tagnumber = tagnumberFromKey
+    let metadataTagnumber: number | undefined
     let title: string | undefined
     let description: string | undefined
 
@@ -793,6 +970,7 @@ export const loadQueueStorageImages = async (
         playerId = meta.playerId
         mysteryPlayer = meta.mysteryPlayer
         foundPlayer = meta.foundPlayer
+        metadataTagnumber = meta.tagnumber
       }
     } catch {
       // keep key-derived values
@@ -806,6 +984,7 @@ export const loadQueueStorageImages = async (
       baseKey,
       type,
       tagnumber,
+      metadataTagnumber,
       playerHash,
       extension,
       playerId,
@@ -818,6 +997,17 @@ export const loadQueueStorageImages = async (
 
   return { bucket, keys, images, unparsedKeys }
 }
+
+export const loadMainStorageKeys = async (game: string, region: string): Promise<string[]> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${game.toLowerCase()}-biketag`
+  return listQueueObjectKeys(client, bucket, 'main/')
+}
+
+export const getQueueImageFromStorage = (
+  images: QueueStorageImage[] = [],
+  primaryKey: string,
+): QueueStorageImage | undefined => images.find((image) => image.key === primaryKey)
 
 const getStorageUploaderKey = (image: QueueStorageImage): string | undefined => {
   if (image.playerId?.length) return `id:${image.playerId}`
@@ -878,10 +1068,12 @@ export const collectQueueIssuesFromStorage = (
   currentTag?: Tag,
   simulatedQueue: Tag[] = [],
   unparsedKeys: string[] = [],
+  main?: MainFolderContext,
 ): QueueIssue[] => {
   const issues: QueueIssue[] = []
   const keySet = new Set(allKeys)
   const reportedDuplicateHashes = new Set<string>()
+  const orphanedKeys = new Set<string>()
 
   for (const key of unparsedKeys) {
     const tagnumber = parseTagnumberFromQueueKey(key) ?? 0
@@ -895,9 +1087,41 @@ export const collectQueueIssuesFromStorage = (
 
   for (const image of images) {
     const player = image.foundPlayer || image.mysteryPlayer || image.playerHash
+
+    if (main) {
+      const orphaned = evaluateOrphanedQueueFoundForMain(image, main)
+      if (orphaned.valid && orphaned.targetRound !== undefined && orphaned.comparePreview) {
+        orphanedKeys.add(image.key)
+        const metadataNote =
+          image.metadataTagnumber !== undefined &&
+          image.metadataTagnumber !== orphaned.targetRound
+            ? ` (metadata lists round #${image.metadataTagnumber})`
+            : ''
+        const finder = orphaned.comparePreview.expectedFoundPlayer ?? player
+        issues.push({
+          category: 'orphaned-main-found',
+          tagnumber: orphaned.targetRound,
+          playerId: image.playerId ?? orphaned.comparePreview.expectedFoundPlayerId,
+          player: finder,
+          type: 'found',
+          url: image.url,
+          key: image.key,
+          repairable: true,
+          targetTagnumber: orphaned.targetRound,
+          metadataTagnumber: image.metadataTagnumber,
+          comparePreview: orphaned.comparePreview,
+          issue: `queue found for round #${orphaned.targetRound} matches expected finder "${finder}" and main/ is missing the found photo — compare the mystery image below with the queue candidate before moving${metadataNote}`,
+        })
+      }
+    }
+
     const expectedRound = getAllowedQueueRoundForImage(currentTag, image.type)
 
-    if (expectedRound !== undefined && image.tagnumber !== expectedRound) {
+    if (
+      !orphanedKeys.has(image.key) &&
+      expectedRound !== undefined &&
+      image.tagnumber !== expectedRound
+    ) {
       issues.push({
         category: 'wrong-round',
         tagnumber: image.tagnumber,
@@ -1012,6 +1236,69 @@ export const isFixableQueueIssue = (issue: QueueIssue): boolean =>
 export const isDeletableQueueIssue = (issue: QueueIssue): boolean =>
   issue.category === 'wrong-round' && issue.deletable === true && !!issue.key?.length
 
+export const isRepairableQueueIssue = (issue: QueueIssue): boolean =>
+  issue.category === 'orphaned-main-found' && issue.repairable === true && !!issue.key?.length
+
+export const completeOrphanedQueueFoundMoveToMain = async (
+  game: Game,
+  gameSlug: string,
+  queueImage: QueueStorageImage,
+  biketag: BikeTagClient,
+  imageSource: string,
+  main?: MainFolderContext,
+): Promise<{ success: boolean; error?: string; mainUrl?: string }> => {
+  const targetRound = parseTagnumberFromQueueKey(queueImage.key) ?? queueImage.tagnumber
+
+  if (!game.awsRegion?.length) {
+    return { success: false, error: 'game has no aws region configured' }
+  }
+
+  if (main) {
+    const check = evaluateOrphanedQueueFoundForMain(queueImage, main)
+    if (!check.valid) {
+      return {
+        success: false,
+        error: check.reasons.join('; ') || 'queue found image failed orphaned-main-found validation',
+      }
+    }
+  }
+
+  const mainUrl = await moveQueueImageToMainWithVariants(
+    gameSlug,
+    game.awsRegion,
+    queueImage.url,
+    targetRound,
+    'found',
+  )
+
+  const mainTagResponse = await biketag.getTag({ tagnumber: targetRound }, { source: imageSource })
+  const mainTag = (mainTagResponse.success ? mainTagResponse.data : {}) as Tag
+
+  const updatePayload = {
+    ...mainTag,
+    tagnumber: targetRound,
+    game: gameSlug,
+    foundImageUrl: mainUrl,
+    foundPlayer: queueImage.foundPlayer || mainTag.foundPlayer,
+    playerId: queueImage.playerId || mainTag.playerId,
+  }
+
+  const updateResult = await biketag.updateTag(
+    updatePayload,
+    getMainFolderUpdateOpts(game, imageSource),
+  )
+
+  if (!updateResult.success) {
+    return {
+      success: false,
+      error: updateResult.error ?? 'failed to update main tag index',
+      mainUrl,
+    }
+  }
+
+  return { success: true, mainUrl }
+}
+
 export const getQueueImageDeleteKeys = (primaryKey: string, allKeys: string[] = []): string[] => {
   const base = primaryKey.replace(/\.(webp|jpe?g|png|gif|bmp)$/i, '')
   const candidates = [
@@ -1058,6 +1345,7 @@ export const summarizeQueueIssues = (issues: QueueIssue[] = []) => {
     'missing-variants': 0,
     'wrong-round': 0,
     'duplicate-uploader': 0,
+    'orphaned-main-found': 0,
   }
 
   for (const issue of issues) {

@@ -571,6 +571,35 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return 'error deleting wrong-round queue files'
       }
     },
+    async moveQueueFoundToMain(issue: { key?: string; url?: string }) {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('queue-fix'),
+          data: {
+            moveToMainKey: issue.key,
+            moveToMainUrl: issue.url,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          this.resetBikeTagCache()
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to move queue found image to main'
+      } catch (e: any) {
+        console.error('error moving queue found image to main', e?.message ?? e)
+        return 'error moving queue found image to main'
+      }
+    },
     async dequeueTag(d: any) {
       if (this.profile?.isBikeTagAmbassador) {
         try {

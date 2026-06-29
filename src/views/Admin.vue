@@ -9,13 +9,14 @@
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
 
-  <div v-if="!working" class="admin-page container">
+  <div class="admin-page container">
     <img class="admin-icon" src="/images/biketag-ambassador.svg" alt="Admin Icon" />
     <h1>BikeTag Admin</h1>
     <p>
       Scan the queue for image conversion problems, missing sized variants, wrong-round entries,
-      and duplicate uploader splits. Use Fix Queue Images to re-run webp conversion and variant
-      generation for fixable issues. Wrong-round files can be deleted individually or in bulk.
+      orphaned found images that never made it to main, and duplicate uploader splits. Use Fix Queue
+      Images to re-run webp conversion and variant generation for fixable issues. Wrong-round files
+      can be deleted individually or in bulk. Orphaned found images can be moved into main/.
     </p>
 
     <div class="actions">
@@ -69,6 +70,10 @@
           <dt>Deletable issues</dt>
           <dd>{{ deletableIssueCount }}</dd>
         </div>
+        <div>
+          <dt>Repairable issues</dt>
+          <dd>{{ repairableIssueCount }}</dd>
+        </div>
       </dl>
 
       <ul class="summary-list">
@@ -90,6 +95,7 @@
           <li
             v-for="(issue, index) in section.issues"
             :key="`${issue.category}-${issue.tagnumber}-${issue.type ?? 'none'}-${index}`"
+            :class="{ 'issue-item--orphaned': issue.comparePreview }"
           >
             <strong>Tag #{{ issue.tagnumber }}</strong>
             <span v-if="issue.player"> ({{ issue.player }})</span>
@@ -98,11 +104,47 @@
               — rounds #{{ issue.relatedTagnumbers.join(', #') }}
             </span>
             : {{ issue.issue }}
-            <code v-if="issue.url">{{ issue.url }}</code>
+            <code v-if="issue.url && !issue.comparePreview">{{ issue.url }}</code>
+            <div v-if="issue.comparePreview" class="orphan-compare">
+              <figure>
+                <img
+                  :src="previewUrl(issue.comparePreview.mysteryImageUrl)"
+                  :alt="`Tag #${issue.tagnumber} mystery in main`"
+                  loading="lazy"
+                />
+                <figcaption>
+                  Tag #{{ issue.tagnumber }} mystery (main)
+                  <span v-if="issue.comparePreview.expectedFoundPlayer">
+                    — hidden by prior round
+                  </span>
+                </figcaption>
+              </figure>
+              <figure>
+                <img
+                  :src="previewUrl(issue.comparePreview.candidateFoundUrl)"
+                  :alt="`Queue found candidate for tag #${issue.tagnumber}`"
+                  loading="lazy"
+                />
+                <figcaption>
+                  Queue found candidate
+                  <span v-if="issue.comparePreview.queueFoundPlayer">
+                    — {{ issue.comparePreview.queueFoundPlayer }}
+                  </span>
+                </figcaption>
+              </figure>
+            </div>
+            <button
+              v-if="issue.repairable"
+              type="button"
+              class="issue-action issue-action--repair"
+              @click="moveToMain(issue)"
+            >
+              Move to main
+            </button>
             <button
               v-if="issue.deletable"
               type="button"
-              class="issue-delete"
+              class="issue-action issue-action--delete"
               @click="deleteIssue(issue)"
             >
               Delete file
@@ -121,6 +163,7 @@
 
 <script setup name="AdminView">
 import { useBikeTagStore } from '@/store/index'
+import { getS3ImageSized } from '@/common/methods'
 import { computed, inject, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Loading from 'vue-loading-overlay'
@@ -130,6 +173,7 @@ import BikeTagButton from '@/components/BikeTagButton.vue'
 const ISSUE_SECTIONS = [
   { key: 'non-webp', label: 'Non-webp images' },
   { key: 'missing-variants', label: 'Missing medium/small variants' },
+  { key: 'orphaned-main-found', label: 'Orphaned found (not in main)' },
   { key: 'wrong-round', label: 'Wrong round' },
   { key: 'duplicate-uploader', label: 'Duplicate uploader split' },
 ]
@@ -147,6 +191,7 @@ const isBikeTagAdmin = computed(() => store.isBikeTagAdmin)
 const issueCount = computed(() => issues.value.length)
 const fixableIssueCount = computed(() => report.value.fixableIssueCount ?? 0)
 const deletableIssueCount = computed(() => report.value.deletableIssueCount ?? 0)
+const repairableIssueCount = computed(() => report.value.repairableIssueCount ?? 0)
 
 const summaryItems = computed(() =>
   ISSUE_SECTIONS.map((section) => ({
@@ -163,6 +208,10 @@ const issueSections = computed(() =>
   })).filter((section) => section.issues.length),
 )
 
+function previewUrl(url) {
+  return getS3ImageSized(url, 'medium')
+}
+
 function applyScanResult(result) {
   scanned.value = true
   issues.value = result.issues ?? []
@@ -174,6 +223,7 @@ function applyScanResult(result) {
     storageBucket: result.storageBucket,
     fixableIssueCount: result.fixableIssueCount ?? 0,
     deletableIssueCount: result.deletableIssueCount ?? 0,
+    repairableIssueCount: result.repairableIssueCount ?? 0,
     summary: result.summary ?? {},
   }
 }
@@ -210,23 +260,9 @@ function notifyAction(message, hasRemainingIssues = false) {
 }
 
 async function scanQueue() {
-  working.value = true
-  lastAction.value = ''
+  const result = await runQueueAction(() => store.scanQueueIssues())
+  if (!result) return
 
-  const result = await store.scanQueueIssues()
-  working.value = false
-
-  if (typeof result === 'string') {
-    toast.open({
-      message: result,
-      type: 'error',
-      duration: 10000,
-      position: 'top',
-    })
-    return
-  }
-
-  applyScanResult(result)
   lastAction.value = result.issueCount
     ? `Scan complete: ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} found (${result.fixableIssueCount ?? 0} fixable, ${result.deletableIssueCount ?? 0} deletable).`
     : 'Scan complete: no queue issues detected.'
@@ -240,6 +276,19 @@ async function fixQueue() {
     result.issueCount
       ? `Fix attempted, but ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} remain (${result.fixableIssueCount ?? 0} fixable).`
       : 'Queue images converted and variants generated successfully.',
+    !!result.issueCount,
+  )
+}
+
+async function moveToMain(issue) {
+  const label = issue.key?.split('/').pop() ?? 'queue found image'
+  const result = await runQueueAction(() => store.moveQueueFoundToMain(issue))
+  if (!result) return
+
+  notifyAction(
+    result.issueCount
+      ? `Moved ${label} to main/, but ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} remain.`
+      : `Moved ${label} to main/ and updated the main index.`,
     !!result.issueCount,
   )
 }
@@ -274,10 +323,7 @@ onMounted(async () => {
 
   if (!isBikeTagAdmin.value) {
     router.push('/')
-    return
   }
-
-  await scanQueue()
 })
 </script>
 
@@ -314,7 +360,9 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    margin-bottom: 2rem;
+    max-width: 60vw;
+    margin: 0 auto 2rem;
+    padding: 2em;
   }
 
   .status-banner,
@@ -404,9 +452,10 @@ onMounted(async () => {
       font-size: 0.85rem;
     }
 
-    .issue-delete {
+    .issue-action {
       display: inline-block;
       margin-top: 0.5rem;
+      margin-right: 0.5rem;
       padding: 0.35rem 0.75rem;
       border: 1px solid #000;
       background: #fff;
@@ -416,6 +465,10 @@ onMounted(async () => {
 
       &:hover {
         background: #f5f5f5;
+      }
+
+      &--repair {
+        background: #e8f5e9;
       }
     }
 
@@ -432,6 +485,39 @@ onMounted(async () => {
       margin-bottom: 0.75rem;
       border-bottom: 1px solid #000;
       padding-bottom: 0.35rem;
+    }
+  }
+
+  .issue-item--orphaned {
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed #ccc;
+  }
+
+  .orphan-compare {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+
+    figure {
+      flex: 1 1 220px;
+      margin: 0;
+      text-align: center;
+
+      img {
+        display: block;
+        width: 100%;
+        max-height: 280px;
+        object-fit: contain;
+        border: 1px solid #000;
+        background: #f5f5f5;
+      }
+
+      figcaption {
+        font-size: 0.85rem;
+        margin-top: 0.35rem;
+        line-height: 1.35;
+      }
     }
   }
 }
