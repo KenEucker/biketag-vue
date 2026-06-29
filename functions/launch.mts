@@ -66,8 +66,10 @@ export default async (req: Request) => {
         status: HttpStatusCode.BadRequest,
       })
     }
-
+        
+    const imageSource = getImageSource(game)
     const updatedOpts = getBikeTagClientOpts(req, true, true, game)
+    updatedOpts.source = imageSource
     const adminBiketag = new BikeTagClient(updatedOpts)
 
     const gameSlug = getGameStorageSlug(game, gameName)
