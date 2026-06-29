@@ -532,8 +532,25 @@ export type QueueIssue = {
 
 const queuePathPattern = /\/queue\//
 const nonWebpImagePattern = /\.(jpe?g|png|gif|bmp)(?:\?.*)?$/i
+const queueSizedVariantKeyPattern = /_(medium|small)\.webp$/i
 const queuePrimaryImageKeyPattern =
   /^queue\/(.+?)--(mystery|found)(?:--([a-z0-9]+))?\.(webp|jpg|jpeg|png|gif|bmp)$/i
+
+const isQueueSizedVariantKey = (key: string): boolean =>
+  queueSizedVariantKeyPattern.test(key.split('/').pop() ?? '')
+
+const getAllowedQueueRounds = (currentTag?: Tag): number[] => {
+  if (currentTag?.tagnumber === undefined) return []
+  return [currentTag.tagnumber, currentTag.tagnumber + 1]
+}
+
+const isNormalFoundMysteryPair = (group: QueueStorageImage[]): boolean => {
+  const tagnumbers = [...new Set(group.map((image) => image.tagnumber))].sort((a, b) => a - b)
+  if (tagnumbers.length !== 2 || tagnumbers[1] - tagnumbers[0] !== 1) return false
+  const foundCount = group.filter((image) => image.type === 'found').length
+  const mysteryCount = group.filter((image) => image.type === 'mystery').length
+  return foundCount === 1 && mysteryCount === 1
+}
 
 export const getGameStorageSlug = (game: Game, fallback = ''): string =>
   (game.slug ?? game.name ?? fallback).toLowerCase()
@@ -714,7 +731,7 @@ const listQueueObjectKeys = async (
 }
 
 const parseQueueImageKey = (key: string) => {
-  if (/_medium\.webp$|_small\.webp$/i.test(key)) return undefined
+  if (isQueueSizedVariantKey(key)) return undefined
   if (key.endsWith('/index.json')) return undefined
 
   const match = key.match(queuePrimaryImageKeyPattern)
@@ -745,7 +762,7 @@ export const loadQueueStorageImages = async (
   for (const key of keys) {
     const parsed = parseQueueImageKey(key)
     if (!parsed) {
-      if (/^queue\//.test(key) && !key.endsWith('/index.json')) {
+      if (/^queue\//.test(key) && !key.endsWith('/index.json') && !isQueueSizedVariantKey(key)) {
         unparsedKeys.push(key)
       }
       continue
@@ -859,7 +876,7 @@ export const collectQueueIssuesFromStorage = (
   unparsedKeys: string[] = [],
 ): QueueIssue[] => {
   const issues: QueueIssue[] = []
-  const expectedQueueRound = (currentTag?.tagnumber ?? 0) + 1
+  const allowedQueueRounds = getAllowedQueueRounds(currentTag)
   const keySet = new Set(allKeys)
   const reportedDuplicateHashes = new Set<string>()
 
@@ -876,7 +893,11 @@ export const collectQueueIssuesFromStorage = (
   for (const image of images) {
     const player = image.foundPlayer || image.mysteryPlayer || image.playerHash
 
-    if (currentTag && image.tagnumber !== expectedQueueRound) {
+    if (allowedQueueRounds.length && !allowedQueueRounds.includes(image.tagnumber)) {
+      const expectedLabel =
+        allowedQueueRounds.length === 1
+          ? `#${allowedQueueRounds[0]}`
+          : `#${allowedQueueRounds[0]} or #${allowedQueueRounds[1]}`
       issues.push({
         category: 'wrong-round',
         tagnumber: image.tagnumber,
@@ -884,7 +905,7 @@ export const collectQueueIssuesFromStorage = (
         player,
         type: image.type,
         url: image.url,
-        issue: `queue file is for round #${image.tagnumber}, expected round #${expectedQueueRound}`,
+        issue: `queue file is for round #${image.tagnumber}, expected round ${expectedLabel}`,
       })
     }
 
@@ -931,7 +952,7 @@ export const collectQueueIssuesFromStorage = (
 
   for (const group of uploaderImages.values()) {
     const tagnumbers = [...new Set(group.map((image) => image.tagnumber))].sort((a, b) => a - b)
-    if (tagnumbers.length <= 1) continue
+    if (tagnumbers.length <= 1 || isNormalFoundMysteryPair(group)) continue
 
     const example = group[0]
     const player = example.foundPlayer || example.mysteryPlayer || example.playerHash
@@ -1006,7 +1027,7 @@ export async function collectQueueIssuesFromTags(
   currentTag?: Tag,
 ): Promise<QueueIssue[]> {
   const issues: QueueIssue[] = []
-  const expectedQueueRound = (currentTag?.tagnumber ?? 0) + 1
+  const allowedQueueRounds = getAllowedQueueRounds(currentTag)
 
   for (const tag of queue) {
     const player = tag.foundPlayer || tag.mysteryPlayer
@@ -1015,13 +1036,17 @@ export async function collectQueueIssuesFromTags(
       { type: 'mystery', url: tag.mysteryImageUrl },
     ]
 
-    if (currentTag && tag.tagnumber !== expectedQueueRound) {
+    if (allowedQueueRounds.length && !allowedQueueRounds.includes(tag.tagnumber)) {
+      const expectedLabel =
+        allowedQueueRounds.length === 1
+          ? `#${allowedQueueRounds[0]}`
+          : `#${allowedQueueRounds[0]} or #${allowedQueueRounds[1]}`
       issues.push({
         category: 'wrong-round',
         tagnumber: tag.tagnumber,
         playerId: tag.playerId,
         player,
-        issue: `queue tag is for round #${tag.tagnumber}, expected round #${expectedQueueRound}`,
+        issue: `queue tag is for round #${tag.tagnumber}, expected round ${expectedLabel}`,
       })
     }
 
