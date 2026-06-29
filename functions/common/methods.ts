@@ -3446,6 +3446,51 @@ export const launchGameTag = async (
     newTag.playerId = launchTag.playerId
   }
 
+  if (imageSource === 'aws' && game.awsRegion?.length) {
+    try {
+      const index = await loadMainTagIndex(gameSlug, game.awsRegion)
+      if (index.some((t) => (t.tagnumber ?? 0) >= 1)) {
+        return {
+          results: [{ message: 'Game already has tag #1', error: 'tag already exists' }],
+          errors: true,
+        }
+      }
+      await saveMainTagIndex(gameSlug, game.awsRegion, [...index, newTag])
+      log('Created main/index.json with tag #1', { game: gameSlug, tag: newTag.tagnumber }, 'info')
+    } catch (err: any) {
+      return {
+        results: [{ message: 'Failed to create main index', error: err.message ?? String(err) }],
+        errors: true,
+      }
+    }
+
+    const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource, true)
+    const resizeResult = await adminBiketag.updateTag(newTag, mainUpdateOpts)
+    log('Result of launch tag #1 resize', resizeResult, 'info')
+    if (!resizeResult.success) {
+      log('main index created but image resize failed', { error: resizeResult.error }, 'warn')
+    }
+
+    axios
+      .post(
+        getApiUrl(game.name, 'autopost-notify'),
+        {},
+        { headers: { 'Content-Type': 'application/json' } },
+      )
+      .catch((e) => log(ErrorMessage.NotificationsNotSent, e.message ?? e, 'warn'))
+
+    return {
+      results: [
+        {
+          message: 'game launched with tag #1',
+          game: game.name,
+          tag: resizeResult.success ? resizeResult.data : newTag,
+        },
+      ],
+      errors: false,
+    }
+  }
+
   const mainUpdateOpts = getMainFolderUpdateOpts(game, imageSource, true)
   const newBikeTagUpdateResult = await adminBiketag.updateTag(newTag, mainUpdateOpts)
   log('Result of launch tag #1 update', newBikeTagUpdateResult, 'info')
