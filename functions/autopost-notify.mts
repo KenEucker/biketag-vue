@@ -2,6 +2,7 @@ import BikeTagClient, { Game } from 'biketag'
 import {
   BackgroundProcessResults,
   getBikeTagClientOpts,
+  getImageSource,
   getPayloadOpts,
   isRequestAllowed,
   log,
