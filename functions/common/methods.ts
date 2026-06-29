@@ -839,7 +839,7 @@ const evaluatePlayerMatch = (
   return { verified: false, conflict: false }
 }
 
-/** Validates a queue found image that should have been copied into main/ for a past round. */
+/** Validates a past-round queue found image that should have been copied into main/. */
 export const evaluateOrphanedQueueFoundForMain = (
   image: QueueStorageImage,
   main: MainFolderContext,
@@ -888,7 +888,7 @@ export const evaluateOrphanedQueueFoundForMain = (
       playerConflict: false,
       targetRound,
       reasons: [
-        `round #${targetRound} is not before the current round #${currentTag.tagnumber}`,
+        `round #${targetRound} is the current or a future round — valid queue submissions are not orphans`,
       ],
     }
   }

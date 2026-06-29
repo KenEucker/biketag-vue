@@ -22,6 +22,7 @@ import {
   MainFolderContext,
   parseTagnumberFromStorageKey,
   QueueIssue,
+  QueueStorageImage,
   requireGlobalAdmin,
   simulateGetQueueTagsFromStorage,
   summarizeQueueIssues,
@@ -41,7 +42,7 @@ const loadMainFolderContext = async (
   gameSlug: string,
   awsRegion: string,
   currentTag: Tag | undefined,
-  queueImages: { key: string; type: string; tagnumber: number }[],
+  queueImages: QueueStorageImage[],
   imageSource: string,
 ): Promise<MainFolderContext> => {
   const mainKeys = await loadMainStorageKeys(gameSlug, awsRegion)
