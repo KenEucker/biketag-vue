@@ -11,7 +11,7 @@
         <div class="image-upload">
           <img
             v-if="foundPreview"
-            class="image img-fluid"
+            class="image-preview"
             :src="foundPreview"
             alt="Found image preview"
           />
@@ -20,11 +20,21 @@
           </label>
           <input
             :id="inputId('foundImage')"
+            ref="foundImageInput"
             type="file"
             accept="image/*"
             class="image-upload-input"
+            :class="{ 'image-upload-input--overlay': !foundPreview }"
             @change="onImageChange('found', $event)"
           />
+          <button
+            v-if="foundPreview"
+            type="button"
+            class="change-image-btn"
+            @click="openImagePicker('found')"
+          >
+            Change image
+          </button>
         </div>
       </template>
 
@@ -32,7 +42,7 @@
         <div class="image-upload">
           <img
             v-if="mysteryPreview"
-            class="image img-fluid"
+            class="image-preview"
             :src="mysteryPreview"
             alt="Mystery image preview"
           />
@@ -41,11 +51,21 @@
           </label>
           <input
             :id="inputId('mysteryImage')"
+            ref="mysteryImageInput"
             type="file"
             accept="image/*"
             class="image-upload-input"
+            :class="{ 'image-upload-input--overlay': !mysteryPreview }"
             @change="onImageChange('mystery', $event)"
           />
+          <button
+            v-if="mysteryPreview"
+            type="button"
+            class="change-image-btn"
+            @click="openImagePicker('mystery')"
+          >
+            Change image
+          </button>
         </div>
       </template>
 
@@ -217,6 +237,8 @@ const store = useBikeTagStore()
 const lockPlayers = ref(false)
 const playerSelection = ref('')
 const customPlayerName = ref('')
+const foundImageInput = ref<HTMLInputElement | null>(null)
+const mysteryImageInput = ref<HTMLInputElement | null>(null)
 
 const sortedPlayers = computed(() =>
   [...(store.getPlayers as Player[])].sort((a, b) => a.name.localeCompare(b.name)),
@@ -346,6 +368,11 @@ const onImageChange = (type: 'found' | 'mystery', event: Event) => {
   previewReader.readAsDataURL(file)
 }
 
+const openImagePicker = (type: 'found' | 'mystery') => {
+  const input = type === 'found' ? foundImageInput.value : mysteryImageInput.value
+  input?.click()
+}
+
 watch(
   () => props.tag,
   (newTag) => {
@@ -398,11 +425,20 @@ const inputId = (field: string) => `edit-biketag-${field}`
   position: relative;
   min-height: 200px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.75rem;
   background: #f5f5f5;
   border: 2px dashed #ccc;
-  overflow: hidden;
+}
+
+.image-preview {
+  display: block;
+  max-height: 280px;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
 }
 
 .image-upload-label {
@@ -414,8 +450,32 @@ const inputId = (field: string) => `edit-biketag-${field}`
 
 .image-upload-input {
   position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.image-upload-input--overlay {
+  position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  clip: auto;
   opacity: 0;
   cursor: pointer;
+}
+
+.change-image-btn {
+  background: transparent;
+  border: 1px solid #000;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  font-family: inherit;
 }
 </style>
