@@ -489,7 +489,12 @@ export const getProfileAuthorization = async (req: Request): Promise<any> => {
       source: 'sanity',
     })) ?? []) as Ambassador[]
 
-    const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => a.email === profile.email)
+    const profileId = profile.sub ?? profile.p_id
+    const profileAmbassadorMatch = thisGamesAmbassadors.filter((a) => {
+      if (profile.email && a.email === profile.email) return true
+      if (profileId && (a.id === profileId || a.player?.sub === profileId)) return true
+      return false
+    })
     const isABikeTagAmbassador = profileAmbassadorMatch.length > 0 || isGlobalAdmin
     const roleFlags: Record<string, boolean> = {}
 
@@ -504,8 +509,8 @@ export const getProfileAuthorization = async (req: Request): Promise<any> => {
     }
 
     profile = profileAmbassadorMatch.length
-      ? { ...profile, ...profileAmbassadorMatch[0], ...roleFlags }
-      : { ...profile, ...roleFlags }
+      ? { ...profile, ...profileAmbassadorMatch[0], ...roleFlags, sub: profile.sub ?? profile.p_id }
+      : { ...profile, ...roleFlags, sub: profile.sub ?? profile.p_id }
   }
 
   return profile

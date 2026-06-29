@@ -61,11 +61,24 @@ export default async (req: Request) => {
         const ambassadorValid = profile?.isBikeTagAmbassador
 
         if (playerValid || ambassadorValid) {
-          const contentKeyMatch = `queue/${adminBiketagOpts.game}-tag`
-          if (!key.startsWith(contentKeyMatch)) {
+          const gameSlug = adminBiketagOpts.game
+          const queuePrefix = `queue/${gameSlug}-tag`
+          const mainPrefix = `main/${gameSlug}-tag`
+          const isQueueKey = key.startsWith(queuePrefix)
+          const isMainKey = key.startsWith(mainPrefix)
+          const keyAllowed =
+            (isQueueKey && (playerValid || ambassadorValid)) || (isMainKey && ambassadorValid)
+
+          if (!keyAllowed) {
             log(
               '[fetch-signed-url] Key prefix mismatch',
-              { key, expectedPrefix: contentKeyMatch },
+              {
+                key,
+                queuePrefix,
+                mainPrefix,
+                playerValid,
+                ambassadorValid,
+              },
               'warn',
             )
             throw new Error('Invalid key prefix')

@@ -43,9 +43,11 @@
                 />
             </div>
 
-            <bike-tag-button variant="light" class="big-btn" @click="onSubmitClick">
-                Launch Game
-            </bike-tag-button>
+            <div class="launch-actions">
+                <bike-tag-button variant="light" class="big-btn" @click="onSubmitClick">
+                    Launch Game
+                </bike-tag-button>
+            </div>
         </div>
 
         <form ref="submitError" name="launch-game-error" action="launch-game-error" method="POST" data-netlify="true"
@@ -204,5 +206,12 @@ onMounted(async () => {
 .launch-description {
     text-align: center;
     margin-bottom: 1rem;
+}
+
+.launch-actions {
+    position: relative;
+    z-index: 2;
+    margin-top: 1.5rem;
+    text-align: center;
 }
 </style>
