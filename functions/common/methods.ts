@@ -750,6 +750,56 @@ export const parseTagnumberFromStorageKey = parseTagnumberFromQueueKey
 const getMainFoundFileKey = (gameSlug: string, tagnumber: number): string =>
   `main/${gameSlug}-tag-${tagnumber}--found.webp`
 
+const getMainMysteryFileKey = (gameSlug: string, tagnumber: number): string =>
+  `main/${gameSlug}-tag-${tagnumber}--mystery.webp`
+
+const parseRoundFromMainImageUrl = (url?: string): number | undefined => {
+  if (!url?.length) return undefined
+  const match = url.match(/-tag-(\d+)--(?:mystery|found)/i)
+  return match ? parseInt(match[1], 10) : undefined
+}
+
+const buildMainImageUrlFromReference = (
+  referenceUrl: string,
+  gameSlug: string,
+  tagnumber: number,
+  type: 'mystery' | 'found',
+): string => {
+  try {
+    const url = new URL(referenceUrl)
+    url.pathname = `/main/${gameSlug}-tag-${tagnumber}--${type}.webp`
+    return url.toString()
+  } catch {
+    return ''
+  }
+}
+
+/** Prefer the main/ file for this round; index mysteryImageUrl can be wrong after partial approve. */
+const getMainMysteryImageUrlForRound = (
+  gameSlug: string,
+  targetRound: number,
+  mainTag: Tag,
+  mainKeys: string[],
+  referenceUrl?: string,
+): string | undefined => {
+  const mysteryKey = getMainMysteryFileKey(gameSlug, targetRound)
+  const indexUrl = mainTag.mysteryImageUrl?.trim()
+  const indexRound = parseRoundFromMainImageUrl(indexUrl)
+
+  if (indexUrl && indexRound === targetRound) {
+    return indexUrl
+  }
+
+  if (mainKeys.includes(mysteryKey)) {
+    const reference = referenceUrl || indexUrl
+    if (reference?.length) {
+      return buildMainImageUrlFromReference(reference, gameSlug, targetRound, 'mystery')
+    }
+  }
+
+  return undefined
+}
+
 const normalizePlayerName = (name?: string): string => (name ?? '').trim().toLowerCase()
 
 const getMainTagForRound = (
@@ -956,14 +1006,25 @@ export const evaluateOrphanedQueueFoundForTarget = (
     }
   }
 
-  const mysteryUrl = mainTag.mysteryImageUrl
+  const mysteryUrl = getMainMysteryImageUrlForRound(
+    main.gameSlug,
+    targetRound,
+    mainTag,
+    main.mainKeys,
+    image.url,
+  )
   if (!mysteryUrl?.length) {
+    const indexRound = parseRoundFromMainImageUrl(mainTag.mysteryImageUrl)
     return {
       structural: false,
       playerVerified: false,
       playerConflict: false,
       targetRound,
-      reasons: [`main tag #${targetRound} has no mystery image to compare against`],
+      reasons: [
+        indexRound !== undefined && indexRound !== targetRound
+          ? `main index mysteryImageUrl points at round #${indexRound}, not #${targetRound}, and main/${main.gameSlug}-tag-${targetRound}--mystery.webp was not found in storage`
+          : `main tag #${targetRound} has no mystery image to compare against`,
+      ],
     }
   }
 

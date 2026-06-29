@@ -114,8 +114,8 @@
                 />
                 <figcaption>
                   Tag #{{ issue.tagnumber }} mystery (main)
-                  <span v-if="issue.comparePreview.expectedFoundPlayer">
-                    — hidden by prior round
+                  <span class="orphan-compare__note">
+                    — the photo that was hidden for this tag
                   </span>
                 </figcaption>
               </figure>
