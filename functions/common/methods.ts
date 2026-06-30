@@ -66,30 +66,27 @@ export const getGameSiteUrl = (gameName = ''): string => {
 }
 
 export const getGameSocialLinks = (game: Game) => {
-  const subreddit =
-    game.subreddit?.length
-      ? game.subreddit
-      : game.settings?.['social::reddit']?.length
-        ? game.settings['social::reddit']
-        : game.settings?.['subreddit']?.length
-          ? game.settings['subreddit']
-          : 'biketag'
+  const subreddit = game.subreddit?.length
+    ? game.subreddit
+    : game.settings?.['social::reddit']?.length
+      ? game.settings['social::reddit']
+      : game.settings?.['subreddit']?.length
+        ? game.settings['subreddit']
+        : 'biketag'
 
-  const bluesky =
-    game.bluesky?.length
-      ? game.bluesky
-      : game.settings?.['social::bluesky']?.length
-        ? game.settings['social::bluesky']
-        : game.settings?.['bsky']?.length
-          ? game.settings['bsky']
-          : 'biketag.bsky.social'
+  const bluesky = game.bluesky?.length
+    ? game.bluesky
+    : game.settings?.['social::bluesky']?.length
+      ? game.settings['social::bluesky']
+      : game.settings?.['bsky']?.length
+        ? game.settings['bsky']
+        : 'biketag.bsky.social'
 
-  const instagramHandle =
-    game.page?.length
-      ? game.page
-      : game.settings?.['social::instagram']?.length
-        ? game.settings['social::instagram']
-        : ''
+  const instagramHandle = game.page?.length
+    ? game.page
+    : game.settings?.['social::instagram']?.length
+      ? game.settings['social::instagram']
+      : ''
 
   const instagramLink = instagramHandle?.length
     ? instagramHandle.startsWith('http')
@@ -528,7 +525,7 @@ export const requireGlobalAdmin = (profile: any): boolean => {
  *   main/index.json, queue/index.json — tag metadata arrays (biketag format)
  *
  * Round rules for queue/ validation:
- *   found image filename round → current live round
+ *   found image filename round → current live round (also accept current + 1; uploads sometimes use that)
  *   mystery image filename round → current live round + 1
  *
  * Orphan found: queue file is a found image for a past round whose main/ --found slot is empty.
@@ -594,12 +591,31 @@ const queuePrimaryImageKeyPattern =
 const isQueueSizedVariantKey = (key: string): boolean =>
   queueSizedVariantKeyPattern.test(key.split('/').pop() ?? '')
 
+/** Zero-byte folder objects (e.g. `queue/`) that some buckets include in ListObjects results. */
+const isStoragePrefixMarkerKey = (key: string): boolean => {
+  const trimmed = key.replace(/\/+$/, '')
+  return trimmed.length > 0 && !trimmed.includes('/')
+}
+
 const getAllowedQueueRoundForImage = (
   currentTag: Tag | undefined,
   type: 'found' | 'mystery',
 ): number | undefined => {
   if (currentTag?.tagnumber === undefined) return undefined
   return type === 'found' ? currentTag.tagnumber : currentTag.tagnumber + 1
+}
+
+const isAllowedQueueRoundForImage = (
+  currentTag: Tag | undefined,
+  type: 'found' | 'mystery',
+  imageRound: number,
+): boolean => {
+  const expectedRound = getAllowedQueueRoundForImage(currentTag, type)
+  if (expectedRound === undefined) return true
+  if (imageRound === expectedRound) return true
+  // Found images are sometimes keyed at current+1 (same as mystery) during upload/post flows.
+  if (type === 'found' && imageRound === expectedRound + 1) return true
+  return false
 }
 
 const isNormalFoundMysteryPair = (group: QueueStorageImage[]): boolean => {
@@ -647,12 +663,8 @@ export const queueImageHasVariants = async (
   const client = createQueueStorageClient(region)
 
   try {
-    await client.send(
-      new HeadObjectCommand({ Bucket: bucket, Key: `queue/${base}_small.webp` }),
-    )
-    await client.send(
-      new HeadObjectCommand({ Bucket: bucket, Key: `queue/${base}_medium.webp` }),
-    )
+    await client.send(new HeadObjectCommand({ Bucket: bucket, Key: `queue/${base}_small.webp` }))
+    await client.send(new HeadObjectCommand({ Bucket: bucket, Key: `queue/${base}_medium.webp` }))
     return true
   } catch {
     return false
@@ -923,10 +935,7 @@ const getMainMysteryImageUrlForRound = (
 
 const normalizePlayerName = (name?: string): string => (name ?? '').trim().toLowerCase()
 
-const getMainTagForRound = (
-  round: number,
-  main: MainFolderContext,
-): Tag | undefined => {
+const getMainTagForRound = (round: number, main: MainFolderContext): Tag | undefined => {
   if (main.currentTag?.tagnumber === round) return main.currentTag
   return main.mainTagsByRound.get(round)
 }
@@ -1058,7 +1067,12 @@ export const evaluateOrphanedQueueFoundForTarget = (
 ): OrphanedQueueFoundCheck => {
   const currentTag = main.currentTag
   if (image.type !== 'found') {
-    return { structural: false, playerVerified: false, playerConflict: false, reasons: ['not a found image'] }
+    return {
+      structural: false,
+      playerVerified: false,
+      playerConflict: false,
+      reasons: ['not a found image'],
+    }
   }
   if (currentTag?.tagnumber === undefined) {
     return {
@@ -1077,9 +1091,7 @@ export const evaluateOrphanedQueueFoundForTarget = (
       playerVerified: false,
       playerConflict: false,
       targetRound,
-      reasons: [
-        `target round #${targetRound} is the current or a future round`,
-      ],
+      reasons: [`target round #${targetRound} is the current or a future round`],
     }
   }
 
@@ -1202,23 +1214,14 @@ export const evaluateOrphanedQueueFoundForMain = (
       playerConflict: false,
       targetRound: keyRound,
       reasons: [
-        isCurrentRoundQueueFoundSubmission(
-          keyRound,
-          image.metadataTagnumber,
-          currentTag.tagnumber,
-        )
+        isCurrentRoundQueueFoundSubmission(keyRound, image.metadataTagnumber, currentTag.tagnumber)
           ? 'current-round queue submission — not an orphan'
           : 'filename and metadata do not indicate a past-round orphan',
       ],
     }
   }
 
-  return evaluateOrphanedQueueFoundForTarget(
-    image,
-    orphanTargets[0],
-    main,
-    simulatedQueue,
-  )
+  return evaluateOrphanedQueueFoundForTarget(image, orphanTargets[0], main, simulatedQueue)
 }
 
 const listQueueObjectKeys = async (
@@ -1237,7 +1240,11 @@ const listQueueObjectKeys = async (
         ContinuationToken: continuationToken,
       }),
     )
-    keys.push(...(response.Contents?.map((obj) => obj.Key).filter(Boolean) as string[]) ?? [])
+    keys.push(
+      ...((response.Contents?.map((obj) => obj.Key)
+        .filter((key): key is string => !!key?.length && !isStoragePrefixMarkerKey(key)) ??
+        []) as string[]),
+    )
     continuationToken = response.NextContinuationToken
   } while (continuationToken)
 
@@ -1270,7 +1277,12 @@ const parseQueueImageKey = (key: string) => {
 export const loadQueueStorageImages = async (
   game: string,
   region: string,
-): Promise<{ bucket: string; keys: string[]; images: QueueStorageImage[]; unparsedKeys: string[] }> => {
+): Promise<{
+  bucket: string
+  keys: string[]
+  images: QueueStorageImage[]
+  unparsedKeys: string[]
+}> => {
   const client = createQueueStorageClient(region)
   const bucket = `${game.toLowerCase()}-biketag`
   const keys = await listQueueObjectKeys(client, bucket, 'queue/')
@@ -1280,7 +1292,12 @@ export const loadQueueStorageImages = async (
   for (const key of keys) {
     const parsed = parseQueueImageKey(key)
     if (!parsed) {
-      if (/^queue\//.test(key) && !key.endsWith('/index.json') && !isQueueSizedVariantKey(key)) {
+      if (
+        /^queue\//.test(key) &&
+        !key.endsWith('/index.json') &&
+        !isQueueSizedVariantKey(key) &&
+        !isStoragePrefixMarkerKey(key)
+      ) {
         unparsedKeys.push(key)
       }
       continue
@@ -1291,7 +1308,7 @@ export const loadQueueStorageImages = async (
     let playerId: string | undefined
     let mysteryPlayer: string | undefined
     let foundPlayer: string | undefined
-    let tagnumber = tagnumberFromKey
+    const tagnumber = tagnumberFromKey
     let metadataTagnumber: number | undefined
     let title: string | undefined
     let description: string | undefined
@@ -1428,10 +1445,11 @@ export const collectQueueIssuesFromStorage = (
 
   for (const key of unparsedKeys) {
     const tagnumber = parseTagnumberFromQueueKey(key) ?? 0
+    const filename = key.split('/').pop() || key
     issues.push({
       category: 'non-webp',
       tagnumber,
-      issue: `unrecognized queue file: ${key.split('/').pop()}`,
+      issue: `unrecognized queue file: ${filename}`,
       url: key,
     })
   }
@@ -1460,8 +1478,7 @@ export const collectQueueIssuesFromStorage = (
             ? ` — metadata says found for round #${targetRound}, filename uses new-round #${keyRound}`
             : keyRound !== targetRound
               ? ` — filename says round #${keyRound}, main/ is missing found for round #${targetRound}`
-              : image.metadataTagnumber !== undefined &&
-                  image.metadataTagnumber !== targetRound
+              : image.metadataTagnumber !== undefined && image.metadataTagnumber !== targetRound
                 ? ` (metadata lists round #${image.metadataTagnumber})`
                 : ''
         const finder =
@@ -1495,7 +1512,7 @@ export const collectQueueIssuesFromStorage = (
     if (
       !orphanedKeys.has(image.key) &&
       expectedRound !== undefined &&
-      image.tagnumber !== expectedRound
+      !isAllowedQueueRoundForImage(currentTag, image.type, image.tagnumber)
     ) {
       issues.push({
         category: 'wrong-round',
@@ -1636,11 +1653,7 @@ const loadMainTagIndex = async (gameSlug: string, region: string): Promise<Tag[]
   }
 }
 
-const saveMainTagIndex = async (
-  gameSlug: string,
-  region: string,
-  tags: Tag[],
-): Promise<void> => {
+const saveMainTagIndex = async (gameSlug: string, region: string, tags: Tag[]): Promise<void> => {
   const client = createQueueStorageClient(region)
   const bucket = `${gameSlug.toLowerCase()}-biketag`
 
@@ -1748,7 +1761,8 @@ export const completeOrphanedQueueFoundMoveToMain = async (
     if (!check.structural) {
       return {
         success: false,
-        error: check.reasons.join('; ') || 'queue found image failed orphaned-main-found validation',
+        error:
+          check.reasons.join('; ') || 'queue found image failed orphaned-main-found validation',
       }
     }
     if (check.playerConflict) {
@@ -1894,7 +1908,11 @@ export async function collectQueueIssuesFromTags(
       const imageRound = parseTagnumberFromQueueKey(storageKey)
       const expectedRound = getAllowedQueueRoundForImage(currentTag, type)
 
-      if (expectedRound !== undefined && imageRound !== undefined && imageRound !== expectedRound) {
+      if (
+        expectedRound !== undefined &&
+        imageRound !== undefined &&
+        !isAllowedQueueRoundForImage(currentTag, type, imageRound)
+      ) {
         issues.push({
           category: 'wrong-round',
           tagnumber: imageRound,
@@ -2422,7 +2440,7 @@ export const sendEmailsToAmbassadors = async (
   if (sendToAdmin) {
     const biketagAdminEmail = process.env.ADMIN_EMAIL ?? ''
     if (biketagAdminEmail?.length) {
-      log(`sending ${emailName} email to BikeTag Administrator:`, {biketagAdminEmail}, 'info')
+      log(`sending ${emailName} email to BikeTag Administrator:`, { biketagAdminEmail }, 'info')
       emailSent = await sendEmail(
         biketagAdminEmail,
         emailSubject,
@@ -2474,10 +2492,10 @@ export const archiveAndClearQueue = async (
     if (gameResponse.success) {
       game = gameResponse.data
     } else {
-      return  { results: [{ message: ErrorMessage.GameNotSet, game: undefined }], errors: true }
+      return { results: [{ message: ErrorMessage.GameNotSet, game: undefined }], errors: true }
     }
   }
-  
+
   const imageSource = getImageSource(game)
 
   if (queuedTags.length && game) {
@@ -2585,7 +2603,10 @@ export const getActiveQueueForGame = async (
 
   log('Evaluating active queue for game', { game: game.name, autoPostSetting, imageSource }, 'info')
 
-  if ((autoPostSetting && (game.queuehash?.length || game.awsRegion?.length)) || approvingAmbassadorIsApproved) {
+  if (
+    (autoPostSetting && (game.queuehash?.length || game.awsRegion?.length)) ||
+    approvingAmbassadorIsApproved
+  ) {
     adminBikeTag =
       adminBikeTag ??
       new BikeTagClient(getBikeTagClientOpts({ method: 'get' } as Request, true, true, game))
@@ -2608,7 +2629,11 @@ export const getActiveQueueForGame = async (
           const diff = now - t.mysteryTime * 1000
           const isTimedOut = diff > tagAutoPostTimer
           if (isTimedOut) {
-            log('Tag timed out', { tagnumber: t.tagnumber, mysteryTime: t.mysteryTime, diff }, 'info')
+            log(
+              'Tag timed out',
+              { tagnumber: t.tagnumber, mysteryTime: t.mysteryTime, diff },
+              'info',
+            )
           } else {
             log('Tag not timed out', { now, mysteryTime: t.mysteryTime, diff }, 'info')
           }
@@ -2621,7 +2646,11 @@ export const getActiveQueueForGame = async (
       }
     }
   } else {
-    log('Auto-post setting incomplete and no approving ambassador, skipping queue processing', { game: game.name }, 'error')
+    log(
+      'Auto-post setting incomplete and no approving ambassador, skipping queue processing',
+      { game: game.name },
+      'error',
+    )
   }
 
   return { queuedTags, completedTags, timedOutTags }
@@ -2803,7 +2832,8 @@ export const handleAuth0ProfileRequest = async (req: Request, profile: any): Pro
         if (typeof response.data === 'string') {
           body = response.data
         } else if (Array.isArray(response.data)) {
-          if (response.data?.length) log('well how did this happen?', { 'response.data': response.data }, 'warn')
+          if (response.data?.length)
+            log('well how did this happen?', { 'response.data': response.data }, 'warn')
           body = ''
         } else {
           const profileDataResponse = profile.isBikeTagAmbassador
@@ -2953,7 +2983,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
       const bskyPass = process.env.BSKY_PASS
       const bskyServer = process.env.BSKY_SERVER ?? 'https://bsky.social'
 
-      log('sending bluesky on behalf of ' + bskyUser, {winningTagnumber, bskyUser})
+      log('sending bluesky on behalf of ' + bskyUser, { winningTagnumber, bskyUser })
 
       const agent = new AtpAgent({
         service: bskyServer,
@@ -3405,7 +3435,9 @@ export const launchGameTag = async (
 
   if (!launchTag.mysteryImageUrl?.length) {
     return {
-      results: [{ message: 'Mystery image is required to launch the game', error: 'missing image' }],
+      results: [
+        { message: 'Mystery image is required to launch the game', error: 'missing image' },
+      ],
       errors: true,
     }
   }

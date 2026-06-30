@@ -50,7 +50,7 @@ const getMarkers = computed(() =>
         point: [t.gps.lat ?? 0, t.gps.long ?? t.gps.lng ?? 0],
         logo: Pin,
         size: [markerHeight, markerHeight],
-        anchor: [markerHeight/2, markerHeight]
+        anchor: [markerHeight / 2, markerHeight],
       }))
     : getAllGames.value
         .filter((game) => !!game.boundary.lat) // add gps location to all games
@@ -58,7 +58,7 @@ const getMarkers = computed(() =>
           point: game.boundary,
           logo: getLogoUrl.value('', game.logo),
           size: ['auto', markerHeight],
-          anchor: [0, markerHeight]
+          anchor: [0, markerHeight],
         })),
 )
 
@@ -71,7 +71,7 @@ const addMarkers = () => {
       icon: new L.Icon({
         iconUrl: getMarkers.value[i].logo,
         iconSize: getMarkers.value[i].size,
-        iconAnchor: getMarkers.value[i].anchor
+        iconAnchor: getMarkers.value[i].anchor,
       }),
     }).addTo(map)
   }
@@ -111,7 +111,7 @@ onMounted(async () => {
       icon: new L.Icon({
         iconUrl: Pin,
         iconSize: [markerHeight, markerHeight],
-        iconAnchor: [markerHeight/2, markerHeight]
+        iconAnchor: [markerHeight / 2, markerHeight],
       }),
       draggable: true,
     }).addTo(map)

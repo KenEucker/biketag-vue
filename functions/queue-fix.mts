@@ -33,7 +33,7 @@
  *
  * - non-webp: file in queue/ is not .webp (or unparsed name).
  * - missing-variants: primary .webp exists but _medium/_small siblings missing in queue/.
- * - wrong-round: filename round ≠ expected (found=current, mystery=current+1). Deletable.
+ * - wrong-round: filename round ≠ expected (found=current or current+1, mystery=current+1). Deletable.
  * - duplicate-uploader: same player has files spanning rounds without a normal found+mystery pair.
  * - orphaned-main-found: past-round found still in queue/, main/ missing that round's --found.
  *   Side-by-side preview uses main/ --mystery file for comparison. Move to main if repairable.

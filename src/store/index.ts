@@ -351,7 +351,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           .queue(undefined, { source: cached ? this.imageSource : 'biketag', cached })
           .then((d) => {
             if ((d as Tag[])?.length > 0) {
-              const currentBikeTagQueue: Tag[] = (d as Tag[])
+              const currentBikeTagQueue: Tag[] = d as Tag[]
               // const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
               //   (t) =>
               //     t.tagnumber > this.currentBikeTag.tagnumber ||
@@ -571,11 +571,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return 'error deleting wrong-round queue files'
       }
     },
-    async moveQueueFoundToMain(issue: {
-      key?: string
-      url?: string
-      targetTagnumber?: number
-    }) {
+    async moveQueueFoundToMain(issue: { key?: string; url?: string; targetTagnumber?: number }) {
       if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'
       }
@@ -724,7 +720,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         await this.fetchCredentials(true)
 
         const uploadPlayerId = d.playerId?.length ? d.playerId : this.profile.sub
-        let tag = { ...d, game: this.gameName, tagnumber: 1, playerId: uploadPlayerId, folder: 'main' }
+        let tag = {
+          ...d,
+          game: this.gameName,
+          tagnumber: 1,
+          playerId: uploadPlayerId,
+          folder: 'main',
+        }
 
         if (d.mysteryImage && !d.mysteryImageUrl) {
           const upload = await client.uploadTagImage(
@@ -1490,7 +1492,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return !!state.profile?.isBikeTagAdmin || isGlobalAdminEmail(state.profile?.email)
     },
     canLaunchGame(state) {
-      return !!state.currentBikeTag && 'tagnumber' in state.currentBikeTag && !state.currentBikeTag.tagnumber
+      return (
+        !!state.currentBikeTag &&
+        'tagnumber' in state.currentBikeTag &&
+        !state.currentBikeTag.tagnumber
+      )
     },
   },
 })
