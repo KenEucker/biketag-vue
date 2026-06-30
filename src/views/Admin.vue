@@ -1,11 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <loading
-    v-show="working"
-    v-model:active="working"
-    :is-full-page="true"
-    class="realign-spinner"
-  >
+  <loading v-show="working" v-model:active="working" :is-full-page="true" class="realign-spinner">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
 
@@ -141,10 +136,7 @@
                   <span v-else-if="issue.comparePreview.queueFoundPlayer">
                     — {{ issue.comparePreview.queueFoundPlayer }}
                   </span>
-                  <span
-                    v-if="issue.comparePreview.playerConflict"
-                    class="orphan-compare__warn"
-                  >
+                  <span v-if="issue.comparePreview.playerConflict" class="orphan-compare__warn">
                     Player conflicts with expected finder
                     {{
                       issue.comparePreview.expectedFoundPlayer

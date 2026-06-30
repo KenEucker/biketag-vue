@@ -1,7 +1,11 @@
 <template>
   <b-row :class="`center-flx ${reverse ? 'reversed' : ''}`">
     <!-- FOUND IMAGE SECTION -->
-    <b-col v-show="!hideFoundSection && (_foundImageUrl || alwaysShowSections)" md="6" class="mb-3 max-w">
+    <b-col
+      v-show="!hideFoundSection && (_foundImageUrl || alwaysShowSections)"
+      md="6"
+      class="mb-3 max-w"
+    >
       <b-card class="polaroid found-tag">
         <div class="img-wrapper">
           <span class="tag-number" @click="goTagPage">#{{ _foundTagnumber }}</span>

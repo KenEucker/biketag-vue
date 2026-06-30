@@ -228,7 +228,8 @@ const foundPreview = computed(
 )
 const mysteryPreview = computed(
   () =>
-    editableTag.mysteryImageUrl || (editableTag as Tag & { mysteryPreview?: string }).mysteryPreview,
+    editableTag.mysteryImageUrl ||
+    (editableTag as Tag & { mysteryPreview?: string }).mysteryPreview,
 )
 
 const emit = defineEmits(['update'])
@@ -290,9 +291,7 @@ const syncLockedPlayers = (name: string, playerId = '') => {
 
 const resolvePlayerId = async (name: string): Promise<string> => {
   const fromCurrentTag =
-    store.getCurrentBikeTag?.mysteryPlayer === name
-      ? store.getCurrentBikeTag.playerId
-      : undefined
+    store.getCurrentBikeTag?.mysteryPlayer === name ? store.getCurrentBikeTag.playerId : undefined
   if (fromCurrentTag) return fromCurrentTag
 
   const fromTags = [...store.getTags, ...store.getQueuedTags].find(
