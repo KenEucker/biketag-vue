@@ -591,6 +591,12 @@ const queuePrimaryImageKeyPattern =
 const isQueueSizedVariantKey = (key: string): boolean =>
   queueSizedVariantKeyPattern.test(key.split('/').pop() ?? '')
 
+/** Zero-byte folder objects (e.g. `queue/`) that some buckets include in ListObjects results. */
+const isStoragePrefixMarkerKey = (key: string): boolean => {
+  const trimmed = key.replace(/\/+$/, '')
+  return trimmed.length > 0 && !trimmed.includes('/')
+}
+
 const getAllowedQueueRoundForImage = (
   currentTag: Tag | undefined,
   type: 'found' | 'mystery',
@@ -1234,7 +1240,11 @@ const listQueueObjectKeys = async (
         ContinuationToken: continuationToken,
       }),
     )
-    keys.push(...((response.Contents?.map((obj) => obj.Key).filter(Boolean) as string[]) ?? []))
+    keys.push(
+      ...((response.Contents?.map((obj) => obj.Key)
+        .filter((key): key is string => !!key?.length && !isStoragePrefixMarkerKey(key)) ??
+        []) as string[]),
+    )
     continuationToken = response.NextContinuationToken
   } while (continuationToken)
 
@@ -1282,7 +1292,12 @@ export const loadQueueStorageImages = async (
   for (const key of keys) {
     const parsed = parseQueueImageKey(key)
     if (!parsed) {
-      if (/^queue\//.test(key) && !key.endsWith('/index.json') && !isQueueSizedVariantKey(key)) {
+      if (
+        /^queue\//.test(key) &&
+        !key.endsWith('/index.json') &&
+        !isQueueSizedVariantKey(key) &&
+        !isStoragePrefixMarkerKey(key)
+      ) {
         unparsedKeys.push(key)
       }
       continue
@@ -1430,10 +1445,11 @@ export const collectQueueIssuesFromStorage = (
 
   for (const key of unparsedKeys) {
     const tagnumber = parseTagnumberFromQueueKey(key) ?? 0
+    const filename = key.split('/').pop() || key
     issues.push({
       category: 'non-webp',
       tagnumber,
-      issue: `unrecognized queue file: ${key.split('/').pop()}`,
+      issue: `unrecognized queue file: ${filename}`,
       url: key,
     })
   }
