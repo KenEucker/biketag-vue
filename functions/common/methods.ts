@@ -11,7 +11,6 @@ import {
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
-import sharp from 'sharp'
 import type { Ambassador, Game, Tag } from 'biketag'
 import BikeTagClient from 'biketag'
 import crypto from 'crypto'
@@ -20,19 +19,12 @@ import { readFileSync } from 'fs'
 import * as jose from 'jose'
 import { Liquid } from 'liquidjs'
 import lzutf8 from 'lzutf8'
+import moment from 'moment-timezone'
 import nodemailer from 'nodemailer'
 import { extname, join } from 'path'
 import qs from 'qs'
-import { BikeTagEnv } from '../../src/common/constants'
-import {
-  getDomainInfo,
-  getImageSized,
-  getTagDateISOFromTimezone,
-  isAuthenticationEnabled,
-} from '../../src/common/methods'
-import { BikeTagProfile } from '../../src/common/types'
 import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
-import { BackgroundProcessResults, activeQueue } from './types'
+import { BackgroundProcessResults, activeQueue, BikeTagProfile } from './types'
 
 const ajv = new Ajv()
 
@@ -51,6 +43,124 @@ if (process.env.DEBUG_BE === 'true' || process.env.DEBUG_A === 'true') {
 }
 
 export { log }
+
+const getImgurImageSized = (imgurUrl = '', size = 'm') =>
+  imgurUrl
+    .replace('.jpg', `${size}.jpg`)
+    .replace('.jpeg', `${size}.jpg`)
+    .replace('.gif', `${size}.gif`)
+    .replace('.png', `${size}.png`)
+    .replace('.webp', `${size}.webp`)
+    .replace('.mp4', `${size}.mp4`)
+
+const getS3ImageSized = (
+  imageUrl: string = '',
+  size: 'small' | 'medium' | 'original' = 'original',
+): string => {
+  if (!imageUrl || size === 'original') return imageUrl
+
+  if (/digitaloceanspaces\.com/.test(imageUrl)) {
+    const isMainFolder = /\/main\//.test(imageUrl)
+    const ext = imageUrl.match(/(\.[a-z0-9]+)(?:\?.*)?$/i)?.[1]?.toLowerCase() ?? ''
+    const base = imageUrl.replace(/(_small|_medium)?\.[a-z0-9]+(?:\?.*)?$/i, '')
+
+    if (isMainFolder || ext === '.webp') {
+      return `${base}_${size}.webp`
+    }
+
+    return imageUrl
+  }
+
+  return imageUrl.replace(/(_small|_medium)?(\.\w+)$/, `_${size}$2`)
+}
+
+const getImageSized = (
+  imageSourceOrUrl: 'aws' | 'imgur' | 'sanity' | string = '',
+  imageUrlOrSize?: string,
+  size: 's' | 'm' | 'l' | 'o' | undefined = 'm',
+): string => {
+  const sizeMap: Record<string, 'small' | 'medium' | 'original'> = {
+    s: 'small',
+    m: 'medium',
+    l: 'original',
+    o: 'original',
+  }
+
+  let imageSource
+  let imageUrl: string
+
+  if (!['aws', 'imgur', 'sanity'].includes(imageSourceOrUrl)) {
+    imageUrl = imageSourceOrUrl
+    if (imageUrlOrSize !== undefined) {
+      size = imageUrlOrSize as typeof size
+    }
+  } else {
+    imageSource = imageSourceOrUrl as 'aws' | 'imgur' | 'sanity'
+    imageUrl = imageUrlOrSize || ''
+  }
+
+  const resolvedSize = sizeMap[size] || 'original'
+
+  if (/imgur\.com/.test(imageUrl)) {
+    return getImgurImageSized(imageUrl, size)
+  }
+
+  if (/digitaloceanspaces\.com/.test(imageUrl)) {
+    return getS3ImageSized(imageUrl, resolvedSize)
+  }
+
+  switch (imageSource) {
+    case 'aws':
+      return getS3ImageSized(imageUrl, resolvedSize)
+    case 'imgur':
+    default:
+      return getImgurImageSized(imageUrl, size)
+  }
+}
+
+const getDomainInfo = (req: any) => {
+  const defaultHost = process.env.HOST ?? 'biketag.org'
+  const nonSubdomainHosts = [`${defaultHost}`, 'biketag.dev', '0.0.0.0', 'localhost']
+  let host = (
+    req.headers?.get('host')?.length
+      ? req.headers.get('host')
+      : req?.location?.host?.length
+        ? req.location.host
+        : ''
+  )
+    .toLowerCase()
+    .replace(/www./g, '')
+  let port = null
+  let subdomain = null
+
+  if (host.indexOf(':') > 0) {
+    ;[host, port] = host.split(':')
+  }
+
+  const isSubdomain = nonSubdomainHosts.indexOf(host) === -1
+
+  if (isSubdomain) {
+    const hostSplit = host.split('.')
+    subdomain = hostSplit[0]
+    host = hostSplit.join('.')
+  }
+
+  return {
+    host: host + (port ? ':' + port : ''),
+    isSubdomain,
+    subdomain,
+  }
+}
+
+const getTagDateISOFromTimezone = (time: number, tz?: string) => {
+  let datetime = moment(time * 1000)
+  if (tz?.length) {
+    datetime = datetime.tz(tz)
+  }
+  return datetime.utc().format()
+}
+
+const isAuthenticationEnabled = () => !!process.env.A_DOMAIN?.length
 
 export const getApiUrl = (game = '', path = ''): string => {
   return process.env.CONTEXT === 'dev'
@@ -465,11 +575,11 @@ export const getThisGamesAmbassadors = async (client: BikeTagClient, adminBikeTa
 }
 
 export const isGlobalAdminEmail = (email?: string | null): boolean => {
-  if (!email?.length || !BikeTagEnv.ADMIN_EMAIL?.length) {
+  if (!email?.length || !process.env.ADMIN_EMAIL?.length) {
     return false
   }
 
-  return email.toLowerCase() === BikeTagEnv.ADMIN_EMAIL.toLowerCase()
+  return email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase()
 }
 
 export const getProfileAuthorization = async (req: Request): Promise<any> => {
@@ -792,6 +902,7 @@ const copyOrConvertQueueObjectToMain = async (
     throw new Error(`empty queue source object ${srcKey}`)
   }
 
+  const sharp = (await import('sharp')).default
   const webpBuffer = await sharp(Buffer.from(body)).webp().toBuffer()
   await client.send(
     new PutObjectCommand({
@@ -3886,5 +3997,5 @@ export const getImageSource = (game: Game): 'aws' | 'imgur' => {
   } else if (game.mainhash?.length) {
     return 'imgur'
   }
-  return BikeTagEnv.IMAGE_SOURCE as 'aws' | 'imgur'
+  return (process.env.IMAGE_SOURCE ?? 'aws') as 'aws' | 'imgur'
 }
