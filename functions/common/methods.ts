@@ -23,6 +23,7 @@ import moment from 'moment-timezone'
 import nodemailer from 'nodemailer'
 import { extname, join } from 'path'
 import qs from 'qs'
+import sharp from 'sharp'
 import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue, BikeTagProfile } from './types'
 
@@ -805,6 +806,46 @@ const isStorageObjectNotFound = (error: unknown): boolean => {
 
 type QueueToMainCopyPair = { srcKey: string; destKey: string; convertToWebp?: boolean }
 
+/** Cap long edge so huge phone JPGs convert within Netlify's ~26s function limit. */
+const MAIN_IMAGE_MAX_EDGE = parseInt(process.env.MAIN_IMAGE_MAX_EDGE ?? '2048', 10)
+
+const convertQueueBufferToMainWebp = async (
+  input: Buffer,
+  sourceKey: string,
+): Promise<Buffer> => {
+  const started = Date.now()
+  const metadata = await sharp(input).metadata()
+
+  log('[queue-to-main] Source image metadata', {
+    sourceKey,
+    format: metadata.format,
+    width: metadata.width,
+    height: metadata.height,
+    inputBytes: input.length,
+    maxEdge: MAIN_IMAGE_MAX_EDGE,
+  })
+
+  const output = await sharp(input)
+    .rotate()
+    .resize({
+      width: MAIN_IMAGE_MAX_EDGE,
+      height: MAIN_IMAGE_MAX_EDGE,
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .webp({ quality: 85 })
+    .toBuffer()
+
+  log('[queue-to-main] Converted image buffer to webp', {
+    sourceKey,
+    inputBytes: input.length,
+    outputBytes: output.length,
+    elapsedMs: Date.now() - started,
+  })
+
+  return output
+}
+
 const queuePrimarySourceExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.bmp'] as const
 
 const storageObjectExists = async (
@@ -877,7 +918,7 @@ const resolveQueueToMainCopyPlan = async (
 }
 
 const copyOrConvertQueueObjectToMain = async (
-  gameSlug: string,
+  _gameSlug: string,
   region: string,
   client: S3Client,
   bucket: string,
@@ -899,39 +940,34 @@ const copyOrConvertQueueObjectToMain = async (
   }
 
   const publicUrl = `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${srcKey}`
-  const resizeUrl = getApiUrl(gameSlug.toLowerCase(), 'resize')
+  const fetchStarted = Date.now()
 
-  log('[queue-to-main] Converting queue image to webp via resize', {
+  log('[queue-to-main] Fetching queue source from storage for webp conversion', {
     srcKey,
     destKey,
     publicUrl,
-    resizeUrl,
   })
 
-  const response = await axios.get(resizeUrl, {
-    params: { url: publicUrl, format: 'webp' },
-    responseType: 'arraybuffer',
-    timeout: 60000,
-    validateStatus: () => true,
+  const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: srcKey }))
+  const body = await response.Body?.transformToByteArray()
+  if (!body?.length) {
+    throw new Error(`empty queue source object ${srcKey}`)
+  }
+
+  log('[queue-to-main] Fetched queue source from storage', {
+    srcKey,
+    bytes: body.length,
+    elapsedMs: Date.now() - fetchStarted,
   })
 
-  if (response.status !== 200) {
-    const detail =
-      typeof response.data === 'string' && response.data.length
-        ? response.data
-        : `HTTP ${response.status}`
-    throw new Error(`webp conversion failed for ${srcKey}: ${detail}`)
-  }
+  const convertStarted = Date.now()
+  const webpBuffer = await convertQueueBufferToMainWebp(Buffer.from(body), srcKey)
 
-  const webpBuffer = Buffer.from(response.data)
-  if (!webpBuffer.length) {
-    throw new Error(`webp conversion returned empty body for ${srcKey}`)
-  }
-
-  log('[queue-to-main] Converted queue image to webp', {
+  log('[queue-to-main] Ready to write converted webp to main', {
     srcKey,
     destKey,
     bytes: webpBuffer.length,
+    convertElapsedMs: Date.now() - convertStarted,
   })
 
   await client.send(
@@ -941,6 +977,7 @@ const copyOrConvertQueueObjectToMain = async (
       Body: webpBuffer,
       ContentType: 'image/webp',
       ACL: 'public-read',
+      Metadata: response.Metadata,
     }),
   )
 }
@@ -1110,10 +1147,65 @@ const parseQueueObjectMetadata = (data?: string) => {
       playerId: tag.p as string | undefined,
       mysteryPlayer: tag.mp as string | undefined,
       foundPlayer: tag.fp as string | undefined,
+      foundTime: typeof tag.ft === 'number' ? tag.ft : undefined,
+      foundLocation: typeof tag.fl === 'string' ? tag.fl : tag.foundLocation as string | undefined,
+      gps: tag.gps as Tag['gps'],
     }
   } catch {
     return undefined
   }
+}
+
+const loadFoundFieldsFromStorageMetadata = async (
+  gameSlug: string,
+  region: string,
+  storageKey: string,
+): Promise<Partial<Tag>> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+  const fields: Partial<Tag> = {}
+
+  try {
+    const head = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: storageKey }))
+    if (head.Metadata?.title) {
+      fields.title = decodeQueueMetadataValue(head.Metadata.title)
+    }
+    if (head.Metadata?.description) {
+      fields.description = decodeQueueMetadataValue(head.Metadata.description)
+    }
+    const meta = parseQueueObjectMetadata(head.Metadata?.data)
+    if (meta) {
+      if (meta.foundPlayer) fields.foundPlayer = meta.foundPlayer
+      if (meta.playerId) fields.playerId = meta.playerId
+      if (meta.foundTime !== undefined) fields.foundTime = meta.foundTime
+      if (meta.foundLocation) fields.foundLocation = meta.foundLocation
+      if (meta.gps) fields.gps = meta.gps
+    }
+  } catch {
+    // object may not exist yet
+  }
+
+  return fields
+}
+
+const findQueueTagForFoundImage = async (
+  biketag: BikeTagClient,
+  imageSource: string,
+  queueImage: QueueStorageImage,
+): Promise<Tag | undefined> => {
+  const queueResponse = await biketag.getQueue(undefined, { source: imageSource })
+  if (!queueResponse.success || !Array.isArray(queueResponse.data)) return undefined
+
+  return (queueResponse.data as Tag[]).find((tag) => {
+    if (!tag.foundImageUrl?.length) return false
+    const tagKey = getStorageKeyFromUrl(tag.foundImageUrl)
+    return tag.foundImageUrl === queueImage.url || tagKey === queueImage.key
+  })
+}
+
+const buildMainFoundImageUrl = (gameSlug: string, region: string, targetRound: number): string => {
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+  return `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${getMainFoundFileKey(gameSlug, targetRound)}`
 }
 
 const parseTagnumberFromQueueKey = (key: string): number | undefined => {
@@ -1913,6 +2005,83 @@ const saveMainTagIndex = async (gameSlug: string, region: string, tags: Tag[]): 
 }
 
 /**
+ * Patch found fields on one main/index.json entry for orphan repair.
+ * Merges queue/storage-sourced found metadata even when foundImageUrl already points at main/.
+ */
+const patchMainTagFoundFieldsForOrphanRepair = async (
+  gameSlug: string,
+  region: string,
+  tagnumber: number,
+  patch: Partial<Tag>,
+): Promise<{ success: boolean; error?: string; tag?: Tag }> => {
+  const foundFieldKeys = [
+    'foundImageUrl',
+    'foundPlayer',
+    'playerId',
+    'foundTime',
+    'foundLocation',
+    'gps',
+    'title',
+    'description',
+  ] as const
+
+  try {
+    const index = await loadMainTagIndex(gameSlug, region)
+    const entryIndex = index.findIndex((tag) => tag.tagnumber === tagnumber)
+    if (entryIndex === -1) {
+      return { success: false, error: `main index has no entry for tag #${tagnumber}` }
+    }
+
+    const existing = index[entryIndex]
+    const updated = { ...existing, tagnumber } as Tag
+
+    for (const field of foundFieldKeys) {
+      const value = patch[field]
+      if (value === undefined || value === null || value === '') continue
+
+      if (field === 'foundImageUrl') {
+        const patchUrl = String(value)
+        if (!foundImageUrlPointsToMain(existing.foundImageUrl)) {
+          updated.foundImageUrl = patchUrl
+          continue
+        }
+        const existingKey = getStorageKeyFromUrl(existing.foundImageUrl)
+        const patchKey = getStorageKeyFromUrl(patchUrl)
+        if (existingKey !== patchKey) {
+          return {
+            success: false,
+            error: `main index tag #${tagnumber} foundImageUrl points at ${existingKey}, not ${patchKey}`,
+          }
+        }
+        continue
+      }
+
+      ;(updated as Record<string, unknown>)[field] = value
+    }
+
+    if (patch.slug?.length) updated.slug = patch.slug
+    if (patch.name?.length) updated.name = patch.name
+    if (patch.game?.length) updated.game = patch.game
+
+    index[entryIndex] = updated
+    await saveMainTagIndex(gameSlug, region, index)
+    log('[queue-fix] Patched main index for orphan found repair', {
+      tagnumber,
+      appliedFields: foundFieldKeys.filter((field) => {
+        const value = patch[field]
+        return value !== undefined && value !== null && value !== ''
+      }),
+    })
+    return { success: true, tag: updated }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'failed to patch main index',
+    }
+  }
+}
+
+/**
  * Patch found fields on one main/index.json entry. Never touches storage objects.
  * Refuses if foundImageUrl already points at main/ (no index overwrite).
  * Do NOT use biketag updateTag for Move to main — see completeOrphanedQueueFoundMoveToMain.
@@ -1958,10 +2127,10 @@ const patchMainTagFoundFieldsIfAbsent = async (
  *   - main/{game}-tag-{targetRound}--found.webp does not already exist
  *
  * Storage steps:
- *   1. copyQueueFoundToMainIfAbsent — never overwrites main/ storage
- *   2. patchMainTagFoundFieldsIfAbsent — sets found fields only when index has no main found URL
+ *   1. copyQueueFoundToMainIfAbsent — never overwrites main/ storage (skipped if main/ found file already exists)
+ *   2. patchMainTagFoundFieldsForOrphanRepair — merges found fields from queue, queue index, and object metadata
  *
- * Never calls biketag updateTag. Never overwrites existing main/ files or index found URLs.
+ * Never calls biketag updateTag. Never overwrites unrelated main/ index fields.
  * targetRoundOverride is required — never derived from filename alone.
  */
 export const completeOrphanedQueueFoundMoveToMain = async (
@@ -2000,104 +2169,209 @@ export const completeOrphanedQueueFoundMoveToMain = async (
   }
 
   if (main) {
-    const check = evaluateOrphanedQueueFoundForTarget(queueImage, targetRound, main)
-    if (!check.structural) {
-      return {
-        success: false,
-        error:
-          check.reasons.join('; ') || 'queue found image failed orphaned-main-found validation',
-      }
-    }
-    if (check.playerConflict) {
-      return {
-        success: false,
-        error:
-          check.reasons.join('; ') ||
-          'queue found image player conflicts with expected finder for this round',
-      }
-    }
-
     const foundKey = getMainFoundFileKey(gameSlug, targetRound)
-    if (main.mainKeys.includes(foundKey)) {
-      return {
-        success: false,
-        error: `${foundKey} already exists in main/ — refusing to overwrite existing storage files`,
+    const mainFileExists = main.mainKeys.includes(foundKey)
+    if (!mainFileExists) {
+      const check = evaluateOrphanedQueueFoundForTarget(queueImage, targetRound, main)
+      if (!check.structural) {
+        return {
+          success: false,
+          error:
+            check.reasons.join('; ') || 'queue found image failed orphaned-main-found validation',
+        }
       }
+      if (check.playerConflict) {
+        return {
+          success: false,
+          error:
+            check.reasons.join('; ') ||
+            'queue found image player conflicts with expected finder for this round',
+        }
+      }
+    } else {
+      log('[queue-fix] Main found file already exists — will repair index metadata only', {
+        foundKey,
+        targetRound,
+      })
     }
   } else {
     const mainKeys = await loadMainStorageKeys(gameSlug, game.awsRegion)
     const foundKey = getMainFoundFileKey(gameSlug, targetRound)
     if (mainKeys.includes(foundKey)) {
+      log('[queue-fix] Main found file already exists — will repair index metadata only', {
+        foundKey,
+        targetRound,
+      })
+    }
+  }
+
+  const foundKey = getMainFoundFileKey(gameSlug, targetRound)
+  const mainKeys =
+    main?.mainKeys ?? (await loadMainStorageKeys(gameSlug, game.awsRegion))
+  const mainFileExists = mainKeys.includes(foundKey)
+  let mainUrl = buildMainFoundImageUrl(gameSlug, game.awsRegion, targetRound)
+
+  if (!mainFileExists) {
+    try {
+      log('[queue-fix] Starting orphaned queue found move to main', {
+        queueKey: queueImage.key,
+        queueUrl: queueImage.url,
+        extension: queueImage.extension,
+        targetRound,
+        keyRound,
+        metadataTagnumber: queueImage.metadataTagnumber,
+      })
+      mainUrl = await copyQueueFoundToMainIfAbsent(
+        gameSlug,
+        game.awsRegion,
+        queueImage.url,
+        targetRound,
+      )
+      log('[queue-fix] Copied queue found image into main storage', { targetRound, mainUrl })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'failed to copy queue found image to main'
+      log(
+        '[queue-fix] Failed to copy queue found image to main',
+        { queueKey: queueImage.key, targetRound, error: message },
+        'error',
+      )
       return {
         success: false,
-        error: `${foundKey} already exists in main/ — refusing to overwrite existing storage files`,
+        error: message,
       }
     }
+  } else {
+    log('[queue-fix] Skipping main storage copy — found file already present', {
+      foundKey,
+      targetRound,
+    })
   }
 
-  let mainUrl: string
-  try {
-    log('[queue-fix] Starting orphaned queue found move to main', {
-      queueKey: queueImage.key,
-      queueUrl: queueImage.url,
-      extension: queueImage.extension,
-      targetRound,
-      keyRound,
-      metadataTagnumber: queueImage.metadataTagnumber,
-    })
-    mainUrl = await copyQueueFoundToMainIfAbsent(
-      gameSlug,
-      game.awsRegion,
-      queueImage.url,
-      targetRound,
+  const queueTag = await findQueueTagForFoundImage(biketag, imageSource, queueImage)
+  const mainTagResponse = await biketag.getTag({ tagnumber: targetRound }, { source: imageSource })
+  const fetchedTag = mainTagResponse.success ? (mainTagResponse.data as Tag) : undefined
+  const identity = getMainTagIdentity(gameSlug, targetRound)
+  const storageFields = await loadFoundFieldsFromStorageMetadata(
+    gameSlug,
+    game.awsRegion,
+    foundKey,
+  )
+
+  const patch: Partial<Tag> = {
+    ...identity,
+    game: gameSlug,
+    foundImageUrl: mainUrl,
+    foundPlayer:
+      queueImage.foundPlayer ||
+      storageFields.foundPlayer ||
+      queueTag?.foundPlayer ||
+      fetchedTag?.foundPlayer,
+    playerId:
+      queueImage.playerId || storageFields.playerId || queueTag?.playerId || fetchedTag?.playerId,
+    foundTime: queueTag?.foundTime ?? storageFields.foundTime ?? fetchedTag?.foundTime,
+    foundLocation:
+      queueTag?.foundLocation ?? storageFields.foundLocation ?? fetchedTag?.foundLocation,
+    gps: queueTag?.gps ?? storageFields.gps ?? fetchedTag?.gps,
+    title: queueImage.title || storageFields.title || fetchedTag?.title,
+    description: queueImage.description || storageFields.description || fetchedTag?.description,
+  }
+
+  log('[queue-fix] Patching main index with orphan found metadata', {
+    targetRound,
+    patch: {
+      foundImageUrl: patch.foundImageUrl,
+      foundPlayer: patch.foundPlayer,
+      playerId: patch.playerId,
+      foundTime: patch.foundTime,
+      foundLocation: patch.foundLocation,
+      hasGps: !!patch.gps,
+      title: patch.title,
+      description: patch.description,
+    },
+  })
+
+  const patchResult = await patchMainTagFoundFieldsForOrphanRepair(
+    gameSlug,
+    game.awsRegion,
+    targetRound,
+    patch,
+  )
+
+  if (!patchResult.success) {
+    log(
+      '[queue-fix] Failed to patch main index after move',
+      {
+        targetRound,
+        mainUrl,
+        error: patchResult.error,
+      },
+      'error',
     )
-    log('[queue-fix] Copied queue found image into main storage', { targetRound, mainUrl })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'failed to copy queue found image to main'
-    log('[queue-fix] Failed to copy queue found image to main', { queueKey: queueImage.key, targetRound, error: message }, 'error')
     return {
       success: false,
-      error: message,
+      error: patchResult.error ?? 'failed to update main tag index',
+      mainUrl,
     }
   }
 
+  return { success: true, mainUrl }
+}
+
+/** Sync main/index.json found fields from an existing main/ --found object and queue index. */
+export const repairMainFoundIndexFromStorage = async (
+  game: Game,
+  gameSlug: string,
+  targetRound: number,
+  biketag: BikeTagClient,
+  imageSource: string,
+): Promise<{ success: boolean; error?: string; mainUrl?: string }> => {
+  if (!game.awsRegion?.length) {
+    return { success: false, error: 'game has no aws region configured' }
+  }
+
+  const foundKey = getMainFoundFileKey(gameSlug, targetRound)
+  const mainKeys = await loadMainStorageKeys(gameSlug, game.awsRegion)
+  if (!mainKeys.includes(foundKey)) {
+    return { success: false, error: `${foundKey} not found in main/` }
+  }
+
+  const mainUrl = buildMainFoundImageUrl(gameSlug, game.awsRegion, targetRound)
+  const storageFields = await loadFoundFieldsFromStorageMetadata(
+    gameSlug,
+    game.awsRegion,
+    foundKey,
+  )
   const mainTagResponse = await biketag.getTag({ tagnumber: targetRound }, { source: imageSource })
   const fetchedTag = mainTagResponse.success ? (mainTagResponse.data as Tag) : undefined
   const identity = getMainTagIdentity(gameSlug, targetRound)
 
-  // Patch main/index.json only when found URL not already set. Storage copy above is the sole main/ object write.
-  const patchResult = await patchMainTagFoundFieldsIfAbsent(gameSlug, game.awsRegion, targetRound, {
+  const patch: Partial<Tag> = {
     ...identity,
     game: gameSlug,
     foundImageUrl: mainUrl,
-    foundPlayer: queueImage.foundPlayer || fetchedTag?.foundPlayer,
-    playerId: queueImage.playerId || fetchedTag?.playerId,
-  })
+    foundPlayer: storageFields.foundPlayer || fetchedTag?.foundPlayer,
+    playerId: storageFields.playerId || fetchedTag?.playerId,
+    foundTime: storageFields.foundTime ?? fetchedTag?.foundTime,
+    foundLocation: storageFields.foundLocation ?? fetchedTag?.foundLocation,
+    gps: storageFields.gps ?? fetchedTag?.gps,
+    title: storageFields.title || fetchedTag?.title,
+    description: storageFields.description || fetchedTag?.description,
+  }
+
+  log('[queue-fix] Repairing main index from storage metadata', { targetRound, patch })
+
+  const patchResult = await patchMainTagFoundFieldsForOrphanRepair(
+    gameSlug,
+    game.awsRegion,
+    targetRound,
+    patch,
+  )
 
   if (!patchResult.success) {
-    const existingUrl = fetchedTag?.foundImageUrl ?? main?.mainTagsByRound.get(targetRound)?.foundImageUrl
-    const existingKey = existingUrl ? getStorageKeyFromUrl(existingUrl) : ''
-    const expectedKey = getMainFoundFileKey(gameSlug, targetRound)
-    if (
-      patchResult.error?.includes('already has foundImageUrl in main/') &&
-      existingKey === expectedKey
-    ) {
-      log('[queue-fix] Main index already references repaired found file — treating as success', {
-        targetRound,
-        mainUrl,
-        existingKey,
-      })
-      return { success: true, mainUrl }
-    }
-
-    log('[queue-fix] Failed to patch main index after copy', {
-      targetRound,
-      mainUrl,
-      error: patchResult.error,
-    }, 'error')
     return {
       success: false,
-      error: patchResult.error ?? 'failed to update main tag index',
+      error: patchResult.error ?? 'failed to repair main tag index',
       mainUrl,
     }
   }

@@ -60,6 +60,7 @@ import {
   coerceBooleanQueryParam,
   collectQueueIssuesFromStorage,
   completeOrphanedQueueFoundMoveToMain,
+  repairMainFoundIndexFromStorage,
   deleteQueueImageGroupFromStorage,
   evaluateOrphanedQueueFoundForMain,
   evaluateOrphanedQueueFoundForTarget,
@@ -273,11 +274,16 @@ export default async (req: Request) => {
       typeof payloadOpts.moveToMainTargetRound === 'number'
         ? payloadOpts.moveToMainTargetRound
         : undefined
+    const repairMainFoundIndexRound =
+      typeof payloadOpts.repairMainFoundIndexRound === 'number'
+        ? payloadOpts.repairMainFoundIndexRound
+        : undefined
     const deleteWrongRound = coerceBooleanQueryParam(payloadOpts.deleteWrongRound) === true
     const shouldFix =
       !deleteKey &&
       !deleteWrongRound &&
       !moveToMainKey &&
+      repairMainFoundIndexRound === undefined &&
       (req.method === 'POST' || coerceBooleanQueryParam(payloadOpts.fix) === true)
     const imageSource = getImageSource(game)
 
@@ -286,6 +292,7 @@ export default async (req: Request) => {
       deleteKey,
       deleteWrongRound,
       moveToMainKey,
+      repairMainFoundIndexRound,
       game: game.name,
       gameSlug,
       awsRegion: game.awsRegion,
@@ -304,8 +311,41 @@ export default async (req: Request) => {
 
     let deletedKeys: string[] = []
     let movedToMain: { key: string; mainUrl?: string } | undefined
+    let repairedMainIndex: { round: number; mainUrl?: string } | undefined
 
-    if (moveToMainKey?.startsWith('queue/')) {
+    if (repairMainFoundIndexRound !== undefined) {
+      const repairResult = await repairMainFoundIndexFromStorage(
+        game,
+        gameSlug,
+        repairMainFoundIndexRound,
+        adminBiketag,
+        imageSource,
+      )
+
+      if (!repairResult.success) {
+        log(
+          '[queue-fix] Repair main index failed',
+          { repairMainFoundIndexRound, error: repairResult.error },
+          'error',
+        )
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: repairResult.error ?? 'failed to repair main index from storage',
+          }),
+          {
+            headers,
+            status: HttpStatusCode.BadRequest,
+          },
+        )
+      }
+
+      repairedMainIndex = {
+        round: repairMainFoundIndexRound,
+        mainUrl: repairResult.mainUrl,
+      }
+      log('[queue-fix] Repaired main index from storage metadata', repairedMainIndex)
+    } else if (moveToMainKey?.startsWith('queue/')) {
       if (moveToMainTargetRound === undefined) {
         return new Response(
           JSON.stringify({

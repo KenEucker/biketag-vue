@@ -45,6 +45,13 @@
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Credentials = "true"
 
+[functions]
+  external_node_modules = ["sharp"]
+  included_files = ["node_modules/@img/**/*"]
+
+[functions."queue-fix"]
+  timeout = 26
+
 [functions."autopost-background"]
   schedule = "*/15 * * * *"
   included_files=["functions/emails/*.liquid"]
