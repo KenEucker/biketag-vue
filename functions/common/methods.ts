@@ -877,6 +877,8 @@ const resolveQueueToMainCopyPlan = async (
 }
 
 const copyOrConvertQueueObjectToMain = async (
+  gameSlug: string,
+  region: string,
   client: S3Client,
   bucket: string,
   srcKey: string,
@@ -896,14 +898,42 @@ const copyOrConvertQueueObjectToMain = async (
     return
   }
 
-  const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: srcKey }))
-  const body = await response.Body?.transformToByteArray()
-  if (!body?.length) {
-    throw new Error(`empty queue source object ${srcKey}`)
+  const publicUrl = `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${srcKey}`
+  const resizeUrl = getApiUrl(gameSlug.toLowerCase(), 'resize')
+
+  log('[queue-to-main] Converting queue image to webp via resize', {
+    srcKey,
+    destKey,
+    publicUrl,
+    resizeUrl,
+  })
+
+  const response = await axios.get(resizeUrl, {
+    params: { url: publicUrl, format: 'webp' },
+    responseType: 'arraybuffer',
+    timeout: 60000,
+    validateStatus: () => true,
+  })
+
+  if (response.status !== 200) {
+    const detail =
+      typeof response.data === 'string' && response.data.length
+        ? response.data
+        : `HTTP ${response.status}`
+    throw new Error(`webp conversion failed for ${srcKey}: ${detail}`)
   }
 
-  const sharp = (await import('sharp')).default
-  const webpBuffer = await sharp(Buffer.from(body)).webp().toBuffer()
+  const webpBuffer = Buffer.from(response.data)
+  if (!webpBuffer.length) {
+    throw new Error(`webp conversion returned empty body for ${srcKey}`)
+  }
+
+  log('[queue-to-main] Converted queue image to webp', {
+    srcKey,
+    destKey,
+    bytes: webpBuffer.length,
+  })
+
   await client.send(
     new PutObjectCommand({
       Bucket: bucket,
@@ -916,6 +946,8 @@ const copyOrConvertQueueObjectToMain = async (
 }
 
 const executeQueueToMainCopies = async (
+  gameSlug: string,
+  region: string,
   client: S3Client,
   bucket: string,
   pairs: QueueToMainCopyPair[],
@@ -928,9 +960,24 @@ const executeQueueToMainCopies = async (
       destKey,
       convertToWebp,
     })
-    await copyOrConvertQueueObjectToMain(client, bucket, srcKey, destKey, convertToWebp)
-    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: srcKey }))
-    copiedSourceKeys.push(srcKey)
+    try {
+      await copyOrConvertQueueObjectToMain(
+        gameSlug,
+        region,
+        client,
+        bucket,
+        srcKey,
+        destKey,
+        convertToWebp,
+      )
+      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: srcKey }))
+      copiedSourceKeys.push(srcKey)
+      log('[queue-to-main] Copied queue image to main', { srcKey, destKey })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'queue to main copy failed'
+      log('[queue-to-main] Failed copying queue image to main', { srcKey, destKey, error: message }, 'error')
+      throw error instanceof Error ? error : new Error(message)
+    }
   }
 
   return copiedSourceKeys
@@ -949,7 +996,7 @@ const copyQueueImageToMainIfAbsent = async (
   }
 
   const filenameBase = getQueueImageFilenameBase(sourceUrl)
-  const bucket = `${gameSlug}-biketag`
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
   const client = createQueueStorageClient(region)
   const destBase = `main/${gameSlug}-tag-${targetTagnumber}--${type}`
   const destUrl = `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${destBase}.webp`
@@ -988,7 +1035,8 @@ const copyQueueImageToMainIfAbsent = async (
     )
   }
 
-  await executeQueueToMainCopies(client, bucket, pairs)
+  await executeQueueToMainCopies(gameSlug, region, client, bucket, pairs)
+  log('[queue-to-main] Finished queue→main copies', { sourceKey, destUrl, copied: pairs.length })
   return destUrl
 }
 
@@ -2027,6 +2075,26 @@ export const completeOrphanedQueueFoundMoveToMain = async (
   })
 
   if (!patchResult.success) {
+    const existingUrl = fetchedTag?.foundImageUrl ?? main?.mainTagsByRound.get(targetRound)?.foundImageUrl
+    const existingKey = existingUrl ? getStorageKeyFromUrl(existingUrl) : ''
+    const expectedKey = getMainFoundFileKey(gameSlug, targetRound)
+    if (
+      patchResult.error?.includes('already has foundImageUrl in main/') &&
+      existingKey === expectedKey
+    ) {
+      log('[queue-fix] Main index already references repaired found file — treating as success', {
+        targetRound,
+        mainUrl,
+        existingKey,
+      })
+      return { success: true, mainUrl }
+    }
+
+    log('[queue-fix] Failed to patch main index after copy', {
+      targetRound,
+      mainUrl,
+      error: patchResult.error,
+    }, 'error')
     return {
       success: false,
       error: patchResult.error ?? 'failed to update main tag index',
