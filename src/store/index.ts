@@ -597,8 +597,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         return response.data?.error || 'failed to move queue found image to main'
       } catch (e: any) {
-        console.error('error moving queue found image to main', e?.message ?? e)
-        return 'error moving queue found image to main'
+        const message =
+          e?.response?.data?.error ?? e?.message ?? 'error moving queue found image to main'
+        console.error('error moving queue found image to main', message)
+        return typeof message === 'string' ? message : 'error moving queue found image to main'
       }
     },
     async resendLatestPostNotifications() {

@@ -41,8 +41,9 @@
  * ─── Move to main (orphaned found only) ───
  *
  * Does NOT call biketag updateTag (that adapter renames/moves main/ files when image URLs are set).
- * Steps: copy queue/...--found → main/...--found (no overwrite) → delete queue copies →
- * patch foundImageUrl on that tagnumber in main/index.json only if not already set.
+ * Steps: copy queue/...--found → main/...--found (no overwrite; converts non-webp to webp) →
+ * delete queue copies → patch foundImageUrl on that tagnumber in main/index.json only if not already set.
+ * Skips _small/_medium copy when those main/ variants already exist (e.g. after partial autopost).
  *
  * moveToMainTargetRound is required (usually metadata round when filename uses live round).
  *
@@ -337,6 +338,13 @@ export default async (req: Request) => {
         imageSource,
       )
 
+      log('[queue-fix] Attempting move to main', {
+        moveToMainKey,
+        moveToMainTargetRound,
+        queueUrl: queueImage.url,
+        extension: queueImage.extension,
+      })
+
       const moveResult = await completeOrphanedQueueFoundMoveToMain(
         game,
         gameSlug,
@@ -348,6 +356,15 @@ export default async (req: Request) => {
       )
 
       if (!moveResult.success) {
+        log(
+          '[queue-fix] Move to main failed',
+          {
+            moveToMainKey,
+            moveToMainTargetRound,
+            error: moveResult.error,
+          },
+          'error',
+        )
         return new Response(
           JSON.stringify({
             success: false,

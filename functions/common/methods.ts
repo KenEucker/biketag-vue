@@ -11,6 +11,7 @@ import {
 import { JwtVerifier, getTokenFromHeader } from '@serverless-jwt/jwt-verifier'
 import Ajv from 'ajv'
 import axios from 'axios'
+import sharp from 'sharp'
 import type { Ambassador, Game, Tag } from 'biketag'
 import BikeTagClient from 'biketag'
 import crypto from 'crypto'
@@ -692,36 +693,87 @@ const isStorageObjectNotFound = (error: unknown): boolean => {
   return name === 'NotFound' || name === 'NoSuchKey' || code === 'NotFound' || status === 404
 }
 
-type QueueToMainCopyPair = { srcKey: string; destKey: string }
+type QueueToMainCopyPair = { srcKey: string; destKey: string; convertToWebp?: boolean }
 
-const listExistingQueueToMainCopyPairs = (
-  filenameBase: string,
-  destBase: string,
-): QueueToMainCopyPair[] => {
-  const variants = ['', '_small', '_medium'] as const
-  const pairs: QueueToMainCopyPair[] = []
+const queuePrimarySourceExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.bmp'] as const
 
-  for (const variant of variants) {
-    const srcKey =
-      variant === '' ? `queue/${filenameBase}.webp` : `queue/${filenameBase}${variant}.webp`
-    const destKey = variant === '' ? `${destBase}.webp` : `${destBase}${variant}.webp`
-    pairs.push({ srcKey, destKey })
-  }
-
-  return pairs
-}
-
-const executeQueueToMainCopies = async (
+const storageObjectExists = async (
   client: S3Client,
   bucket: string,
-  pairs: QueueToMainCopyPair[],
+  key: string,
+): Promise<boolean> => {
+  try {
+    await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }))
+    return true
+  } catch (error) {
+    if (isStorageObjectNotFound(error)) return false
+    throw error instanceof Error ? error : new Error(`storage check failed for ${key}`)
+  }
+}
+
+const getQueuePrimarySourceCandidates = (filenameBase: string, preferredSourceKey?: string): string[] => {
+  const fromExtensions = queuePrimarySourceExtensions.map((ext) => `queue/${filenameBase}${ext}`)
+  if (!preferredSourceKey?.length) return fromExtensions
+  return [preferredSourceKey, ...fromExtensions.filter((key) => key !== preferredSourceKey)]
+}
+
+const getMainDestKeyForVariant = (destBase: string, variant: '' | '_small' | '_medium'): string =>
+  variant === '' ? `${destBase}.webp` : `${destBase}${variant}.webp`
+
+const resolveQueueToMainCopyPlan = async (
+  client: S3Client,
+  bucket: string,
+  filenameBase: string,
+  destBase: string,
   sourceKey: string,
-): Promise<void> => {
-  if (!pairs.length) {
-    throw new Error(`no queue variants found to copy from ${sourceKey}`)
+): Promise<{ pairs: QueueToMainCopyPair[]; skippedDestKeys: string[]; checkedSourceKeys: string[] }> => {
+  const pairs: QueueToMainCopyPair[] = []
+  const skippedDestKeys: string[] = []
+  const checkedSourceKeys: string[] = []
+  const variants = ['', '_small', '_medium'] as const
+
+  for (const variant of variants) {
+    const destKey = getMainDestKeyForVariant(destBase, variant)
+
+    if (await storageObjectExists(client, bucket, destKey)) {
+      skippedDestKeys.push(destKey)
+      continue
+    }
+
+    const sourceCandidates =
+      variant === ''
+        ? getQueuePrimarySourceCandidates(filenameBase, sourceKey)
+        : [`queue/${filenameBase}${variant}.webp`]
+
+    let srcKey: string | undefined
+    for (const candidate of sourceCandidates) {
+      checkedSourceKeys.push(candidate)
+      if (await storageObjectExists(client, bucket, candidate)) {
+        srcKey = candidate
+        break
+      }
+    }
+
+    if (srcKey) {
+      pairs.push({
+        srcKey,
+        destKey,
+        convertToWebp: !/\.webp$/i.test(srcKey),
+      })
+    }
   }
 
-  for (const { srcKey, destKey } of pairs) {
+  return { pairs, skippedDestKeys, checkedSourceKeys }
+}
+
+const copyOrConvertQueueObjectToMain = async (
+  client: S3Client,
+  bucket: string,
+  srcKey: string,
+  destKey: string,
+  convertToWebp: boolean,
+): Promise<void> => {
+  if (!convertToWebp) {
     await client.send(
       new CopyObjectCommand({
         Bucket: bucket,
@@ -731,30 +783,46 @@ const executeQueueToMainCopies = async (
         MetadataDirective: 'COPY',
       }),
     )
-    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: srcKey }))
+    return
   }
+
+  const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: srcKey }))
+  const body = await response.Body?.transformToByteArray()
+  if (!body?.length) {
+    throw new Error(`empty queue source object ${srcKey}`)
+  }
+
+  const webpBuffer = await sharp(Buffer.from(body)).webp().toBuffer()
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: destKey,
+      Body: webpBuffer,
+      ContentType: 'image/webp',
+      ACL: 'public-read',
+    }),
+  )
 }
 
-const assertMainDestKeysAbsent = async (
+const executeQueueToMainCopies = async (
   client: S3Client,
   bucket: string,
-  destKeys: string[],
-  gameSlug: string,
-  targetTagnumber: number,
-  type: 'found' | 'mystery',
-): Promise<void> => {
-  for (const destKey of destKeys) {
-    try {
-      await client.send(new HeadObjectCommand({ Bucket: bucket, Key: destKey }))
-      throw new Error(
-        `refusing to overwrite existing main file ${destKey} — destination main/${gameSlug}-tag-${targetTagnumber}--${type} must be empty`,
-      )
-    } catch (error) {
-      if (!isStorageObjectNotFound(error)) {
-        throw error instanceof Error ? error : new Error(`storage check failed for ${destKey}`)
-      }
-    }
+  pairs: QueueToMainCopyPair[],
+): Promise<string[]> => {
+  const copiedSourceKeys: string[] = []
+
+  for (const { srcKey, destKey, convertToWebp = false } of pairs) {
+    log('[queue-to-main] Copying queue image to main', {
+      srcKey,
+      destKey,
+      convertToWebp,
+    })
+    await copyOrConvertQueueObjectToMain(client, bucket, srcKey, destKey, convertToWebp)
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: srcKey }))
+    copiedSourceKeys.push(srcKey)
   }
+
+  return copiedSourceKeys
 }
 
 const copyQueueImageToMainIfAbsent = async (
@@ -774,33 +842,49 @@ const copyQueueImageToMainIfAbsent = async (
   const client = createQueueStorageClient(region)
   const destBase = `main/${gameSlug}-tag-${targetTagnumber}--${type}`
   const destUrl = `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${destBase}.webp`
+  const primaryDestKey = getMainDestKeyForVariant(destBase, '')
 
-  const pairs: QueueToMainCopyPair[] = []
-  for (const { srcKey, destKey } of listExistingQueueToMainCopyPairs(filenameBase, destBase)) {
-    try {
-      await client.send(new HeadObjectCommand({ Bucket: bucket, Key: srcKey }))
-    } catch {
-      continue
-    }
-    pairs.push({ srcKey, destKey })
-  }
-
-  await assertMainDestKeysAbsent(
+  const { pairs, skippedDestKeys, checkedSourceKeys } = await resolveQueueToMainCopyPlan(
     client,
     bucket,
-    pairs.map(({ destKey }) => destKey),
-    gameSlug,
-    targetTagnumber,
-    type,
+    filenameBase,
+    destBase,
+    sourceKey,
   )
-  await executeQueueToMainCopies(client, bucket, pairs, sourceKey)
+
+  log('[queue-to-main] Resolved queue→main copy plan', {
+    sourceKey,
+    destBase,
+    pairs: pairs.map(({ srcKey, destKey, convertToWebp }) => ({ srcKey, destKey, convertToWebp })),
+    skippedDestKeys,
+    checkedSourceKeys,
+  })
+
+  if (!pairs.length) {
+    const primaryExists = await storageObjectExists(client, bucket, primaryDestKey)
+    if (primaryExists) {
+      log('[queue-to-main] Main primary already present — cleaning up queue orphan only', {
+        sourceKey,
+        primaryDestKey,
+        skippedDestKeys,
+      })
+      await deleteQueueImageGroupFromStorage(gameSlug, region, sourceKey)
+      return destUrl
+    }
+
+    throw new Error(
+      `no queue image files found to copy from ${sourceKey} (checked ${[...new Set(checkedSourceKeys)].join(', ')}; main dest ${primaryDestKey} is missing)`,
+    )
+  }
+
+  await executeQueueToMainCopies(client, bucket, pairs)
   return destUrl
 }
 
 /**
- * Copy queue/ image (+ _medium, _small) to main/{game}-tag-{N}--{type}.webp, then delete queue copies.
- * Used by approve. Refuses if destination main/ keys already exist (S3 CopyObject would replace them otherwise).
- * Does not update main/index.json.
+ * Copy queue/ image (+ _medium, _small when present) to main/{game}-tag-{N}--{type}.webp, then delete queue copies.
+ * Skips main/ keys that already exist. Converts non-webp queue primaries to webp on copy.
+ * Used by approve. Does not update main/index.json.
  */
 export const moveQueueImageToMainWithVariants = async (
   gameSlug: string,
@@ -1794,16 +1878,27 @@ export const completeOrphanedQueueFoundMoveToMain = async (
 
   let mainUrl: string
   try {
+    log('[queue-fix] Starting orphaned queue found move to main', {
+      queueKey: queueImage.key,
+      queueUrl: queueImage.url,
+      extension: queueImage.extension,
+      targetRound,
+      keyRound,
+      metadataTagnumber: queueImage.metadataTagnumber,
+    })
     mainUrl = await copyQueueFoundToMainIfAbsent(
       gameSlug,
       game.awsRegion,
       queueImage.url,
       targetRound,
     )
+    log('[queue-fix] Copied queue found image into main storage', { targetRound, mainUrl })
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'failed to copy queue found image to main'
+    log('[queue-fix] Failed to copy queue found image to main', { queueKey: queueImage.key, targetRound, error: message }, 'error')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'failed to copy queue found image to main',
+      error: message,
     }
   }
 
