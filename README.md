@@ -116,6 +116,8 @@ RF_KEY=ROBOFLOWAPIKEY
 ROBOFLOW_API_KEY=ROBOFLOWAPIKEY
 RF_WORKSPACE=bikes-workspace-6t0na
 RF_WORKFLOW=bicycle-no-selfie-screening-api
+# Optional Roboflow HTTP timeout in ms (default 120000; runs in screen-background)
+RF_TIMEOUT_MS=120000
 ```
 <div align="center">
 

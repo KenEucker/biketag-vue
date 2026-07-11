@@ -2,13 +2,12 @@ import axios from 'axios'
 import { log } from '../methods'
 import {
   getRoboflowApiKey,
+  getRoboflowRequestTimeoutMs,
   getRoboflowWorkflow,
   getRoboflowWorkspace,
   ROBOFLOW_API_BASE_URL,
 } from './config'
 import type { ScreeningResult } from './types'
-
-const ROBOFLOW_REQUEST_TIMEOUT_MS = 15000
 
 type RoboflowWorkflowEntry = {
   is_match?: unknown
@@ -36,7 +35,8 @@ export const screenImageWithRoboflow = async (imageUrl: string): Promise<Screeni
   const workflow = getRoboflowWorkflow()
   const endpoint = `${ROBOFLOW_API_BASE_URL}/${workspace}/workflows/${workflow}`
 
-  log('[screening] Calling Roboflow workflow', { workspace, workflow, imageUrl }, 'info')
+  const timeoutMs = getRoboflowRequestTimeoutMs()
+  log('[screening] Calling Roboflow workflow', { workspace, workflow, imageUrl, timeoutMs }, 'info')
 
   try {
     const response = await axios.post(
@@ -51,7 +51,7 @@ export const screenImageWithRoboflow = async (imageUrl: string): Promise<Screeni
         },
       },
       {
-        timeout: ROBOFLOW_REQUEST_TIMEOUT_MS,
+        timeout: timeoutMs,
         validateStatus: () => true,
       },
     )

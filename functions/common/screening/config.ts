@@ -18,6 +18,15 @@ export const getRoboflowWorkspace = (): string =>
 export const getRoboflowWorkflow = (): string =>
   process.env.RF_WORKFLOW ?? ROBOFLOW_DEFAULT_WORKFLOW
 
+/** Background screening can run longer; default 2 minutes. */
+export const ROBOFLOW_DEFAULT_REQUEST_TIMEOUT_MS = 120000
+
+export const getRoboflowRequestTimeoutMs = (): number => {
+  const parsed = parseInt(process.env.RF_TIMEOUT_MS ?? '', 10)
+  if (Number.isFinite(parsed) && parsed > 0) return parsed
+  return ROBOFLOW_DEFAULT_REQUEST_TIMEOUT_MS
+}
+
 export const isScreeningEnabledForGame = (game?: Game): boolean =>
   game?.settings?.[SCREENING_ENABLED_SETTING] === 'true'
 

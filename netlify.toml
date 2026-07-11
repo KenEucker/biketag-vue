@@ -75,6 +75,9 @@
 [functions."screen"]
   included_files=["functions/emails/*.liquid"]
 
+[functions."screen-background"]
+  included_files=["functions/emails/*.liquid"]
+
 [functions."rejections"]
   included_files=["functions/emails/*.liquid"]
 

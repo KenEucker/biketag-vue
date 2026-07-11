@@ -260,18 +260,6 @@ async function onQueueSubmit(newTagSubmission) {
   const success = await store[storeAction](tag)
   uploadInProgress.value = false
 
-  if (success?.rejected) {
-    toast.open({
-      message: success.message,
-      type: 'error',
-      duration: 15000,
-      timeout: false,
-      position: 'top',
-    })
-    await store.fetchQueuedTags(false)
-    return
-  }
-
   if (success === true) {
     /// Get a clean cache
     await store.fetchTags(false)

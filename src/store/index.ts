@@ -10,7 +10,6 @@ import {
   PlayerRejectedUpload,
   debug,
   encodeBikeTagString,
-  formatPlayerRejectionMessage,
   getApiUrl,
   getBikeTagClientOpts,
   getBikeTagJwtAuthHeaders,
@@ -1070,24 +1069,26 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     async screenUploadedImage(imageUrl: string, imageType: 'found' | 'mystery', playerIp = '') {
       if (!isScreeningEnabled(this.game?.settings)) {
-        return { accepted: true, skipped: true }
+        return
       }
 
       const screeningKey = `${imageType}:${imageUrl}`
       if (this.screenedUploadKeys.includes(screeningKey)) {
-        return { accepted: true, skipped: true, alreadyScreened: true }
+        return
       }
 
       const token = await this.ensureScreeningAuth()
       if (!token?.length) {
         debug(`${BikeTagDefaults.store}::screen-image`, 'no JWT available', 'warn')
-        return { accepted: true, failOpen: true }
+        return
       }
 
-      try {
-        const response = await client.plainRequest({
+      this.screenedUploadKeys.push(screeningKey)
+
+      void client
+        .plainRequest({
           method: 'POST',
-          url: getApiUrl('screen'),
+          url: getApiUrl('screen-background'),
           data: {
             imageUrl,
             imageType,
@@ -1097,14 +1098,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           },
           headers: getBikeTagJwtAuthHeaders(token),
         })
-
-        this.screenedUploadKeys.push(screeningKey)
-
-        return response.data ?? { accepted: true, failOpen: true }
-      } catch (error: any) {
-        debug(`${BikeTagDefaults.store}::screen-image`, error?.message ?? error, 'warn')
-        return { accepted: true, failOpen: true }
-      }
+        .catch((error: any) => {
+          debug(`${BikeTagDefaults.store}::screen-image`, error?.message ?? error, 'warn')
+        })
     },
     cleanupRejectedUpload(imageType: 'found' | 'mystery', rejectedImageUrl?: string) {
       if (!rejectedImageUrl?.length) return
@@ -1196,27 +1192,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           if (t.success) {
             await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
             const imageUrl = t.data?.foundImageUrl
-            const screening = imageUrl
-              ? await this.screenUploadedImage(imageUrl, 'found', d.playerIP ?? '')
-              : { accepted: true }
-
-            if (screening?.accepted === false && screening.reason) {
-              clearUploadRateLimitKey(
-                this.gameName,
-                this.currentBikeTag?.tagnumber ?? d.tagnumber,
-                'found',
-              )
-              this.SET_PLAYER_REJECTED_UPLOAD({
-                type: 'found',
-                imageUrl: screening.imageUrl ?? imageUrl,
-                reason: screening.reason,
-              })
-              this.SET_QUEUED_TAG({})
-              this.RESET_FORM_STEP_TO_FOUND()
-              return {
-                rejected: true,
-                message: formatPlayerRejectionMessage('found', screening.reason),
-              }
+            if (imageUrl) {
+              void this.screenUploadedImage(imageUrl, 'found', d.playerIP ?? '')
             }
 
             this.SET_PLAYER_REJECTED_UPLOAD(null)
@@ -1248,28 +1225,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           if (t.success) {
             await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
             const imageUrl = t.data?.mysteryImageUrl
-            const screening = imageUrl
-              ? await this.screenUploadedImage(imageUrl, 'mystery', d.playerIP ?? '')
-              : { accepted: true }
-
-            if (screening?.accepted === false && screening.reason) {
-              clearUploadRateLimitKey(
-                this.gameName,
-                this.currentBikeTag?.tagnumber ?? d.tagnumber - 1,
-                'mystery',
-              )
-              this.SET_PLAYER_REJECTED_UPLOAD({
-                type: 'mystery',
-                imageUrl: screening.imageUrl ?? imageUrl,
-                reason: screening.reason,
-              })
-              const queuedFoundTag: any = BikeTagClient.getters.getOnlyFoundTagFromTagData(t.data)
-              this.SET_QUEUED_TAG(queuedFoundTag)
-              this.RESET_FORM_STEP_TO_MYSTERY()
-              return {
-                rejected: true,
-                message: formatPlayerRejectionMessage('mystery', screening.reason),
-              }
+            if (imageUrl) {
+              void this.screenUploadedImage(imageUrl, 'mystery', d.playerIP ?? '')
             }
 
             this.SET_PLAYER_REJECTED_UPLOAD(null)
