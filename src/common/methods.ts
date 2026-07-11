@@ -220,8 +220,17 @@ export const getTokenFromCookie = (tokenCookieKey = 'token'): string => {
   return cookies.get(tokenCookieKey)
 }
 
+export const readTokenFromDocumentCookie = (tokenCookieKey = 'token'): string => {
+  if (typeof document === 'undefined') return ''
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${tokenCookieKey}=([^;]*)`))
+  return match?.[1] ? decodeURIComponent(match[1]) : ''
+}
+
+export const resolveBikeTagJwtToken = (token?: string): string =>
+  token ?? getTokenFromCookie() ?? readTokenFromDocumentCookie()
+
 export const getBikeTagJwtAuthHeaders = (token?: string): Record<string, string> => {
-  const jwt = token ?? getTokenFromCookie()
+  const jwt = resolveBikeTagJwtToken(token)
   return jwt?.length ? { authorization: `JWT ${jwt}` } : {}
 }
 

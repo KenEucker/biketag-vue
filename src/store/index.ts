@@ -26,6 +26,7 @@ import {
   getTokenFromCookie,
   isGlobalAdminEmail,
   isScreeningEnabled,
+  resolveBikeTagJwtToken,
   setProfileCookie,
   setRegionPolygonInCookie,
   setTokenInCookie,
@@ -938,6 +939,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             action: 'approve',
             imageUrl,
             ambassadorId: this.profile.sub,
+            currentRound: this.currentBikeTag?.tagnumber,
           },
           headers: {
             authorization: `Bearer ${this.auth0Token}`,
@@ -968,6 +970,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             action: 'delete',
             imageUrl,
             ambassadorId: this.profile.sub,
+            currentRound: this.currentBikeTag?.tagnumber,
           },
           headers: {
             authorization: `Bearer ${this.auth0Token}`,
@@ -995,6 +998,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           url: getApiUrl('rejections'),
           params: {
             ambassadorId: this.profile.sub,
+            currentRound: this.currentBikeTag?.tagnumber,
           },
           headers: {
             authorization: `Bearer ${this.auth0Token}`,
@@ -1009,8 +1013,29 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return []
       }
     },
+    async ensureScreeningAuth(): Promise<string | undefined> {
+      let token = resolveBikeTagJwtToken(this.token)
+
+      if (!token?.length && this.profile?.sub) {
+        await this.fetchCredentials(true)
+        token = resolveBikeTagJwtToken(this.token)
+      }
+
+      if (token?.length) {
+        this.token = token
+        client.config({ biketag: { clientToken: token } } as any, false, true)
+      }
+
+      return token
+    },
     async fetchPlayerRejectedUpload() {
       if (!isScreeningEnabled(this.game?.settings) || !this.profile?.sub) {
+        return null
+      }
+
+      const token = await this.ensureScreeningAuth()
+      if (!token?.length) {
+        debug(`${BikeTagDefaults.store}::fetch-rejected-upload`, 'no JWT available', 'warn')
         return null
       }
 
@@ -1021,8 +1046,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           params: {
             playerId: this.profile.sub,
             statusOnly: 'true',
+            currentRound: this.currentBikeTag?.tagnumber,
           },
-          headers: getBikeTagJwtAuthHeaders(this.token),
+          headers: getBikeTagJwtAuthHeaders(token),
         })
 
         const data = response.data ?? {}
@@ -1052,8 +1078,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return { accepted: true, skipped: true, alreadyScreened: true }
       }
 
-      if (!this.token && !getTokenFromCookie()) {
-        await this.fetchCredentials(true)
+      const token = await this.ensureScreeningAuth()
+      if (!token?.length) {
+        debug(`${BikeTagDefaults.store}::screen-image`, 'no JWT available', 'warn')
+        return { accepted: true, failOpen: true }
       }
 
       try {
@@ -1065,8 +1093,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             imageType,
             playerId: this.profile.sub,
             playerIP: playerIp,
+            currentRound: this.currentBikeTag?.tagnumber,
           },
-          headers: getBikeTagJwtAuthHeaders(this.token),
+          headers: getBikeTagJwtAuthHeaders(token),
         })
 
         this.screenedUploadKeys.push(screeningKey)
@@ -1080,18 +1109,22 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     cleanupRejectedUpload(imageType: 'found' | 'mystery', rejectedImageUrl?: string) {
       if (!rejectedImageUrl?.length) return
 
-      client
-        .plainRequest({
-          method: 'POST',
-          url: getApiUrl('screen'),
-          data: {
-            action: 'cleanup-rejected',
-            imageUrl: rejectedImageUrl,
-            playerId: this.profile.sub,
-          },
-          headers: getBikeTagJwtAuthHeaders(this.token),
-        })
-        .catch(() => undefined)
+      void this.ensureScreeningAuth().then((token) => {
+        if (!token?.length) return
+
+        client
+          .plainRequest({
+            method: 'POST',
+            url: getApiUrl('screen'),
+            data: {
+              action: 'cleanup-rejected',
+              imageUrl: rejectedImageUrl,
+              playerId: this.profile.sub,
+            },
+            headers: getBikeTagJwtAuthHeaders(token),
+          })
+          .catch(() => undefined)
+      })
     },
     async dequeueFoundTag() {
       if (this.playerTag?.playerId === this.profile.sub) {

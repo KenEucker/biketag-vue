@@ -361,7 +361,11 @@ onMounted(async () => {
   }
 
   uploadInProgress.value = false
-  await store.fetchPlayerRejectedUpload()
+
+  await store.isReady()
+  if (store.isScreeningEnabledForGame && store.getPlayerId) {
+    await store.fetchPlayerRejectedUpload()
+  }
 })
 </script>
 

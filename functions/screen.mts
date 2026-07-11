@@ -2,7 +2,6 @@ import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
-  getImageSource,
   getPayloadAuthorization,
   getPayloadOpts,
   HttpStatusCode,
@@ -17,6 +16,7 @@ import {
   isScreeningConfigured,
   isScreeningEnabledForGame,
   renameQueueImageToRejected,
+  resolveCurrentRound,
   screenImageWithRoboflow,
   validateQueueImageKeyForGame,
 } from './common/screening'
@@ -74,9 +74,9 @@ export default async (req: Request) => {
         })
       }
 
-      const currentTag = (await biketag.getTag(undefined, { source: getImageSource(game) })).data
+      const currentRound = resolveCurrentRound(payload) ?? 0
       const rejected = isScreeningEnabledForGame(game)
-        ? await findPlayerRejectedUpload(game, currentTag?.tagnumber ?? 0, playerId)
+        ? await findPlayerRejectedUpload(game, currentRound, playerId)
         : undefined
 
       if (statusOnly) {
@@ -142,11 +142,12 @@ export default async (req: Request) => {
         })
       }
 
-      const currentTag = (await biketag.getTag(undefined, { source: getImageSource(game) })).data
       const imageKey = getStorageKeyFromUrl(cleanupImageUrl)
+      const currentRound = resolveCurrentRound(payload, imageKey) ?? 0
       if (
+        !imageKey.startsWith('queue/') ||
         !/--rejected/i.test(imageKey) ||
-        !validateQueueImageKeyForGame(imageKey, biketagOpts.game, currentTag?.tagnumber ?? 0)
+        !validateQueueImageKeyForGame(imageKey, biketagOpts.game, currentRound)
       ) {
         return new Response(JSON.stringify({ error: 'invalid rejected image' }), {
           status: HttpStatusCode.BadRequest,
@@ -156,7 +157,7 @@ export default async (req: Request) => {
 
       const rejected = await findPlayerRejectedUpload(
         game,
-        currentTag?.tagnumber ?? 0,
+        currentRound,
         playerId,
       )
       if (!rejected || (rejected.url !== cleanupImageUrl && rejected.key !== imageKey)) {
@@ -177,6 +178,8 @@ export default async (req: Request) => {
     const imageUrl = payload.imageUrl as string
     const imageType = payload.imageType as 'found' | 'mystery'
     const playerIp = payload.playerIP ?? payload.playerIp ?? payload.ip ?? ''
+    const imageKey = getStorageKeyFromUrl(imageUrl)
+    const currentRound = resolveCurrentRound(payload, imageKey, imageType)
 
     if (!playerMatchesAuthorization(authorization, playerId)) {
       log('[screen] Unauthorized POST', { playerId, authType: authorization.type }, 'warn')
@@ -193,6 +196,20 @@ export default async (req: Request) => {
       })
     }
 
+    if (!imageKey.startsWith('queue/')) {
+      return new Response(JSON.stringify({ error: 'image must be a queue upload' }), {
+        status: HttpStatusCode.BadRequest,
+        headers,
+      })
+    }
+
+    if (currentRound === undefined) {
+      return new Response(JSON.stringify({ error: 'currentRound is required' }), {
+        status: HttpStatusCode.BadRequest,
+        headers,
+      })
+    }
+
     if (!isScreeningConfigured(game)) {
       log('[screen] Screening skipped — not configured for game', { game: game.name }, 'info')
       return new Response(JSON.stringify({ accepted: true, skipped: true }), {
@@ -201,10 +218,6 @@ export default async (req: Request) => {
       })
     }
 
-    const currentTag = (await biketag.getTag(undefined, { source: getImageSource(game) })).data
-    const currentRound = currentTag?.tagnumber ?? 0
-    const imageKey = getStorageKeyFromUrl(imageUrl)
-
     if (!validateQueueImageKeyForGame(imageKey, biketagOpts.game, currentRound, imageType)) {
       return new Response(JSON.stringify({ error: 'invalid queue image' }), {
         status: HttpStatusCode.BadRequest,
@@ -212,7 +225,11 @@ export default async (req: Request) => {
       })
     }
 
-    log('[screen] Screening image with Roboflow', { imageType, imageUrl, playerId }, 'info')
+    log(
+      '[screen] Screening queue image with Roboflow',
+      { imageType, imageKey, currentRound, playerId },
+      'info',
+    )
 
     const screeningResult = await screenImageWithRoboflow(imageUrl)
     if (!screeningResult) {

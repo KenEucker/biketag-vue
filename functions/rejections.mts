@@ -14,6 +14,7 @@ import {
   inferRejectedImageRole,
   listRejectedQueueImagesForRound,
   playerHasQueueFoundImage,
+  resolveCurrentRound,
   restoreRejectedQueueImage,
   validateQueueImageKeyForGame,
 } from './common/screening'
@@ -55,11 +56,9 @@ export default async (req: Request) => {
       )
     }
 
-    const currentTag = (await biketag.getTag(undefined, { source: imageSource })).data
-    const currentRound = currentTag?.tagnumber ?? 0
-
     if (req.method === 'GET') {
       const payload = await getPayloadOpts(req)
+      const currentRound = resolveCurrentRound(payload) ?? 0
       const playerId = payload.playerId ?? profile?.p_id ?? profile?.sub
 
       if (payload.scope === 'player') {
@@ -113,9 +112,17 @@ export default async (req: Request) => {
     const action = payload.action as 'approve' | 'delete'
     const imageUrl = payload.imageUrl as string
     const imageKey = getStorageKeyFromUrl(imageUrl)
+    const currentRound = resolveCurrentRound(payload, imageKey)
 
     if (!action || !imageUrl?.length) {
       return new Response(JSON.stringify({ error: 'action and imageUrl are required' }), {
+        status: HttpStatusCode.BadRequest,
+        headers,
+      })
+    }
+
+    if (currentRound === undefined) {
+      return new Response(JSON.stringify({ error: 'currentRound is required' }), {
         status: HttpStatusCode.BadRequest,
         headers,
       })
