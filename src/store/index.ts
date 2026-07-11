@@ -1027,6 +1027,23 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return token
     },
+    async applyPlayerRejectedUploadState(rejected: PlayerRejectedUpload) {
+      await this.fetchQueuedTags(false)
+
+      if (rejected.type === 'found') {
+        if (this.playerTag?.foundImageUrl?.length) {
+          this.SET_QUEUED_TAG({})
+        }
+        this.RESET_FORM_STEP_TO_FOUND()
+        return
+      }
+
+      if (rejected.type === 'mystery') {
+        const queuedFoundTag: any = BikeTagClient.getters.getOnlyFoundTagFromTagData(this.playerTag)
+        this.SET_QUEUED_TAG(queuedFoundTag)
+        this.RESET_FORM_STEP_TO_MYSTERY()
+      }
+    },
     async fetchPlayerRejectedUpload() {
       if (!isScreeningEnabled(this.game?.settings) || !this.profile?.sub) {
         return null
@@ -1059,6 +1076,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             this.currentBikeTag?.tagnumber ?? 0,
             data.rejected.type,
           )
+          await this.applyPlayerRejectedUploadState(data.rejected)
         }
 
         return data.rejected ?? null
@@ -1101,26 +1119,58 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         .catch((error: any) => {
           debug(`${BikeTagDefaults.store}::screen-image`, error?.message ?? error, 'warn')
         })
+
+      this.schedulePlayerRejectionChecks()
+    },
+    schedulePlayerRejectionChecks() {
+      if (typeof window === 'undefined') return
+
+      const delaysMs = [15000, 30000, 45000, 60000]
+      for (const delayMs of delaysMs) {
+        window.setTimeout(() => {
+          void this.fetchPlayerRejectedUpload()
+        }, delayMs)
+      }
     },
     cleanupRejectedUpload(imageType: 'found' | 'mystery', rejectedImageUrl?: string) {
-      if (!rejectedImageUrl?.length) return
+      return this.cleanupRejectedUploadForSlot(imageType, rejectedImageUrl)
+    },
+    async cleanupRejectedUploadForSlot(imageType: 'found' | 'mystery', rejectedImageUrl?: string) {
+      if (!isScreeningEnabled(this.game?.settings)) {
+        return false
+      }
 
-      void this.ensureScreeningAuth().then((token) => {
-        if (!token?.length) return
+      const token = await this.ensureScreeningAuth()
+      if (!token?.length) {
+        return false
+      }
 
-        client
-          .plainRequest({
-            method: 'POST',
-            url: getApiUrl('screen'),
-            data: {
-              action: 'cleanup-rejected',
-              imageUrl: rejectedImageUrl,
-              playerId: this.profile.sub,
-            },
-            headers: getBikeTagJwtAuthHeaders(token),
-          })
-          .catch(() => undefined)
-      })
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('screen'),
+          data: {
+            action: 'cleanup-rejected',
+            imageType,
+            playerId: this.profile.sub,
+            currentRound: this.currentBikeTag?.tagnumber,
+            ...(rejectedImageUrl?.length ? { imageUrl: rejectedImageUrl } : {}),
+          },
+          headers: getBikeTagJwtAuthHeaders(token),
+        })
+
+        if (response.status >= 200 && response.status < 300 && response.data?.deleted) {
+          if (this.playerRejectedUpload?.type === imageType) {
+            this.SET_PLAYER_REJECTED_UPLOAD(null)
+          }
+          await this.fetchQueuedTags(false)
+        }
+
+        return response.status >= 200 && response.status < 300
+      } catch (error: any) {
+        debug(`${BikeTagDefaults.store}::cleanup-rejected`, error?.message ?? error, 'warn')
+        return false
+      }
     },
     async dequeueFoundTag() {
       if (this.playerTag?.playerId === this.profile.sub) {
@@ -1182,9 +1232,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = this.profile.sub
 
-        if (this.playerRejectedUpload?.type === 'found') {
-          this.cleanupRejectedUpload('found', this.playerRejectedUpload.imageUrl)
-        }
+        await this.cleanupRejectedUploadForSlot('found', this.playerRejectedUpload?.imageUrl)
 
         this.screenedUploadKeys = this.screenedUploadKeys.filter((key) => !key.startsWith('found:'))
 
@@ -1215,9 +1263,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = this.profile.sub
 
-        if (this.playerRejectedUpload?.type === 'mystery') {
-          this.cleanupRejectedUpload('mystery', this.playerRejectedUpload.imageUrl)
-        }
+        await this.cleanupRejectedUploadForSlot('mystery', this.playerRejectedUpload?.imageUrl)
 
         this.screenedUploadKeys = this.screenedUploadKeys.filter((key) => !key.startsWith('mystery:'))
 

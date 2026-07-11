@@ -2,6 +2,7 @@ import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
+  getImageSource,
   getPayloadAuthorization,
   getPayloadOpts,
   HttpStatusCode,
@@ -79,6 +80,17 @@ export default async (req: Request) => {
       source: 'sanity',
       concise: true,
     })) as unknown as Game
+
+    if (getImageSource(game) === 'aws' && game.awsRegion?.length) {
+      biketag.config(
+        {
+          biketag: { host: process.env.HOST },
+          aws: { region: game.awsRegion },
+        },
+        false,
+        true,
+      )
+    }
 
     await processQueueImageScreening({
       game,

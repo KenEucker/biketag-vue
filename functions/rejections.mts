@@ -14,6 +14,7 @@ import {
   inferRejectedImageRole,
   listRejectedQueueImagesForRound,
   playerHasQueueFoundImage,
+  reindexQueueAfterScreeningChange,
   resolveCurrentRound,
   restoreRejectedQueueImage,
   validateQueueImageKeyForGame,
@@ -137,6 +138,7 @@ export default async (req: Request) => {
 
     if (action === 'delete') {
       await deleteRejectedQueueImageGroup(game, imageUrl)
+      await reindexQueueAfterScreeningChange(game, biketag)
       return new Response(JSON.stringify({ success: true }), {
         status: HttpStatusCode.Ok,
         headers,
@@ -196,6 +198,8 @@ export default async (req: Request) => {
         headers,
       })
     }
+
+    await reindexQueueAfterScreeningChange(game, biketag)
 
     if (targetRole === 'mystery') {
       const queueResponse = await biketag.getQueue(undefined, { source: imageSource })

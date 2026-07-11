@@ -6,6 +6,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import type { Game, Tag } from 'biketag'
+import { getCdnPathsFromStorageKey, purgeSpacesCdnPaths } from '../cdn-purge'
 import {
   createQueueStorageClient,
   getGameStorageSlug,
@@ -21,6 +22,29 @@ const queueRejectedPrimaryImageKeyPattern =
 
 const queueRolePrimaryImageKeyPattern =
   /^queue\/(.+?)--(found|mystery|rejected)(?:--([a-z0-9]+))?\.(webp|jpg|jpeg|png|gif|bmp)$/i
+
+const getGameBucketContext = (game: Game) => {
+  const gameSlug = getGameStorageSlug(game)
+  const region = game.awsRegion ?? ''
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+  return { gameSlug, region, bucket }
+}
+
+const purgeGameQueueKeys = async (game: Game, keys: string[]): Promise<void> => {
+  const { bucket, region } = getGameBucketContext(game)
+  if (!region.length || !keys.length) return
+  await purgeSpacesCdnPaths(
+    bucket,
+    region,
+    keys.flatMap((key) => getCdnPathsFromStorageKey(key)),
+  )
+}
+
+const purgeGameQueueUrls = async (game: Game, urls: string[]): Promise<void> => {
+  const { bucket, region } = getGameBucketContext(game)
+  if (!region.length || !urls.length) return
+  await purgeSpacesCdnUrls(bucket, region, urls)
+}
 
 const isStorageObjectNotFound = (error: unknown): boolean => {
   const name = (error as { name?: string })?.name
@@ -163,7 +187,7 @@ const renameQueueObjectGroup = async (
   targetFilenameBase: string,
   sourcePrimaryKey?: string,
   metadataUpdate?: (metadata: Record<string, string>) => Record<string, string>,
-): Promise<{ primaryKey?: string; primaryUrl?: string }> => {
+): Promise<{ primaryKey?: string; primaryUrl?: string; sourcePrimaryKey?: string }> => {
   const resolvedSourcePrimaryKey = await resolvePrimaryKey(
     client,
     bucket,
@@ -204,6 +228,7 @@ const renameQueueObjectGroup = async (
   return {
     primaryKey: targetPrimaryKey,
     primaryUrl: `https://${bucket}.${region}.cdn.digitaloceanspaces.com/${targetPrimaryKey}`,
+    sourcePrimaryKey: resolvedSourcePrimaryKey,
   }
 }
 
@@ -250,6 +275,11 @@ export const renameQueueImageToRejected = async (
       return { success: false }
     }
 
+    await purgeGameQueueKeys(game, [
+      result.sourcePrimaryKey ?? sourcePrimaryKey,
+      result.primaryKey ?? '',
+    ])
+
     return { success: true, rejectedUrl: result.primaryUrl, rejectedKey: result.primaryKey }
   } catch (error: any) {
     log(
@@ -293,6 +323,11 @@ export const restoreRejectedQueueImage = async (
       return { success: false }
     }
 
+    await purgeGameQueueKeys(game, [
+      result.sourcePrimaryKey ?? sourcePrimaryKey,
+      result.primaryKey ?? '',
+    ])
+
     return { success: true, restoredUrl: result.primaryUrl }
   } catch (error: any) {
     log(
@@ -318,6 +353,11 @@ export const deleteRejectedQueueImageGroup = async (game: Game, imageUrl: string
     sourcePrimaryKey.startsWith('queue/') ? sourcePrimaryKey : undefined,
   )
 
+  const keysToPurge = [
+    ...(primaryKey ? [primaryKey] : []),
+    ...getVariantKeys(bucket, filenameBase),
+  ]
+
   if (primaryKey) {
     await deleteQueueObjectIfExists(client, bucket, primaryKey)
   }
@@ -325,6 +365,36 @@ export const deleteRejectedQueueImageGroup = async (game: Game, imageUrl: string
   for (const key of getVariantKeys(bucket, filenameBase)) {
     await deleteQueueObjectIfExists(client, bucket, key)
   }
+
+  await purgeGameQueueKeys(game, keysToPurge)
+}
+
+export const deletePlayerRejectedUploadsForSlot = async (
+  game: Game,
+  currentRound: number,
+  playerId: string,
+  imageType: ScreeningImageRole,
+): Promise<number> => {
+  const rejectedImages = await listRejectedQueueImagesForRound(game, currentRound)
+  const matches = rejectedImages.filter(
+    (image) =>
+      image.type === imageType &&
+      (!image.playerId?.length || !playerId?.length || image.playerId === playerId),
+  )
+
+  for (const rejected of matches) {
+    await deleteRejectedQueueImageGroup(game, rejected.url)
+  }
+
+  if (matches.length) {
+    log(
+      '[screening] Deleted rejected queue uploads for slot',
+      { playerId, imageType, currentRound, count: matches.length },
+      'info',
+    )
+  }
+
+  return matches.length
 }
 
 const parseRejectedQueueImageKey = (key: string) => {

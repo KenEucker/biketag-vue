@@ -2,6 +2,7 @@ import { BikeTagClient, Game } from 'biketag'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
+  getImageSource,
   getPayloadAuthorization,
   getPayloadOpts,
   HttpStatusCode,
@@ -9,14 +10,13 @@ import {
 } from './common'
 import { playerMatchesAuthorization } from './common/screening/auth'
 import {
-  deleteRejectedQueueImageGroup,
+  deletePlayerRejectedUploadsForSlot,
   findPlayerRejectedUpload,
   getMysteryUploadRemainingSeconds,
-  getStorageKeyFromUrl,
   isScreeningConfigured,
   isScreeningEnabledForGame,
+  reindexQueueAfterScreeningChange,
   resolveCurrentRound,
-  validateQueueImageKeyForGame,
 } from './common/screening'
 import { ErrorMessage } from './common/constants'
 
@@ -120,38 +120,46 @@ export default async (req: Request) => {
       })
     }
 
-    const cleanupImageUrl = payload.imageUrl as string
-    if (!cleanupImageUrl?.length) {
-      return new Response(JSON.stringify({ error: 'imageUrl is required' }), {
+    const imageType = payload.imageType as 'found' | 'mystery' | undefined
+    const currentRound = resolveCurrentRound(payload) ?? 0
+
+    if (!imageType || (imageType !== 'found' && imageType !== 'mystery')) {
+      return new Response(JSON.stringify({ error: 'imageType is required' }), {
         status: HttpStatusCode.BadRequest,
         headers,
       })
     }
 
-    const imageKey = getStorageKeyFromUrl(cleanupImageUrl)
-    const currentRound = resolveCurrentRound(payload, imageKey) ?? 0
-    if (
-      !imageKey.startsWith('queue/') ||
-      !/--rejected/i.test(imageKey) ||
-      !validateQueueImageKeyForGame(imageKey, biketagOpts.game, currentRound)
-    ) {
-      return new Response(JSON.stringify({ error: 'invalid rejected image' }), {
+    if (!currentRound) {
+      return new Response(JSON.stringify({ error: 'currentRound is required' }), {
         status: HttpStatusCode.BadRequest,
         headers,
       })
     }
 
-    const rejected = await findPlayerRejectedUpload(game, currentRound, playerId)
-    if (!rejected || (rejected.url !== cleanupImageUrl && rejected.key !== imageKey)) {
-      return new Response(JSON.stringify({ success: true }), {
-        status: HttpStatusCode.Ok,
-        headers,
-      })
+    if (getImageSource(game) === 'aws' && game.awsRegion?.length) {
+      biketag.config(
+        {
+          biketag: { host: process.env.HOST },
+          aws: { region: game.awsRegion },
+        },
+        false,
+        true,
+      )
     }
 
-    await deleteRejectedQueueImageGroup(game, cleanupImageUrl)
+    const deletedCount = await deletePlayerRejectedUploadsForSlot(
+      game,
+      currentRound,
+      playerId,
+      imageType,
+    )
 
-    return new Response(JSON.stringify({ success: true }), {
+    if (deletedCount > 0) {
+      await reindexQueueAfterScreeningChange(game, biketag)
+    }
+
+    return new Response(JSON.stringify({ success: true, deleted: deletedCount > 0 }), {
       status: HttpStatusCode.Ok,
       headers,
     })
