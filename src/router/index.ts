@@ -1,6 +1,7 @@
 import About from '@/views/About.vue'
 import Admin from '@/views/Admin.vue'
 import Approve from '@/views/Approve.vue'
+import Rejections from '@/views/Rejections.vue'
 import BikeTags from '@/views/BikeTags.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Delete from '@/views/Delete.vue'
@@ -37,6 +38,12 @@ const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
         name: 'Approve',
         beforeEnter: authGuard,
         component: Approve,
+      },
+      {
+        path: '/rejections',
+        name: 'Rejections',
+        beforeEnter: authGuard,
+        component: Rejections,
       },
       {
         path: '/dashboard',

@@ -30,6 +30,7 @@
       @dequeing="uploadInProgress = true"
       @dequeue-success="uploadInProgress = false"
     />
+    <queue-rejection-alert />
     <div
       v-if="BiketagQueueFormSteps[getFormStep] >= 1 && BiketagQueueFormSteps[getFormStep] < 4"
       class="step"
@@ -133,6 +134,7 @@ import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import QueueFound from '@/components/QueueFound.vue'
 import QueueJoined from '@/components/QueueJoined.vue'
 import QueueMystery from '@/components/QueueMystery.vue'
+import QueueRejectionAlert from '@/components/QueueRejectionAlert.vue'
 import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
 import QueueSubmit from '@/components/QueueSubmit.vue'
@@ -254,8 +256,21 @@ async function onQueueSubmit(newTagSubmission) {
   }
 
   uploadInProgress.value = true
+  tag.playerIP = ipAddress
   const success = await store[storeAction](tag)
   uploadInProgress.value = false
+
+  if (success?.rejected) {
+    toast.open({
+      message: success.message,
+      type: 'error',
+      duration: 15000,
+      timeout: false,
+      position: 'top',
+    })
+    await store.fetchQueuedTags(false)
+    return
+  }
 
   if (success === true) {
     /// Get a clean cache

@@ -6,8 +6,11 @@ import {
   BikeTagEnv,
   BikeTagStoreState,
   BiketagQueueFormSteps,
+  clearUploadRateLimitKey,
+  PlayerRejectedUpload,
   debug,
   encodeBikeTagString,
+  formatPlayerRejectionMessage,
   getApiUrl,
   getBikeTagClientOpts,
   getDomainInfo,
@@ -21,6 +24,7 @@ import {
   getSupportedGames,
   getTokenFromCookie,
   isGlobalAdminEmail,
+  isScreeningEnabled,
   setProfileCookie,
   setRegionPolygonInCookie,
   setTokenInCookie,
@@ -89,6 +93,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     auth0Token: '',
     profile: getProfileFromCookie(),
     token: getTokenFromCookie(),
+    playerRejectedUpload: null,
+    screeningRemainingSeconds: 0,
+    screeningEnabled: false,
+    rejectedImages: [] as any[],
   }),
 
   actions: {
@@ -378,6 +386,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               return this.SET_QUEUED_TAGS([])
             }
           })
+          .finally(() => this.fetchPlayerScreeningStatus())
       }
 
       return false
@@ -917,6 +926,166 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       names = Array.isArray(names) ? names : [names]
       return this.achievements.filter((a) => names.includes(a.name))
     },
+    async approveRejectedImage(imageUrl: string) {
+      if (!this.profile?.isBikeTagAmbassador) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('rejections'),
+          data: {
+            action: 'approve',
+            imageUrl,
+            ambassadorId: this.profile.sub,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status >= 200 && response.status < 300) {
+          await this.fetchRejectedImages(false)
+          await this.fetchQueuedTags(false)
+          return true
+        }
+
+        return response.data?.error ?? 'failed to approve rejected image'
+      } catch (error: any) {
+        return error?.message ?? 'failed to approve rejected image'
+      }
+    },
+    async deleteRejectedImage(imageUrl: string) {
+      if (!this.profile?.isBikeTagAmbassador) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('rejections'),
+          data: {
+            action: 'delete',
+            imageUrl,
+            ambassadorId: this.profile.sub,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status >= 200 && response.status < 300) {
+          await this.fetchRejectedImages(false)
+          return true
+        }
+
+        return response.data?.error ?? 'failed to delete rejected image'
+      } catch (error: any) {
+        return error?.message ?? 'failed to delete rejected image'
+      }
+    },
+    async fetchRejectedImages(cached = true) {
+      if (!this.profile?.isBikeTagAmbassador) {
+        return []
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'GET',
+          url: getApiUrl('rejections'),
+          params: {
+            ambassadorId: this.profile.sub,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        const rejected = response.data?.rejected ?? []
+        this.SET_REJECTED_IMAGES(rejected)
+        return rejected
+      } catch (error: any) {
+        debug(`${BikeTagDefaults.store}::fetch-rejected-images`, error?.message ?? error, 'warn')
+        return []
+      }
+    },
+    async fetchPlayerScreeningStatus() {
+      if (!isScreeningEnabled(this.game?.settings) || !this.profile?.sub) {
+        this.screeningEnabled = false
+        this.screeningRemainingSeconds = 0
+        return null
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'GET',
+          url: getApiUrl('screen'),
+          params: {
+            playerId: this.profile.sub,
+            foundTime: this.playerTag?.foundTime ?? '',
+          },
+        })
+
+        const data = response.data ?? {}
+        this.screeningEnabled = !!data.screeningEnabled
+        this.screeningRemainingSeconds = data.remainingSeconds ?? 0
+
+        if (data.rejected) {
+          this.SET_PLAYER_REJECTED_UPLOAD(data.rejected)
+          clearUploadRateLimitKey(
+            this.gameName,
+            this.currentBikeTag?.tagnumber ?? 0,
+            data.rejected.type,
+          )
+        } else if (!this.playerRejectedUpload) {
+          this.SET_PLAYER_REJECTED_UPLOAD(null)
+        }
+
+        return data
+      } catch (error: any) {
+        debug(`${BikeTagDefaults.store}::screening-status`, error?.message ?? error, 'warn')
+        return null
+      }
+    },
+    async screenUploadedImage(imageUrl: string, imageType: 'found' | 'mystery', playerIp = '') {
+      if (!isScreeningEnabled(this.game?.settings)) {
+        return { accepted: true, skipped: true }
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('screen'),
+          data: {
+            imageUrl,
+            imageType,
+            playerId: this.profile.sub,
+            playerIP: playerIp,
+          },
+        })
+
+        return response.data ?? { accepted: true, failOpen: true }
+      } catch (error: any) {
+        debug(`${BikeTagDefaults.store}::screen-image`, error?.message ?? error, 'warn')
+        return { accepted: true, failOpen: true }
+      }
+    },
+    cleanupRejectedUpload(imageType: 'found' | 'mystery', rejectedImageUrl?: string) {
+      if (!rejectedImageUrl?.length) return
+
+      client
+        .plainRequest({
+          method: 'POST',
+          url: getApiUrl('screen'),
+          data: {
+            action: 'cleanup-rejected',
+            imageUrl: rejectedImageUrl,
+            playerId: this.profile.sub,
+          },
+        })
+        .catch(() => undefined)
+    },
     async dequeueFoundTag() {
       if (this.playerTag?.playerId === this.profile.sub) {
         const queuedTag: any = this.playerTag
@@ -977,10 +1146,40 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = this.profile.sub
 
+        if (this.playerRejectedUpload?.type === 'found') {
+          this.cleanupRejectedUpload('found', this.playerRejectedUpload.imageUrl)
+        }
+
         return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
           if (t.success) {
-            this.SET_QUEUE_FOUND(t.data)
             await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            const imageUrl = t.data?.foundImageUrl
+            const screening = imageUrl
+              ? await this.screenUploadedImage(imageUrl, 'found', d.playerIP ?? '')
+              : { accepted: true }
+
+            if (screening?.accepted === false && screening.reason) {
+              clearUploadRateLimitKey(
+                this.gameName,
+                this.currentBikeTag?.tagnumber ?? d.tagnumber,
+                'found',
+              )
+              this.SET_PLAYER_REJECTED_UPLOAD({
+                type: 'found',
+                imageUrl: screening.imageUrl ?? imageUrl,
+                reason: screening.reason,
+              })
+              this.SET_QUEUED_TAG({})
+              this.RESET_FORM_STEP_TO_FOUND()
+              return {
+                rejected: true,
+                message: formatPlayerRejectionMessage('found', screening.reason),
+              }
+            }
+
+            this.SET_PLAYER_REJECTED_UPLOAD(null)
+            this.SET_QUEUE_FOUND(t.data)
+            await this.fetchPlayerScreeningStatus()
           } else {
             debug(
               `${BikeTagDefaults.store}::queue-found-tag`,
@@ -998,8 +1197,39 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = this.profile.sub
 
+        if (this.playerRejectedUpload?.type === 'mystery') {
+          this.cleanupRejectedUpload('mystery', this.playerRejectedUpload.imageUrl)
+        }
+
         return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
           if (t.success) {
+            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            const imageUrl = t.data?.mysteryImageUrl
+            const screening = imageUrl
+              ? await this.screenUploadedImage(imageUrl, 'mystery', d.playerIP ?? '')
+              : { accepted: true }
+
+            if (screening?.accepted === false && screening.reason) {
+              clearUploadRateLimitKey(
+                this.gameName,
+                this.currentBikeTag?.tagnumber ?? d.tagnumber - 1,
+                'mystery',
+              )
+              this.SET_PLAYER_REJECTED_UPLOAD({
+                type: 'mystery',
+                imageUrl: screening.imageUrl ?? imageUrl,
+                reason: screening.reason,
+              })
+              const queuedFoundTag: any = BikeTagClient.getters.getOnlyFoundTagFromTagData(t.data)
+              this.SET_QUEUED_TAG(queuedFoundTag)
+              this.RESET_FORM_STEP_TO_MYSTERY()
+              return {
+                rejected: true,
+                message: formatPlayerRejectionMessage('mystery', screening.reason),
+              }
+            }
+
+            this.SET_PLAYER_REJECTED_UPLOAD(null)
             this.SET_QUEUE_MYSTERY(t.data)
             await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
           } else {
@@ -1203,6 +1433,14 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
 
       return this.tagsInRound
+    },
+    SET_PLAYER_REJECTED_UPLOAD(rejected?: PlayerRejectedUpload | null) {
+      this.playerRejectedUpload = rejected ?? null
+      return this.playerRejectedUpload
+    },
+    SET_REJECTED_IMAGES(rejectedImages: any[] = []) {
+      this.rejectedImages = rejectedImages
+      return this.rejectedImages
     },
     SET_QUEUE_FOUND(data: any) {
       const oldState = this.playerTag
@@ -1471,6 +1709,18 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     getFormStep(state) {
       return BiketagQueueFormSteps[state.formStep]
+    },
+    getRejectedImages(state) {
+      return state.rejectedImages ?? []
+    },
+    getPlayerRejectedUpload(state) {
+      return state.playerRejectedUpload
+    },
+    getScreeningRemainingSeconds(state) {
+      return state.screeningRemainingSeconds ?? 0
+    },
+    isScreeningEnabledForGame(state) {
+      return isScreeningEnabled(state.game?.settings)
     },
     getPlayerTag(state) {
       return state.playerTag

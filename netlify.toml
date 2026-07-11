@@ -72,6 +72,12 @@
 [functions."approve"]
   included_files=["functions/emails/*.liquid"]
 
+[functions."screen"]
+  included_files=["functions/emails/*.liquid"]
+
+[functions."rejections"]
+  included_files=["functions/emails/*.liquid"]
+
 [functions."profile"]
   included_files=["functions/emails/*.liquid"]
 

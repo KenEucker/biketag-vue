@@ -16,6 +16,17 @@
         Approve Posts in Round
       </router-link>
 
+      <router-link to="/rejections" class="action-button">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" />
+            <line x1="8" y1="8" x2="16" y2="16" />
+            <line x1="16" y1="8" x2="8" y2="16" />
+          </svg>
+        </span>
+        Review Rejected Images
+      </router-link>
+
       <router-link to="/delete" class="action-button">
         <span class="icon">
           <!-- Sketch-style trash can -->
