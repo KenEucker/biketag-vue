@@ -39,8 +39,28 @@ describe('roboflow screening', () => {
     expect(parseRoboflowScreeningResponse([{ reason: 'x' }])).toBeNull()
   })
 
-  it('returns null when reason is missing', () => {
+  it('returns null when reason is missing on rejection', () => {
     expect(parseRoboflowScreeningResponse([{ is_match: false }])).toBeNull()
+  })
+
+  it('accepts match without reason', () => {
+    expect(parseRoboflowScreeningResponse([{ is_match: true }])).toEqual({ accepted: true })
+  })
+
+  it('parses nested workflow output values', () => {
+    expect(
+      parseRoboflowScreeningResponse([
+        {
+          screening: {
+            is_match: false,
+            reason: 'No bicycle detected.',
+          },
+        },
+      ]),
+    ).toEqual({
+      accepted: false,
+      reason: 'No bicycle detected.',
+    })
   })
 
   it('returns null for malformed response', () => {

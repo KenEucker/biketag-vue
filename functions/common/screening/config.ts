@@ -18,6 +18,9 @@ export const getRoboflowWorkspace = (): string =>
 export const getRoboflowWorkflow = (): string =>
   process.env.RF_WORKFLOW ?? ROBOFLOW_DEFAULT_WORKFLOW
 
+export const getRoboflowWorkflowEndpoint = (workspace: string, workflow: string): string =>
+  `${ROBOFLOW_API_BASE_URL}/${workspace}/workflows/${workflow}`
+
 /** Background screening can run longer; default 2 minutes. */
 export const ROBOFLOW_DEFAULT_REQUEST_TIMEOUT_MS = 120000
 
