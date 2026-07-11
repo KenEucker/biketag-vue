@@ -105,8 +105,7 @@ export interface BikeTagStoreState {
   token?: string
   auth0Token?: string
   playerRejectedUpload?: PlayerRejectedUpload | null
-  screeningRemainingSeconds?: number
-  screeningEnabled?: boolean
+  screenedUploadKeys?: string[]
   rejectedImages?: any[]
 }
 

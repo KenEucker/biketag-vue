@@ -220,6 +220,11 @@ export const getTokenFromCookie = (tokenCookieKey = 'token'): string => {
   return cookies.get(tokenCookieKey)
 }
 
+export const getBikeTagJwtAuthHeaders = (token?: string): Record<string, string> => {
+  const jwt = token ?? getTokenFromCookie()
+  return jwt?.length ? { authorization: `JWT ${jwt}` } : {}
+}
+
 export const setTokenInCookie = (token: string, tokenCookieKey = 'token'): string => {
   const { cookies } = useCookies()
   cookies.set(tokenCookieKey, token)

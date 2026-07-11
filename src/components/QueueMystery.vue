@@ -313,7 +313,6 @@ function hideModal() {
 onMounted(() => {
   player.value = getPlayerTag.value?.foundPlayer
   showModalIfNew()
-  store.fetchPlayerScreeningStatus()
   countdownTimer.value = window.setInterval(() => {
     countdownNow.value = Date.now()
   }, 1000)

@@ -36,6 +36,8 @@ export const screenImageWithRoboflow = async (imageUrl: string): Promise<Screeni
   const workflow = getRoboflowWorkflow()
   const endpoint = `${ROBOFLOW_API_BASE_URL}/${workspace}/workflows/${workflow}`
 
+  log('[screening] Calling Roboflow workflow', { workspace, workflow, imageUrl }, 'info')
+
   try {
     const response = await axios.post(
       endpoint,

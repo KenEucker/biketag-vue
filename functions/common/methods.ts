@@ -2778,15 +2778,18 @@ export const getPayloadAuthorization = async (
     }
   }
 
-  log(
-    'Authorization resolved',
-    {
-      originalAuthorization: req.headers.get('authorization'),
-      authorizationType,
-      authProfile,
-    },
-    'info',
-  )
+    log(
+      'Authorization resolved',
+      {
+        originalAuthorization: req.headers.get('authorization') ? '[present]' : null,
+        authorizationType,
+        authProfile: {
+          ...authProfile,
+          token: authProfile.token ? '[redacted]' : undefined,
+        },
+      },
+      'info',
+    )
 
   return authProfile
 }

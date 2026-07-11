@@ -3,8 +3,8 @@ import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
   getImageSource,
+  getPayloadAuthorization,
   getPayloadOpts,
-  getProfileAuthorization,
   HttpStatusCode,
   log,
 } from './common'
@@ -22,8 +22,23 @@ import {
 } from './common/screening'
 import { ErrorMessage } from './common/constants'
 
-const profileMatchesPlayerId = (profile: any, playerId: string): boolean =>
-  profile?.p_id === playerId || profile?.sub === playerId
+const playerMatchesAuthorization = (
+  authorization: Awaited<ReturnType<typeof getPayloadAuthorization>>,
+  playerId: string,
+): boolean => {
+  if (!authorization?.isValid || !playerId?.length) return false
+
+  if (authorization.type === 'jwt') {
+    return authorization.profile?.p_id === playerId
+  }
+
+  if (authorization.type === 'bearer' || authorization.type === 'client') {
+    const profileId = authorization.profile?.sub ?? authorization.profile?.p_id
+    return profileId === playerId
+  }
+
+  return false
+}
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -44,13 +59,15 @@ export default async (req: Request) => {
       source: 'sanity',
       concise: true,
     })) as unknown as Game
+    const authorization = await getPayloadAuthorization(req)
 
     if (req.method === 'GET') {
-      const profile = await getProfileAuthorization(req)
       const payload = await getPayloadOpts(req)
-      const playerId = payload.playerId ?? profile?.p_id ?? profile?.sub
+      const playerId = payload.playerId ?? authorization.profile?.p_id ?? authorization.profile?.sub
+      const statusOnly = payload.statusOnly === 'true' || payload.statusOnly === true
 
-      if (!playerId?.length || !profileMatchesPlayerId(profile, playerId)) {
+      if (!playerMatchesAuthorization(authorization, playerId)) {
+        log('[screen] Unauthorized GET', { playerId, authType: authorization.type }, 'warn')
         return new Response(JSON.stringify({ error: 'unauthorized' }), {
           status: HttpStatusCode.Unauthorized,
           headers,
@@ -61,6 +78,21 @@ export default async (req: Request) => {
       const rejected = isScreeningEnabledForGame(game)
         ? await findPlayerRejectedUpload(game, currentTag?.tagnumber ?? 0, playerId)
         : undefined
+
+      if (statusOnly) {
+        return new Response(
+          JSON.stringify({
+            rejected: rejected
+              ? {
+                  type: rejected.type,
+                  imageUrl: rejected.url,
+                  reason: rejected.reason,
+                }
+              : null,
+          }),
+          { status: HttpStatusCode.Ok, headers },
+        )
+      }
 
       const foundTime = parseInt(payload.foundTime, 10)
       const remainingSeconds =
@@ -91,12 +123,11 @@ export default async (req: Request) => {
       })
     }
 
-    const profile = await getProfileAuthorization(req)
     const payload = await getPayloadOpts(req)
-    const playerId = payload.playerId ?? profile?.p_id ?? profile?.sub
+    const playerId = payload.playerId ?? authorization.profile?.p_id ?? authorization.profile?.sub
 
     if (payload.action === 'cleanup-rejected') {
-      if (!playerId?.length || !profileMatchesPlayerId(profile, playerId)) {
+      if (!playerMatchesAuthorization(authorization, playerId)) {
         return new Response(JSON.stringify({ error: 'unauthorized' }), {
           status: HttpStatusCode.Unauthorized,
           headers,
@@ -147,7 +178,8 @@ export default async (req: Request) => {
     const imageType = payload.imageType as 'found' | 'mystery'
     const playerIp = payload.playerIP ?? payload.playerIp ?? payload.ip ?? ''
 
-    if (!playerId?.length || !profileMatchesPlayerId(profile, playerId)) {
+    if (!playerMatchesAuthorization(authorization, playerId)) {
+      log('[screen] Unauthorized POST', { playerId, authType: authorization.type }, 'warn')
       return new Response(JSON.stringify({ error: 'unauthorized' }), {
         status: HttpStatusCode.Unauthorized,
         headers,
@@ -162,6 +194,7 @@ export default async (req: Request) => {
     }
 
     if (!isScreeningConfigured(game)) {
+      log('[screen] Screening skipped — not configured for game', { game: game.name }, 'info')
       return new Response(JSON.stringify({ accepted: true, skipped: true }), {
         status: HttpStatusCode.Ok,
         headers,
@@ -179,8 +212,11 @@ export default async (req: Request) => {
       })
     }
 
+    log('[screen] Screening image with Roboflow', { imageType, imageUrl, playerId }, 'info')
+
     const screeningResult = await screenImageWithRoboflow(imageUrl)
     if (!screeningResult) {
+      log('[screen] Roboflow screening fail-open', { imageType, imageUrl }, 'warn')
       return new Response(JSON.stringify({ accepted: true, failOpen: true }), {
         status: HttpStatusCode.Ok,
         headers,
@@ -188,11 +224,18 @@ export default async (req: Request) => {
     }
 
     if (screeningResult.accepted) {
+      log('[screen] Roboflow accepted image', { imageType, imageUrl }, 'info')
       return new Response(JSON.stringify({ accepted: true }), {
         status: HttpStatusCode.Ok,
         headers,
       })
     }
+
+    log('[screen] Roboflow rejected image', {
+      imageType,
+      imageUrl,
+      reason: screeningResult.reason,
+    }, 'info')
 
     const renameResult = await renameQueueImageToRejected(
       game,
@@ -201,6 +244,7 @@ export default async (req: Request) => {
       playerIp,
     )
     if (!renameResult.success || !renameResult.rejectedUrl) {
+      log('[screen] Rejection rename failed — fail-open', { imageUrl }, 'warn')
       return new Response(JSON.stringify({ accepted: true, failOpen: true }), {
         status: HttpStatusCode.Ok,
         headers,

@@ -351,7 +351,7 @@ const created = async () => {
 created()
 
 // Mounted
-onMounted(() => {
+onMounted(async () => {
   if (props.usingTimer) {
     watchEffect(async () => {
       if (timer.value.isExpired.valueOf) {
@@ -361,6 +361,7 @@ onMounted(() => {
   }
 
   uploadInProgress.value = false
+  await store.fetchPlayerRejectedUpload()
 })
 </script>
 
