@@ -87,6 +87,9 @@
 [functions."profile"]
   included_files=["functions/emails/*.liquid"]
 
+[functions."settings"]
+  included_files=["functions/emails/*.liquid"]
+
 [[plugins]]
   package = 'netlify-plugin-contextual-env'
 

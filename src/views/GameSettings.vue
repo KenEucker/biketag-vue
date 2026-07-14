@@ -55,18 +55,17 @@
             </div>
 
             <div v-if="!isBikeTagAdmin" class="setting-actions">
-              <a class="request-change-link" :href="supportMailto(setting)">
+              <button type="button" class="request-change-link" @click="openRequestModal(setting)">
                 Request change via support
-              </a>
+              </button>
             </div>
           </li>
         </ul>
 
         <div v-if="!isBikeTagAdmin" class="support-note">
           <p>
-            To change a setting, email
-            <a :href="generalSupportMailto">{{ supportEmail }}</a>
-            with the setting key, current value, and what you would like changed.
+            Use the button on each setting to send a change request to
+            <strong>{{ supportEmail }}</strong>.
           </p>
         </div>
       </div>
@@ -75,12 +74,70 @@
     <div class="back-link">
       <router-link to="/dashboard">← Back to Ambassador Dashboard</router-link>
     </div>
+
+    <b-modal
+      v-model="requestModalOpen"
+      title="Request Setting Change"
+      hide-footer
+      @hidden="resetRequestForm"
+    >
+      <div v-if="requestSetting" class="request-modal">
+        <p class="request-modal__intro">
+          Send a change request to <strong>{{ supportEmail }}</strong> for the setting below.
+        </p>
+
+        <div class="request-modal__setting">
+          <strong>{{ requestSetting.name || requestSetting.key || 'Setting' }}</strong>
+          <code v-if="requestSetting.key">{{ requestSetting.key }}</code>
+        </div>
+
+        <p v-if="requestSetting.description" class="request-modal__description">
+          {{ requestSetting.description }}
+        </p>
+
+        <div class="request-modal__field">
+          <span class="request-modal__label">Current value</span>
+          <pre class="setting-readonly">{{ displayValue(requestSetting) }}</pre>
+        </div>
+
+        <div class="request-modal__field">
+          <label for="requested-value">Requested value</label>
+          <input
+            id="requested-value"
+            v-model="requestForm.requestedValue"
+            class="setting-input"
+            type="text"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="request-modal__field">
+          <label for="request-reason">Why is this change needed?</label>
+          <textarea
+            id="request-reason"
+            v-model="requestForm.reason"
+            class="setting-input"
+            rows="4"
+          />
+        </div>
+
+        <div class="request-modal__actions">
+          <bike-tag-button variant="medium" text="Cancel" @click="closeRequestModal" />
+          <bike-tag-button
+            variant="medium-orange"
+            text="Send request"
+            :disabled="requestSending || !canSubmitRequest"
+            @click="submitRequest"
+          />
+        </div>
+      </div>
+    </b-modal>
   </div>
 </template>
 
 <script setup name="GameSettingsView">
 import { useBikeTagStore } from '@/store/index'
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import BikeTagButton from '@/components/BikeTagButton.vue'
@@ -95,6 +152,13 @@ const saving = ref(false)
 const loadError = ref('')
 const settings = ref([])
 const editableValues = ref({})
+const requestModalOpen = ref(false)
+const requestSending = ref(false)
+const requestSetting = ref(null)
+const requestForm = reactive({
+  requestedValue: '',
+  reason: '',
+})
 
 const isBikeTagAdmin = computed(() => store.isBikeTagAdmin)
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
@@ -102,6 +166,10 @@ const getGameNameProper = computed(() => store.getGameNameProper)
 
 const hasPendingChanges = computed(() =>
   settings.value.some((setting, index) => isValueChanged(setting, index)),
+)
+
+const canSubmitRequest = computed(
+  () => requestForm.requestedValue.trim().length > 0 && requestForm.reason.trim().length > 0,
 )
 
 function settingKey(setting, index = 0) {
@@ -122,48 +190,6 @@ function isValueChanged(setting, index = 0) {
   return (editableValues.value[key] ?? '') !== (setting.value ?? '')
 }
 
-function ambassadorName() {
-  return (
-    store.getProfile?.user_metadata?.name ||
-    store.getProfile?.name ||
-    store.getProfile?.email ||
-    'BikeTag Ambassador'
-  )
-}
-
-function supportMailto(setting) {
-  const subject = encodeURIComponent(
-    `[${store.getGameName}] Setting change request: ${setting.key ?? 'unknown'}`,
-  )
-  const body = encodeURIComponent(
-    [
-      `Game: ${store.getGameNameProper} (${store.getGameName})`,
-      `Setting: ${setting.name || setting.key || 'Unknown'}`,
-      `Key: ${setting.key ?? ''}`,
-      `Current value: ${setting.value ?? ''}`,
-      '',
-      'Requested change:',
-      '',
-      `— ${ambassadorName()}`,
-    ].join('\n'),
-  )
-  return `mailto:${supportEmail}?subject=${subject}&body=${body}`
-}
-
-const generalSupportMailto = computed(() => {
-  const subject = encodeURIComponent(`[${store.getGameName}] Game settings change request`)
-  const body = encodeURIComponent(
-    [
-      `Game: ${store.getGameNameProper} (${store.getGameName})`,
-      '',
-      'Please describe the setting(s) you would like changed:',
-      '',
-      `— ${ambassadorName()}`,
-    ].join('\n'),
-  )
-  return `mailto:${supportEmail}?subject=${subject}&body=${body}`
-})
-
 function normalizeSettings(result) {
   if (Array.isArray(result)) {
     return result
@@ -180,6 +206,62 @@ function syncEditableValues(nextSettings) {
     values[settingKey(setting, index)] = setting.value ?? ''
   })
   editableValues.value = values
+}
+
+function resetRequestForm() {
+  requestSetting.value = null
+  requestForm.requestedValue = ''
+  requestForm.reason = ''
+  requestSending.value = false
+}
+
+function openRequestModal(setting) {
+  requestSetting.value = setting
+  requestForm.requestedValue = setting?.value ?? ''
+  requestForm.reason = ''
+  requestModalOpen.value = true
+}
+
+function closeRequestModal() {
+  requestModalOpen.value = false
+}
+
+async function submitRequest() {
+  if (!requestSetting.value || !canSubmitRequest.value || requestSending.value) {
+    return
+  }
+
+  requestSending.value = true
+
+  try {
+    const result = await store.requestGameSettingChange({
+      settingKey: requestSetting.value.key ?? '',
+      settingName: requestSetting.value.name || requestSetting.value.key || '',
+      settingDescription: requestSetting.value.description ?? '',
+      currentValue: requestSetting.value.value ?? '',
+      requestedValue: requestForm.requestedValue.trim(),
+      reason: requestForm.reason.trim(),
+    })
+
+    if (typeof result === 'string') {
+      toast.open({
+        message: result,
+        type: 'error',
+        duration: 10000,
+        position: 'top',
+      })
+      return
+    }
+
+    toast.open({
+      message: 'Your setting change request was sent to support.',
+      type: 'success',
+      position: 'top',
+    })
+    closeRequestModal()
+  } finally {
+    requestSending.value = false
+  }
 }
 
 async function loadSettings() {
@@ -386,6 +468,7 @@ onMounted(async () => {
     padding: 0.5rem;
     background: #fff;
     margin: 0;
+    box-sizing: border-box;
   }
 
   .setting-readonly {
@@ -400,10 +483,16 @@ onMounted(async () => {
     margin-top: 0.75rem;
   }
 
-  .request-change-link,
-  .back-link a {
+  .request-change-link {
+    background: none;
+    border: none;
+    padding: 0;
     color: #000;
     font-weight: bold;
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: underline;
+    cursor: pointer;
   }
 
   .support-note {
@@ -415,6 +504,56 @@ onMounted(async () => {
 
   .back-link {
     margin-top: 1rem;
+
+    a {
+      color: #000;
+      font-weight: bold;
+    }
+  }
+}
+
+.request-modal {
+  text-align: left;
+  font-family: 'Courier New', monospace;
+
+  &__intro {
+    margin-bottom: 1rem;
+  }
+
+  &__setting {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.05rem;
+  }
+
+  &__description {
+    margin: 0 0 1rem;
+    color: #333;
+    font-size: 0.95rem;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+
+    label,
+    .request-modal__label {
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
   }
 }
 </style>

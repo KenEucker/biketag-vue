@@ -4,14 +4,19 @@ import { BikeTagClient } from 'biketag'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
+  getGameSiteUrl,
   getPayloadOpts,
   getProfileAuthorization,
+  getSanityImageUrl,
   HttpStatusCode,
   log,
   requireGlobalAdmin,
+  sendEmail,
 } from './common'
 
 const SETTING_FIELDS = ['_id', 'slug', 'name', 'description', 'key', 'value']
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL ?? 'support@biketag.org'
+const SETTING_CHANGE_EMAIL_TEMPLATE = 'game-setting-change-request'
 
 const getAdminSanityClient = () =>
   createClient({
@@ -21,6 +26,84 @@ const getAdminSanityClient = () =>
     useCdn: false,
     apiVersion: '2024-01-01',
   })
+
+const handleSettingChangeRequest = async (
+  game: Game,
+  gameSlug: string,
+  profile: any,
+  payload: Record<string, unknown>,
+) => {
+  const settingKey = typeof payload.settingKey === 'string' ? payload.settingKey.trim() : ''
+  const settingName =
+    typeof payload.settingName === 'string' ? payload.settingName.trim() : settingKey
+  const settingDescription =
+    typeof payload.settingDescription === 'string' ? payload.settingDescription.trim() : ''
+  const currentValue =
+    typeof payload.currentValue === 'string' ? payload.currentValue : String(payload.currentValue ?? '')
+  const requestedValue =
+    typeof payload.requestedValue === 'string' ? payload.requestedValue.trim() : ''
+  const reason = typeof payload.reason === 'string' ? payload.reason.trim() : ''
+
+  if (!settingKey.length) {
+    return { status: HttpStatusCode.BadRequest, body: { error: 'settingKey is required' } }
+  }
+  if (!requestedValue.length) {
+    return { status: HttpStatusCode.BadRequest, body: { error: 'requested value is required' } }
+  }
+  if (!reason.length) {
+    return { status: HttpStatusCode.BadRequest, body: { error: 'reason is required' } }
+  }
+
+  const ambassadorName =
+    profile?.user_metadata?.name || profile?.name || profile?.email || 'BikeTag Ambassador'
+  const ambassadorEmail = profile?.email ?? ''
+  const gameProper = game.name?.length
+    ? `${game.name[0].toUpperCase()}${game.name.slice(1)}`
+    : gameSlug
+  const host = getGameSiteUrl(gameSlug)
+  const subdomainIcon = game.logo?.length ? getSanityImageUrl(game.logo, 's') : '/images/BikeTag.svg'
+  const subject = `[${gameSlug}] Setting change request: ${settingKey}`
+
+  const emailSent = await sendEmail(
+    SUPPORT_EMAIL,
+    subject,
+    {
+      game: gameSlug,
+      gameProper,
+      host,
+      subdomainIcon,
+      settingName,
+      settingKey,
+      settingDescription,
+      currentValue,
+      requestedValue,
+      reason,
+      ambassadorName,
+      ambassadorEmail,
+    },
+    SETTING_CHANGE_EMAIL_TEMPLATE,
+    ambassadorEmail,
+  )
+
+  if (!emailSent) {
+    log('[game-settings] Setting change request email failed', { game: gameSlug, settingKey }, 'error')
+    return {
+      status: HttpStatusCode.InternalServerError,
+      body: { error: 'failed to send setting change request email' },
+    }
+  }
+
+  log('[game-settings] Setting change request email sent', {
+    game: gameSlug,
+    settingKey,
+    ambassadorEmail,
+  })
+
+  return {
+    status: HttpStatusCode.Ok,
+    body: { success: true },
+  }
+}
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -95,6 +178,24 @@ export default async (req: Request) => {
       })
     }
 
+    const updatePayload = await getPayloadOpts(req)
+
+    if (
+      updatePayload.requestChange === true ||
+      (typeof updatePayload.settingKey === 'string' && updatePayload.settingKey.length)
+    ) {
+      const requestResult = await handleSettingChangeRequest(
+        game,
+        biketagOpts.game,
+        profile,
+        updatePayload,
+      )
+      return new Response(JSON.stringify(requestResult.body), {
+        headers,
+        status: requestResult.status,
+      })
+    }
+
     if (!requireGlobalAdmin(profile)) {
       log('[game-settings] Admin update denied', { email: profile?.email ?? 'none' }, 'warn')
       return new Response("you don't have permission to update settings", {
@@ -103,7 +204,6 @@ export default async (req: Request) => {
       })
     }
 
-    const updatePayload = await getPayloadOpts(req)
     const updates = Array.isArray(updatePayload.settings)
       ? updatePayload.settings
       : updatePayload._id

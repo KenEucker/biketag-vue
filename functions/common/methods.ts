@@ -3181,7 +3181,13 @@ const getLiquidInstance = () => {
   return liquidInstance
 }
 
-export const sendEmail = async (to: string, subject: string, locals: any, template?: string) => {
+export const sendEmail = async (
+  to: string,
+  subject: string,
+  locals: any,
+  template?: string,
+  replyTo?: string,
+) => {
   if (!(process.env.G_EMAIL && process.env.G_PASS)) return null
 
   template = template ?? subject
@@ -3222,6 +3228,7 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     subject, // subject
     text, // plain text body
     html, // html body
+    ...(replyTo?.length ? { replyTo } : {}),
   }
 
   const transporterOpts: any = {

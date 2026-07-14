@@ -557,6 +557,41 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return 'error updating game settings'
       }
     },
+    async requestGameSettingChange(payload: {
+      settingKey: string
+      settingName?: string
+      settingDescription?: string
+      currentValue?: string
+      requestedValue: string
+      reason: string
+    }) {
+      if (!this.isBikeTagAmbassador) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('settings'),
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+          data: {
+            requestChange: true,
+            ...payload,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to send setting change request'
+      } catch (e: any) {
+        console.error('error sending setting change request', e?.message ?? e)
+        return 'error sending setting change request'
+      }
+    },
     async fixQueueIssues() {
       if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'
