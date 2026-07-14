@@ -6,6 +6,7 @@ import BikeTags from '@/views/BikeTags.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Delete from '@/views/Delete.vue'
 import Edit from '@/views/Edit.vue'
+import GameSettings from '@/views/GameSettings.vue'
 import Home from '@/views/Home.vue'
 import HowToPlay from '@/views/HowToPlay.vue'
 import Landing from '@/views/Landing.vue'
@@ -50,6 +51,12 @@ const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
         name: 'Dashboard',
         beforeEnter: authGuard,
         component: Dashboard,
+      },
+      {
+        path: '/settings',
+        name: 'GameSettings',
+        beforeEnter: authGuard,
+        component: GameSettings,
       },
       {
         path: '/admin',

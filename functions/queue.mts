@@ -6,6 +6,7 @@ import {
   getImageSource,
   getPayloadOpts,
   getQueueApiHost,
+  getQueueWithResizeRetry,
   HttpStatusCode,
   log,
 } from './common'
@@ -66,13 +67,15 @@ export default async (req: Request) => {
       log('[get-queue] AWS config applied', updatedConfig)
     }
 
-    const queueResponse = await biketag.getQueue(biketagPayload as getQueuePayload, {
-      source: imageSource,
-    })
+    const queuePayload = biketagPayload as getQueuePayload
+    const queueResponse = queuePayload.resize
+      ? await getQueueWithResizeRetry(biketag, queuePayload, imageSource)
+      : await biketag.getQueue(queuePayload, { source: imageSource })
     log('[get-queue] getQueue response', {
       success: queueResponse.success,
       status: queueResponse.status,
       count: Array.isArray(queueResponse.data) ? queueResponse.data.length : 0,
+      resizeDeferred: 'resizeDeferred' in queueResponse && queueResponse.resizeDeferred === true,
     })
 
     const { success, data } = queueResponse

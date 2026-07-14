@@ -52,6 +52,9 @@
 [functions."queue-fix"]
   timeout = 26
 
+[functions."queue-resize-background"]
+  timeout = 26
+
 [functions."autopost-background"]
   schedule = "*/15 * * * *"
   included_files=["functions/emails/*.liquid"]

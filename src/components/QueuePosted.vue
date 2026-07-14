@@ -57,7 +57,7 @@
 </template>
 
 <script setup name="QueuePosted">
-import { debug } from '@/common'
+import { debug, summarizeTagGps } from '@/common'
 import { useBikeTagStore } from '@/store/index'
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -107,6 +107,15 @@ async function submitTag(defaultShareSettings) {
   formData.append('discussionUrl', submittedTag.discussionUrl)
   formData.append('mentionUrl', submittedTag.mentionUrl)
   // formData.append('shareUrl', submittedTag.shareUrl)
+
+  debug(
+    'gps::queue-posted::submit',
+    {
+      submittedTagGps: summarizeTagGps(submittedTag?.gps),
+      tagnumber: submittedTag?.tagnumber,
+    },
+    'info',
+  )
 
   emit('submit', {
     formAction,

@@ -1,5 +1,5 @@
 import { Ambassador, BikeTagClient, Game, Tag } from 'biketag'
-import { stringifyNumber } from '../src/common'
+import { stringifyNumber, summarizeTagGps } from '../src/common'
 import {
   defaultLogo,
   getBikeTagClientOpts,
@@ -36,6 +36,18 @@ export default async (req: Request) => {
     const playerIP = payload.data?.playerIP ?? payload.data?.ip ?? payload.ip
     const tag = JSON.parse(payload.data?.tag ?? '{}')
     const gameName = payload.data?.game ?? tag.game ?? null
+    if (formName === 'add-found-tag' || formName === 'post-new-biketag' || formName === 'approve-new-biketag') {
+      log(
+        'gps::submission-created',
+        {
+          formName,
+          tagGps: summarizeTagGps(tag?.gps),
+          tagnumber: tag?.tagnumber,
+          gameName,
+        },
+        'info',
+      )
+    }
     let successfulEmailsSent: any = []
     let rejectedEmails: any = []
     let thisGamesAmbassadors: Ambassador[] = []

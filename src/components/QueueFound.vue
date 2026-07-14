@@ -136,7 +136,7 @@
 
 <script setup name="QueueFoundTag">
 import Pin from '@/assets/images/pin.svg'
-import { debug, isAuthenticationEnabled, isGmapsEnabled } from '@/common'
+import { debug, isAuthenticationEnabled, isGmapsEnabled, summarizeTagGps } from '@/common'
 import { isPointInPolygon } from '@/common/geo'
 import { useBikeTagStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
@@ -343,6 +343,18 @@ const onSubmit = async (e) => {
       : {},
     inBoundary: isInBoundary.value,
   }
+  debug(
+    'gps::queue-found::submit',
+    {
+      gpsIsDefault,
+      isGpsDefault: isGpsDefault.value,
+      gpsState: summarizeTagGps(gps.value),
+      foundTagGps: summarizeTagGps(foundTag.gps),
+      foundLocation: foundTag.foundLocation,
+      tagnumber: foundTag.tagnumber,
+    },
+    'info',
+  )
   uploadInProgress.value = false
 
   emit('submit', {
@@ -366,6 +378,11 @@ const setPlace = (e) => {
   if (isGpsDefault.value) {
     isGpsDefault.value = false
   }
+  debug(
+    'gps::queue-found::autocomplete',
+    { gpsState: summarizeTagGps(gps.value), location: location.value },
+    'info',
+  )
 }
 const updateMarker = (e) => {
   gps.value['lat'] = round(e.lat)
@@ -375,6 +392,7 @@ const updateMarker = (e) => {
     isGpsDefault.value = false
   }
   center.value = { ...gps.value }
+  debug('gps::queue-found::map-drag', { gpsState: summarizeTagGps(gps.value) }, 'info')
 }
 const round = (number) => Number(Math.round(number + 'e4') + 'e-4')
 const setImage = async (event) => {
@@ -423,7 +441,7 @@ const setImage = async (event) => {
         // }
         const results = await exifr.parse(await input.files[0].arrayBuffer())
         const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
-        console.log('exif data:', results)
+        debug('gps::queue-found::exif-parse', { hasExif: !!results, createDate }, 'info')
 
         if (createDate < getCurrentBikeTag.value.mysteryTime) {
           toast.open({
@@ -434,9 +452,10 @@ const setImage = async (event) => {
           })
         } else {
           const GPSData = await exifr.gps(await input.files[0].arrayBuffer())
-          console.log('GPSData from EXIF:', GPSData)
+          let gpsSource = 'none'
 
           if (GPSData?.latitude && GPSData?.longitude) {
+            gpsSource = 'exif'
             gps.value = {
               lat: round(GPSData.latitude),
               lng: round(GPSData.longitude),
@@ -445,6 +464,7 @@ const setImage = async (event) => {
             showMap.value = true
             center.value = { ...gps.value }
           } else if (getGame.value?.boundary.lat && getGame.value?.boundary.lng) {
+            gpsSource = 'game-boundary-default'
             gps.value = {
               lat: getGame.value?.boundary.lat,
               lng: getGame.value?.boundary.lng,
@@ -452,9 +472,22 @@ const setImage = async (event) => {
             isGpsDefault.value = true
             center.value = { ...gps.value }
           } else {
+            gpsSource = 'no-exif-no-boundary'
             showMap.value = true
             isGpsDefault.value = false
           }
+          debug(
+            'gps::queue-found::exif-gps',
+            {
+              gpsSource,
+              exifGps: GPSData
+                ? { latitude: GPSData.latitude, longitude: GPSData.longitude }
+                : null,
+              gpsState: summarizeTagGps(gps.value),
+              isGpsDefault: isGpsDefault.value,
+            },
+            'info',
+          )
           location.value = ''
         }
       }

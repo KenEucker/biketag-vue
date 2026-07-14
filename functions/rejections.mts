@@ -5,6 +5,7 @@ import {
   getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
+  getQueueWithResizeRetry,
   HttpStatusCode,
   log,
 } from './common'
@@ -233,7 +234,18 @@ export default async (req: Request) => {
         })
       }
 
-      await biketag.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+      const resizeResponse = await getQueueWithResizeRetry(
+        biketag,
+        { resize: true, reindex: true },
+        'biketag',
+      )
+      if (!resizeResponse.success) {
+        log(
+          '[rejections] Queue resize after mystery restore failed',
+          { error: resizeResponse.error, game: biketagOpts.game },
+          'warn',
+        )
+      }
     }
 
     return new Response(

@@ -71,6 +71,7 @@ import {
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
+  getQueueWithResizeRetry,
   getQueueImageFromStorage,
   isDeletableQueueIssue,
   isFixableQueueIssue,
@@ -483,16 +484,16 @@ export default async (req: Request) => {
     let reindexedQueue: Tag[] | undefined
 
     if (shouldReindex) {
-      const queueResponse = await biketag.getQueue(
+      const queueResponse = await getQueueWithResizeRetry(
+        biketag,
         {
           game: biketagOpts.game,
           host: getQueueApiHost(biketagOpts.game),
           region: game.awsRegion,
-          cached: false,
           reindex: true,
           resize: shouldFix,
         },
-        { source: imageSource },
+        imageSource,
       )
 
       if (!queueResponse.success) {

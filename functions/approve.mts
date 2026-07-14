@@ -10,6 +10,7 @@ import {
   setNewBikeTagPost,
 } from './common'
 import { ErrorMessage, HttpStatusCode } from './common/constants'
+import { summarizeTagGps } from '../src/common/methods'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
@@ -94,6 +95,7 @@ export default async (req: Request) => {
           log('[approve-tag] Found tag to approve', {
             tagnumber: approvedTag.tagnumber,
             playerId: approvedTag.playerId,
+            gps: summarizeTagGps(approvedTag.gps),
           })
 
           const newBikeTagPostedResults = await setNewBikeTagPost(

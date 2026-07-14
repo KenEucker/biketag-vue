@@ -115,11 +115,13 @@
 import ArrowSvg from '@/assets/images/arrow.svg'
 import LineSvg from '@/assets/images/line.svg'
 import {
+  debug,
   dequeueErrorNotify,
   getIPIsBanned,
   getPlayerIsBanned,
   sendNetlifyError,
   sendNetlifyForm,
+  summarizeTagGps,
 } from '@/common'
 import { BiketagQueueFormSteps } from '@/common/types'
 import { useBikeTagStore } from '@/store/index'
@@ -206,6 +208,17 @@ async function onQueueSubmit(newTagSubmission) {
   const { tag, formAction, formData, storeAction } = newTagSubmission
   const storeActionIsPosting = storeAction === 'postNewBikeTag'
 
+  debug(
+    'gps::play::queue-submit',
+    {
+      storeAction,
+      tagGps: summarizeTagGps(tag?.gps),
+      playerTagGps: summarizeTagGps(getPlayerTag.value?.gps),
+      tagnumber: tag?.tagnumber ?? getPlayerTag.value?.tagnumber,
+    },
+    'info',
+  )
+
   if (!tag.foundImage) {
     isFoundTag = false
   }
@@ -259,6 +272,17 @@ async function onQueueSubmit(newTagSubmission) {
   tag.playerIP = ipAddress
   const success = await store[storeAction](tag)
   uploadInProgress.value = false
+
+  debug(
+    'gps::play::queue-submit-result',
+    {
+      storeAction,
+      success: success === true,
+      tagGps: summarizeTagGps(tag?.gps),
+      playerTagGps: summarizeTagGps(getPlayerTag.value?.gps),
+    },
+    'info',
+  )
 
   if (success === true) {
     /// Get a clean cache

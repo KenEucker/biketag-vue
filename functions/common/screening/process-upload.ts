@@ -1,6 +1,6 @@
 import type { BikeTagClient, Game } from 'biketag'
 import { getCdnPathsFromStorageKey, purgeSpacesCdnPaths } from '../cdn-purge'
-import { getGameStorageSlug, getImageSource, log } from '../methods'
+import { getGameStorageSlug, getImageSource, getQueueWithResizeRetry, log } from '../methods'
 import { isScreeningConfigured } from './config'
 import { sendScreeningRejectionEmail } from './email'
 import { renameQueueImageToRejected, validateQueueImageKeyForGame } from './rejected-storage'
@@ -44,7 +44,11 @@ export const reindexQueueAfterScreeningChange = async (
 ): Promise<void> => {
   configureBikeTagForQueue(game, biketag)
 
-  const queueResponse = await biketag.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+  const queueResponse = await getQueueWithResizeRetry(
+    biketag,
+    { resize: true, reindex: true },
+    'biketag',
+  )
   if (!queueResponse.success) {
     log(
       '[screen] Queue reindex after screening failed',
