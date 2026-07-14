@@ -87,11 +87,10 @@
 </template>
 
 <script setup name="GameSettingsView">
-import type { Setting } from '@/common/types'
 import { useBikeTagStore } from '@/store/index'
 import { computed, inject, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import Loading from 'vue-loading-overlay'
+import { useRouter } from 'vue-router'
 
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
@@ -103,8 +102,8 @@ const toast = inject('toast')
 const loading = ref(true)
 const saving = ref(false)
 const loadError = ref('')
-const settings = ref<Setting[]>([])
-const editableValues = ref<Record<string, string>>({})
+const settings = ref([])
+const editableValues = ref({})
 
 const isBikeTagAdmin = computed(() => store.isBikeTagAdmin)
 const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
@@ -114,20 +113,20 @@ const hasPendingChanges = computed(() =>
   settings.value.some((setting) => isValueChanged(setting)),
 )
 
-function settingKey(setting: Setting) {
+function settingKey(setting) {
   return setting._id || setting.key || setting.slug
 }
 
-function inputId(setting: Setting) {
+function inputId(setting) {
   return `setting-${settingKey(setting).replace(/[^a-zA-Z0-9_-]/g, '-')}`
 }
 
-function isValueChanged(setting: Setting) {
+function isValueChanged(setting) {
   const key = settingKey(setting)
   return (editableValues.value[key] ?? '') !== (setting.value ?? '')
 }
 
-function supportMailto(setting: Setting) {
+function supportMailto(setting) {
   const subject = encodeURIComponent(
     `[${store.getGameName}] Setting change request: ${setting.key}`,
   )
@@ -160,8 +159,8 @@ const generalSupportMailto = computed(() => {
   return `mailto:${supportEmail}?subject=${subject}&body=${body}`
 })
 
-function syncEditableValues(nextSettings: Setting[]) {
-  const values: Record<string, string> = {}
+function syncEditableValues(nextSettings) {
+  const values = {}
   for (const setting of nextSettings) {
     values[settingKey(setting)] = setting.value ?? ''
   }
