@@ -1,16 +1,21 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <loading v-show="loading" v-model:active="loading" :is-full-page="true" class="realign-spinner">
-    <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
-  </loading>
+  <div class="game-settings-page">
+    <loading
+      v-if="loading"
+      v-model:active="loading"
+      :is-full-page="true"
+      class="realign-spinner"
+    >
+      <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
+    </loading>
 
-  <div class="game-settings container">
+    <div class="game-settings container">
     <img class="settings-icon" src="/images/biketag-ambassador.svg" alt="Settings Icon" />
     <h1>Game Settings</h1>
     <p>
-      Configuration for <strong>{{ getGameNameProper }}</strong
-      >. BikeTag Ambassadors can review settings here and request changes from support. BikeTag
-      Admins can edit values directly.
+      Configuration for <strong>{{ getGameNameProper }}</strong>. BikeTag Ambassadors can review
+      settings here and request changes from support. BikeTag Admins can edit values directly.
     </p>
 
     <p v-if="loadError" class="error-banner">{{ loadError }}</p>
@@ -28,7 +33,7 @@
       </div>
 
       <ul class="settings-list">
-        <li v-for="setting in settings" :key="settingKey(setting)" class="setting-item">
+        <li v-for="(setting, index) in settings" :key="settingKey(setting, index)" class="setting-item">
           <div class="setting-header">
             <h2>{{ setting.name || setting.key }}</h2>
             <code class="setting-key">{{ setting.key }}</code>
@@ -36,17 +41,17 @@
           <p v-if="setting.description" class="setting-description">{{ setting.description }}</p>
 
           <div class="setting-value-row">
-            <label :for="inputId(setting)">Value</label>
+            <label :for="inputId(setting, index)">Value</label>
             <textarea
               v-if="isBikeTagAdmin"
-              :id="inputId(setting)"
-              v-model="editableValues[settingKey(setting)]"
+              :id="inputId(setting, index)"
+              v-model="editableValues[settingKey(setting, index)]"
               class="setting-input"
               rows="2"
             />
-            <output v-else :id="inputId(setting)" class="setting-readonly">
+            <div v-else :id="inputId(setting, index)" class="setting-readonly">
               {{ setting.value || '—' }}
-            </output>
+            </div>
           </div>
 
           <div class="setting-actions">
@@ -58,7 +63,7 @@
               Request change via support
             </a>
             <span
-              v-else-if="isValueChanged(setting)"
+              v-else-if="isValueChanged(setting, index)"
               class="pending-change"
             >
               Unsaved change
@@ -83,14 +88,15 @@
     <div class="back-link">
       <router-link to="/dashboard">← Back to Ambassador Dashboard</router-link>
     </div>
+    </div>
   </div>
 </template>
 
 <script setup name="GameSettingsView">
 import { useBikeTagStore } from '@/store/index'
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue'
 import Loading from 'vue-loading-overlay'
-import { useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
@@ -110,19 +116,19 @@ const isBikeTagAmbassador = computed(() => store.isBikeTagAmbassador)
 const getGameNameProper = computed(() => store.getGameNameProper)
 
 const hasPendingChanges = computed(() =>
-  settings.value.some((setting) => isValueChanged(setting)),
+  settings.value.some((setting, index) => isValueChanged(setting, index)),
 )
 
-function settingKey(setting) {
-  return setting._id || setting.key || setting.slug
+function settingKey(setting, index = 0) {
+  return setting._id || setting.key || setting.slug || `setting-${index}`
 }
 
-function inputId(setting) {
-  return `setting-${settingKey(setting).replace(/[^a-zA-Z0-9_-]/g, '-')}`
+function inputId(setting, index = 0) {
+  return `setting-${settingKey(setting, index).replace(/[^a-zA-Z0-9_-]/g, '-')}`
 }
 
-function isValueChanged(setting) {
-  const key = settingKey(setting)
+function isValueChanged(setting, index = 0) {
+  const key = settingKey(setting, index)
   return (editableValues.value[key] ?? '') !== (setting.value ?? '')
 }
 
@@ -161,9 +167,9 @@ const generalSupportMailto = computed(() => {
 
 function syncEditableValues(nextSettings) {
   const values = {}
-  for (const setting of nextSettings) {
-    values[settingKey(setting)] = setting.value ?? ''
-  }
+  nextSettings.forEach((setting, index) => {
+    values[settingKey(setting, index)] = setting.value ?? ''
+  })
   editableValues.value = values
 }
 
@@ -186,11 +192,12 @@ async function loadSettings() {
 
 async function saveChanges() {
   const updates = settings.value
-    .filter((setting) => isValueChanged(setting))
-    .map((setting) => ({
+    .map((setting, index) => ({ setting, index }))
+    .filter(({ setting, index }) => isValueChanged(setting, index))
+    .map(({ setting, index }) => ({
       _id: setting._id,
       key: setting.key,
-      value: editableValues.value[settingKey(setting)] ?? '',
+      value: editableValues.value[settingKey(setting, index)] ?? '',
     }))
     .filter((setting) => setting._id && setting.key)
 
@@ -221,6 +228,16 @@ async function saveChanges() {
   await loadSettings()
 }
 
+onBeforeRouteLeave(() => {
+  loading.value = false
+  saving.value = false
+})
+
+onBeforeUnmount(() => {
+  loading.value = false
+  saving.value = false
+})
+
 onMounted(async () => {
   await store.isReady()
 
@@ -234,6 +251,10 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+.game-settings-page {
+  min-height: 1px;
+}
+
 .game-settings {
   background-color: #fff;
   color: #000;
