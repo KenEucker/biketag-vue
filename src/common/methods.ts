@@ -1,6 +1,6 @@
 import { DeviceUUID } from '@/common/uuid'
 import { createClient } from '@sanity/client'
-import { Game, Tag } from 'biketag/dist/common/schema'
+import { Tag } from 'biketag/dist/common/schema'
 import CryptoJS from 'crypto-js'
 import domtoimage from 'dom-to-image'
 import log from 'loglevel'
@@ -11,154 +11,14 @@ import {
   BikeTagEnv,
   BikeTagProfile,
   BiketagQueueFormSteps,
-  DomainInfo,
-  deca,
-  special,
 } from '.'
+import { getDomainInfo } from './domain'
 
-export const stringifyNumber = (n: number): string => {
-  if (n < 20) return special[n]
-  if (n % 10 === 0) return deca[Math.floor(n / 10) - 2] + 'ieth'
-  return deca[Math.floor(n / 10) - 2] + 'y-' + special[n % 10]
-}
-// https://stackoverflow.com/questions/13627308/add-st-nd-rd-and-th-ordinal-suffix-to-a-number
-export const ordinalSuffixOf = (n: number) => {
-  const j = n % 10,
-    k = n % 100
-  if (j == 1 && k != 11) {
-    return n + 'st'
-  }
-  if (j == 2 && k != 12) {
-    return n + 'nd'
-  }
-  if (j == 3 && k != 13) {
-    return n + 'rd'
-  }
-  return n + 'th'
-}
-
-export const getImageSized = (
-  imageSourceOrUrl: 'aws' | 'imgur' | 'sanity' | string = '',
-  imageUrlOrSize?: string,
-  size: 's' | 'm' | 'l' | 'o' | undefined = 'm',
-): string => {
-  const sizeMap: Record<string, 'small' | 'medium' | 'original'> = {
-    s: 'small',
-    m: 'medium',
-    l: 'original',
-    o: 'original',
-  }
-
-  let imageSource
-  let imageUrl: string
-
-  // Handle case where imageSource was omitted
-  if (!['aws', 'imgur', 'sanity'].includes(imageSourceOrUrl)) {
-    imageUrl = imageSourceOrUrl
-    if (imageUrlOrSize !== undefined) {
-      size = imageUrlOrSize as typeof size
-    }
-  } else {
-    imageSource = imageSourceOrUrl as 'aws' | 'imgur' | 'sanity'
-    imageUrl = imageUrlOrSize || ''
-  }
-
-  const resolvedSize = sizeMap[size] || 'original'
-
-  // Short-circuit based on image URL
-  if (/imgur\.com/.test(imageUrl)) {
-    return getImgurImageSized(imageUrl, size)
-  }
-
-  if (/digitaloceanspaces\.com/.test(imageUrl)) {
-    return getS3ImageSized(imageUrl, resolvedSize)
-  }
-
-  // Fallback based on declared or defaulted source
-  switch (imageSource) {
-    case 'aws':
-      return getS3ImageSized(imageUrl, resolvedSize)
-    case 'imgur':
-    default:
-      return getImgurImageSized(imageUrl, size)
-  }
-}
-
-export const getS3ImageSized = (
-  imageUrl: string = '',
-  size: 'small' | 'medium' | 'original' = 'original',
-): string => {
-  if (!imageUrl || size === 'original') return imageUrl
-
-  if (/digitaloceanspaces\.com/.test(imageUrl)) {
-    const isMainFolder = /\/main\//.test(imageUrl)
-    const ext = imageUrl.match(/(\.[a-z0-9]+)(?:\?.*)?$/i)?.[1]?.toLowerCase() ?? ''
-    const base = imageUrl.replace(/(_small|_medium)?\.[a-z0-9]+(?:\?.*)?$/i, '')
-
-    // Main folder images are always webp with webp variants.
-    if (isMainFolder) {
-      return `${base}_${size}.webp`
-    }
-
-    // Queue webp images may have webp variants after optional processing.
-    if (ext === '.webp') {
-      return `${base}_${size}.webp`
-    }
-
-    // Queue jpg/png/etc: use the uploaded original as-is.
-    return imageUrl
-  }
-
-  return imageUrl.replace(/(_small|_medium)?(\.\w+)$/, `_${size}$2`)
-}
-
-export const getImgurImageSized = (imgurUrl = '', size = 'm') => {
-  return imgurUrl
-    .replace('.jpg', `${size}.jpg`)
-    .replace('.jpeg', `${size}.jpg`)
-    .replace('.gif', `${size}.gif`)
-    .replace('.png', `${size}.png`)
-    .replace('.webp', `${size}.webp`)
-    .replace('.mp4', `${size}.mp4`)
-}
-
-export const getDomainInfo = (req: any): DomainInfo => {
-  const nonSubdomainHosts = [
-    `${BikeTagEnv.HOST ?? 'biketag.local'}`,
-    'biketag.dev',
-    '0.0.0.0',
-    'localhost',
-  ]
-  let host = (
-    req.headers?.get('host')?.length
-      ? req.headers.get('host')
-      : req?.location?.host?.length
-        ? req.location.host
-        : ''
-  )
-    .toLowerCase()
-    .replace(/www./g, '')
-  let port = null
-  let subdomain = null
-
-  if (host.indexOf(':') > 0) {
-    ;[host, port] = host.split(':')
-  }
-
-  const isSubdomain = nonSubdomainHosts.indexOf(host) === -1
-
-  if (isSubdomain) {
-    const hostSplit = host.split('.')
-    subdomain = hostSplit[0]
-    host = hostSplit.join('.')
-  }
-
-  return {
-    host: host + (port ? ':' + port : ''),
-    isSubdomain,
-    subdomain,
-  }
-}
+export { getDomainInfo } from './domain'
+export { stringifyNumber, ordinalSuffixOf } from './format'
+export { getSupportedGames } from './games'
+export { summarizeTagGps } from './gps'
+export { getImageSized, getImgurImageSized, getS3ImageSized } from './images'
 
 export const getTagDate = (time: number): Date => new Date(time * 1000)
 export const getTagDateISOPlusOffset = (time: number, offset = 'Z'): string =>
@@ -441,14 +301,6 @@ export const getQueuedTagState = (queuedTag: Tag): BiketagQueueFormSteps => {
   return queuedTagState
 }
 
-export const getSupportedGames = (games: Game[]) => {
-  const isImgurSupported = (g: Game) =>
-    g.mainhash?.length && g.archivehash?.length && g.queuehash?.length
-  const isAwsSupported = (g: Game) => g.awsRegion?.length
-
-  return games.filter((g: Game) => (isImgurSupported(g) || isAwsSupported(g)) && g.logo?.length)
-}
-
 export const getSanityImageActualSize = (logo: string) => logo?.split('.')[2]?.split('-')[1]
 
 export const getSanityImageResizedSize = (logo: string) => {
@@ -539,28 +391,6 @@ export const exportHtmlToDownload = (filename: string, node?: any, selector?: st
     .catch(function (error) {
       console.error('oops, something went wrong!', error)
     })
-}
-
-type GpsLike =
-  | {
-      lat?: number | null
-      long?: number | null
-      lng?: number | null
-      alt?: number | null
-    }
-  | null
-  | undefined
-
-/** Compact GPS snapshot for tracing coordinates through the post pipeline. */
-export const summarizeTagGps = (gps?: GpsLike) => {
-  if (!gps || typeof gps !== 'object') {
-    return { hasGps: false, isEmpty: true, lat: null, long: null, alt: null }
-  }
-  const lat = gps.lat ?? null
-  const long = gps.long ?? gps.lng ?? null
-  const isEmpty = Object.keys(gps).length === 0
-  const hasGps = lat != null && long != null && (lat !== 0 || long !== 0)
-  return { hasGps, isEmpty, lat, long, alt: gps.alt ?? null }
 }
 
 export const debug = (

@@ -26,7 +26,7 @@ import qs from 'qs'
 import sharp from 'sharp'
 import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue, BikeTagProfile } from './types'
-import { summarizeTagGps } from '../../src/common/methods'
+import { summarizeTagGps } from '../../src/common/gps'
 
 const ajv = new Ajv()
 

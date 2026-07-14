@@ -9,7 +9,7 @@ import {
 } from './common'
 import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'
-import { summarizeTagGps } from '../src/common/methods'
+import { summarizeTagGps } from '../src/common/gps'
 
 export const autoPostNewBikeTags = async (): Promise<BackgroundProcessResults> => {
   if (process.env.SKIP_AUTOPOST_FUNCTION === 'true') {

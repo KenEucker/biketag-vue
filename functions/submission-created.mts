@@ -1,5 +1,6 @@
 import { Ambassador, BikeTagClient, Game, Tag } from 'biketag'
-import { stringifyNumber, summarizeTagGps } from '../src/common'
+import { stringifyNumber } from '../src/common/format'
+import { summarizeTagGps } from '../src/common/gps'
 import {
   defaultLogo,
   getBikeTagClientOpts,

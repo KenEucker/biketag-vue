@@ -1,5 +1,5 @@
 import BikeTagClient, { Achievement, Game, Player, Tag } from 'biketag'
-import { getSupportedGames } from '../src/common'
+import { getSupportedGames } from '../src/common/games'
 import { getBikeTagClientOpts, log } from './common'
 import { HttpStatusCode } from './common/constants'
 import { BackgroundProcessResults } from './common/types'

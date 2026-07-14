@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { BikeTagClient, Game } from 'biketag'
-import { getDomainInfo, getImageSized } from '../src/common'
+import { getDomainInfo } from '../src/common/domain'
+import { getImageSized } from '../src/common/images'
 import { acceptCorsHeaders, getBikeTagClientOpts, getImageSource, getPayloadOpts, log } from './common'
 import { HttpStatusCode } from './common/constants'
 

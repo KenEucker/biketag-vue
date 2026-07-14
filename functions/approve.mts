@@ -10,7 +10,7 @@ import {
   setNewBikeTagPost,
 } from './common'
 import { ErrorMessage, HttpStatusCode } from './common/constants'
-import { summarizeTagGps } from '../src/common/methods'
+import { summarizeTagGps } from '../src/common/gps'
 
 export default async (req: Request) => {
   const headers = acceptCorsHeaders()
