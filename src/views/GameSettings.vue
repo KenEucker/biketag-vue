@@ -1,16 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="game-settings-page">
-    <loading
-      v-if="loading"
-      v-model:active="loading"
-      :is-full-page="true"
-      class="realign-spinner"
-    >
-      <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
-    </loading>
-
-    <div class="game-settings container">
+  <div class="game-settings container">
     <img class="settings-icon" src="/images/biketag-ambassador.svg" alt="Settings Icon" />
     <h1>Game Settings</h1>
     <p>
@@ -18,85 +8,80 @@
       settings here and request changes from support. BikeTag Admins can edit values directly.
     </p>
 
-    <p v-if="loadError" class="error-banner">{{ loadError }}</p>
+    <p v-if="loading" class="status-message">Loading settings…</p>
+    <p v-else-if="loadError" class="error-banner">{{ loadError }}</p>
 
-    <div v-if="settings.length" class="settings-panel">
-      <div class="settings-toolbar">
-        <span>{{ settings.length }} setting{{ settings.length === 1 ? '' : 's' }}</span>
-        <bike-tag-button
-          v-if="isBikeTagAdmin && hasPendingChanges"
-          variant="medium"
-          text="Save changes"
-          :disabled="saving"
-          @click="saveChanges"
-        />
+    <template v-else>
+      <div v-if="!settings.length" class="settings-panel settings-panel--empty">
+        <p>No settings were returned for this game.</p>
       </div>
 
-      <ul class="settings-list">
-        <li v-for="(setting, index) in settings" :key="settingKey(setting, index)" class="setting-item">
-          <div class="setting-header">
-            <h2>{{ setting.name || setting.key }}</h2>
-            <code class="setting-key">{{ setting.key }}</code>
-          </div>
-          <p v-if="setting.description" class="setting-description">{{ setting.description }}</p>
+      <div v-else class="settings-panel">
+        <div class="settings-toolbar">
+          <span>{{ settings.length }} setting{{ settings.length === 1 ? '' : 's' }}</span>
+          <bike-tag-button
+            v-if="isBikeTagAdmin"
+            variant="medium"
+            text="Save changes"
+            :disabled="saving || !hasPendingChanges"
+            @click="saveChanges"
+          />
+        </div>
 
-          <div class="setting-value-row">
-            <label :for="inputId(setting, index)">Value</label>
-            <textarea
-              v-if="isBikeTagAdmin"
-              :id="inputId(setting, index)"
-              v-model="editableValues[settingKey(setting, index)]"
-              class="setting-input"
-              rows="2"
-            />
-            <div v-else :id="inputId(setting, index)" class="setting-readonly">
-              {{ setting.value || '—' }}
+        <ul class="settings-list">
+          <li
+            v-for="(setting, index) in settings"
+            :key="settingKey(setting, index)"
+            class="setting-item"
+          >
+            <div class="setting-header">
+              <h2>{{ setting.name || setting.key || 'Setting' }}</h2>
+              <code v-if="setting.key" class="setting-key">{{ setting.key }}</code>
             </div>
-          </div>
+            <p v-if="setting.description" class="setting-description">{{ setting.description }}</p>
 
-          <div class="setting-actions">
-            <a
-              v-if="!isBikeTagAdmin"
-              class="request-change-link"
-              :href="supportMailto(setting)"
-            >
-              Request change via support
-            </a>
-            <span
-              v-else-if="isValueChanged(setting, index)"
-              class="pending-change"
-            >
-              Unsaved change
-            </span>
-          </div>
-        </li>
-      </ul>
+            <div class="setting-value-row">
+              <label :for="inputId(setting, index)">Value</label>
+              <textarea
+                v-if="isBikeTagAdmin"
+                :id="inputId(setting, index)"
+                v-model="editableValues[settingKey(setting, index)]"
+                class="setting-input"
+                rows="2"
+              />
+              <pre v-else :id="inputId(setting, index)" class="setting-readonly">{{
+                displayValue(setting)
+              }}</pre>
+            </div>
 
-      <div v-if="!isBikeTagAdmin" class="support-note">
-        <p>
-          To change a setting, email
-          <a :href="generalSupportMailto">{{ supportEmail }}</a>
-          with the setting key, current value, and what you would like changed.
-        </p>
+            <div v-if="!isBikeTagAdmin" class="setting-actions">
+              <a class="request-change-link" :href="supportMailto(setting)">
+                Request change via support
+              </a>
+            </div>
+          </li>
+        </ul>
+
+        <div v-if="!isBikeTagAdmin" class="support-note">
+          <p>
+            To change a setting, email
+            <a :href="generalSupportMailto">{{ supportEmail }}</a>
+            with the setting key, current value, and what you would like changed.
+          </p>
+        </div>
       </div>
-    </div>
-
-    <div v-else-if="!loading && !loadError" class="settings-panel settings-panel--empty">
-      <p>No settings were returned for this game.</p>
-    </div>
+    </template>
 
     <div class="back-link">
       <router-link to="/dashboard">← Back to Ambassador Dashboard</router-link>
-    </div>
     </div>
   </div>
 </template>
 
 <script setup name="GameSettingsView">
 import { useBikeTagStore } from '@/store/index'
-import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue'
-import Loading from 'vue-loading-overlay'
-import { onBeforeRouteLeave, useRouter } from 'vue-router'
+import { computed, inject, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import BikeTagButton from '@/components/BikeTagButton.vue'
 
@@ -124,7 +109,12 @@ function settingKey(setting, index = 0) {
 }
 
 function inputId(setting, index = 0) {
-  return `setting-${settingKey(setting, index).replace(/[^a-zA-Z0-9_-]/g, '-')}`
+  return `setting-${String(settingKey(setting, index)).replace(/[^a-zA-Z0-9_-]/g, '-')}`
+}
+
+function displayValue(setting) {
+  const value = setting?.value
+  return value == null || value === '' ? '—' : String(value)
 }
 
 function isValueChanged(setting, index = 0) {
@@ -132,20 +122,29 @@ function isValueChanged(setting, index = 0) {
   return (editableValues.value[key] ?? '') !== (setting.value ?? '')
 }
 
+function ambassadorName() {
+  return (
+    store.getProfile?.user_metadata?.name ||
+    store.getProfile?.name ||
+    store.getProfile?.email ||
+    'BikeTag Ambassador'
+  )
+}
+
 function supportMailto(setting) {
   const subject = encodeURIComponent(
-    `[${store.getGameName}] Setting change request: ${setting.key}`,
+    `[${store.getGameName}] Setting change request: ${setting.key ?? 'unknown'}`,
   )
   const body = encodeURIComponent(
     [
       `Game: ${store.getGameNameProper} (${store.getGameName})`,
-      `Setting: ${setting.name || setting.key}`,
-      `Key: ${setting.key}`,
+      `Setting: ${setting.name || setting.key || 'Unknown'}`,
+      `Key: ${setting.key ?? ''}`,
       `Current value: ${setting.value ?? ''}`,
       '',
       'Requested change:',
       '',
-      `— ${store.getProfile?.name || store.getProfile?.email || 'BikeTag Ambassador'}`,
+      `— ${ambassadorName()}`,
     ].join('\n'),
   )
   return `mailto:${supportEmail}?subject=${subject}&body=${body}`
@@ -159,11 +158,21 @@ const generalSupportMailto = computed(() => {
       '',
       'Please describe the setting(s) you would like changed:',
       '',
-      `— ${store.getProfile?.name || store.getProfile?.email || 'BikeTag Ambassador'}`,
+      `— ${ambassadorName()}`,
     ].join('\n'),
   )
   return `mailto:${supportEmail}?subject=${subject}&body=${body}`
 })
+
+function normalizeSettings(result) {
+  if (Array.isArray(result)) {
+    return result
+  }
+  if (result && Array.isArray(result.data)) {
+    return result.data
+  }
+  return []
+}
 
 function syncEditableValues(nextSettings) {
   const values = {}
@@ -177,20 +186,34 @@ async function loadSettings() {
   loading.value = true
   loadError.value = ''
 
-  const result = await store.fetchGameSettings()
-  loading.value = false
+  try {
+    const result = await store.fetchGameSettings()
 
-  if (typeof result === 'string') {
-    loadError.value = result
+    if (typeof result === 'string') {
+      loadError.value = result
+      settings.value = []
+      return
+    }
+
+    const nextSettings = normalizeSettings(result).sort((a, b) =>
+      String(a?.key ?? '').localeCompare(String(b?.key ?? '')),
+    )
+    settings.value = nextSettings
+    syncEditableValues(nextSettings)
+  } catch (error) {
+    console.error('error loading game settings', error)
+    loadError.value = 'error loading game settings'
     settings.value = []
-    return
+  } finally {
+    loading.value = false
   }
-
-  settings.value = [...result].sort((a, b) => a.key.localeCompare(b.key))
-  syncEditableValues(settings.value)
 }
 
 async function saveChanges() {
+  if (!isBikeTagAdmin.value || saving.value || !hasPendingChanges.value) {
+    return
+  }
+
   const updates = settings.value
     .map((setting, index) => ({ setting, index }))
     .filter(({ setting, index }) => isValueChanged(setting, index))
@@ -206,43 +229,36 @@ async function saveChanges() {
   }
 
   saving.value = true
-  const result = await store.updateGameSettings(updates)
-  saving.value = false
+  try {
+    const result = await store.updateGameSettings(updates)
 
-  if (typeof result === 'string') {
+    if (typeof result === 'string') {
+      toast.open({
+        message: result,
+        type: 'error',
+        duration: 10000,
+        position: 'top',
+      })
+      return
+    }
+
     toast.open({
-      message: result,
-      type: 'error',
-      duration: 10000,
+      message: `Saved ${updates.length} setting${updates.length === 1 ? '' : 's'}.`,
+      type: 'success',
       position: 'top',
     })
-    return
+
+    await loadSettings()
+  } finally {
+    saving.value = false
   }
-
-  toast.open({
-    message: `Saved ${updates.length} setting${updates.length === 1 ? '' : 's'}.`,
-    type: 'success',
-    position: 'top',
-  })
-
-  await loadSettings()
 }
-
-onBeforeRouteLeave(() => {
-  loading.value = false
-  saving.value = false
-})
-
-onBeforeUnmount(() => {
-  loading.value = false
-  saving.value = false
-})
 
 onMounted(async () => {
   await store.isReady()
 
   if (!isBikeTagAmbassador.value) {
-    router.push('/')
+    await router.replace('/')
     return
   }
 
@@ -251,16 +267,13 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.game-settings-page {
-  min-height: 1px;
-}
-
 .game-settings {
   background-color: #fff;
   color: #000;
   padding: 2rem;
   max-width: 860px;
   margin: 0 auto;
+  text-align: center;
   font-family: 'Courier New', monospace;
 
   h1 {
@@ -270,20 +283,21 @@ onMounted(async () => {
     display: inline-block;
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
-    text-align: center;
-    width: 100%;
   }
 
   p {
     font-size: 1rem;
     margin-bottom: 1.5rem;
-    text-align: center;
   }
 
   .settings-icon {
     display: block;
     width: 72px;
     margin: 0 auto 1rem;
+  }
+
+  .status-message {
+    font-weight: bold;
   }
 
   .error-banner {
@@ -371,6 +385,7 @@ onMounted(async () => {
     border: 1px dashed #000;
     padding: 0.5rem;
     background: #fff;
+    margin: 0;
   }
 
   .setting-readonly {
@@ -378,6 +393,7 @@ onMounted(async () => {
     min-height: 2.5rem;
     white-space: pre-wrap;
     word-break: break-word;
+    text-align: left;
   }
 
   .setting-actions {
@@ -390,12 +406,6 @@ onMounted(async () => {
     font-weight: bold;
   }
 
-  .pending-change {
-    font-size: 0.85rem;
-    font-weight: bold;
-    color: #a60;
-  }
-
   .support-note {
     margin-top: 1.5rem;
     padding-top: 1rem;
@@ -404,7 +414,6 @@ onMounted(async () => {
   }
 
   .back-link {
-    text-align: center;
     margin-top: 1rem;
   }
 }
