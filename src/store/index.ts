@@ -639,6 +639,34 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return 'error deleting wrong-round queue files'
       }
     },
+    async clearQueueFolder() {
+      if (!this.isBikeTagAdmin) {
+        return 'incorrect permissions'
+      }
+
+      try {
+        const response = await client.plainRequest({
+          method: 'POST',
+          url: getApiUrl('queue-fix'),
+          data: {
+            clearQueue: true,
+          },
+          headers: {
+            authorization: `Bearer ${this.auth0Token}`,
+          },
+        })
+
+        if (response.status > 199 && response.status < 300) {
+          this.resetBikeTagCache()
+          return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+        }
+
+        return response.data?.error || 'failed to clear queue'
+      } catch (e: any) {
+        console.error('error clearing queue', e?.message ?? e)
+        return 'error clearing queue'
+      }
+    },
     async moveQueueFoundToMain(issue: { key?: string; url?: string; targetTagnumber?: number }) {
       if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'

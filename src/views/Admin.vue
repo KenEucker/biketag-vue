@@ -30,6 +30,12 @@
       />
       <bike-tag-button
         variant="medium-orange"
+        text="Clear Entire Queue"
+        :disabled="working"
+        @click="clearEntireQueue"
+      />
+      <bike-tag-button
+        variant="medium-orange"
         text="Resend Post Notifications"
         :disabled="working"
         @click="resendPostNotifications"
@@ -355,6 +361,27 @@ async function deleteAllWrongRound() {
       ? `Deleted wrong-round files, but ${result.issueCount} issue${result.issueCount === 1 ? '' : 's'} remain.`
       : 'Wrong-round queue files deleted successfully.',
     !!result.issueCount,
+  )
+}
+
+async function clearEntireQueue() {
+  if (
+    !window.confirm(
+      'Clear the entire queue folder? This permanently deletes ALL queue files and rebuilds an empty queue index. This cannot be undone.',
+    )
+  ) {
+    return
+  }
+
+  const result = await runQueueAction(() => store.clearQueueFolder())
+  if (!result) return
+
+  const deletedCount = Array.isArray(result.deletedKeys) ? result.deletedKeys.length : 0
+  notifyAction(
+    result.storageFileCount
+      ? `Deleted ${deletedCount} queue file${deletedCount === 1 ? '' : 's'}, but ${result.storageFileCount} file${result.storageFileCount === 1 ? '' : 's'} still remain in queue/.`
+      : `Queue cleared (${deletedCount} file${deletedCount === 1 ? '' : 's'} deleted) and index rebuilt.`,
+    (result.storageFileCount ?? 0) > 0,
   )
 }
 

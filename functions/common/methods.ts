@@ -2670,6 +2670,28 @@ export const getQueueImageDeleteKeys = (primaryKey: string, allKeys: string[] = 
   return unique.filter((key) => keySet.has(key))
 }
 
+/** Delete every object under queue/ (images, variants, index.json, unparsed files). */
+export const clearAllQueueStorageObjects = async (
+  gameSlug: string,
+  region: string,
+): Promise<{ deleted: string[] }> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+  const keys = await listQueueObjectKeys(client, bucket, 'queue/')
+  const deleted: string[] = []
+
+  for (const key of keys) {
+    try {
+      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+      deleted.push(key)
+    } catch (error) {
+      log('[queue-fix] Failed to delete queue object', { key, error }, 'warn')
+    }
+  }
+
+  return { deleted }
+}
+
 /** Delete primary queue image and its _medium/_small variants from queue/ only. */
 export const deleteQueueImageGroupFromStorage = async (
   gameSlug: string,
