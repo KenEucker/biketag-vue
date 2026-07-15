@@ -1118,6 +1118,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         const response = await client.plainRequest({
           method: 'GET',
           url: getApiUrl('rejections'),
+          cached,
           params: {
             ambassadorId: this.profile.sub,
             currentRound: this.currentBikeTag?.tagnumber,
@@ -1240,6 +1241,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           headers: getBikeTagJwtAuthHeaders(token),
         })
         .catch((error: any) => {
+          this.screenedUploadKeys = this.screenedUploadKeys.filter((key) => key !== screeningKey)
           debug(`${BikeTagDefaults.store}::screen-image`, error?.message ?? error, 'warn')
         })
 

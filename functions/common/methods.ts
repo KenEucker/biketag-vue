@@ -2,6 +2,7 @@ import { AtpAgent } from '@atproto/api'
 import {
   CopyObjectCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
@@ -2679,13 +2680,40 @@ export const clearAllQueueStorageObjects = async (
   const bucket = `${gameSlug.toLowerCase()}-biketag`
   const keys = await listQueueObjectKeys(client, bucket, 'queue/')
   const deleted: string[] = []
+  const batchSize = 1000
 
-  for (const key of keys) {
+  for (let i = 0; i < keys.length; i += batchSize) {
+    const batch = keys.slice(i, i + batchSize)
+
     try {
-      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
-      deleted.push(key)
+      const response = await client.send(
+        new DeleteObjectsCommand({
+          Bucket: bucket,
+          Delete: {
+            Objects: batch.map((Key) => ({ Key })),
+          },
+        }),
+      )
+
+      for (const item of response.Deleted ?? []) {
+        if (item.Key) {
+          deleted.push(item.Key)
+        }
+      }
+
+      for (const error of response.Errors ?? []) {
+        log(
+          '[queue-fix] Failed to delete queue object',
+          { key: error.Key, code: error.Code, message: error.Message },
+          'warn',
+        )
+      }
     } catch (error) {
-      log('[queue-fix] Failed to delete queue object', { key, error }, 'warn')
+      log(
+        '[queue-fix] Failed to delete queue object batch',
+        { batchSize: batch.length, keys: batch, error },
+        'warn',
+      )
     }
   }
 

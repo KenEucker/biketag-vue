@@ -87,7 +87,7 @@ export const readTokenFromDocumentCookie = (tokenCookieKey = 'token'): string =>
 }
 
 export const resolveBikeTagJwtToken = (token?: string): string =>
-  token ?? getTokenFromCookie() ?? readTokenFromDocumentCookie()
+  token || getTokenFromCookie() || readTokenFromDocumentCookie()
 
 export const getBikeTagJwtAuthHeaders = (token?: string): Record<string, string> => {
   const jwt = resolveBikeTagJwtToken(token)

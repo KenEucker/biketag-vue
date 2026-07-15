@@ -6,7 +6,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import type { Game, Tag } from 'biketag'
-import { getCdnPathsFromStorageKey, purgeSpacesCdnPaths } from '../cdn-purge'
+import { getCdnPathsFromStorageKey, purgeSpacesCdnPaths, purgeSpacesCdnUrls } from '../cdn-purge'
 import {
   createQueueStorageClient,
   getGameStorageSlug,

@@ -23,7 +23,7 @@ import { inject, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Loading from 'vue-loading-overlay'
 
-const actionInProgress = ref(false)
+const actionInProgress = ref(true)
 const store = useBikeTagStore()
 const toast = inject('toast')
 const { t } = useI18n()

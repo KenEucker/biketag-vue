@@ -68,8 +68,15 @@ export default async (req: Request) => {
     }
 
     const queuePayload = biketagPayload as getQueuePayload
+    // Leave headroom under Netlify's 26s queue timeout for game lookup + deferred reindex.
+    const queueResizeSyncTimeoutMs = parseInt(
+      process.env.QUEUE_RESIZE_SYNC_TIMEOUT_MS ?? '15000',
+      10,
+    )
     const queueResponse = queuePayload.resize
-      ? await getQueueWithResizeRetry(biketag, queuePayload, imageSource)
+      ? await getQueueWithResizeRetry(biketag, queuePayload, imageSource, {
+          syncTimeoutMs: queueResizeSyncTimeoutMs,
+        })
       : await biketag.getQueue(queuePayload, { source: imageSource })
     log('[get-queue] getQueue response', {
       success: queueResponse.success,

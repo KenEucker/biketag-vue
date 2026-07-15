@@ -52,6 +52,9 @@
 [functions."queue-fix"]
   timeout = 26
 
+[functions."queue"]
+  timeout = 26
+
 [functions."queue-resize-background"]
   timeout = 26
 
