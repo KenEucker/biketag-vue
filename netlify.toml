@@ -52,6 +52,12 @@
 [functions."queue-fix"]
   timeout = 26
 
+[functions."queue"]
+  timeout = 26
+
+[functions."queue-resize-background"]
+  timeout = 26
+
 [functions."autopost-background"]
   schedule = "*/15 * * * *"
   included_files=["functions/emails/*.liquid"]
@@ -72,7 +78,19 @@
 [functions."approve"]
   included_files=["functions/emails/*.liquid"]
 
+[functions."screen"]
+  included_files=["functions/emails/*.liquid"]
+
+[functions."screen-background"]
+  included_files=["functions/emails/*.liquid"]
+
+[functions."rejections"]
+  included_files=["functions/emails/*.liquid"]
+
 [functions."profile"]
+  included_files=["functions/emails/*.liquid"]
+
+[functions."settings"]
   included_files=["functions/emails/*.liquid"]
 
 [[plugins]]

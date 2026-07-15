@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style type="text/css">
+        body {
+            margin: 1em;
+            padding: 2em;
+            font-family: Arial, sans-serif;
+        }
+
+        table {
+            width: 100%;
+            max-width: 640px;
+        }
+
+        .label {
+            font-weight: bold;
+            vertical-align: top;
+            width: 160px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Game setting change request</h2>
+    <p>
+        <strong>{{ ambassadorName }}</strong>
+        {% if ambassadorEmail %}({{ ambassadorEmail }}){% endif %}
+        requested a change for <strong>{{ gameProper }}</strong> ({{ game }}).
+    </p>
+
+    <table border="0" cellpadding="8" cellspacing="0">
+        <tr>
+            <td class="label">Setting</td>
+            <td>{{ settingName }}</td>
+        </tr>
+        <tr>
+            <td class="label">Key</td>
+            <td><code>{{ settingKey }}</code></td>
+        </tr>
+        {% if settingDescription %}
+        <tr>
+            <td class="label">Description</td>
+            <td>{{ settingDescription }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="label">Current value</td>
+            <td><pre>{{ currentValue }}</pre></td>
+        </tr>
+        <tr>
+            <td class="label">Requested value</td>
+            <td><pre>{{ requestedValue }}</pre></td>
+        </tr>
+        <tr>
+            <td class="label">Reason</td>
+            <td><pre>{{ reason }}</pre></td>
+        </tr>
+        <tr>
+            <td class="label">Game site</td>
+            <td><a href="{{ host }}">{{ host }}</a></td>
+        </tr>
+    </table>
+</body>
+
+</html>

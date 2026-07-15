@@ -73,6 +73,12 @@ export interface AmbassadorProfile extends Profile {
   zipcode: string
 }
 export type BikeTagProfile = Partial<Profile> & Partial<AmbassadorProfile>
+export type PlayerRejectedUpload = {
+  type: 'found' | 'mystery'
+  imageUrl: string
+  reason: string
+}
+
 export interface BikeTagStoreState {
   fetchingData: boolean
   dataFetched: boolean
@@ -98,6 +104,9 @@ export interface BikeTagStoreState {
   regionPolygon: any
   token?: string
   auth0Token?: string
+  playerRejectedUpload?: PlayerRejectedUpload | null
+  screenedUploadKeys?: string[]
+  rejectedImages?: any[]
 }
 
 export enum BiketagQueueFormSteps {
@@ -121,6 +130,7 @@ export enum BikeTagSettingsKeys {
   SupportsBluesky = 'social::post-to-bluesky',
   SupportsInstagram = 'social::post-to-instagram',
   SupportsFacebook = 'social::post-to-facebook',
+  ScreeningEnabled = 'screening::enabled',
 }
 
 export enum BikeTagEvent {

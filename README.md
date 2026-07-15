@@ -110,6 +110,14 @@ AUTH0_CLIENT_ID=AUTH0CLIENTID
 AUTH0_DOMAIN=AUTH0DOMAIN
 AUTH0_TOKEN=AUTH0TOKEN
 AUTH0_AUDIENCE=AUTH0AUDIENCE
+# Used for automated image screening (backend-only; never expose to frontend)
+RF_KEY=ROBOFLOWAPIKEY
+# Optional aliases/overrides for screening
+ROBOFLOW_API_KEY=ROBOFLOWAPIKEY
+RF_WORKSPACE=bikes-workspace-6t0na
+RF_WORKFLOW=bicycle-no-selfie-screening-api
+# Optional Roboflow HTTP timeout in ms (default 120000; runs in screen-background)
+RF_TIMEOUT_MS=120000
 ```
 <div align="center">
 

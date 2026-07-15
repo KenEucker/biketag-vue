@@ -12,6 +12,7 @@
  * | Fix queue images  | POST, no action flags (shouldFix)| queue/ via biketag getQueue(reindex, resize) |
  * | Delete one file   | deleteKey / deleteUrl            | queue/ delete |
  * | Delete wrong-round| deleteWrongRound: true           | queue/ delete (all wrong-round issues) |
+ * | Clear entire queue| clearQueue: true                 | queue/ delete (all objects) + reindex |
  * | Move to main      | moveToMainKey + moveToMainTargetRound | queue/ copy→main/ found slot; main/index.json patch |
  *
  * Every request ends with a fresh scan and JSON report (issues, summary, queue snapshot).
@@ -62,6 +63,7 @@ import {
   completeOrphanedQueueFoundMoveToMain,
   repairMainFoundIndexFromStorage,
   deleteQueueImageGroupFromStorage,
+  clearAllQueueStorageObjects,
   evaluateOrphanedQueueFoundForMain,
   evaluateOrphanedQueueFoundForTarget,
   resolveOrphanTargetsForImage,
@@ -71,6 +73,7 @@ import {
   getPayloadOpts,
   getProfileAuthorization,
   getQueueApiHost,
+  getQueueWithResizeRetry,
   getQueueImageFromStorage,
   isDeletableQueueIssue,
   isFixableQueueIssue,
@@ -279,9 +282,11 @@ export default async (req: Request) => {
         ? payloadOpts.repairMainFoundIndexRound
         : undefined
     const deleteWrongRound = coerceBooleanQueryParam(payloadOpts.deleteWrongRound) === true
+    const clearQueue = coerceBooleanQueryParam(payloadOpts.clearQueue) === true
     const shouldFix =
       !deleteKey &&
       !deleteWrongRound &&
+      !clearQueue &&
       !moveToMainKey &&
       repairMainFoundIndexRound === undefined &&
       (req.method === 'POST' || coerceBooleanQueryParam(payloadOpts.fix) === true)
@@ -291,6 +296,7 @@ export default async (req: Request) => {
       shouldFix,
       deleteKey,
       deleteWrongRound,
+      clearQueue,
       moveToMainKey,
       repairMainFoundIndexRound,
       game: game.name,
@@ -462,6 +468,10 @@ export default async (req: Request) => {
         primaryKeys: wrongRoundKeys,
         deletedKeys,
       })
+    } else if (clearQueue) {
+      const clearResult = await clearAllQueueStorageObjects(gameSlug, game.awsRegion)
+      deletedKeys = clearResult.deleted
+      log('[queue-fix] Cleared entire queue folder', { deletedCount: deletedKeys.length })
     } else if (deleteKey?.startsWith('queue/')) {
       const preDelete = await loadQueueStorageImages(gameSlug, game.awsRegion)
       const result = await deleteQueueImageGroupFromStorage(
@@ -479,20 +489,20 @@ export default async (req: Request) => {
       })
     }
 
-    const shouldReindex = shouldFix || deletedKeys.length > 0 || !!movedToMain
+    const shouldReindex = clearQueue || shouldFix || deletedKeys.length > 0 || !!movedToMain
     let reindexedQueue: Tag[] | undefined
 
     if (shouldReindex) {
-      const queueResponse = await biketag.getQueue(
+      const queueResponse = await getQueueWithResizeRetry(
+        biketag,
         {
           game: biketagOpts.game,
           host: getQueueApiHost(biketagOpts.game),
           region: game.awsRegion,
-          cached: false,
           reindex: true,
           resize: shouldFix,
         },
-        { source: imageSource },
+        imageSource,
       )
 
       if (!queueResponse.success) {
@@ -596,6 +606,7 @@ export default async (req: Request) => {
     const responsePayload = {
       success: true,
       fixed: shouldFix,
+      clearedQueue: clearQueue,
       deleted: deletedKeys.length > 0,
       deletedKeys,
       movedToMain,

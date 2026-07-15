@@ -1,6 +1,6 @@
 export const BikeTagDefaults = {
   appId: 'com.app.biketag',
-  admingEmail: 'biketag@biketag.org',
+  adminEmail: 'hello@biketag.org',
   gameName: '',
   host: 'biketag.org',
   hostKey: 'ItsABikeTagGame',
@@ -28,7 +28,7 @@ export const BikeTagEnv = {
   DEBUG_FE: process.env.DEBUG_FE ?? process.env.DEBUG_A ?? 'false',
   CACHE_RESET_INTERVAL: process.env.CACHE_RESET_INTERVAL ?? BikeTagDefaults.cacheResetInterval,
   CONTEXT: process.env.CONTEXT ?? null,
-  ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? BikeTagDefaults.admingEmail,
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? BikeTagDefaults.adminEmail,
   AMBASSADOR_ROLE: process.env.AMBASSADOR_ROLE ?? BikeTagDefaults.sanityAmbassadorRoleID,
   PLAYER_ROLE: process.env.PLAYER_ROLE ?? BikeTagDefaults.sanityPlayerRoleID,
   /* Auth0 Configuration */

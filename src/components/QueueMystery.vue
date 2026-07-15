@@ -67,6 +67,9 @@
           required
           @change="setImage"
         />
+        <p v-if="screeningCountdownMessage" class="queue-text queue-text--countdown">
+          {{ screeningCountdownMessage }}
+        </p>
         <p class="queue-text">{{ $t('pages.round.mystery_text') }}</p>
         <div class="mt-3 mb-3 input-container">
           <bike-tag-input
@@ -93,6 +96,7 @@
         <bike-tag-button
           variant="medium"
           type="submit"
+          :disabled="mysteryUploadBlocked"
           :text="`${$t('pages.round.submit_new_tag')} ${$t('pages.round.queue_postfix')}`"
         />
       </form>
@@ -101,10 +105,10 @@
 </template>
 
 <script setup name="QueueMysteryTag">
-import { ordinalSuffixOf } from '@/common'
+import { formatMysteryUploadCountdownMessage, getMysteryUploadRemainingSeconds, ordinalSuffixOf } from '@/common'
 import { useBikeTagStore } from '@/store/index'
 import exifr from 'exifr'
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 // import heic2any from 'heic2any';
@@ -134,6 +138,8 @@ const noLongerNew = ref(false)
 const hint = ref(props.tag?.hint ?? '')
 const player = ref('')
 const mysteryTagRef = ref(null)
+const countdownNow = ref(Date.now())
+const countdownTimer = ref(null)
 const store = useBikeTagStore()
 const router = useRouter()
 const toast = inject('toast')
@@ -145,6 +151,17 @@ const getPlayerTag = computed(() => store.getPlayerTag)
 const getPlayerId = computed(() => store.getPlayerId)
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getQueuedTags = computed(() => store.getQueuedTags)
+const isScreeningEnabledForGame = computed(() => store.isScreeningEnabledForGame)
+const mysteryUploadRemainingSeconds = computed(() => {
+  if (!isScreeningEnabledForGame.value) return 0
+  return getMysteryUploadRemainingSeconds(getPlayerTag.value?.foundTime, countdownNow.value)
+})
+const mysteryUploadBlocked = computed(() => mysteryUploadRemainingSeconds.value > 0)
+const screeningCountdownMessage = computed(() =>
+  mysteryUploadBlocked.value
+    ? formatMysteryUploadCountdownMessage(mysteryUploadRemainingSeconds.value)
+    : '',
+)
 const numberInQueue = computed(() => {
   return getQueuedTags.value?.reduce((o, t, n) => {
     if (t.playerId === getPlayerTag.value?.playerId) {
@@ -157,6 +174,15 @@ const numberInQueue = computed(() => {
 // methods
 function onSubmit(e) {
   e.preventDefault()
+  if (mysteryUploadBlocked.value) {
+    toast.open({
+      message: screeningCountdownMessage.value,
+      type: 'error',
+      duration: 5000,
+      position: 'top',
+    })
+    return
+  }
   if (!image.value) {
     toast.open({
       message: 'Invalid image, add a new one.',
@@ -287,6 +313,15 @@ function hideModal() {
 onMounted(() => {
   player.value = getPlayerTag.value?.foundPlayer
   showModalIfNew()
+  countdownTimer.value = window.setInterval(() => {
+    countdownNow.value = Date.now()
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (countdownTimer.value) {
+    window.clearInterval(countdownTimer.value)
+  }
 })
 </script>
 

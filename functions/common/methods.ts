@@ -2,6 +2,7 @@ import { AtpAgent } from '@atproto/api'
 import {
   CopyObjectCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
@@ -26,6 +27,7 @@ import qs from 'qs'
 import sharp from 'sharp'
 import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue, BikeTagProfile } from './types'
+import { summarizeTagGps } from '../../src/common/gps'
 
 const ajv = new Ajv()
 
@@ -783,18 +785,291 @@ export const queueImageHasVariants = async (
   }
 }
 
+const QUEUE_RESIZE_RETRY_DELAY_MS = parseInt(process.env.QUEUE_RESIZE_RETRY_DELAY_MS ?? '750', 10)
+const QUEUE_RESIZE_SYNC_TIMEOUT_MS = parseInt(process.env.QUEUE_RESIZE_SYNC_TIMEOUT_MS ?? '15000', 10)
+const QUEUE_RESIZE_SYNC_TIMEOUT_ERROR = 'QUEUE_RESIZE_SYNC_TIMEOUT'
+
+const clampQueueResizeAttempts = (maxAttempts?: number, resize = true): number => {
+  if (!resize) return 1
+  const configured = maxAttempts ?? parseInt(process.env.QUEUE_RESIZE_MAX_ATTEMPTS ?? '2', 10)
+  const attempts = Number.isFinite(configured) && configured > 0 ? configured : 2
+  return Math.min(Math.max(attempts, 2), 3)
+}
+
+const isQueueResizeSyncTimeout = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : String(error)
+  return message === QUEUE_RESIZE_SYNC_TIMEOUT_ERROR
+}
+
+const raceWithTimeout = async <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+  if (timeoutMs <= 0) {
+    throw new Error(QUEUE_RESIZE_SYNC_TIMEOUT_ERROR)
+  }
+
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(QUEUE_RESIZE_SYNC_TIMEOUT_ERROR)), timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
+}
+
+export type GetQueueWithResizeRetryOptions = {
+  maxAttempts?: number
+  delayMs?: number
+  /** When true, run the full retry loop without a sync deadline (background workers). */
+  skipSyncTimeout?: boolean
+  syncTimeoutMs?: number
+}
+
+export const triggerQueueResizeBackground = (
+  game: string,
+  payload: Record<string, unknown>,
+  imageSource: string,
+) => {
+  const url = getApiUrl(game, 'queue-resize-background')
+  log(
+    '[queue-resize] Deferring resize to background',
+    { game, timeoutMs: QUEUE_RESIZE_SYNC_TIMEOUT_MS },
+    'warn',
+  )
+  void fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...payload,
+      cached: false,
+      reindex: payload.reindex ?? true,
+      resize: true,
+      imageSource,
+    }),
+  }).catch((error) => {
+    log('[queue-resize] Background resize invoke failed', { game, error }, 'warn')
+  })
+}
+
+const deferQueueResizeToBackground = async (
+  biketag: BikeTagClient,
+  payload: Record<string, unknown>,
+  imageSource: string,
+) => {
+  const game = String(payload.game ?? '')
+  triggerQueueResizeBackground(game, payload, imageSource)
+
+  const reindexResponse = await biketag.getQueue(
+    {
+      ...payload,
+      cached: false,
+      reindex: payload.reindex ?? true,
+      resize: false,
+    },
+    { source: imageSource },
+  )
+
+  return {
+    ...reindexResponse,
+    resizeDeferred: true as const,
+  }
+}
+
+/** Full resize/reindex retry loop without a sync deadline. */
+export const runQueueResizeFull = async (
+  biketag: BikeTagClient,
+  payload: Record<string, unknown>,
+  imageSource: string,
+  options: GetQueueWithResizeRetryOptions = {},
+) => {
+  const resize = payload.resize !== false
+  const maxAttempts = clampQueueResizeAttempts(options.maxAttempts, resize)
+  const delayMs = options.delayMs ?? QUEUE_RESIZE_RETRY_DELAY_MS
+  let lastResponse: Awaited<ReturnType<BikeTagClient['getQueue']>> = {
+    success: false,
+    error: 'queue resize not attempted',
+    status: HttpStatusCode.BadRequest,
+    source: imageSource,
+    data: [],
+  }
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const queueResponse = await biketag.getQueue(
+      {
+        ...payload,
+        cached: false,
+        reindex: payload.reindex ?? true,
+        resize,
+      },
+      { source: imageSource },
+    )
+    lastResponse = queueResponse
+
+    if (queueResponse.success) {
+      if (attempt > 1) {
+        log(
+          '[queue-resize] getQueue resize succeeded after retry',
+          { attempt, maxAttempts, resize },
+          'info',
+        )
+      }
+      return queueResponse
+    }
+
+    log(
+      '[queue-resize] getQueue resize attempt failed',
+      {
+        attempt,
+        maxAttempts,
+        resize,
+        error: queueResponse.error,
+        status: queueResponse.status,
+      },
+      attempt < maxAttempts ? 'warn' : 'error',
+    )
+
+    if (attempt < maxAttempts) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
+  }
+
+  return lastResponse
+}
+
+/** Re-run queue resize/reindex with a sync timeout; defers to background when resize runs too long. */
+export const getQueueWithResizeRetry = async (
+  biketag: BikeTagClient,
+  payload: Record<string, unknown>,
+  imageSource: string,
+  options: GetQueueWithResizeRetryOptions = {},
+) => {
+  const resize = payload.resize !== false
+  if (!resize) {
+    return biketag.getQueue(payload, { source: imageSource })
+  }
+
+  if (options.skipSyncTimeout) {
+    return runQueueResizeFull(biketag, payload, imageSource, options)
+  }
+
+  const maxAttempts = clampQueueResizeAttempts(options.maxAttempts, resize)
+  const delayMs = options.delayMs ?? QUEUE_RESIZE_RETRY_DELAY_MS
+  const syncTimeoutMs = options.syncTimeoutMs ?? QUEUE_RESIZE_SYNC_TIMEOUT_MS
+  const deadline = Date.now() + syncTimeoutMs
+  const remainingMs = () => Math.max(0, deadline - Date.now())
+
+  let lastResponse: Awaited<ReturnType<BikeTagClient['getQueue']>> = {
+    success: false,
+    error: 'queue resize not attempted',
+    status: HttpStatusCode.BadRequest,
+    source: imageSource,
+    data: [],
+  }
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const ms = remainingMs()
+    if (ms <= 0) {
+      return deferQueueResizeToBackground(biketag, payload, imageSource)
+    }
+
+    try {
+      const queueResponse = await raceWithTimeout(
+        biketag.getQueue(
+          {
+            ...payload,
+            cached: false,
+            reindex: payload.reindex ?? true,
+            resize,
+          },
+          { source: imageSource },
+        ),
+        ms,
+      )
+      lastResponse = queueResponse
+
+      if (queueResponse.success) {
+        if (attempt > 1) {
+          log(
+            '[queue-resize] getQueue resize succeeded after retry',
+            { attempt, maxAttempts, resize },
+            'info',
+          )
+        }
+        return queueResponse
+      }
+
+      log(
+        '[queue-resize] getQueue resize attempt failed',
+        {
+          attempt,
+          maxAttempts,
+          resize,
+          error: queueResponse.error,
+          status: queueResponse.status,
+        },
+        attempt < maxAttempts ? 'warn' : 'error',
+      )
+
+      if (attempt < maxAttempts) {
+        const delay = Math.min(delayMs, remainingMs())
+        if (delay > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delay))
+        }
+      }
+    } catch (error) {
+      if (isQueueResizeSyncTimeout(error)) {
+        return deferQueueResizeToBackground(biketag, payload, imageSource)
+      }
+      throw error
+    }
+  }
+
+  return lastResponse
+}
+
 const requireQueueImageVariants = async (
   game: Game,
   imageUrl: string,
   label: string,
+  biketag?: BikeTagClient,
+  imageSource = 'biketag',
 ): Promise<void> => {
   const gameSlug = getGameStorageSlug(game)
   const region = game.awsRegion ?? ''
-  if (!(await queueImageHasVariants(region, gameSlug, imageUrl))) {
-    throw new Error(
-      `${label} image is missing queue size variants — upload processing may still be in progress`,
-    )
+  const hasVariants = () => queueImageHasVariants(region, gameSlug, imageUrl)
+
+  if (await hasVariants()) {
+    return
   }
+
+  if (biketag && region.length) {
+    log(
+      '[queue-resize] Variants missing before move to main — running resize',
+      { label, imageUrl, game: gameSlug },
+      'info',
+    )
+    await getQueueWithResizeRetry(
+      biketag,
+      {
+        game: gameSlug,
+        host: getQueueApiHost(game.name),
+        region,
+        reindex: true,
+        resize: true,
+      },
+      imageSource,
+    )
+
+    if (await hasVariants()) {
+      return
+    }
+  }
+
+  throw new Error(
+    `${label} image is missing queue size variants — upload processing may still be in progress`,
+  )
 }
 
 const isStorageObjectNotFound = (error: unknown): boolean => {
@@ -2396,6 +2671,55 @@ export const getQueueImageDeleteKeys = (primaryKey: string, allKeys: string[] = 
   return unique.filter((key) => keySet.has(key))
 }
 
+/** Delete every object under queue/ (images, variants, index.json, unparsed files). */
+export const clearAllQueueStorageObjects = async (
+  gameSlug: string,
+  region: string,
+): Promise<{ deleted: string[] }> => {
+  const client = createQueueStorageClient(region)
+  const bucket = `${gameSlug.toLowerCase()}-biketag`
+  const keys = await listQueueObjectKeys(client, bucket, 'queue/')
+  const deleted: string[] = []
+  const batchSize = 1000
+
+  for (let i = 0; i < keys.length; i += batchSize) {
+    const batch = keys.slice(i, i + batchSize)
+
+    try {
+      const response = await client.send(
+        new DeleteObjectsCommand({
+          Bucket: bucket,
+          Delete: {
+            Objects: batch.map((Key) => ({ Key })),
+          },
+        }),
+      )
+
+      for (const item of response.Deleted ?? []) {
+        if (item.Key) {
+          deleted.push(item.Key)
+        }
+      }
+
+      for (const error of response.Errors ?? []) {
+        log(
+          '[queue-fix] Failed to delete queue object',
+          { key: error.Key, code: error.Code, message: error.Message },
+          'warn',
+        )
+      }
+    } catch (error) {
+      log(
+        '[queue-fix] Failed to delete queue object batch',
+        { batchSize: batch.length, keys: batch, error },
+        'warn',
+      )
+    }
+  }
+
+  return { deleted }
+}
+
 /** Delete primary queue image and its _medium/_small variants from queue/ only. */
 export const deleteQueueImageGroupFromStorage = async (
   gameSlug: string,
@@ -2778,15 +3102,18 @@ export const getPayloadAuthorization = async (
     }
   }
 
-  log(
-    'Authorization resolved',
-    {
-      originalAuthorization: req.headers.get('authorization'),
-      authorizationType,
-      authProfile,
-    },
-    'info',
-  )
+    log(
+      'Authorization resolved',
+      {
+        originalAuthorization: req.headers.get('authorization') ? '[present]' : null,
+        authorizationType,
+        authProfile: {
+          ...authProfile,
+          token: authProfile.token ? '[redacted]' : undefined,
+        },
+      },
+      'info',
+    )
 
   return authProfile
 }
@@ -2882,7 +3209,13 @@ const getLiquidInstance = () => {
   return liquidInstance
 }
 
-export const sendEmail = async (to: string, subject: string, locals: any, template?: string) => {
+export const sendEmail = async (
+  to: string,
+  subject: string,
+  locals: any,
+  template?: string,
+  replyTo?: string,
+) => {
   if (!(process.env.G_EMAIL && process.env.G_PASS)) return null
 
   template = template ?? subject
@@ -2923,6 +3256,7 @@ export const sendEmail = async (to: string, subject: string, locals: any, templa
     subject, // subject
     text, // plain text body
     html, // html body
+    ...(replyTo?.length ? { replyTo } : {}),
   }
 
   const transporterOpts: any = {
@@ -3165,6 +3499,18 @@ export const getActiveQueueForGame = async (
       completedTags = queuedTags.filter((t) => t.foundImageUrl?.length && t.mysteryImageUrl?.length)
 
       if (completedTags.length) {
+        log(
+          'gps::active-queue::completed-tags',
+          {
+            game: game.name,
+            tags: completedTags.map((t) => ({
+              tagnumber: t.tagnumber,
+              playerId: t.playerId,
+              gps: summarizeTagGps(t.gps),
+            })),
+          },
+          'info',
+        )
         const now = Date.now()
         const tagAutoPostTimer = 1000 * 60 * autoPostSetting
         log(
@@ -3850,16 +4196,40 @@ export const finalizeNewBikeTagPost = async (
     newBikeTagPost.playerId = winningBikeTagPost.playerId
   }
   newBikeTagPost.game = gameSlug
+  log(
+    'gps::finalize-new-biketag-post::input',
+    {
+      winningTagGps: summarizeTagGps(winningBikeTagPost.gps),
+      previousTagGps: summarizeTagGps(previousBikeTag.gps),
+      winningTagnumber: winningBikeTagPost.tagnumber,
+      game: gameSlug,
+    },
+    'info',
+  )
   newBikeTagPost.gps = { lat: 0, long: 0, alt: 0 }
   previousBikeTag.game = gameSlug
   previousBikeTag.gps = winningBikeTagPost.gps
   previousBikeTag.foundPlayer = winningBikeTagPost.foundPlayer
   previousBikeTag.foundTime = winningBikeTagPost.foundTime
   previousBikeTag.foundLocation = winningBikeTagPost.foundLocation
+  log(
+    'gps::finalize-new-biketag-post::assigned',
+    {
+      previousTagGps: summarizeTagGps(previousBikeTag.gps),
+      newMysteryTagGps: summarizeTagGps(newBikeTagPost.gps),
+    },
+    'info',
+  )
 
   if (imageSource === 'aws' && game.awsRegion?.length) {
     if (winningBikeTagPost.foundImageUrl?.length) {
-      await requireQueueImageVariants(game, winningBikeTagPost.foundImageUrl, 'Found')
+      await requireQueueImageVariants(
+        game,
+        winningBikeTagPost.foundImageUrl,
+        'Found',
+        adminBiketag,
+        imageSource,
+      )
       previousBikeTag.foundImageUrl = await moveQueueImageToMainWithVariants(
         gameSlug,
         game.awsRegion,
@@ -3869,7 +4239,13 @@ export const finalizeNewBikeTagPost = async (
       )
     }
     if (winningBikeTagPost.mysteryImageUrl?.length) {
-      await requireQueueImageVariants(game, winningBikeTagPost.mysteryImageUrl, 'Mystery')
+      await requireQueueImageVariants(
+        game,
+        winningBikeTagPost.mysteryImageUrl,
+        'Mystery',
+        adminBiketag,
+        imageSource,
+      )
       newBikeTagPost.mysteryImageUrl = await moveQueueImageToMainWithVariants(
         gameSlug,
         game.awsRegion,
@@ -3887,6 +4263,14 @@ export const finalizeNewBikeTagPost = async (
   log('Updating current BikeTag with winning tag found info', previousBikeTag, 'info')
   const currentBikeTagUpdateResult = await adminBiketag.updateTag(previousBikeTag, mainUpdateOpts)
   log('Result of currentBikeTag update', currentBikeTagUpdateResult, 'info')
+  log(
+    'gps::finalize-new-biketag-post::previous-tag-update',
+    {
+      success: currentBikeTagUpdateResult.success,
+      savedGps: summarizeTagGps(previousBikeTag.gps),
+    },
+    'info',
+  )
 
   if (currentBikeTagUpdateResult.success) {
     results.push({ message: 'current BikeTag updated', game: game.name, tag: previousBikeTag })
@@ -4120,6 +4504,15 @@ export const setNewBikeTagPost = async (
 ): Promise<BackgroundProcessResults> => {
   const gameSlug = getGameStorageSlug(game)
   winningBikeTagPost = { ...winningBikeTagPost, game: gameSlug }
+  log(
+    'gps::set-new-biketag-post',
+    {
+      winningTagGps: summarizeTagGps(winningBikeTagPost.gps),
+      tagnumber: winningBikeTagPost.tagnumber,
+      game: gameSlug,
+    },
+    'info',
+  )
 
   try {
     return await finalizeNewBikeTagPost(

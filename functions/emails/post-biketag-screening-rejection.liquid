@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>BikeTag Screening Rejection</title>
+</head>
+<body>
+  <p>A {{ imageType }} BikeTag image was rejected for round #{{ roundNumber }} in {{ game }}.</p>
+  <p><strong>Player ID:</strong> {{ playerId }}</p>
+  <p><strong>Player IP:</strong> {{ playerIP }}</p>
+  <p><strong>Reason:</strong> {{ reason }}</p>
+  <p><a href="{{ rejectionsUrl }}">Review rejected images</a></p>
+  <p><img src="{{ imageUrl }}" alt="Rejected BikeTag image" style="max-width: 100%;" /></p>
+</body>
+</html>

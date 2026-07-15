@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "roboflow": {
+      "url": "https://mcp.roboflow.com/mcp"
+    }
+  }
+}

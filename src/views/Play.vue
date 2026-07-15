@@ -30,6 +30,7 @@
       @dequeing="uploadInProgress = true"
       @dequeue-success="uploadInProgress = false"
     />
+    <queue-rejection-alert />
     <div
       v-if="BiketagQueueFormSteps[getFormStep] >= 1 && BiketagQueueFormSteps[getFormStep] < 4"
       class="step"
@@ -114,11 +115,13 @@
 import ArrowSvg from '@/assets/images/arrow.svg'
 import LineSvg from '@/assets/images/line.svg'
 import {
+  debug,
   dequeueErrorNotify,
   getIPIsBanned,
   getPlayerIsBanned,
   sendNetlifyError,
   sendNetlifyForm,
+  summarizeTagGps,
 } from '@/common'
 import { BiketagQueueFormSteps } from '@/common/types'
 import { useBikeTagStore } from '@/store/index'
@@ -133,6 +136,7 @@ import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import QueueFound from '@/components/QueueFound.vue'
 import QueueJoined from '@/components/QueueJoined.vue'
 import QueueMystery from '@/components/QueueMystery.vue'
+import QueueRejectionAlert from '@/components/QueueRejectionAlert.vue'
 import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
 import QueueSubmit from '@/components/QueueSubmit.vue'
@@ -204,6 +208,17 @@ async function onQueueSubmit(newTagSubmission) {
   const { tag, formAction, formData, storeAction } = newTagSubmission
   const storeActionIsPosting = storeAction === 'postNewBikeTag'
 
+  debug(
+    'gps::play::queue-submit',
+    {
+      storeAction,
+      tagGps: summarizeTagGps(tag?.gps),
+      playerTagGps: summarizeTagGps(getPlayerTag.value?.gps),
+      tagnumber: tag?.tagnumber ?? getPlayerTag.value?.tagnumber,
+    },
+    'info',
+  )
+
   if (!tag.foundImage) {
     isFoundTag = false
   }
@@ -254,8 +269,20 @@ async function onQueueSubmit(newTagSubmission) {
   }
 
   uploadInProgress.value = true
+  tag.playerIP = ipAddress
   const success = await store[storeAction](tag)
   uploadInProgress.value = false
+
+  debug(
+    'gps::play::queue-submit-result',
+    {
+      storeAction,
+      success: success === true,
+      tagGps: summarizeTagGps(tag?.gps),
+      playerTagGps: summarizeTagGps(getPlayerTag.value?.gps),
+    },
+    'info',
+  )
 
   if (success === true) {
     /// Get a clean cache
@@ -336,7 +363,7 @@ const created = async () => {
 created()
 
 // Mounted
-onMounted(() => {
+onMounted(async () => {
   if (props.usingTimer) {
     watchEffect(async () => {
       if (timer.value.isExpired.valueOf) {
@@ -346,6 +373,11 @@ onMounted(() => {
   }
 
   uploadInProgress.value = false
+
+  await store.isReady()
+  if (store.isScreeningEnabledForGame && store.getPlayerId) {
+    await store.fetchPlayerRejectedUpload()
+  }
 })
 </script>
 

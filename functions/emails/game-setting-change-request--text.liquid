@@ -1,0 +1,18 @@
+Game setting change request
+
+{{ ambassadorName }}{% if ambassadorEmail %} ({{ ambassadorEmail }}){% endif %} requested a change for {{ gameProper }} ({{ game }}).
+
+Setting: {{ settingName }}
+Key: {{ settingKey }}
+{% if settingDescription %}Description: {{ settingDescription }}
+{% endif %}
+Current value:
+{{ currentValue }}
+
+Requested value:
+{{ requestedValue }}
+
+Reason:
+{{ reason }}
+
+Game site: {{ host }}
