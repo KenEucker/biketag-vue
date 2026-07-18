@@ -126,7 +126,7 @@ import {
 import { BiketagQueueFormSteps } from '@/common/types'
 import { useBikeTagStore } from '@/store/index'
 import { publicIp } from 'public-ip'
-import { computed, inject, onMounted, ref, watchEffect } from 'vue'
+import { computed, inject, onMounted, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTimer } from 'vue-timer-hook'
 
@@ -136,9 +136,9 @@ import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import QueueFound from '@/components/QueueFound.vue'
 import QueueJoined from '@/components/QueueJoined.vue'
 import QueueMystery from '@/components/QueueMystery.vue'
-import QueueRejectionAlert from '@/components/QueueRejectionAlert.vue'
 import QueuePosted from '@/components/QueuePosted.vue'
 import QueuePostedShare from '@/components/QueuePostedShare.vue'
+import QueueRejectionAlert from '@/components/QueueRejectionAlert.vue'
 import QueueSubmit from '@/components/QueueSubmit.vue'
 import Loading from 'vue-loading-overlay'
 
@@ -172,6 +172,7 @@ const getGameName = computed(() => store.getGameName)
 const getPlayerId = computed(() => store.getPlayerId)
 const getPlayerName = computed(() => store.getPlayerName)
 const getGameNotices = computed(() => store.getGameNotices)
+const getPlayerQueueRejections = computed(() => store.getPlayerQueueRejections)
 
 // methods
 const isViewingQueue = () =>
@@ -182,6 +183,36 @@ const isSubmittingData = () =>
     getFormStep.value === BiketagQueueFormSteps[BiketagQueueFormSteps.queuePosted] ||
     getFormStep.value === BiketagQueueFormSteps[BiketagQueueFormSteps.queuePostedShare]
   )
+function notifyQueueRejections(rejections = getPlayerQueueRejections.value) {
+  for (const rejection of rejections) {
+    const markerKey = rejection.markerKey ?? `${rejection.deletedImageKey}::${rejection.createdAt}`
+    const notifiedKey = `${getGameName.value}::queue-rejection::${markerKey}::${rejection.createdAt ?? ''}`
+
+    if (localStorage.getItem(notifiedKey)) continue
+
+    const postedKey = `${getGameName.value}-${getCurrentBikeTag.value?.tagnumber}${
+      rejection.imageType === 'found' ? '--found' : '--mystery'
+    }::posted`
+    localStorage.removeItem(postedKey)
+    localStorage.setItem(notifiedKey, Date.now().toString())
+
+    toast.open({
+      message: rejection.message ?? 'Your uploaded BikeTag image was rejected and removed.',
+      type: 'error',
+      timeout: false,
+      duration: 15000,
+      position: 'bottom',
+    })
+  }
+}
+function scheduleQueueValidationChecks() {
+  ;[2000, 5000, 10000].forEach((delay) => {
+    window.setTimeout(async () => {
+      await store.fetchQueuedTags(false)
+      notifyQueueRejections()
+    }, delay)
+  })
+}
 async function onQueueSubmit(newTagSubmission) {
   let isFoundTag = true
   const ipAddress = await publicIp()
@@ -320,6 +351,7 @@ async function onQueueSubmit(newTagSubmission) {
           type: 'success',
           position: 'bottom',
         })
+        scheduleQueueValidationChecks()
       },
       (m) => {
         toast.open({
@@ -373,11 +405,14 @@ onMounted(async () => {
   }
 
   uploadInProgress.value = false
+  store.isReady().then(async () => {
+    await store.fetchQueuedTags(false)
+    notifyQueueRejections()
+  })
+})
 
-  await store.isReady()
-  if (store.isScreeningEnabledForGame && store.getPlayerId) {
-    await store.fetchPlayerRejectedUpload()
-  }
+watch(getPlayerQueueRejections, (rejections) => notifyQueueRejections(rejections), {
+  deep: true,
 })
 </script>
 

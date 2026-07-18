@@ -94,6 +94,7 @@ export interface BikeTagStoreState {
   currentBikeTag: Tag
   tags: Tag[]
   tagsInRound: Tag[]
+  queueRejections: any[]
   players: Player[]
   leaderboard: Player[]
   profile: BikeTagProfile

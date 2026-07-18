@@ -11,6 +11,7 @@ import {
   getSanityImageUrl,
   log,
   sendEmailsToAmbassadors,
+  validateQueueSubmissionPayload,
 } from './common'
 import { HttpStatusCode } from './common/constants'
 
@@ -59,6 +60,15 @@ export default async (req: Request) => {
     let queuedTags
 
     if (gameName) {
+      if (formName === 'add-found-tag' || formName === 'add-mystery-tag') {
+        const validation = await validateQueueSubmissionPayload(req, payload)
+        log('queue upload validation complete', validation)
+        return {
+          data: validation,
+          statusCode: HttpStatusCode.Ok,
+        }
+      }
+
       if (formName !== 'add-found-tag' && formName !== 'add-mystery-tag') {
         const nonAdminBiketagOpts = getBikeTagClientOpts(req, true, false, {
           name: gameName.toLowerCase(),
@@ -143,7 +153,11 @@ export default async (req: Request) => {
         }
 
         if (!currentMysteryTag) {
-          log('current mystery tag unavailable; continuing with submission email', { gameName }, 'warn')
+          log(
+            'current mystery tag unavailable; continuing with submission email',
+            { gameName },
+            'warn',
+          )
         }
 
         try {
@@ -170,10 +184,9 @@ export default async (req: Request) => {
         }
       }
 
-      const autoPostSetting =
-        game.settings?.['queue::autoPost']?.length
-          ? parseInt(game.settings['queue::autoPost'])
-          : 0
+      const autoPostSetting = game.settings?.['queue::autoPost']?.length
+        ? parseInt(game.settings['queue::autoPost'])
+        : 0
       const autoPostEnabled = autoPostSetting > 0
       const gameHost = getGameSiteUrl(gameName)
       const host = gameHost
@@ -211,7 +224,7 @@ export default async (req: Request) => {
                     host,
                     logo,
                     gameHost,
-                    game: game.name ?? gameName,
+                    game: game!.name ?? gameName,
                     region: gameName,
                     playerIP,
                     playerIp: playerIP,

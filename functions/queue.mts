@@ -3,11 +3,13 @@ import {
   acceptCorsHeaders,
   coerceBooleanQueryParam,
   getBikeTagClientOpts,
+  getGameStorageSlug,
   getImageSource,
   getPayloadOpts,
   getQueueApiHost,
   getQueueWithResizeRetry,
   HttpStatusCode,
+  loadQueueRejectionMarkers,
   log,
 } from './common'
 // @ts-ignore
@@ -86,8 +88,23 @@ export default async (req: Request) => {
     })
 
     const { success, data } = queueResponse
+    let responseBody: any = success ? data : queueResponse
 
-    return new Response(JSON.stringify(success ? data : queueResponse), {
+    if (success && imageSource === 'aws' && game.awsRegion?.length) {
+      try {
+        const rejections = await loadQueueRejectionMarkers(getGameStorageSlug(game), game.awsRegion)
+        if (rejections.length) {
+          responseBody = {
+            tags: data,
+            rejections,
+          }
+        }
+      } catch (err: any) {
+        log('[get-queue] Could not load rejection markers', err, 'warn')
+      }
+    }
+
+    return new Response(JSON.stringify(responseBody), {
       status: queueResponse.status,
       headers,
     })

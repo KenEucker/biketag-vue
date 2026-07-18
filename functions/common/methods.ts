@@ -699,11 +699,14 @@ export type OrphanedQueueFoundCheck = {
 const queuePathPattern = /\/queue\//
 const nonWebpImagePattern = /\.(jpe?g|png|gif|bmp)(?:\?.*)?$/i
 const queueSizedVariantKeyPattern = /_(medium|small)\.webp$/i
+const queueRejectionMarkerKeyPattern = /\.webp\.json$/i
 const queuePrimaryImageKeyPattern =
   /^queue\/(.+?)--(mystery|found)(?:--([a-z0-9]+))?\.(webp|jpg|jpeg|png|gif|bmp)$/i
 
 const isQueueSizedVariantKey = (key: string): boolean =>
   queueSizedVariantKeyPattern.test(key.split('/').pop() ?? '')
+const isQueueRejectionMarkerKey = (key: string): boolean =>
+  queueRejectionMarkerKeyPattern.test(key.split('/').pop() ?? '')
 
 /** Zero-byte folder objects (e.g. `queue/`) that some buckets include in ListObjects results. */
 const isStoragePrefixMarkerKey = (key: string): boolean => {
@@ -1851,9 +1854,9 @@ const listQueueObjectKeys = async (
       }),
     )
     keys.push(
-      ...((response.Contents?.map((obj) => obj.Key)
-        .filter((key): key is string => !!key?.length && !isStoragePrefixMarkerKey(key)) ??
-        []) as string[]),
+      ...((response.Contents?.map((obj) => obj.Key).filter(
+        (key): key is string => !!key?.length && !isStoragePrefixMarkerKey(key),
+      ) ?? []) as string[]),
     )
     continuationToken = response.NextContinuationToken
   } while (continuationToken)
@@ -1863,6 +1866,7 @@ const listQueueObjectKeys = async (
 
 const parseQueueImageKey = (key: string) => {
   if (isQueueSizedVariantKey(key)) return undefined
+  if (isQueueRejectionMarkerKey(key)) return undefined
   if (key.endsWith('/index.json')) return undefined
 
   const match = key.match(queuePrimaryImageKeyPattern)
@@ -1906,6 +1910,7 @@ export const loadQueueStorageImages = async (
         /^queue\//.test(key) &&
         !key.endsWith('/index.json') &&
         !isQueueSizedVariantKey(key) &&
+        !isQueueRejectionMarkerKey(key) &&
         !isStoragePrefixMarkerKey(key)
       ) {
         unparsedKeys.push(key)

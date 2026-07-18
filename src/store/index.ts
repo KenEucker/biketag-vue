@@ -6,8 +6,8 @@ import {
   BikeTagEnv,
   BikeTagStoreState,
   BiketagQueueFormSteps,
-  clearUploadRateLimitKey,
   PlayerRejectedUpload,
+  clearUploadRateLimitKey,
   debug,
   encodeBikeTagString,
   getApiUrl,
@@ -28,8 +28,8 @@ import {
   resolveBikeTagJwtToken,
   setProfileCookie,
   setRegionPolygonInCookie,
-  summarizeTagGps,
   setTokenInCookie,
+  summarizeTagGps,
 } from '../common'
 
 let client: BikeTagClient
@@ -85,6 +85,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     currentBikeTag: {} as Tag,
     tags: [] as Tag[],
     tagsInRound: [] as Tag[],
+    queueRejections: [],
     players: [] as Player[],
     leaderboard: [] as Player[],
     formStep: BiketagQueueFormSteps.addFoundImage,
@@ -359,8 +360,14 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client
           .queue(undefined, { source: cached ? this.imageSource : 'biketag', cached })
           .then((d) => {
-            if ((d as Tag[])?.length > 0) {
-              const currentBikeTagQueue: Tag[] = d as Tag[]
+            const currentBikeTagQueue: Tag[] = Array.isArray(d)
+              ? (d as Tag[])
+              : ((d as any)?.tags ?? (d as any)?.data ?? [])
+            const queueRejections = Array.isArray(d) ? [] : ((d as any)?.rejections ?? [])
+
+            this.SET_QUEUE_REJECTIONS(queueRejections)
+
+            if (currentBikeTagQueue?.length > 0) {
               // const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
               //   (t) =>
               //     t.tagnumber > this.currentBikeTag.tagnumber ||
@@ -522,9 +529,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return 'error loading game settings'
       }
     },
-    async updateGameSettings(
-      settings: Array<{ _id?: string; key: string; value: string }>,
-    ) {
+    async updateGameSettings(settings: Array<{ _id?: string; key: string; value: string }>) {
       if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'
       }
@@ -1409,7 +1414,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         await this.cleanupRejectedUploadForSlot('mystery', this.playerRejectedUpload?.imageUrl)
 
-        this.screenedUploadKeys = this.screenedUploadKeys.filter((key) => !key.startsWith('mystery:'))
+        this.screenedUploadKeys = this.screenedUploadKeys.filter(
+          (key) => !key.startsWith('mystery:'),
+        )
 
         return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
           if (t.success) {
@@ -1649,6 +1656,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     SET_REJECTED_IMAGES(rejectedImages: any[] = []) {
       this.rejectedImages = rejectedImages
       return this.rejectedImages
+    },
+    SET_QUEUE_REJECTIONS(rejections: any[] = []) {
+      this.queueRejections = rejections
+      return this.queueRejections
     },
     SET_QUEUE_FOUND(data: any) {
       const oldState = this.playerTag
@@ -1919,6 +1930,23 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     getQueuedTags(state) {
       return state.tagsInRound
+    },
+    getQueueRejections(state) {
+      return state.queueRejections
+    },
+    getPlayerQueueRejections(state) {
+      const playerId = state.profile?.sub
+      const playerName = state.profile?.user_metadata?.name
+      return state.queueRejections.filter((rejection: any) => {
+        if (playerId?.length && rejection.playerId === playerId) return true
+        if (
+          playerName?.length &&
+          (rejection.foundPlayer === playerName || rejection.mysteryPlayer === playerName)
+        ) {
+          return true
+        }
+        return false
+      })
     },
     getPlayers(state) {
       return state.players
