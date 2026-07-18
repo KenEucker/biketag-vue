@@ -1,7 +1,6 @@
 import About from '@/views/About.vue'
-import Admin from '@/views/Admin.vue'
+import QueueFix from '@/views/Admin.vue'
 import Approve from '@/views/Approve.vue'
-import Rejections from '@/views/Rejections.vue'
 import BikeTags from '@/views/BikeTags.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Delete from '@/views/Delete.vue'
@@ -20,6 +19,7 @@ import Play from '@/views/Play.vue'
 import Player from '@/views/Player.vue'
 import Players from '@/views/Players.vue'
 import Profile from '@/views/Profile.vue'
+import Rejections from '@/views/Rejections.vue'
 import Round from '@/views/Round.vue'
 import Worldwide from '@/views/Worldwide.vue'
 import { authGuard } from '@auth0/auth0-vue'
@@ -59,10 +59,10 @@ const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
         component: GameSettings,
       },
       {
-        path: '/admin',
-        name: 'Admin',
+        path: '/queue-fix',
+        name: 'Queue Fix',
         beforeEnter: authGuard,
-        component: Admin,
+        component: QueueFix,
       },
       {
         path: '/delete',

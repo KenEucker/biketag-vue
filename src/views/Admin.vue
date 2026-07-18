@@ -4,9 +4,9 @@
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" alt="Loading..." />
   </loading>
 
-  <div class="admin-page container">
-    <img class="admin-icon" src="/images/biketag-ambassador.svg" alt="Admin Icon" />
-    <h1>BikeTag Admin</h1>
+  <div class="queue-fix-page container">
+    <img class="queue-fix-icon" src="/images/biketag-ambassador.svg" alt="Queue Fix Icon" />
+    <h1>Queue Fix</h1>
     <p>
       Scan the queue for image conversion problems, missing sized variants, wrong-round entries,
       orphaned found images that never made it to main, and duplicate uploader splits. Use Fix Queue
@@ -193,7 +193,7 @@
   </div>
 </template>
 
-<script setup name="AdminView">
+<script setup name="QueueFixView">
 import { useBikeTagStore } from '@/store/index'
 import { getS3ImageSized } from '@/common/methods'
 import { computed, inject, onMounted, ref } from 'vue'
@@ -424,7 +424,7 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.admin-page {
+.queue-fix-page {
   background-color: #fff;
   color: #000;
   padding: 2rem;
@@ -447,7 +447,7 @@ onMounted(async () => {
     margin-bottom: 2rem;
   }
 
-  .admin-icon {
+  .queue-fix-icon {
     width: 72px;
     margin-bottom: 1rem;
   }
