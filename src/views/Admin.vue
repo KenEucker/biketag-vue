@@ -10,8 +10,9 @@
     <p>
       Scan the queue for image conversion problems, missing sized variants, wrong-round entries,
       orphaned found images that never made it to main, and duplicate uploader splits. Use Fix Queue
-      Images to re-run webp conversion and variant generation for fixable issues. Wrong-round files
-      can be deleted individually or in bulk. Orphaned found images can be moved into main/.
+      Images (or Fix image on an issue) to re-run webp conversion and variant generation for fixable
+      issues. Unrecognized and wrong-round files can be deleted. Orphaned found images can be moved
+      into main/.
     </p>
 
     <div class="actions">
@@ -174,6 +175,14 @@
               Move blocked — player mismatch
             </span>
             <button
+              v-else-if="isFixableIssue(issue)"
+              type="button"
+              class="issue-action issue-action--fix"
+              @click="fixQueue"
+            >
+              Fix image
+            </button>
+            <button
               v-if="issue.deletable"
               type="button"
               class="issue-action issue-action--delete"
@@ -247,6 +256,13 @@ function previewUrl(url) {
 function filenameRoundFromKey(key) {
   const match = key?.match(/-tag-(\d+)--found/i)
   return match ? Number(match[1]) : undefined
+}
+
+function isFixableIssue(issue) {
+  return (
+    (issue.category === 'non-webp' || issue.category === 'missing-variants') &&
+    issue.deletable !== true
+  )
 }
 
 function applyScanResult(result) {
@@ -565,6 +581,10 @@ onMounted(async () => {
 
       &--repair {
         background: #e8f5e9;
+      }
+
+      &--fix {
+        background: #fff8e1;
       }
 
       &--blocked {

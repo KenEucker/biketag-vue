@@ -32,7 +32,7 @@
  *
  * ─── Issue categories (from collectQueueIssuesFromStorage) ───
  *
- * - non-webp: file in queue/ is not .webp (or unparsed name).
+ * - non-webp: file in queue/ is not .webp (fixable via resize), or unrecognized name (deletable only).
  * - missing-variants: primary .webp exists but _medium/_small siblings missing in queue/.
  * - wrong-round: filename round ≠ expected (found=current or current+1, mystery=current+1). Deletable.
  * - duplicate-uploader: same player has files spanning rounds without a normal found+mystery pair.
