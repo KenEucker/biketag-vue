@@ -92,16 +92,21 @@
       <router-link v-if="isBikeTagAdmin" to="/queue-fix" class="action-button">
         <span class="icon">
          <svg
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-          role="img"
-          aria-label="Heart"
-        >
-          <path
-            d="M12 21s-7.5-4.35-9.75-8.7C.45 8.85 2.1 4.5 6.3 4.5c2.4 0 4.05 1.35 5.7 3.3 1.65-1.95 3.3-3.3 5.7-3.3 4.2 0 5.85 4.35 4.05 7.8C19.5 16.65 12 21 12 21Z"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
             fill="currentColor"
-          />
-        </svg>
+            aria-hidden="true"
+          >
+            <path d="M18 2H7a3 3 0 0 0-3 3v1h2V5a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v11h2V5a3 3 0 0 0-3-3Z" />
+
+            <path d="M16 5H5a3 3 0 0 0-3 3v1h2V8a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v11h2V8a3 3 0 0 0-3-3Z" />
+
+            <path
+              fill-rule="evenodd"
+              d="M3 8h11a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3Zm2.5 3a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm-3.5 8 3.5-3.5 2.5 2.5 2-2 5 5H3a1 1 0 0 1-1-1v-1Z"
+              clip-rule="evenodd"
+            />
+          </svg>
         </span>
         Queue Fix
       </router-link>
