@@ -151,7 +151,7 @@ const playerTagSearch = (tags, searchString) => {
 
   const sortedResults = tags
     .filter((tag) => tagToScore.get(tag) > 0)
-    .toSorted((a, b) => tagToScore.get(b) - tagToScore.get(a))
+    .toSorted((a, b) => tagToScore.get(a) - tagToScore.get(b))
   return foundByNumber.concat(sortedResults)
 }
 

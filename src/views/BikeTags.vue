@@ -17,8 +17,8 @@
 </template>
 
 <script setup name="BikeTagsView">
-import BikeTag from '@/components/BikeTag.vue'
 import Searchable from '@/components/Searchable.vue'
+import BikeTag from '@/components/BikeTag.vue'
 import { useBikeTagStore } from '@/store/index'
 
 const store = useBikeTagStore()
@@ -59,7 +59,7 @@ const tagSearch = (tags, searchString) => {
 
   const sortedResults = tags
     .filter((tag) => tagToScore.get(tag) > 0)
-    .toSorted((a, b) => tagToScore.get(b) - tagToScore.get(a))
+    .toSorted((a, b) => tagToScore.get(a) - tagToScore.get(b))
   return foundByNumber.concat(sortedResults)
 }
 </script>
