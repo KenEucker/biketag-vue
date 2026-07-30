@@ -89,16 +89,26 @@
         Game Settings
       </router-link>
 
-      <router-link v-if="isBikeTagAdmin" to="/admin" class="action-button">
+      <router-link v-if="isBikeTagAdmin" to="/queue-fix" class="action-button">
         <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+         <svg
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M18 2H7a3 3 0 0 0-3 3v1h2V5a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v11h2V5a3 3 0 0 0-3-3Z" />
+
+            <path d="M16 5H5a3 3 0 0 0-3 3v1h2V8a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v11h2V8a3 3 0 0 0-3-3Z" />
+
             <path
-              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+              fill-rule="evenodd"
+              d="M3 8h11a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3Zm2.5 3a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm-3.5 8 3.5-3.5 2.5 2.5 2-2 5 5H3a1 1 0 0 1-1-1v-1Z"
+              clip-rule="evenodd"
             />
           </svg>
         </span>
-        BikeTag Admin
+        Queue Fix
       </router-link>
     </div>
   </div>

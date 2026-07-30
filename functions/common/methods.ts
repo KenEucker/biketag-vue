@@ -2056,11 +2056,14 @@ export const collectQueueIssuesFromStorage = (
   for (const key of unparsedKeys) {
     const tagnumber = parseTagnumberFromQueueKey(key) ?? 0
     const filename = key.split('/').pop() || key
+    // Unrecognized names cannot be converted by resize — only deleted.
     issues.push({
       category: 'non-webp',
       tagnumber,
       issue: `unrecognized queue file: ${filename}`,
       url: key,
+      key,
+      deletable: true,
     })
   }
 
@@ -2145,6 +2148,7 @@ export const collectQueueIssuesFromStorage = (
         player,
         type: image.type,
         url: image.url,
+        key: image.key,
         issue: `queue file is ${image.extension}, not webp`,
       })
       continue
@@ -2166,6 +2170,7 @@ export const collectQueueIssuesFromStorage = (
         player,
         type: image.type,
         url: image.url,
+        key: image.key,
         issue: `missing sized variant${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}`,
       })
     }
@@ -2233,7 +2238,8 @@ export const getQueueUploaderKey = (tag: Tag): string | undefined => {
 }
 
 export const isFixableQueueIssue = (issue: QueueIssue): boolean =>
-  issue.category === 'non-webp' || issue.category === 'missing-variants'
+  (issue.category === 'non-webp' || issue.category === 'missing-variants') &&
+  issue.deletable !== true
 
 export const isDeletableQueueIssue = (issue: QueueIssue): boolean =>
   issue.category === 'wrong-round' && issue.deletable === true && !!issue.key?.length
