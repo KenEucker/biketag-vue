@@ -1,0 +1,517 @@
+{
+	"drawioXML": "<mxfile>\n  <diagram id=\"dCfESXR7xxaY1txLDelR\" name=\"Page-1\">\n    <mxGraphModel dx=\"3538\" dy=\"1798\" grid=\"0\" gridSize=\"10\" guides=\"1\" tooltips=\"1\" connect=\"0\" arrows=\"1\" fold=\"1\" page=\"0\" pageScale=\"1\" pageWidth=\"850\" pageHeight=\"1100\" math=\"0\" shadow=\"0\">\n      <root>\n        <mxCell id=\"0\" />\n        <mxCell id=\"1\" style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=9;fontColor=#FF9999;strokeWidth=1;strokeColor=#FFA5A2;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=1;align=left;verticalAlign=top;fillColor=none;spacing=0;spacingTop=-14;spacingLeft=15;arcSize=4;\" parent=\"0\" />\n        <mxCell id=\"NAfZICnAt9e7Of4MaGL6-1\" value=\"Frontend\" style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=9;fontColor=#FF9999;strokeWidth=1;strokeColor=#FFA5A2;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=1;align=left;verticalAlign=top;fillColor=none;spacing=0;spacingTop=-14;spacingLeft=15;arcSize=4;\" parent=\"1\" vertex=\"1\">\n          <mxGeometry x=\"50\" y=\"622.0000000000001\" width=\"650\" height=\"900\" as=\"geometry\" />\n        </mxCell>\n        <UserObject label=\"components\" value=\"components\" id=\"Adg9fUx5eG60yKy4Ax7A-6\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=9;fontColor=#FF9999;strokeWidth=1;strokeColor=#FFA5A2;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=1;align=left;verticalAlign=top;fillColor=none;spacing=0;spacingTop=-14;spacingLeft=15;arcSize=4;\" vertex=\"1\" parent=\"NAfZICnAt9e7Of4MaGL6-1\">\n            <mxGeometry x=\"50\" y=\"250\" width=\"545\" height=\"600\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"BikeTagMap.vue\" value=\"BikeTagMap.vue\" id=\"Adg9fUx5eG60yKy4Ax7A-16\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=9;fontColor=#FF9999;strokeWidth=1;strokeColor=#FFA5A2;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=1;align=left;verticalAlign=top;fillColor=none;spacing=0;spacingTop=-14;spacingLeft=15;arcSize=4;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-6\">\n            <mxGeometry x=\"50\" y=\"350\" width=\"440\" height=\"200\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <mxCell id=\"Adg9fUx5eG60yKy4Ax7A-24\" style=\"edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;sketch=0;jumpStyle=arc;jumpSize=17;orthogonalLoop=1;jettySize=auto;html=0;shadow=0;labelBackgroundColor=none;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontSize=37;fontColor=default;endArrow=block;endFill=1;endSize=5;sourcePerimeterSpacing=0;targetPerimeterSpacing=0;strokeColor=#A1A1A1;strokeWidth=2;arcSize=50;container=1;\" edge=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-16\" source=\"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb\" target=\"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb-e2aba4d7-7343-45f7-a0cc-5f72ed511041\">\n          <mxGeometry relative=\"1\" as=\"geometry\">\n            <Array as=\"points\">\n              <mxPoint x=\"210\" y=\"110\" />\n              <mxPoint x=\"210\" y=\"80\" />\n            </Array>\n          </mxGeometry>\n        </mxCell>\n        <UserObject label=\"getMarkers\" value=\"BikeTagMap.vue {L46:L54}\" id=\"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-16\">\n            <mxGeometry x=\"50\" y=\"90\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"onMount Display Tags\" value=\"BikeTagMap.vue {L98:L146}\" id=\"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb-e2aba4d7-7343-45f7-a0cc-5f72ed511041\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-16\">\n            <mxGeometry x=\"270\" y=\"50\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"BikeTagCamera.vue\" value=\"BikeTagCamera.vue\" id=\"Adg9fUx5eG60yKy4Ax7A-17\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-6\">\n            <mxGeometry x=\"212.5\" y=\"150.00000000000003\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"Leaderboard.vue\" value=\"Leaderboard.vue\" id=\"Adg9fUx5eG60yKy4Ax7A-18\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-6\">\n            <mxGeometry x=\"212.5\" y=\"50\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"Approve.vue\" value=\"Approve.vue\" id=\"Adg9fUx5eG60yKy4Ax7A-19\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-6\">\n            <mxGeometry x=\"212.5\" y=\"250.00000000000003\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"Vue Router\" value=\"index.ts\" id=\"Adg9fUx5eG60yKy4Ax7A-7\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"NAfZICnAt9e7Of4MaGL6-1\">\n            <mxGeometry x=\"265\" y=\"150\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"Pinia Store State\" value=\"index.ts\" id=\"Adg9fUx5eG60yKy4Ax7A-8\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"NAfZICnAt9e7Of4MaGL6-1\">\n            <mxGeometry x=\"265\" y=\"50\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <mxCell id=\"Adg9fUx5eG60yKy4Ax7A-1\" value=\"Backend\" style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=9;fontColor=#FF9999;strokeWidth=1;strokeColor=#FFA5A2;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=1;align=left;verticalAlign=top;fillColor=none;spacing=0;spacingTop=-14;spacingLeft=15;arcSize=4;\" vertex=\"1\" parent=\"1\">\n          <mxGeometry x=\"810\" y=\"922.0000000000001\" width=\"425\" height=\"1047.0615923264\" as=\"geometry\" />\n        </mxCell>\n        <UserObject label=\"functions\" value=\"functions\" id=\"Adg9fUx5eG60yKy4Ax7A-9\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=9;fontColor=#FF9999;strokeWidth=1;strokeColor=#FFA5A2;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=1;align=left;verticalAlign=top;fillColor=none;spacing=0;spacingTop=-14;spacingLeft=15;arcSize=4;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-1\">\n            <mxGeometry x=\"55\" y=\"50\" width=\"320\" height=\"947.0615923263999\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"achievements.ts\" value=\"achievements.ts\" id=\"Adg9fUx5eG60yKy4Ax7A-10\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-9\">\n            <mxGeometry x=\"100\" y=\"250\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"ambassadors.ts\" value=\"ambassadors.ts\" id=\"Adg9fUx5eG60yKy4Ax7A-11\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-9\">\n            <mxGeometry x=\"100\" y=\"637.0615923263999\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"authorize.ts\" value=\"authorize.ts\" id=\"Adg9fUx5eG60yKy4Ax7A-12\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=9;fontColor=#FF9999;strokeWidth=1;strokeColor=#FFA5A2;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=1;align=left;verticalAlign=top;fillColor=none;spacing=0;spacingTop=-14;spacingLeft=15;arcSize=4;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-9\">\n            <mxGeometry x=\"50\" y=\"50\" width=\"220\" height=\"160\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"authorizeHandler\" value=\"authorize.ts {L7:L59}\" id=\"functions/authorize.ts-b77dae6d-c3a3-4743-9d09-cafd69e8298b\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-12\">\n            <mxGeometry x=\"50\" y=\"50\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"game.ts\" value=\"game.ts\" id=\"Adg9fUx5eG60yKy4Ax7A-13\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-9\">\n            <mxGeometry x=\"100\" y=\"737.0615923263999\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"tags.ts\" value=\"tags.ts\" id=\"Adg9fUx5eG60yKy4Ax7A-14\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-9\">\n            <mxGeometry x=\"50\" y=\"350\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <UserObject label=\"players.ts\" value=\"players.ts\" id=\"Adg9fUx5eG60yKy4Ax7A-15\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-9\">\n            <mxGeometry x=\"100\" y=\"837.0615923263999\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <mxCell id=\"Adg9fUx5eG60yKy4Ax7A-5\" value=\"Third-Party Integrations\" style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=9;fontColor=#FF9999;strokeWidth=1;strokeColor=#FFA5A2;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=1;align=left;verticalAlign=top;fillColor=none;spacing=0;spacingTop=-14;spacingLeft=15;arcSize=4;\" vertex=\"1\" parent=\"1\">\n          <mxGeometry x=\"252.5\" y=\"150.00000000000006\" width=\"250\" height=\"432\" as=\"geometry\" />\n        </mxCell>\n        <mxCell id=\"Adg9fUx5eG60yKy4Ax7A-2\" value=\"imgur\" style=\"shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOmNjPSJodHRwOi8vY3JlYXRpdmVjb21tb25zLm9yZy9ucyMiIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyIgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHdpZHRoPSIxNTAiIGhlaWdodD0iNTQuMTg0MDY3IiBpZD0ic3ZnMiIgdmlld0JveD0iMCAwIDE1MCA1NC4xODQwNjciPgogIDxkZWZzIGlkPSJkZWZzNCIvPgogIAogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKC01NTkuNzQ5NTIsLTcwOS42MjU2NCkiIGlkPSJsYXllcjEiPgogICAgPGcgdHJhbnNmb3JtPSJtYXRyaXgoMC45MzIwODA2NSwwLDAsMC45MTAzOTc0LDQ0LjEyMjEzMSw1OC44MTEzMzkpIiBpZD0idGV4dDI5OTYiPgogICAgICA8cGF0aCBkPSJtIDU3MC4xNzU5Miw3NTQuMjE0MDUgMCwtMTkuMDI3ODMgYyAtMTBlLTYsLTIuMzQ1NDYgMC4zOTA5MSwtNC4wOTQ4MSAxLjE3Mjc1LC01LjI0ODA0IDAuNzgxODIsLTEuMTUzMTcgMS45NjQzNCwtMS43Mjk3NyAzLjU0NzU2LC0xLjcyOTgxIDAuOTE4NjQsNGUtNSAxLjc1NDIyLDAuMjU5MDIgMi41MDY3NCwwLjc3Njk1IDAuNzUyNTEsMC41MTc5OSAxLjQyMTk1LDEuMzA0NzEgMi4wMDgzMywyLjM2MDE1IDAuOTc3MjgsLTEuMDc0OTggMi4wODE2MiwtMS44NjY1OSAzLjMxMzAyLC0yLjM3NDgxIDEuMjMxMzYsLTAuNTA4MTYgMi42NDg0MywtMC43NjIyNSA0LjI1MTIxLC0wLjc2MjI5IDIuMDMyNzQsNGUtNSAzLjgzMDk1LDAuMzcxNDEgNS4zOTQ2MywxLjExNDExIDEuNTYzNjQsMC43NDI3OCAyLjkxMjMsMS44NTY4OCA0LjA0NTk4LDMuMzQyMzQgMS40MjY4MiwtMS41ODMxOCAyLjg4Mjk4LC0yLjcyMTczIDQuMzY4NDksLTMuNDE1NjMgMS40ODU0NCwtMC42OTM4NSAzLjIwNTQ3LC0xLjA0MDc4IDUuMTYwMDksLTEuMDQwODIgMy4zODEzOCw0ZS01IDYuMDEwMjgsMS4wODQ4MyA3Ljg4NjcyLDMuMjU0MzggMS44NzYzNSwyLjE2OTYxIDIuODE0NTUsNS4yMjg1MiAyLjgxNDYsOS4xNzY3NSBsIDAsMTMuNTc0NTUgYyAtNWUtNSwyLjMyNTk1IC0wLjM5MDk3LDQuMDU1NzYgLTEuMTcyNzUsNS4xODk0MSAtMC43ODE4OCwxLjEzMzY2IC0xLjk3NDE3LDEuNzAwNDggLTMuNTc2ODgsMS43MDA0OCAtMS42MDI4LDAgLTIuNzg1MzIsLTAuNTYxOTQgLTMuNTQ3NTYsLTEuNjg1ODIgLTAuNzYyMzMsLTEuMTIzODggLTEuMTQzNDcsLTIuODU4NTcgLTEuMTQzNDMsLTUuMjA0MDcgbCAwLC0xMC43MDEzMiBjIC00ZS01LC0yLjQ4MjMgLTAuMzQ2OTgsLTQuMzAwMDUgLTEuMDQwODEsLTUuNDUzMjggLTAuNjkzOTIsLTEuMTUzMTcgLTEuNzgzNTksLTEuNzI5NzcgLTMuMjY5MDQsLTEuNzI5OCAtMS42NDE4OCwzZS01IC0yLjg0Mzk0LDAuNTY2ODUgLTMuNjA2MTksMS43MDA0OSAtMC43NjIzMiwxLjEzMzY3IC0xLjE0MzQ2LDIuOTIyMTEgLTEuMTQzNDMsNS4zNjUzMiBsIDAsMTAuODE4NTkgYyAtM2UtNSwyLjMyNTk1IC0wLjM5MDk1LDQuMDU1NzYgLTEuMTcyNzUsNS4xODk0MSAtMC43ODE4NiwxLjEzMzY2IC0xLjk3NDE1LDEuNzAwNDggLTMuNTc2ODgsMS43MDA0OCAtMS42MDI3OCwwIC0yLjc5NTA3LC0wLjU2NjgyIC0zLjU3Njg4LC0xLjcwMDQ4IC0wLjc4MTg2LC0xLjEzMzY1IC0xLjE3Mjc3LC0yLjg2MzQ2IC0xLjE3Mjc1LC01LjE4OTQxIGwgMCwtMTAuNzAxMzIgYyAtMmUtNSwtMi41MDE4NCAtMC4zNDIwNywtNC4zMjQ0OSAtMS4wMjYxNSwtNS40Njc5NCAtMC42ODQxMywtMS4xNDM0IC0xLjc1OTE0LC0xLjcxNTExIC0zLjIyNTA2LC0xLjcxNTE0IC0xLjY0MTg2LDNlLTUgLTIuODQzOTMsMC41NjY4NSAtMy42MDYyLDEuNzAwNDkgLTAuNzYyMywxLjEzMzY3IC0xLjE0MzQ0LDIuOTIyMTEgLTEuMTQzNDMsNS4zNjUzMiBsIDAsMTAuODE4NTkgYyAtMTBlLTYsMi4zMjU5NSAtMC4zOTA5Miw0LjA1NTc2IC0xLjE3Mjc0LDUuMTg5NDEgLTAuNzgxODUsMS4xMzM2NiAtMS45NzQxNCwxLjcwMDQ4IC0zLjU3Njg4LDEuNzAwNDggLTEuNjAyNzYsMCAtMi43OTAxNywtMC41NjY4MiAtMy41NjIyMiwtMS43MDA0OCAtMC43NzIwNywtMS4xMzM2NSAtMS4xNTgxLC0yLjg2MzQ2IC0xLjE1ODA5LC01LjE4OTQxIHoiIGlkPSJwYXRoMzAwMyIgc3R5bGU9ImZpbGw6IzAwMDAwMCIvPgogICAgICA8cGF0aCBkPSJtIDY0My4zNTUzNiw3NTYuNzM1NDYgYyAtMS4wMzU5NSwxLjQ4NTQ4IC0yLjI2NzMzLDIuNTk0NyAtMy42OTQxNSwzLjMyNzY3IC0xLjQyNjg2LDAuNzMyOTcgLTMuMDU4OTMsMS4wOTk0NSAtNC44OTYyMiwxLjA5OTQ1IC0zLjgzMDk5LDAgLTcuMDcwNywtMS41NzM0MyAtOS43MTkxNSwtNC43MjAzMSAtMi42NDg0NSwtMy4xNDY4NiAtMy45NzI2OCwtNy4wNTYwMiAtMy45NzI2OCwtMTEuNzI3NDcgMCwtNC43MTA1MiAxLjQyNjg0LC04LjY3ODMxIDQuMjgwNTMsLTExLjkwMzM5IDIuODUzNjgsLTMuMjI1MDMgNi4zMzI4MiwtNC44Mzc1NSAxMC40Mzc0NSwtNC44Mzc1OCAxLjYwMjc0LDNlLTUgMy4wMjQ2OSwwLjI3MzY3IDQuMjY1ODcsMC44MjA5MiAxLjI0MTE0LDAuNTQ3MzEgMi4zNDA1OSwxLjM5NzU1IDMuMjk4MzUsMi41NTA3MiAwLjUwODE3LC0wLjkzODE2IDEuMTM4NTIsLTEuNjc2MDIgMS44OTEwNiwtMi4yMTM1NiAwLjc1MjQ5LC0wLjUzNzQ3IDEuNTE5NjYsLTAuODA2MjMgMi4zMDE1MiwtMC44MDYyNiAxLjYyMjI3LDNlLTUgMi44MTk0NSwwLjU2MTk3IDMuNTkxNTQsMS42ODU4MiAwLjc3MjAyLDEuMTIzOTIgMS4xNTgwNSwyLjg0ODgzIDEuMTU4MDgsNS4xNzQ3NSBsIDAsMTkuMDI3ODMgYyAtM2UtNSwzLjQ5ODcgLTAuMTcxMDUsNi4yMzAyMiAtMC41MTMwNyw4LjE5NDU3IC0wLjM0MjA5LDEuOTY0MzUgLTAuOTEzOCwzLjU5MTU0IC0xLjcxNTE1LDQuODgxNTcgLTEuMzg3NzgsMi4zMjU5NCAtMy4yOTgzOCw0LjA4OTk0IC01LjczMTgsNS4yOTIwMiAtMi40MzM0NywxLjIwMjA1IC01LjMyMTM2LDEuODAzMDkgLTguNjYzNjcsMS44MDMxIC00LjA4NTA4LC0xMGUtNiAtNy40MTc2NCwtMC42NTQ4IC05Ljk5NzY3LC0xLjk2NDM1IC0yLjU4MDA1LC0xLjMwOTU4IC0zLjg3MDA3LC0yLjk2MTIgLTMuODcwMDcsLTQuOTU0ODYgMCwtMS4xOTIzIDAuMzg2MDMsLTIuMTc5MzYgMS4xNTgwOSwtMi45NjExOSAwLjc3MjA1LC0wLjc4MTgzIDEuNzQ0NDUsLTEuMTcyNzUgMi45MTcyMSwtMS4xNzI3NSAwLjU2NjgyLDAgMS45MzAxMywwLjQyMDIzIDQuMDg5OTUsMS4yNjA3MSAyLjE1OTgsMC44NDA0NiA0LjE3NzksMS4yNjA3IDYuMDU0MzEsMS4yNjA3IDIuMzQ1NDgsMCA0LjE2MzI0LC0wLjY5Mzg4IDUuNDUzMjgsLTIuMDgxNjMgMS4yOSwtMS4zODc3NSAxLjkzNTAxLC0zLjM1MjEgMS45MzUwMywtNS44OTMwNSAtMmUtNSwtMC4xMTcyNyAtMC4wMSwtMC4zMDI5NiAtMC4wMjkzLC0wLjU1NzA2IC0wLjAxOTYsLTAuMjU0MDkgLTAuMDI5MywtMC40NDk1NSAtMC4wMjkzLC0wLjU4NjM3IHogTSA2MzAuODY1Niw3NDQuNzE0OCBjIC0xMGUtNiwyLjM2NTA1IDAuNTc2NTksNC4yODA1NCAxLjcyOTgxLDUuNzQ2NDYgMS4xNTMxOCwxLjQ2NTk0IDIuNjM4NjYsMi4xOTg5MSA0LjQ1NjQ0LDIuMTk4OSAxLjgxNzc0LDEwZS02IDMuMzEyOTksLTAuNzM3ODQgNC40ODU3NiwtMi4yMTM1NiAxLjE3MjcyLC0xLjQ3NTcgMS43NTkwOSwtMy4zODYzIDEuNzU5MTIsLTUuNzMxOCAtM2UtNSwtMi4yODY4NCAtMC41ODY0LC00LjE0ODU4IC0xLjc1OTEyLC01LjU4NTIxIC0xLjE3Mjc3LC0xLjQzNjYgLTIuNjY4MDIsLTIuMTU0OSAtNC40ODU3NiwtMi4xNTQ5MyAtMS44MTc3OCwzZS01IC0zLjMwMzI2LDAuNzE4MzMgLTQuNDU2NDQsMi4xNTQ5MyAtMS4xNTMyMiwxLjQzNjYzIC0xLjcyOTgyLDMuMjk4MzcgLTEuNzI5ODEsNS41ODUyMSB6IiBpZD0icGF0aDMwMDUiIHN0eWxlPSJmaWxsOiMwMDAwMDAiLz4KICAgICAgPHBhdGggZD0ibSA2NTguNjMwNCw3NDcuNzkzMjYgMCwtMTIuNjA3MDQgYyAtMTBlLTYsLTIuMzI1OTIgMC4zOTA5MSwtNC4wNTA4MyAxLjE3Mjc0LC01LjE3NDc1IDAuNzgxODMsLTEuMTIzODUgMS45NzQxMiwtMS42ODU3OSAzLjU3Njg4LC0xLjY4NTgyIDEuNTgzMiwzZS01IDIuNzYwODQsMC41NjE5NyAzLjUzMjkxLDEuNjg1ODIgMC43NzIwNCwxLjEyMzkyIDEuMTU4MDcsMi44NDg4MyAxLjE1ODA4LDUuMTc0NzUgbCAwLDEwLjY3MjAxIGMgLTEwZS02LDIuNTIxNDEgMC4zODExMyw0LjMwNDk3IDEuMTQzNDMsNS4zNTA2NiAwLjc2MjI3LDEuMDQ1NyAyLjAwMzQzLDEuNTY4NTUgMy43MjM0OCwxLjU2ODU1IDEuNzIwMDEsMCAyLjk2MTE2LC0wLjUyMjg1IDMuNzIzNDcsLTEuNTY4NTUgMC43NjIyNiwtMS4wNDU2OSAxLjE0MzQxLC0yLjgyOTI1IDEuMTQzNDMsLTUuMzUwNjYgbCAwLC0xMC42NzIwMSBjIC0yZS01LC0yLjMyNTkyIDAuMzg2MDEsLTQuMDUwODMgMS4xNTgwOSwtNS4xNzQ3NSAwLjc3MjAzLC0xLjEyMzg1IDEuOTY5MjEsLTEuNjg1NzkgMy41OTE1NCwtMS42ODU4MiAxLjU4MzE4LDNlLTUgMi43NTU5MiwwLjU1NzA5IDMuNTE4MjQsMS42NzExNiAwLjc2MjI1LDEuMTE0MTQgMS4xNDM0LDIuODQzOTUgMS4xNDM0Myw1LjE4OTQxIGwgMCwxMi42MDcwNCBjIC0zZS01LDQuNDk1NTQgLTEuMjIxNjQsNy45MzA3MSAtMy42NjQ4NCwxMC4zMDU1MiAtMi40NDMyNSwyLjM3NDgxIC01Ljk4MTAzLDMuNTYyMjIgLTEwLjYxMzM2LDMuNTYyMjIgLTQuNjMyMzcsMCAtOC4xNzUwNCwtMS4xODc0MSAtMTAuNjI4MDMsLTMuNTYyMjIgLTIuNDUzLC0yLjM3NDgxIC0zLjY3OTUsLTUuODA5OTggLTMuNjc5NDksLTEwLjMwNTUyIHoiIGlkPSJwYXRoMzAwNyIgc3R5bGU9ImZpbGw6IzAwMDAwMCIvPgogICAgICA8cGF0aCBkPSJtIDY5My42NjYyNCw3NTQuMjE0MDUgMCwtMTkuMDI3ODMgYyAwLC0yLjMyNTkyIDAuMzg2MDMsLTQuMDUwODMgMS4xNTgwOSwtNS4xNzQ3NSAwLjc3MjA1LC0xLjEyMzg1IDEuOTU5NDYsLTEuNjg1NzkgMy41NjIyMiwtMS42ODU4MiAwLjk1NzczLDNlLTUgMS44MDc5NywwLjI0OTI0IDIuNTUwNzIsMC43NDc2MyAwLjc0MjczLDAuNDk4NDQgMS4zOTc1MiwxLjI1NTg0IDEuOTY0MzYsMi4yNzIxOSAwLjk3NzI3LC0xLjA1NTQ0IDIuMDEzMiwtMS44NTE5MyAzLjEwNzc4LC0yLjM4OTQ3IDEuMDk0NTUsLTAuNTM3NDggMi4xOTg4OCwtMC44MDYyMyAzLjMxMzAxLC0wLjgwNjI2IDEuMzA5NTUsM2UtNSAyLjQzODMyLDAuNDY0MjQgMy4zODYzMSwxLjM5MjYzIDAuOTQ3OTUsMC45Mjg0NiAxLjQyMTkzLDIuMDI3OTEgMS40MjE5NSwzLjI5ODM2IC0yZS01LDEuODk1OTcgLTEuNzM5NTksMy40NzkxNyAtNS4yMTg3Miw0Ljc0OTYyIC0xLjI1MDk1LDAuNDQ5NTggLTIuMTg5MTUsMC44MjA5NSAtMi44MTQ2LDEuMTE0MTIgLTEuMTkyMywwLjU2Njg0IC0xLjk4MzkxLDEuMTk3MiAtMi4zNzQ4MSwxLjg5MTA1IC0wLjM5MDkzLDAuNjkzOSAtMC41ODYzOSwxLjk0OTcxIC0wLjU4NjM3LDMuNzY3NDUgbCAwLDkuODUxMDggYyAtMmUtNSwyLjMyNTk1IC0wLjM5MDkzLDQuMDU1NzYgLTEuMTcyNzUsNS4xODk0MSAtMC43ODE4NCwxLjEzMzY2IC0xLjk3NDE0LDEuNzAwNDggLTMuNTc2ODgsMS43MDA0OCAtMS42MDI3NiwwIC0yLjc5MDE3LC0wLjU2NjgyIC0zLjU2MjIyLC0xLjcwMDQ4IC0wLjc3MjA2LC0xLjEzMzY1IC0xLjE1ODA5LC0yLjg2MzQ2IC0xLjE1ODA5LC01LjE4OTQxIHoiIGlkPSJwYXRoMzAwOSIgc3R5bGU9ImZpbGw6IzAwMDAwMCIvPgogICAgICA8ZyBpZD0iZzM3OTciPgogICAgICAgIDxwYXRoIGQ9Im0gNTYzLjM0NDY2LDc1NC4yMTQwNSBjIC0xMGUtNiwyLjM0NTUgLTAuMzgxMTUsNC4wODAxOSAtMS4xNDM0Myw1LjIwNDA3IC0wLjc2MjI5LDEuMTIzODggLTEuOTM1MDQsMS42ODU4MiAtMy41MTgyNCwxLjY4NTgyIC0xLjYwMjc2LDAgLTIuNzk1MDUsLTAuNTY2ODIgLTMuNTc2ODgsLTEuNzAwNDggLTAuNzgxODMsLTEuMTMzNjUgLTEuMTcyNzUsLTIuODYzNDYgLTEuMTcyNzUsLTUuMTg5NDEgbCAwLC0xOS4wMjc4MyBjIDAsLTIuMzI1OTIgMC4zODYwMywtNC4wNTA4MyAxLjE1ODA5LC01LjE3NDc1IDAuNzcyMDYsLTEuMTIzODUgMS45NjkyMywtMS42ODU3OSAzLjU5MTU0LC0xLjY4NTgyIDEuNTgzMiwzZS01IDIuNzU1OTUsMC41NjE5NyAzLjUxODI0LDEuNjg1ODIgMC43NjIyOCwxLjEyMzkyIDEuMTQzNDIsMi44NDg4MyAxLjE0MzQzLDUuMTc0NzUgeiIgaWQ9InBhdGgzMDAxIiBzdHlsZT0iZmlsbDojMDAwMDAwIi8+CiAgICAgICAgPHBhdGggZD0ibSA1NTMuMjAwNCw3MjAuMzUwOTcgYyAtMTBlLTYsLTEuNTA0OTkgMC41Mzc1LC0yLjc5NTAxIDEuNjEyNTMsLTMuODcwMDcgMS4wNzUwMSwtMS4wNzQ5NyAyLjM2NTAzLC0xLjYxMjQ4IDMuODcwMDYsLTEuNjEyNTMgMS40ODU0Nyw1ZS01IDIuNzU1OTUsMC41Mzc1NiAzLjgxMTQzLDEuNjEyNTMgMS4wNTU0NiwxLjA3NTA2IDEuNTgzMiwyLjM2NTA4IDEuNTgzMjEsMy44NzAwNyAtMTBlLTYsMS41MjQ2MSAtMC41MjI4NiwyLjgxNDYzIC0xLjU2ODU1LDMuODcwMDYgLTEuMDQ1NzEsMS4wNTU1MSAtMi4zMjEwNywxLjU4MzI1IC0zLjgyNjA5LDEuNTgzMjEgLTEuNTQ0MTIsNGUtNSAtMi44NDM5MiwtMC41Mjc3IC0zLjg5OTM4LC0xLjU4MzIxIC0xLjA1NTQ4LC0xLjA1NTQzIC0xLjU4MzIyLC0yLjM0NTQ1IC0xLjU4MzIxLC0zLjg3MDA2IHoiIGlkPSJwYXRoMzAwMS00IiBzdHlsZT0iZmlsbDojODljNjIzIi8+CiAgICAgIDwvZz4KICAgIDwvZz4KICA8L2c+Cjwvc3ZnPg==;container=1;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-5\">\n          <mxGeometry x=\"50\" y=\"201\" width=\"150\" height=\"54\" as=\"geometry\" />\n        </mxCell>\n        <mxCell id=\"Adg9fUx5eG60yKy4Ax7A-3\" value=\"Google Maps API\" style=\"shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgNTY0NC4xNzMgNTY0NC4xNzMiPgoJPGRlZnM+CgkJPHBhdGggaWQ9ImEiIGQ9Ik00MzAwLjMyMiAwYy00MzkuNDM5IDAtODI5LjgyOCAyMTAuOTg1LTEwNzUuMDgxIDUzNy41NEg0MDMuMTU1QzE4MS40MiA1MzcuNTQgMCA3MTguOTYgMCA5NDAuNjk1djQzMDAuMzIyYzAgMjIxLjczNiAxODEuNDIgNDAzLjE1NSA0MDMuMTU1IDQwMy4xNTVoNDMwMC4zMjJjMjIxLjczNSAwIDQwMy4xNTUtMTgxLjQxOSA0MDMuMTU1LTQwMy4xNTVWMjYwOS4wODZjMjgyLjIwOC00MTIuNTYyIDUzNy41NC03ODQuMTM3IDUzNy41NC0xMjY1LjIzNUM1NjQ0LjE3MyA2MDEuMzczIDUwNDIuOCAwIDQzMDAuMzIyIDB6Ii8+CgkJPHBhdGggaWQ9Im0iIGZpbGw9IiNEQjQ0MzciIGQ9Ik00MzAwLjMyMiAwYy03NDIuNDc4IDAtMTM0My44NTEgNjAxLjM3My0xMzQzLjg1MSAxMzQzLjg1MSAwIDEwMTIuNTkxIDExMzAuODUgMTU0MC4wNTMgMTI2NC41NjMgMjk4NS4zNjQgNC4wMzEgNDAuMzE1IDM4LjMgNzEuODk2IDc5LjI4NyA3MS44OTZzNzUuOTI3LTMxLjU4MSA3OS4yODctNzEuODk2YzEzMy43MTMtMTQ0NS4zMTIgMTI2NC41NjMtMTk3Mi43NzMgMTI2NC41NjMtMjk4NS4zNjRDNTY0NC4xNzMgNjAxLjM3MyA1MDQyLjggMCA0MzAwLjMyMiAweiIvPgoJCTxjbGlwUGF0aCBpZD0iYyI+CgkJCTx1c2Ugb3ZlcmZsb3c9InZpc2libGUiIHN0eWxlPSJ0cmFuc2Zvcm06c2NhbGVYKDEuNikgdHJhbnNsYXRlWCgtMzEuNSUpIiB4bGluazpocmVmPSIjYSIvPgoJCTwvY2xpcFBhdGg+CgkJPGZpbHRlciBpZD0iYiIgd2lkdGg9IjI4MCUiIGhlaWdodD0iMjgwJSIgeD0iLTcwJSIgeT0iLTcwJSI+CgkJCTxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlQWxwaGEiIHN0ZERldmlhdGlvbj0iNjAwIi8+CgkJCTxmZUNvbXBvbmVudFRyYW5zZmVyPgoJCQkJPGZlRnVuY0EgZXhwb25lbnQ9Ii43IiB0eXBlPSJnYW1tYSIvPgoJCQk8L2ZlQ29tcG9uZW50VHJhbnNmZXI+CgkJCTxmZU9mZnNldCBkeD0iMzAwIiBkeT0iMTAwIi8+CgkJPC9maWx0ZXI+Cgk8L2RlZnM+Cgk8cGF0aCBmaWxsPSIjMEY5RDU4IiBkPSJNMjU1My4zMTYgMzA5MC44NTZsMjI2OC41NjktMjUzNS40NmMtMzcuNDc5LTExLjYtNzcuMjQ4LTE3Ljg1Ni0xMTguNDA4LTE3Ljg1Nkg0MDMuMTU1QzE4MS40MiA1MzcuNTQgMCA3MTguOTYgMCA5NDAuNjk1djQzMDAuMzIyYzAgNDEuMTYgNi4yNTcgODAuOTI5IDE3Ljg1NiAxMTguNDA4bDI1MzUuNDYtMjI2OC41Njl6Ii8+Cgk8cGF0aCBmaWxsPSIjNDI4NUY0IiBkPSJNMjU1My4zMTYgMzA5MC44NTZMMjg0Ljc0NyA1NjI2LjMxNmMzNy40NzkgMTEuNiA3Ny4yNDggMTcuODU2IDExOC40MDggMTcuODU2aDQzMDAuMzIyYzQxLjE2IDAgODAuOTI5LTYuMjU2IDExOC40MDgtMTcuODU2bC0yMjY4LjU2OS0yNTM1LjQ2eiIvPgoJPHBhdGggZmlsbD0iI0QyRDJEMiIgZD0iTTI1NTMuMzE2IDMwOTAuODU2bDI1MzUuNDYgMjI2OC41NjljMTEuNi0zNy40NzkgMTcuODU2LTc3LjI0OCAxNy44NTYtMTE4LjQwOFY5NDAuNjk1YzAtNDEuMTYtNi4yNTctODAuOTI5LTE3Ljg1Ni0xMTguNDA4bC0yNTM1LjQ2IDIyNjguNTY5eiIvPgoJPHBhdGggZmlsbD0iI0YxRjFGMSIgZD0iTTUxMDYuNjMzIDUyNDEuMDE4TDI2ODcuNzAxIDI4MjIuMDg2bC00NzAuMzQ4IDQwMy4xNTUgMjQxOC45MzEgMjQxOC45MzFoNjcuMTkyYzIyMS43MzcuMDAxIDQwMy4xNTctMTgxLjQxOSA0MDMuMTU3LTQwMy4xNTR6Ii8+Cgk8cGF0aCBmaWxsPSIjRkZERTQ4IiBkPSJNNDcwMy40NzggNTM3LjU0TDAgNTI0MS4wMThjMCAyMjEuNzM2IDE4MS40MiA0MDMuMTU1IDQwMy4xNTUgNDAzLjE1NWg2Ny4xOTNsNDYzNi4yODUtNDYzNi4yODV2LTY3LjE5M2MwLTIyMS43MzUtMTgxLjQyLTQwMy4xNTUtNDAzLjE1NS00MDMuMTU1eiIvPgoJPHBhdGggZmlsbD0iI0ZGRiIgZmlsbC1vcGFjaXR5PSIuMiIgZD0iTTQ3MDMuNDc4IDUzNy41NEg0MDMuMTU1QzE4MS40MiA1MzcuNTQgMCA3MTguOTYgMCA5NDAuNjk1djMzLjU5NmMwLTIyMS43MzUgMTgxLjQyLTQwMy4xNTUgNDAzLjE1NS00MDMuMTU1aDQzMDAuMzIyYzIyMS43MzUgMCA0MDMuMTU1IDE4MS40MiA0MDMuMTU1IDQwMy4xNTV2LTMzLjU5NmMuMDAxLTIyMS43MzUtMTgxLjQxOS00MDMuMTU1LTQwMy4xNTQtNDAzLjE1NXoiLz4KCTxwYXRoIGZpbGw9IiMyNjMyMzgiIGZpbGwtb3BhY2l0eT0iLjEiIGQ9Ik00NzAzLjQ3OCA1NjEwLjU3N0g0MDMuMTU1QzE4MS40MiA1NjEwLjU3NyAwIDU0MjkuMTU3IDAgNTIwNy40MjF2MzMuNTk2YzAgMjIxLjczNiAxODEuNDIgNDAzLjE1NSA0MDMuMTU1IDQwMy4xNTVoNDMwMC4zMjJjMjIxLjczNSAwIDQwMy4xNTUtMTgxLjQxOSA0MDMuMTU1LTQwMy4xNTV2LTMzLjU5NmMuMDAxIDIyMS43MzYtMTgxLjQxOSA0MDMuMTU2LTQwMy4xNTQgNDAzLjE1NnoiLz4KCTxwYXRoIGZpbGw9IiNFRUUiIGQ9Ik0xMTQyLjI3MyAxNTQ1LjQyOHYyODYuMjRoMzk3Ljc4Yy0zMS41ODEgMTY5Ljk5Ny0xODAuNzQ4IDI5My42MzEtMzk3Ljc4IDI5My42MzEtMjQxLjIyMSAwLTQzNy40MjMtMjA0LjI2NS00MzcuNDIzLTQ0NC44MTRzMTk2LjIwMi00NDQuODE0IDQzNy40MjMtNDQ0LjgxNGMxMDguODUyIDAgMjA1LjYwOSAzNy42MjggMjgyLjg4MSAxMTAuMTk2bDIxMS42NTctMjExLjY1NmMtMTI4LjMzOC0xMjAuMjc1LTI5NC45NzUtMTkzLjUxNS00OTQuNTM3LTE5My41MTUtNDA4LjUzMSAwLTczOS4xMTggMzMwLjU4Ny03MzkuMTE4IDczOS4xMThzMzMwLjU4NyA3MzkuMTE4IDczOS4xMTggNzM5LjExOGM0MjYuNjcyIDAgNzA5LjU1My0zMDAuMzUxIDcwOS41NTMtNzIyLjMyIDAtNTIuNDEtNC43MDMtMTAyLjgwNS0xMy40MzgtMTUxLjE4M2gtNjk2LjExNnoiLz4KCTx1c2UgY2xpcC1wYXRoPSJ1cmwoI2MpIiBmaWx0ZXI9InVybCgjYikiIG9wYWNpdHk9Ii4yNSIgc3R5bGU9InRyYW5zZm9ybTpzY2FsZVgoLjYyNSkgdHJhbnNsYXRlWCg1MC40JSkiIHhsaW5rOmhyZWY9IiNtIi8+Cgk8dXNlIHhsaW5rOmhyZWY9IiNtIi8+Cgk8Y2lyY2xlIGN4PSI0MzAwLjMyMiIgY3k9IjEzNDMuODUxIiByPSI0NzAuMzQ4IiBmaWxsPSIjN0IyMzFFIi8+Cgk8cGF0aCBmaWxsPSIjRkZGIiBmaWxsLW9wYWNpdHk9Ii4yIiBkPSJNNDMwMC4zMjIgMzMuNTk2YzczNS43NTggMCAxMzMzLjEgNTkxLjI5NCAxMzQzLjE3OSAxMzI0LjM2NSAwLTQuNzAzLjY3Mi05LjQwNy42NzItMTQuMTFDNTY0NC4xNzMgNjAxLjM3MyA1MDQyLjggMCA0MzAwLjMyMiAwcy0xMzQzLjg1IDYwMS4zNzMtMTM0My44NSAxMzQzLjg1MWMwIDQuNzAzLjY3MiA5LjQwNy42NzIgMTQuMTEgMTAuMDc4LTczMy4wNyA2MDcuNDItMTMyNC4zNjUgMTM0My4xNzgtMTMyNC4zNjV6Ii8+Cgk8cGF0aCBmaWxsPSIjM0UyNzIzIiBmaWxsLW9wYWNpdHk9Ii4yIiBkPSJNNDM3OS42MDkgNDI5NS42MTljLTMuMzYgNDAuMzE1LTM4LjMgNzEuODk2LTc5LjI4NyA3MS44OTZzLTc1LjkyNy0zMS41ODEtNzkuMjg3LTcxLjg5NkM0MDg4LjY2NiAyODU3LjAyNyAyOTY3Ljg5NCAyMzI3LjU1IDI5NTcuMTQ0IDEzMjQuMzY1YzAgNi43MTktLjY3MiAxMi43NjctLjY3MiAxOS40ODYgMCAxMDEyLjU5MSAxMTMwLjg1IDE1NDAuMDUzIDEyNjQuNTY0IDI5ODUuMzY0IDQuMDMxIDQwLjMxNSAzOC4zIDcxLjg5NiA3OS4yODcgNzEuODk2czc1LjkyNy0zMS41ODEgNzkuMjg3LTcxLjg5NmMxMzMuNzEyLTE0NDUuMzEyIDEyNjQuNTYzLTE5NzIuNzczIDEyNjQuNTYzLTI5ODUuMzY0IDAtNi43MTktLjY3Mi0xMi43NjctLjY3Mi0xOS40ODYtMTAuNzUxIDEwMDMuMTg0LTExMzAuODUxIDE1MzMuMzMzLTEyNjMuODkyIDI5NzEuMjU0eiIvPgoJPHJhZGlhbEdyYWRpZW50IGlkPSJyIiBjeD0iMTQwLjA5NjYiIGN5PSI1NTMzLjk0MTQiIHI9IjY4ODMuNjA2NCIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxIDAgMCAtMSAwIDYxODIuNzUyNCkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KCQk8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iLjEiLz4KCQk8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPgoJPC9yYWRpYWxHcmFkaWVudD4KCTxwYXRoIGZpbGw9InVybCgjcikiIGQ9Ik00MzAwLjMyMiAwYy00MzkuNDM5IDAtODI5LjgyOCAyMTAuOTg1LTEwNzUuMDgxIDUzNy41NEg0MDMuMTU1QzE4MS40MiA1MzcuNTQgMCA3MTguOTYgMCA5NDAuNjk1djQzMDAuMzIyYzAgMjIxLjczNiAxODEuNDIgNDAzLjE1NSA0MDMuMTU1IDQwMy4xNTVoNDMwMC4zMjJjMjIxLjczNSAwIDQwMy4xNTUtMTgxLjQxOSA0MDMuMTU1LTQwMy4xNTVWMjYwOS4wODZjMjgyLjIwOC00MTIuNTYyIDUzNy41NC03ODQuMTM3IDUzNy41NC0xMjY1LjIzNUM1NjQ0LjE3MyA2MDEuMzczIDUwNDIuOCAwIDQzMDAuMzIyIDB6Ii8+Cjwvc3ZnPg==;container=1;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-5\">\n          <mxGeometry x=\"81.5\" y=\"295\" width=\"87\" height=\"87\" as=\"geometry\" />\n        </mxCell>\n        <mxCell id=\"Adg9fUx5eG60yKy4Ax7A-4\" value=\"Auth0\" style=\"shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjg2LjIwMjYzNjcxODc1IiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCIgdmlld0JveD0iMC4wMDAwMDMzMzc4NjAxMDc0MjE4NzUgNi45MjkwMzk5NTUxMzkxNmUtNyAyNTUuOTk5OTg0NzQxMjEwOTQgMjg2LjIwMjYzNjcxODc1IiB3aWR0aD0iMjU1Ljk5OTk4NDc0MTIxMDk0Ij48cGF0aCBkPSJtMjAzLjI0MDMyNyAyMzEuNTMxMzgxLTI4LjczMTI2Ny04OC40MzQzMjcgNzUuMjA5NDE5LTU0LjY0MDU2MDNoLTkyLjk2NjUzNWwtMjguNzMyOTcyLTg4LjQzMDkxNjktLjAwODUyNi0uMDIzODcxNjhoOTIuOTgwMTc2bDI4LjczOTc5MyA4OC40NDYyNjI5OC4wMDE3MDUtLjAwMTcwNTEuMDIzODcxLS4wMTM2NDFjMTYuNjg5NzEyIDUxLjMxMDQ2MS0uNDk5NiAxMDkuNjY5ODg4LTQ2LjUxNTY2NCAxNDMuMDk4NzU5em0tMTUwLjQ0OTUzMDQgMC0uMDIzODcxNy4wMTcwNTEgNzUuMjI4MTc1MSA1NC42NTQyMDEgNzUuMjQ1MjI3LTU0LjY2OTU0Ny03NS4yMjEzNTUtNTQuNjU1OTA2em0tNDYuNDk2OTA4NTgtMTQzLjA5NzA1MzljLTE3LjU2OTU1MzIyIDU0LjA4ODEwMTkgMi44MjUzODMzMSAxMTEuNDAwNTgzOSA0Ni40ODE1NjI0OCAxNDMuMTA3Mjg0OWwuMDA2ODIwNS0uMDI3MjgyIDI4LjczNDY3NjktODguNDI5MjEyLTc1LjE5MjM2NzczLTU0LjYzMDMyOTRoOTIuOTQ0MzY4NzNsMjguNzM0Njc3MS04OC40MzA5MTY5Mi4wMDY4Mi0uMDIzODcxNjhoLTkyLjk4NTI5MTR6IiBmaWxsPSIjZWI1NDI0Ii8+PC9zdmc+;container=1;\" vertex=\"1\" parent=\"Adg9fUx5eG60yKy4Ax7A-5\">\n          <mxGeometry x=\"75.32\" y=\"50\" width=\"99.36\" height=\"111\" as=\"geometry\" />\n        </mxCell>\n        <UserObject label=\"Login.vue\" value=\"Login.vue\" id=\"Adg9fUx5eG60yKy4Ax7A-20\">\n          <mxCell style=\"rounded=1;whiteSpace=wrap;html=1;container=1;glass=0;comic=0;fontSize=12;fontColor=#8A8382;strokeWidth=0.7;strokeColor=#999190;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontStyle=0;\" vertex=\"1\" parent=\"1\">\n            <mxGeometry x=\"317.5\" y=\"50\" width=\"120\" height=\"60\" as=\"geometry\" />\n          </mxCell>\n        </UserObject>\n        <mxCell id=\"Adg9fUx5eG60yKy4Ax7A-23\" style=\"edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;sketch=0;jumpStyle=arc;jumpSize=17;orthogonalLoop=1;jettySize=auto;html=0;shadow=0;labelBackgroundColor=none;fontFamily=Poppins;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DPoppins;fontSize=37;fontColor=default;endArrow=block;endFill=1;endSize=5;sourcePerimeterSpacing=0;targetPerimeterSpacing=0;strokeColor=#A1A1A1;strokeWidth=2;arcSize=50;container=1;\" edge=\"1\" parent=\"1\" source=\"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb\" target=\"Adg9fUx5eG60yKy4Ax7A-14\">\n          <mxGeometry relative=\"1\" as=\"geometry\">\n            <Array as=\"points\" />\n          </mxGeometry>\n        </mxCell>\n      </root>\n    </mxGraphModel>\n  </diagram>\n</mxfile>\n",
+	"fileName": "",
+	"fileURL": "local",
+	"repo": "biketag-vue",
+	"branch": "production",
+	"owner": "KenEucker",
+	"simulations": {
+		"Basic Architecture": {
+			"name": "Basic Architecture",
+			"simSteps": [
+				{
+					"simStepId": "74f20d17-5dd2-45cb-bf4c-a5f9a369af55",
+					"diagramNodeId": "NAfZICnAt9e7Of4MaGL6-1",
+					"simStepLabel": "1 - Frontend",
+					"simStepDescription": "<p>Let's Start Our tutorial with the Frontend:</p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> The application’s UI is built using Vue 3.</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "f793f8a6-f14c-4a9f-8d80-5ec925e3ca00",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-6",
+					"simStepLabel": "1.1 - components",
+					"simStepDescription": "",
+					"isEdge": false
+				},
+				{
+					"simStepId": "6e7057b6-ea3e-48f2-b990-6f453afe15ac",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-7",
+					"simStepLabel": "1.2 - Vue Router",
+					"simStepDescription": "",
+					"isEdge": false
+				},
+				{
+					"simStepId": "3d9e0e16-38f6-4b1c-9e1a-3b1ac39067eb",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-8",
+					"simStepLabel": "1.3 - Pinia Store State",
+					"simStepDescription": "",
+					"isEdge": false
+				},
+				{
+					"simStepId": "3629137f-1f41-4083-a6b3-6b23c0e0b05f",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-1",
+					"simStepLabel": "2 - Backend",
+					"simStepDescription": "<p>Now let's take a look at the backend:</p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "f3d767c4-336a-4246-a7ee-469db9a40090",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-9",
+					"simStepLabel": "2.1 - functions",
+					"simStepDescription": "<p><span style=\"color:#000000;\">The backend consists of serverless functions to handle game logic and data processing.</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Functions are written in TypeScript and found under </span><span style=\"color:#800000;\">`functions/`</span><span style=\"color:#000000;\">.</span></p><p>&nbsp;</p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "047f4c15-5310-4e61-a13e-1c2a551c0215",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-10",
+					"simStepLabel": "2.1.1 - achievements.ts",
+					"simStepDescription": "<p>Functions include:<br><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`achievements.ts`</span><span style=\"color:#000000;\"> (handles achievements)</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "292a4109-2246-421e-81a0-90de0c01a403",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-12",
+					"simStepLabel": "2.1.2 - authorize.ts",
+					"simStepDescription": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`authorize.ts`</span><span style=\"color:#000000;\"> (handles authentication)</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "3299c5a8-62df-46a9-96a7-fc28d590e6a6",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-13",
+					"simStepLabel": "2.1.3 - game.ts",
+					"simStepDescription": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`game.ts`</span><span style=\"color:#000000;\"> (core game logic)</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "25340d51-e47c-4d5f-a6d0-07e6a42a16ee",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-15",
+					"simStepLabel": "2.1.4 - players.ts",
+					"simStepDescription": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`players.ts`</span><span style=\"color:#000000;\"> (manages player data)</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "db01f87f-4188-4c4b-863f-56c0c47ef63a",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-14",
+					"simStepLabel": "2.1.5 - tags.ts",
+					"simStepDescription": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`tags.ts`</span><span style=\"color:#000000;\"> (manages bike tags and locations)</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "d65e57b2-5fe1-4c25-ad64-8263d423fa20",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-5",
+					"simStepLabel": "3 - Third-Party Integrations",
+					"simStepDescription": "",
+					"isEdge": false
+				}
+			],
+			"simulationNodesAndEdges": {
+				"NAfZICnAt9e7Of4MaGL6-1": {
+					"simStepIds": [
+						"74f20d17-5dd2-45cb-bf4c-a5f9a369af55"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-6": {
+					"simStepIds": [
+						"f793f8a6-f14c-4a9f-8d80-5ec925e3ca00"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-7": {
+					"simStepIds": [
+						"6e7057b6-ea3e-48f2-b990-6f453afe15ac"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-8": {
+					"simStepIds": [
+						"3d9e0e16-38f6-4b1c-9e1a-3b1ac39067eb"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-1": {
+					"simStepIds": [
+						"3629137f-1f41-4083-a6b3-6b23c0e0b05f"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-9": {
+					"simStepIds": [
+						"f3d767c4-336a-4246-a7ee-469db9a40090"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-10": {
+					"simStepIds": [
+						"047f4c15-5310-4e61-a13e-1c2a551c0215"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-12": {
+					"simStepIds": [
+						"292a4109-2246-421e-81a0-90de0c01a403"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-13": {
+					"simStepIds": [
+						"3299c5a8-62df-46a9-96a7-fc28d590e6a6"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-15": {
+					"simStepIds": [
+						"25340d51-e47c-4d5f-a6d0-07e6a42a16ee"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-14": {
+					"simStepIds": [
+						"db01f87f-4188-4c4b-863f-56c0c47ef63a"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-5": {
+					"simStepIds": [
+						"d65e57b2-5fe1-4c25-ad64-8263d423fa20"
+					]
+				}
+			},
+			"description": "<p><span style=\"color:#000000;\">BikeTag-Vue follows a </span><span style=\"color:#000080;\"><strong>**Vue 3 + TypeScript**</strong></span><span style=\"color:#000000;\"> architecture and uses </span><span style=\"color:#000080;\"><strong>**Vite**</strong></span><span style=\"color:#000000;\"> as its build tool. It is hosted on </span><span style=\"color:#000080;\"><strong>**Netlify**</strong></span><span style=\"color:#000000;\">, integrating backend serverless functions to handle game logic and data processing.</span></p>"
+		},
+		"Example Walkthrough": {
+			"name": "Example Walkthrough",
+			"simSteps": [
+				{
+					"simStepId": "d4135aef-394d-4f14-869d-18fc8f8e4d71",
+					"diagramNodeId": "functions/authorize.ts-b77dae6d-c3a3-4743-9d09-cafd69e8298b",
+					"simStepLabel": "Step 1: Alex logs in via Auth0",
+					"simStepDescription": "<p><span class=\"text-small\" style=\"color:#800000;\"><strong>### </strong></span><span class=\"text-small\" style=\"color:#000080;\"><strong>**Step 1: Alex logs in via Auth0**</strong></span></p><p><span class=\"text-small\" style=\"color:#000080;\"><strong>**File:**</strong></span><span class=\"text-small\" style=\"color:#000000;\"> </span><span class=\"text-small\" style=\"color:#800000;\">`functions/authorize.ts`</span></p><p><span class=\"text-small\" style=\"color:#0451a5;\">-</span><span class=\"text-small\" style=\"color:#000000;\"> Auth0 handles authentication for the app.</span></p><p><span class=\"text-small\" style=\"color:#0451a5;\">-</span><span class=\"text-small\" style=\"color:#000000;\"> The </span><span class=\"text-small\" style=\"color:#800000;\">`authorize.ts`</span><span class=\"text-small\" style=\"color:#000000;\"> function validates the user's credentials and generates a token.</span></p><p><span class=\"text-small\" style=\"color:#000000;\">🔹 </span><span class=\"text-small\" style=\"color:#000080;\"><strong>**What happens here?**</strong></span></p><p><span class=\"text-small\" style=\"color:#0451a5;\">-</span><span class=\"text-small\" style=\"color:#000000;\"> The app verifies Alex's Auth0 JWT token.</span></p><p><span class=\"text-small\" style=\"color:#0451a5;\">-</span><span class=\"text-small\" style=\"color:#000000;\"> If valid, it returns Alex’s user details; otherwise, it rejects access.</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "17a979bf-cf72-44e2-88ea-be58c49f6cfb",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-16",
+					"simStepLabel": "Step 2: Alex finds an active tag near his location",
+					"simStepDescription": "<p><span class=\"text-small\" style=\"color:#000080;\"><strong>**File:**</strong></span><span class=\"text-small\" style=\"color:#000000;\"> </span><span class=\"text-small\" style=\"color:#800000;\">`src/components/BikeTagMap.vue`</span></p><p><span class=\"text-small\" style=\"color:#0451a5;\">-</span><span class=\"text-small\" style=\"color:#000000;\"> The component integrates with Google Maps API to display active tags.</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "8bf2f912-2ebb-4a2c-a634-6b6d48012600",
+					"diagramNodeId": "src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb",
+					"simStepLabel": "2.1 - first we fetch the tags from the backend",
+					"simStepDescription": "<p>2.1 - first we fetch the tags from the backend</p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "a7cfca07-46e6-43b0-b175-4fb3c594ae67",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-23",
+					"simStepLabel": "a7cfca07-46e6-43b0-b175-4fb3c594ae67",
+					"simStepDescription": "",
+					"isEdge": 1
+				},
+				{
+					"simStepId": "8ed2e0f2-b08c-4be7-a792-b218253b0ee9",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-14",
+					"simStepLabel": "tags.ts",
+					"simStepDescription": "",
+					"isEdge": false
+				},
+				{
+					"simStepId": "a88ba6cd-58ae-4b26-bfeb-aebf5485f622",
+					"diagramNodeId": "src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb-e2aba4d7-7343-45f7-a0cc-5f72ed511041",
+					"simStepLabel": "2.2 - Display tags on map",
+					"simStepDescription": "<p>2.2 - Display tags on map</p><p><span style=\"color:#000000;\">🔹 </span><span style=\"color:#000080;\"><strong>**What happens here?**</strong></span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Alex can click on a tag to see details.</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "f34ed072-e680-4f08-aaa6-e62407265ae4",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-17",
+					"simStepLabel": "Step 3: Alex takes a picture and submits it",
+					"simStepDescription": "<p><span class=\"text-small\" style=\"color:#000080;\"><strong>**File:**</strong></span><span class=\"text-small\" style=\"color:#000000;\"> </span><span class=\"text-small\" style=\"color:#800000;\">`src/components/BikeTagCamera.vue`</span></p><p><span class=\"text-small\" style=\"color:#0451a5;\">-</span><span class=\"text-small\" style=\"color:#000000;\"> The camera component allows Alex to capture a new tag image and submit it.</span></p><p><br>&nbsp;</p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "6b294ae4-aa17-44d8-b8ce-fa4987b602b5",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-14",
+					"simStepLabel": "Step 4: System validates the image and assigns points**   **File:** `functions/tags.ts`",
+					"simStepDescription": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> The serverless function processes tag submissions.</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> It validates the image and updates the leaderboard.</span></p><p>&nbsp;</p><p><span style=\"color:#000000;\">🔹 </span><span style=\"color:#000080;\"><strong>**What happens here?**</strong></span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`validateImage()`</span><span style=\"color:#000000;\"> ensures the uploaded image meets game criteria.</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`updateLeaderboard()`</span><span style=\"color:#000000;\"> increases Alex's points.</span></p>",
+					"isEdge": false
+				},
+				{
+					"simStepId": "a58be577-a10f-404b-b71a-36165ba979ee",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-18",
+					"simStepLabel": "Step 5: Alex’s score updates on the leaderboard",
+					"simStepDescription": "",
+					"isEdge": false
+				},
+				{
+					"simStepId": "93a3349d-0a97-4de6-9fe1-cced68ad2e95",
+					"diagramNodeId": "Adg9fUx5eG60yKy4Ax7A-19",
+					"simStepLabel": "Step 6: Alex, as an ambassador, approves or rejects tags",
+					"simStepDescription": "<p><span class=\"text-small\" style=\"color:#000080;\"><strong>Step 6: Alex, as an ambassador, approves or rejects tags</strong></span></p><p><span class=\"text-small\" style=\"color:#000000;\">🔹 </span><span class=\"text-small\" style=\"color:#000080;\"><strong>**What happens here?**</strong></span></p><p><span class=\"text-small\" style=\"color:#0451a5;\">-</span><span class=\"text-small\" style=\"color:#000000;\"> Alex sees pending tag submissions.</span></p><p><span class=\"text-small\" style=\"color:#0451a5;\">-</span><span class=\"text-small\" style=\"color:#000000;\"> He can approve/reject tags.</span></p><p><span class=\"text-small\" style=\"color:#0451a5;\">-</span><span class=\"text-small\" style=\"color:#000000;\"> The app updates the status accordingly.</span></p>",
+					"isEdge": false
+				}
+			],
+			"simulationNodesAndEdges": {
+				"functions/authorize.ts-b77dae6d-c3a3-4743-9d09-cafd69e8298b": {
+					"simStepIds": [
+						"d4135aef-394d-4f14-869d-18fc8f8e4d71"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-16": {
+					"simStepIds": [
+						"17a979bf-cf72-44e2-88ea-be58c49f6cfb"
+					]
+				},
+				"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb": {
+					"simStepIds": [
+						"8bf2f912-2ebb-4a2c-a634-6b6d48012600"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-23": {
+					"simStepIds": [
+						"a7cfca07-46e6-43b0-b175-4fb3c594ae67"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-14": {
+					"simStepIds": [
+						"8ed2e0f2-b08c-4be7-a792-b218253b0ee9",
+						"6b294ae4-aa17-44d8-b8ce-fa4987b602b5"
+					]
+				},
+				"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb-e2aba4d7-7343-45f7-a0cc-5f72ed511041": {
+					"simStepIds": [
+						"a88ba6cd-58ae-4b26-bfeb-aebf5485f622"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-17": {
+					"simStepIds": [
+						"f34ed072-e680-4f08-aaa6-e62407265ae4"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-18": {
+					"simStepIds": [
+						"a58be577-a10f-404b-b71a-36165ba979ee"
+					]
+				},
+				"Adg9fUx5eG60yKy4Ax7A-19": {
+					"simStepIds": [
+						"93a3349d-0a97-4de6-9fe1-cced68ad2e95"
+					]
+				}
+			},
+			"description": "<p><span style=\"color:#000000;\">Imagine a user named Alex wants to play <strong>biketag</strong>, here is a walkthrough of how the key features are implemented in the codebase</span></p>"
+		}
+	},
+	"cellToPath": {
+		"Adg9fUx5eG60yKy4Ax7A-6": "src/components",
+		"Adg9fUx5eG60yKy4Ax7A-7": "src/router/index.ts",
+		"Adg9fUx5eG60yKy4Ax7A-8": "src/store/index.ts",
+		"Adg9fUx5eG60yKy4Ax7A-9": "functions",
+		"Adg9fUx5eG60yKy4Ax7A-10": "functions/achievements.ts",
+		"Adg9fUx5eG60yKy4Ax7A-11": "functions/ambassadors.ts",
+		"Adg9fUx5eG60yKy4Ax7A-12": "functions/authorize.ts",
+		"Adg9fUx5eG60yKy4Ax7A-13": "functions/game.ts",
+		"Adg9fUx5eG60yKy4Ax7A-14": "functions/tags.ts",
+		"Adg9fUx5eG60yKy4Ax7A-15": "functions/players.ts",
+		"Adg9fUx5eG60yKy4Ax7A-16": "src/components/BikeTagMap.vue",
+		"Adg9fUx5eG60yKy4Ax7A-17": "src/components/BikeTagCamera.vue",
+		"Adg9fUx5eG60yKy4Ax7A-18": "src/views/Leaderboard.vue",
+		"Adg9fUx5eG60yKy4Ax7A-19": "src/views/Approve.vue",
+		"Adg9fUx5eG60yKy4Ax7A-20": "src/views/Login.vue"
+	},
+	"repoData": {
+		"functions": {
+			"path": "functions",
+			"fileName": "functions",
+			"wiki": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Functions are written in TypeScript and found under </span><span style=\"color:#800000;\">`functions/`</span><span style=\"color:#000000;\">.</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> These include:</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`achievements.ts`</span><span style=\"color:#000000;\"> (handles achievements)</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`authorize.ts`</span><span style=\"color:#000000;\"> (handles authentication)</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`game.ts`</span><span style=\"color:#000000;\"> (core game logic)</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`players.ts`</span><span style=\"color:#000000;\"> (manages player data)</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`tags.ts`</span><span style=\"color:#000000;\"> (manages bike tags and locations)</span></p>",
+			"cellName": "functions",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-9",
+			"visible": true
+		},
+		"functions/achievements.ts": {
+			"path": "functions/achievements.ts",
+			"fileName": "achievements.ts",
+			"wiki": "<p><span style=\"color:#000000;\">handles achievements</span></p>",
+			"cellName": "achievements.ts",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-10",
+			"visible": true
+		},
+		"functions/ambassadors.ts": {
+			"path": "functions/ambassadors.ts",
+			"fileName": "ambassadors.ts",
+			"cellName": "ambassadors.ts",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-11",
+			"visible": true
+		},
+		"functions/authorize.ts": {
+			"path": "functions/authorize.ts",
+			"fileName": "authorize.ts",
+			"wiki": "<p><span style=\"color:#000000;\">handles authentication</span></p>",
+			"cellName": "authorize.ts",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-12",
+			"visible": true,
+			"children": [
+				"functions/authorize.ts-b77dae6d-c3a3-4743-9d09-cafd69e8298b"
+			]
+		},
+		"functions/game.ts": {
+			"path": "functions/game.ts",
+			"fileName": "game.ts",
+			"wiki": "<p><span style=\"color:#000000;\">core game logic</span></p>",
+			"cellName": "game.ts",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-13",
+			"visible": true
+		},
+		"functions/players.ts": {
+			"path": "functions/players.ts",
+			"fileName": "players.ts",
+			"wiki": "<p><span style=\"color:#000000;\">manages player data</span></p>",
+			"cellName": "players.ts",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-15",
+			"visible": true
+		},
+		"functions/tags.ts": {
+			"path": "functions/tags.ts",
+			"fileName": "tags.ts",
+			"cellName": "tags.ts",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-14",
+			"visible": true
+		},
+		"src/components": {
+			"path": "src/components",
+			"fileName": "components",
+			"wiki": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Components are modular and located in </span><span style=\"color:#800000;\">`src/components/`</span><span style=\"color:#000000;\">.</span></p><p>&nbsp;</p>",
+			"cellName": "components",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-6",
+			"visible": true
+		},
+		"src/components/BikeTagCamera.vue": {
+			"path": "src/components/BikeTagCamera.vue",
+			"fileName": "BikeTagCamera.vue",
+			"cellName": "BikeTagCamera.vue",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-17",
+			"visible": true
+		},
+		"src/components/BikeTagMap.vue": {
+			"path": "src/components/BikeTagMap.vue",
+			"fileName": "BikeTagMap.vue",
+			"cellName": "BikeTagMap.vue",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-16",
+			"visible": true,
+			"children": [
+				"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb",
+				"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb-e2aba4d7-7343-45f7-a0cc-5f72ed511041"
+			]
+		},
+		"src/router/index.ts": {
+			"path": "src/router/index.ts",
+			"fileName": "index.ts",
+			"wiki": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Vue Router handles navigation (</span><span style=\"color:#800000;\">`src/router/index.ts`</span><span style=\"color:#000000;\">).</span></p>",
+			"cellName": "Vue Router",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-7",
+			"visible": true
+		},
+		"src/store/index.ts": {
+			"path": "src/store/index.ts",
+			"fileName": "index.ts",
+			"wiki": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Pinia (depending on the implementation) manages global state (</span><span style=\"color:#800000;\">`src/store/`</span><span style=\"color:#000000;\">).</span></p>",
+			"cellName": "Pinia Store State",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-8",
+			"visible": true
+		},
+		"src/views/Approve.vue": {
+			"path": "src/views/Approve.vue",
+			"fileName": "Approve.vue",
+			"cellName": "Approve.vue",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-19",
+			"visible": true
+		},
+		"src/views/Leaderboard.vue": {
+			"path": "src/views/Leaderboard.vue",
+			"fileName": "Leaderboard.vue",
+			"cellName": "Leaderboard.vue",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-18",
+			"visible": true
+		},
+		"src/views/Login.vue": {
+			"path": "src/views/Login.vue",
+			"fileName": "Login.vue",
+			"cellName": "Login.vue",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-20",
+			"visible": true
+		},
+		"biketag-vue": {
+			"path": "biketag-vue",
+			"fileName": "biketag-vue",
+			"wiki": "<p><span class=\"text-small\" style=\"color:#000000;\">BikeTag-Vue is a Vue 3-based web application designed to facilitate and enhance the \"BikeTag\" game. The app allows players to participate in location-based biking challenges where users post and discover bike-related tags. It integrates features like maps, achievements, and authentication.</span></p>",
+			"visible": true
+		},
+		"NAfZICnAt9e7Of4MaGL6-1": {
+			"path": "NAfZICnAt9e7Of4MaGL6-1",
+			"wiki": "<p><span style=\"color:#0451a5;\">1.</span><span style=\"color:#000000;\"> </span><span style=\"color:#000080;\"><strong>**Frontend (Vue 3)**</strong></span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> The application’s UI is built using Vue 3.</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Components are modular and located in </span><span style=\"color:#800000;\">`src/components/`</span><span style=\"color:#000000;\">.</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Vue Router handles navigation (</span><span style=\"color:#800000;\">`src/router/index.ts`</span><span style=\"color:#000000;\">).</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Pinia (depending on the implementation) manages global state (</span><span style=\"color:#800000;\">`src/store/`</span><span style=\"color:#000000;\">).</span></p>",
+			"cellName": "Frontend",
+			"cellId": "NAfZICnAt9e7Of4MaGL6-1",
+			"visible": true
+		},
+		"Adg9fUx5eG60yKy4Ax7A-1": {
+			"path": "Adg9fUx5eG60yKy4Ax7A-1",
+			"wiki": "<p><span style=\"color:#0451a5;\">2.</span><span style=\"color:#000000;\"> </span><span style=\"color:#000080;\"><strong>**Backend (Serverless Functions on Netlify)**</strong></span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Functions are written in TypeScript and found under </span><span style=\"color:#800000;\">`functions/`</span><span style=\"color:#000000;\">.</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> These include:</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`achievements.ts`</span><span style=\"color:#000000;\"> (handles achievements)</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`authorize.ts`</span><span style=\"color:#000000;\"> (handles authentication)</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`game.ts`</span><span style=\"color:#000000;\"> (core game logic)</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`players.ts`</span><span style=\"color:#000000;\"> (manages player data)</span></p><p style=\"margin-left:40px;\"><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#800000;\">`tags.ts`</span><span style=\"color:#000000;\"> (manages bike tags and locations)</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> Data storage likely relies on external APIs or cloud services.</span></p>",
+			"cellName": "Backend",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-1",
+			"visible": true
+		},
+		"Adg9fUx5eG60yKy4Ax7A-2": {
+			"path": "Adg9fUx5eG60yKy4Ax7A-2",
+			"wiki": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#000080;\"><strong>**Imgur API**</strong></span><span style=\"color:#000000;\"> for image uploads (</span><span style=\"color:#800000;\">`IMGUR_CLIENT_ID`</span><span style=\"color:#000000;\"> in </span><span style=\"color:#800000;\">`.env`</span><span style=\"color:#000000;\">).</span></p><p>&nbsp;</p>",
+			"cellName": "imgur",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-2",
+			"visible": true
+		},
+		"Adg9fUx5eG60yKy4Ax7A-3": {
+			"path": "Adg9fUx5eG60yKy4Ax7A-3",
+			"wiki": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#000080;\"><strong>**Google Maps API**</strong></span><span style=\"color:#000000;\"> for geolocation (</span><span style=\"color:#800000;\">`GOOGLE_API_KEY`</span><span style=\"color:#000000;\"> in </span><span style=\"color:#800000;\">`.env`</span><span style=\"color:#000000;\">).</span></p>",
+			"cellName": "Google Maps API",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-3",
+			"visible": true
+		},
+		"Adg9fUx5eG60yKy4Ax7A-4": {
+			"path": "Adg9fUx5eG60yKy4Ax7A-4",
+			"wiki": "<p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#000080;\"><strong>**Auth0**</strong></span><span style=\"color:#000000;\"> for authentication (</span><span style=\"color:#800000;\">`AUTH0_CLIENT_ID`</span><span style=\"color:#000000;\">, </span><span style=\"color:#800000;\">`AUTH0_DOMAIN`</span><span style=\"color:#000000;\">).</span></p>",
+			"cellName": "Auth0",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-4",
+			"visible": true
+		},
+		"Adg9fUx5eG60yKy4Ax7A-5": {
+			"path": "Adg9fUx5eG60yKy4Ax7A-5",
+			"wiki": "<p><span style=\"color:#0451a5;\">3.</span><span style=\"color:#000000;\"> </span><span style=\"color:#000080;\"><strong>**Third-Party Integrations**</strong></span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#000080;\"><strong>**Imgur API**</strong></span><span style=\"color:#000000;\"> for image uploads (</span><span style=\"color:#800000;\">`IMGUR_CLIENT_ID`</span><span style=\"color:#000000;\"> in </span><span style=\"color:#800000;\">`.env`</span><span style=\"color:#000000;\">).</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#000080;\"><strong>**Google Maps API**</strong></span><span style=\"color:#000000;\"> for geolocation (</span><span style=\"color:#800000;\">`GOOGLE_API_KEY`</span><span style=\"color:#000000;\"> in </span><span style=\"color:#800000;\">`.env`</span><span style=\"color:#000000;\">).</span></p><p><span style=\"color:#0451a5;\">-</span><span style=\"color:#000000;\"> </span><span style=\"color:#000080;\"><strong>**Auth0**</strong></span><span style=\"color:#000000;\"> for authentication (</span><span style=\"color:#800000;\">`AUTH0_CLIENT_ID`</span><span style=\"color:#000000;\">, </span><span style=\"color:#800000;\">`AUTH0_DOMAIN`</span><span style=\"color:#000000;\">).</span></p>",
+			"cellName": "Third-Party Integrations",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-5",
+			"visible": true
+		},
+		"functions/authorize.ts-b77dae6d-c3a3-4743-9d09-cafd69e8298b": {
+			"path": "functions/authorize.ts-b77dae6d-c3a3-4743-9d09-cafd69e8298b",
+			"fileName": "authorize.ts",
+			"cellName": "authorizeHandler",
+			"cellId": "functions/authorize.ts-b77dae6d-c3a3-4743-9d09-cafd69e8298b",
+			"visible": true,
+			"startLine": "7",
+			"endLine": "59",
+			"parentCellId": "Adg9fUx5eG60yKy4Ax7A-12",
+			"parentPath": "functions/authorize.ts"
+		},
+		"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb": {
+			"path": "src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb",
+			"fileName": "BikeTagMap.vue",
+			"cellName": "getMarkers",
+			"cellId": "src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb",
+			"visible": true,
+			"startLine": "46",
+			"endLine": "54",
+			"parentCellId": "Adg9fUx5eG60yKy4Ax7A-16",
+			"parentPath": "src/components/BikeTagMap.vue"
+		},
+		"src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb-e2aba4d7-7343-45f7-a0cc-5f72ed511041": {
+			"path": "src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb-e2aba4d7-7343-45f7-a0cc-5f72ed511041",
+			"fileName": "BikeTagMap.vue",
+			"cellName": "onMount Display Tags",
+			"cellId": "src/components/BikeTagMap.vue-0639c60c-8c5d-4d8a-9c4c-73213f0522bb-e2aba4d7-7343-45f7-a0cc-5f72ed511041",
+			"visible": true,
+			"startLine": "98",
+			"endLine": "146",
+			"parentCellId": "Adg9fUx5eG60yKy4Ax7A-16",
+			"parentPath": "src/components/BikeTagMap.vue"
+		},
+		"Adg9fUx5eG60yKy4Ax7A-23": {
+			"path": "Adg9fUx5eG60yKy4Ax7A-23",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-23",
+			"visible": false
+		},
+		"Adg9fUx5eG60yKy4Ax7A-24": {
+			"path": "Adg9fUx5eG60yKy4Ax7A-24",
+			"cellId": "Adg9fUx5eG60yKy4Ax7A-24",
+			"visible": false,
+			"parentCellId": "Adg9fUx5eG60yKy4Ax7A-16"
+		}
+	}
+}
