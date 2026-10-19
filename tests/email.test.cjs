@@ -134,15 +134,60 @@ test('admin email fixtures render every supported template without SMTP configur
   assert.equal(email.messages.length, 0)
 })
 
-function emailTestHandler(t, { admin = true, deliver } = {}) {
+function emailTestHandler(
+  t,
+  {
+    admin = true,
+    deliver,
+    currentTag,
+    queuedTags = [],
+    currentError,
+    queueError,
+    gameError,
+    source = 'aws',
+  } = {},
+) {
   const email = mailer(t, deliver)
+  const calls = []
   const { default: handler } = loadTs('functions/email-test.mts', {
+    biketag: {
+      BikeTagClient: class {
+        async game() {
+          calls.push(['game'])
+          if (gameError) throw gameError
+          return {
+            name: 'demo',
+            awsRegion: 'nyc3',
+            mainhash: 'main-album',
+            queuehash: 'queue-album',
+          }
+        }
+        config(options) {
+          calls.push(['config', options])
+        }
+        async getTag(payload, options) {
+          calls.push(['current', payload, options])
+          if (currentError) throw currentError
+          return { success: true, data: currentTag }
+        }
+        async getQueue(payload, options) {
+          calls.push(['queue', payload, options])
+          if (queueError) throw queueError
+          return { success: true, data: queuedTags }
+        }
+      },
+    },
     './common': {
       acceptCorsHeaders: () => ({}),
       getProfileAuthorization: async () => (admin ? { email: 'admin@example.org' } : null),
       requireGlobalAdmin: (profile) => profile?.email === 'admin@example.org',
-      getBikeTagClientOpts: () => ({ game: 'demo' }),
+      getBikeTagClientOpts: (req, authorized, admin, game) => ({
+        game: 'demo',
+        aws: { region: game?.awsRegion },
+        imgur: { hash: game?.mainhash, queuehash: game?.queuehash },
+      }),
       getGameSiteUrl: () => host,
+      getImageSource: () => source,
     },
     './common/email': email,
   })
@@ -153,11 +198,119 @@ function emailTestHandler(t, { admin = true, deliver } = {}) {
         ...(method === 'POST' ? { body: JSON.stringify(body) } : {}),
       }),
     )
-  return { email, handler, request }
+  return { email, handler, request, calls }
 }
 
+const liveRound = {
+  tagnumber: 103,
+  mysteryImageUrl: storage + '/main/demo-tag-103--mystery.webp',
+  mysteryPlayer: 'Current Rider',
+  hint: 'Beside the real fountain',
+}
+const liveSubmission = {
+  tagnumber: 104,
+  foundImageUrl: storage + '/queue/demo-tag-103--found--rider.webp',
+  mysteryImageUrl: storage + '/queue/demo-tag-104--mystery--rider.webp',
+  foundPlayer: 'Queue Rider <&>',
+  foundLocation: 'Actual park entrance',
+  playerId: 'queue-rider',
+}
+
+test('submission and approval tests preview and send live queue photos and metadata', async (t) => {
+  await imageFetch(t)
+  const partial = { ...liveSubmission, mysteryImageUrl: '', foundLocation: 'Partial submission' }
+  const { email, request, calls } = emailTestHandler(t, {
+    currentTag: liveRound,
+    queuedTags: [partial, liveSubmission],
+  })
+  for (const template of ['post-new-biketag', 'approve-new-biketag']) {
+    const preview = await request({ action: 'preview', template })
+    assert.equal(preview.status, 200)
+    const result = await preview.json()
+    assert.match(result.dataSource, /Queued submission for round #104/)
+    assert.ok(result.html.includes(liveSubmission.foundImageUrl))
+    assert.ok(result.html.includes(liveSubmission.mysteryImageUrl))
+    assert.match(result.html, /Actual park entrance/)
+    assert.match(result.html, /Queue Rider &lt;&amp;&gt;/)
+    assert.match(result.html, /Beside the real fountain/)
+    assert.match(result.text, /Round #104/)
+    assert.doesNotMatch(result.html, /biketag-example-1|Sample park|Partial submission/)
+
+    const sent = await request({ action: 'send', template, recipient: 'one@example.org' })
+    assert.equal(sent.status, 200)
+    const message = email.messages.at(-1)
+    assert.equal(message.to, 'one@example.org')
+    assert.equal(message.attachments.length, 2)
+    assert.match(message.html, /src="cid:/)
+    assert.match(message.text, /Round #104/)
+  }
+  assert.ok(calls.some(([name, options]) => name === 'config' && options.aws.region === 'nyc3'))
+  for (const [name, payload, options] of calls.filter(([name]) => name === 'queue')) {
+    assert.deepEqual(payload, { resize: false, reindex: false })
+    assert.equal(options.source, 'aws')
+  }
+})
+
+test('published round tests use the current round, not the queue', async (t) => {
+  const { email, request, calls } = emailTestHandler(t, {
+    currentTag: liveRound,
+    queuedTags: [liveSubmission],
+  })
+  const template = 'biketag-auto-posted'
+  const preview = await (await request({ action: 'preview', template })).json()
+  assert.match(preview.dataSource, /Current round #103/)
+  assert.match(preview.text, /round #103 is live/)
+  assert.ok(preview.html.includes(liveRound.mysteryImageUrl))
+  assert.doesNotMatch(preview.html + preview.text, /#42|#104|biketag-example-1/)
+  assert.equal(
+    (await request({ action: 'send', template, recipient: 'one@example.org' })).status,
+    200,
+  )
+  assert.match(email.messages[0].text, /round #103 is live/)
+  assert.ok(email.messages[0].html.includes(liveRound.mysteryImageUrl))
+  assert.equal(calls.filter(([name]) => name === 'queue').length, 0)
+})
+
+test('partial queued submissions omit missing photos and tolerate current-round lookup failure', async (t) => {
+  const { request, calls } = emailTestHandler(t, {
+    queuedTags: [{ ...liveSubmission, mysteryImageUrl: '' }],
+    currentError: new Error('Current round unavailable'),
+    source: 'imgur',
+  })
+  const response = await request({ action: 'preview', template: 'approve-new-biketag' })
+  assert.equal(response.status, 200)
+  const preview = await response.json()
+  assert.ok(preview.html.includes(liveSubmission.foundImageUrl))
+  assert.match(preview.html, /Photo unavailable/)
+  assert.doesNotMatch(preview.html, /Current mystery|biketag-example-1|src=""/)
+  assert.match(preview.dataSource, /Queued submission/)
+  assert.equal(calls.find(([name]) => name === 'queue')[2].source, 'imgur')
+})
+
+test('empty queues and failed live reads fall back to labelled sample content', async (t) => {
+  for (const options of [
+    {},
+    { queuedTags: [{ tagnumber: 104 }] },
+    { queueError: new Error('Queue unavailable') },
+    { gameError: new Error('Game unavailable') },
+  ]) {
+    const { request } = emailTestHandler(t, options)
+    const response = await request({ action: 'preview', template: 'post-new-biketag' })
+    assert.equal(response.status, 200)
+    const preview = await response.json()
+    assert.match(preview.dataSource, /Sample submission/)
+    assert.match(preview.html, /biketag-example-1/)
+    assert.match(preview.text, /Round #42/)
+  }
+  const { request } = emailTestHandler(t, { currentError: new Error('No current round') })
+  const preview = await (
+    await request({ action: 'preview', template: 'biketag-auto-posted' })
+  ).json()
+  assert.match(preview.dataSource, /Sample round/)
+})
+
 test('email testing requires global admin access for listing, previews and sending', async (t) => {
-  const { email, request } = emailTestHandler(t, { admin: false })
+  const { email, request, calls } = emailTestHandler(t, { admin: false })
   for (const [body, method] of [
     [undefined, 'GET'],
     [{ action: 'preview', template: 'post-new-biketag' }, 'POST'],
@@ -166,6 +319,7 @@ test('email testing requires global admin access for listing, previews and sendi
     assert.equal((await request(body, method)).status, 403)
   }
   assert.equal(email.messages.length, 0)
+  assert.equal(calls.length, 0)
 })
 
 test('email testing previews without SMTP and validates requests before delivery', async (t) => {

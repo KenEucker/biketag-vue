@@ -94,6 +94,7 @@
   included_files=["functions/emails/*.liquid"]
 
 [functions."email-test"]
+  timeout = 26
   included_files=["functions/emails/*.liquid"]
 
 [[plugins]]

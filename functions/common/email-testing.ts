@@ -1,3 +1,5 @@
+import type { Tag } from 'biketag'
+
 export const emailTestTemplates = [
   { name: 'post-new-biketag', label: 'New submission' },
   { name: 'approve-new-biketag', label: 'Submission approved' },
@@ -8,10 +10,12 @@ export const emailTestTemplates = [
   { name: 'game-setting-change-request', label: 'Setting change request' },
 ]
 
-/** Synthetic content keeps email tests independent of live submissions and game actions. */
-export const getEmailTestData = (game: string, host: string) => {
+export type EmailTestContext = { queuedTag?: Tag; currentTag?: Tag }
+
+/** Use live tags where available without performing submission or approval actions. */
+export const getEmailTestData = (game: string, host: string, context: EmailTestContext = {}) => {
   const image = `${host}/images/biketag-example-1.webp`
-  return {
+  const data = {
     game,
     gameProper: game.charAt(0).toUpperCase() + game.slice(1),
     host,
@@ -35,7 +39,7 @@ export const getEmailTestData = (game: string, host: string) => {
     currentMysteryBlurb: 'A sample mystery location for email testing.',
     goToApproveButton: 'REVIEW SUBMISSIONS',
     goToQueueButton: 'OPEN QUEUE',
-    footerText: 'BikeTag email test — sample content only.',
+    footerText: 'BikeTag email test — no game action was performed.',
     roundPublishedText: `Test round #42 is live in ${game}.`,
     redditLink: '',
     blueskyLink: '',
@@ -56,4 +60,37 @@ export const getEmailTestData = (game: string, host: string) => {
     ambassadorName: 'Test Ambassador',
     ambassadorEmail: 'ambassador@example.org',
   }
+
+  if (context.currentTag) {
+    const tag = context.currentTag
+    data.newBikeTagPost = tag
+    data.currentMysteryImageUrl = tag.mysteryImageUrl || ''
+    data.currentMysteryHint = tag.hint || ''
+    data.currentMysteryBlurb = `Current round #${tag.tagnumber}${tag.mysteryPlayer ? ` by ${tag.mysteryPlayer}` : ''}.`
+    data.roundPublishedText = `Round #${tag.tagnumber} is now live in ${game}. This is a test email.`
+  }
+
+  if (context.queuedTag) {
+    const tag = context.queuedTag
+    data.tag = tag
+    data.foundImageUrl = tag.foundImageUrl || ''
+    data.mysteryImageUrl = tag.mysteryImageUrl || ''
+    data.mainTitleText = `Test submission for round #${tag.tagnumber}.`
+    data.mainParagraphText = `This test email uses a queued submission for round #${tag.tagnumber}. No game action was performed.`
+    data.foundLocation = tag.foundLocation?.trim() || 'Location not provided'
+    data.foundTagBlurb = tag.foundPlayer
+      ? `Submitted by ${tag.foundPlayer}.`
+      : 'Player not provided.'
+    data.comparisonText = context.currentTag?.mysteryImageUrl
+      ? 'Compare the queued found photo with the current mystery below.'
+      : 'Open the queue to review the submission photos and location.'
+    // Do not show a sample mystery as though it were the live comparison photo.
+    if (!context.currentTag) {
+      data.currentMysteryImageUrl = ''
+      data.currentMysteryHint = ''
+      data.currentMysteryBlurb = ''
+    }
+  }
+
+  return data
 }
