@@ -64,6 +64,7 @@ export const liquidOpts = { dynamicPartials: true, strictFilters: true, extname:
 const createRenderer = (html: boolean) => {
   const renderer = new Liquid({
     ...liquidOpts,
+    root: join('functions', 'emails'),
     ...(html ? { outputEscape: 'escape' as const } : {}),
   })
   renderer.registerFilter('biketag_image', getEmailImageUrl)

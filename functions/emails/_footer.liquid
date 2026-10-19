@@ -1,0 +1,18 @@
+<tr>
+  <td style="background:#ffffff;padding:0">
+    <img src="{{ host }}/images/email-illustrated-footer.png" alt="" width="600" style="width:100%;display:block;max-width:600px;height:auto;border:0" />
+  </td>
+</tr>
+<tr>
+  <td style="background:#102341;padding:10px 32px 30px">
+    <img src="{{ host }}/images/email-logo.png" alt="BikeTag" width="40" style="display:block;width:40px;max-width:40px;height:auto;border:0;margin:0 0 16px" />
+    <p style="margin:0 0 9px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;color:#ffffff">Explore more at <a href="{{ gameHost | default: host }}" style="color:#56c8f2">BikeTag</a></p>
+    <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#d6e4f0">
+      {{ footerText | default: 'BikeTag is an open-source project that you can contribute to anytime.' }}<br>
+      You receive this message as a BikeTag ambassador.<br>
+      {% if redditLink and redditLink != blank %}<a href="{{ redditLink }}" style="color:#9ddfff">Reddit</a> &nbsp;{% endif %}
+      {% if blueskyLink and blueskyLink != blank %}<a href="{{ blueskyLink }}" style="color:#9ddfff">Bluesky</a> &nbsp;{% endif %}
+      {% if instagramLink and instagramLink != blank %}<a href="{{ instagramLink }}" style="color:#9ddfff">Instagram</a>{% endif %}
+    </p>
+  </td>
+</tr>
