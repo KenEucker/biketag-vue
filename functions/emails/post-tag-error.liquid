@@ -1,51 +1,32 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml">
-
+<!doctype html>
+<html lang="en">
 <head>
-    <style type="text/css">
-        body {
-            margin: 1em;
-            padding: 3em;
-        }
-
-        @media only screen and (max-width: 480px) {
-            .biketagIcon {
-                text-align: center;
-                max-width: 15em;
-            }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BikeTag notification</title>
+  <style>@media screen and (max-width:620px){.email-shell{width:100%!important}.email-shell td{box-sizing:border-box}} .label{font-weight:bold;vertical-align:top;width:160px} pre{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}</style>
 </head>
-
-<body>
-    <table border="0" cellpadding="10" cellspacing="0" width="600">
-        {% if logo %}
-        <tr>
-            <td align="center" width="50%" valign="top" class="middleColumnContent">
-                <img src="{{ logo }}" class="biketagIcon" alt="{{ game }} BikeTag logo" width="96" style="display:block;max-width:120px;max-height:96px;width:auto;height:auto;border:0">
-            </td>
-        </tr>
-        {% endif %}
-        <tr>
-            <td align="center" width="50%" valign="bottom" class="middleColumnContent">
-                <h4>An error has occurred for the {{ game }} game.</h4>
-                <p>You are getting this email because you are listed as an ambassador for this game (<a href="{{ host }}">{{ host }}</a>).</p>
-            </td>
-        </tr>
-    </table>
-
-    <table border="0" cellpadding="10" cellspacing="0" width="600">
-        <tr>
-            <td align="center" width="50%" valign="top" class="middleColumnContent">
-                The player who submitted the error has an IP address of {{ playerIp }}.
-                <br>
-                This was the payload sent with the error:
-                <br>
-                <pre>{{ payload }}</pre>
-            </td>
-        </tr>
-    </table>
-    <p><img src="{{ host }}/images/email-logo.png" alt="BikeTag" width="40" style="display:block;width:40px;max-width:40px;height:auto;border:0" /></p>
+<body style="margin:0;padding:0;background:#eaf1f5;font-family:Arial,Helvetica,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eaf1f5">
+    <tr><td align="center" style="padding:24px 10px">
+      <table class="email-shell" role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:100%;border-collapse:collapse">
+        {% include '_header' %}
+        <tr><td style="background:#ffffff;padding:26px 32px;color:#283c4b">
+          <p style="margin:0 0 8px;color:#208bc5;letter-spacing:2px;font-size:12px;font-weight:bold">SUBMISSION ERROR</p>
+          <h1 style="margin:0 0 12px;color:#121b39;font-size:30px;line-height:1.15">A submission needs attention</h1>
+          <p style="margin:0;font-size:16px;line-height:1.6">An error has occurred for the {{ game }} game. Review the details below before trying again.</p>
+        </td></tr>
+        <tr><td style="background:#edf7fc;padding:20px 32px;color:#283c4b;font-size:15px;line-height:1.6">
+          <p style="margin:0 0 12px"><strong>Player IP:</strong> {{ playerIp }}</p>
+          <p style="margin:0 0 8px"><strong>Error payload</strong></p>
+          <pre style="margin:0;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word">{{ payload }}</pre>
+        </td></tr>
+        <tr><td style="background:#ffffff;padding:26px 32px">
+          <a href="{{ host }}/dashboard" style="display:inline-block;padding:16px 25px;background:#209dd6;color:#ffffff;text-decoration:none;border-radius:30px;font-size:15px;font-weight:bold">OPEN AMBASSADOR DASHBOARD &rarr;</a>
+        </td></tr>
+        {% include '_footer' %}
+      </table>
+    </td></tr>
+  </table>
 </body>
-
 </html>

@@ -233,6 +233,16 @@ test('every test email uses the game logo in a compact header and the main logo 
     assert.ok(images[0].includes(`src="${logo}"`), template)
     assert.match(images[0], /width="96"/)
     assert.match(images[0], /max-height:96px/)
+    assert.match(
+      preview.html,
+      /class="email-header"[^>]*background="https:\/\/demo\.biketag\.org\/images\/email-illustrated-header.png"/,
+    )
+    assert.match(
+      preview.html,
+      /background-image:url\('https:\/\/demo\.biketag\.org\/images\/email-illustrated-header.png'\)/,
+    )
+    assert.ok(preview.html.includes('/images/email-illustrated-footer.png'), template)
+    assert.doesNotMatch(preview.html, /<img[^>]*src="[^"]*email-illustrated-header.png"/)
     const footer = images.find((image) => image.includes('/images/email-logo.png'))
     assert.ok(footer, template)
     assert.match(footer, /width="40"/)
@@ -246,6 +256,28 @@ test('every test email uses the game logo in a compact header and the main logo 
   }
   assert.equal(calls.filter(([name]) => name === 'game').length, emailTestTemplates.length * 2)
   assert.ok(calls.filter(([name]) => name === 'logo').every(([, , size]) => size === 's'))
+})
+
+test('error emails use the illustrated layout and preserve escaped diagnostic details', (t) => {
+  const email = mailer(t)
+  for (const template of ['post-tag-error', 'approve-tag-error']) {
+    const { html, text } = email.renderEmail(template, {
+      host,
+      game: 'demo',
+      logo: host + '/images/BikeTag.svg',
+      playerIp: '192.0.2.7',
+      payload: '<script>alert("example")</script>',
+    })
+    assert.match(html, /class="email-shell"/)
+    assert.match(html, /class="email-header"/)
+    assert.match(html, /email-illustrated-footer.png/)
+    assert.match(html, /192\.0\.2\.7/)
+    assert.match(html, /&lt;script&gt;/)
+    assert.doesNotMatch(html, /<script>|href=""|src=""/)
+    assert.ok(html.includes(host + '/dashboard'))
+    assert.match(text, /192\.0\.2\.7/)
+    assert.match(text, /<script>/)
+  }
 })
 
 test('test emails resolve relative and Sanity game logos even when tag data is unavailable', async (t) => {

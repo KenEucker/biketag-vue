@@ -1,36 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <style type="text/css">
-        body {
-            margin: 1em;
-            padding: 2em;
-            font-family: Arial, sans-serif;
-        }
-
-        table {
-            width: 100%;
-            max-width: 640px;
-        }
-
-        .label {
-            font-weight: bold;
-            vertical-align: top;
-            width: 160px;
-        }
-
-        pre {
-            white-space: pre-wrap;
-            word-break: break-word;
-            margin: 0;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BikeTag notification</title>
+  <style>@media screen and (max-width:620px){.email-shell{width:100%!important}.email-shell td{box-sizing:border-box}} .label{font-weight:bold;vertical-align:top;width:160px} pre{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}</style>
 </head>
-
-<body>
-    {% assign headerLogo = subdomainIcon | default: logo %}
-    {% if headerLogo != blank %}<p><img src="{{ headerLogo }}" alt="{{ game }} BikeTag logo" width="96" style="display:block;max-width:120px;max-height:96px;width:auto;height:auto;border:0" /></p>{% endif %}
+<body style="margin:0;padding:0;background:#eaf1f5;font-family:Arial,Helvetica,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eaf1f5">
+    <tr><td align="center" style="padding:24px 10px">
+      <table class="email-shell" role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:100%;border-collapse:collapse">
+        {% include '_header' %}
+        <tr><td style="background:#ffffff;padding:26px 32px;color:#283c4b;font-size:15px;line-height:1.6">
     <h2>Game setting change request</h2>
     <p>
         <strong>{{ ambassadorName }}</strong>
@@ -70,7 +51,11 @@
             <td><a href="{{ host }}">{{ host }}</a></td>
         </tr>
     </table>
-    <p><img src="{{ host }}/images/email-logo.png" alt="BikeTag" width="40" style="display:block;width:40px;max-width:40px;height:auto;border:0" /></p>
-</body>
 
+        </td></tr>
+        {% include '_footer' %}
+      </table>
+    </td></tr>
+  </table>
+</body>
 </html>

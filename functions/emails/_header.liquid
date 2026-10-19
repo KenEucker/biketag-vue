@@ -1,0 +1,25 @@
+{% assign headerLogo = subdomainIcon | default: logo %}
+<tr>
+  <td class="email-header" align="center" valign="middle" background="{{ host }}/images/email-illustrated-header.png" bgcolor="#121b39" height="180" style="height:180px;background-image:url('{{ host }}/images/email-illustrated-header.png');background-position:center;background-size:cover;background-repeat:no-repeat">
+    <!--[if gte mso 9]>
+    <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:180px;">
+      <v:fill type="frame" src="{{ host }}/images/email-illustrated-header.png" color="#121b39" />
+      <v:textbox inset="0,0,0,0">
+    <![endif]-->
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" height="180" style="height:180px">
+      <tr>
+        <td align="center" valign="middle">
+          {% if headerLogo and headerLogo != blank %}
+          <img src="{{ headerLogo }}" alt="{{ game }} BikeTag logo" width="96" style="display:block;max-width:120px;max-height:96px;width:auto;height:auto;border:0;background:#ffffff;border-radius:12px;padding:8px;box-shadow:0 3px 12px rgba(0,0,0,0.2)" />
+          {% else %}
+          <span style="font-family:Arial,Helvetica,sans-serif;color:#ffffff;font-size:24px;font-weight:bold">{{ game }} BikeTag</span>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+    <!--[if gte mso 9]>
+      </v:textbox>
+    </v:rect>
+    <![endif]-->
+  </td>
+</tr>
