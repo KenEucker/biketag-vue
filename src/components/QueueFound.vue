@@ -138,9 +138,9 @@
 import Pin from '@/assets/images/pin.svg'
 import { debug, isAuthenticationEnabled, isGmapsEnabled, summarizeTagGps } from '@/common'
 import { isPointInPolygon } from '@/common/geo'
+import { readImageMetadata } from '@/common/image-metadata'
 import { useBikeTagStore } from '@/store/index'
 import { useAuth0 } from '@auth0/auth0-vue'
-import exifr from 'exifr'
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 // import heic2any from 'heic2any';
@@ -439,7 +439,7 @@ const setImage = async (event) => {
         //   // For non-HEIC files, proceed with the original image
         //   image.value = imageFile;
         // }
-        const results = await exifr.parse(await input.files[0].arrayBuffer())
+        const results = await readImageMetadata(input.files[0])
         const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
         debug('gps::queue-found::exif-parse', { hasExif: !!results, createDate }, 'info')
 
@@ -451,7 +451,7 @@ const setImage = async (event) => {
             position: 'top',
           })
         } else {
-          const GPSData = await exifr.gps(await input.files[0].arrayBuffer())
+          const GPSData = results
           let gpsSource = 'none'
 
           if (GPSData?.latitude && GPSData?.longitude) {

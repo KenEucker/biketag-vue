@@ -474,6 +474,21 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return 'incorrect permissions'
     },
+    async testEmail(payload?: { action: 'preview' | 'send'; template: string; recipient?: string }) {
+      if (!this.isBikeTagAdmin) throw new Error('Admin access required')
+
+      const response = await fetch(getApiUrl('email-test'), {
+        method: payload ? 'POST' : 'GET',
+        headers: {
+          authorization: `Bearer ${this.auth0Token}`,
+          ...(payload ? { 'Content-Type': 'application/json' } : {}),
+        },
+        ...(payload ? { body: JSON.stringify(payload) } : {}),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Email test request failed')
+      return result
+    },
     async scanQueueIssues() {
       if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'

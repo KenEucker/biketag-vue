@@ -89,6 +89,16 @@
         Game Settings
       </router-link>
 
+      <router-link v-if="isBikeTagAdmin" to="/email-test" class="action-button">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m3 6 9 7 9-7" />
+          </svg>
+        </span>
+        Test Emails
+      </router-link>
+
       <router-link v-if="isBikeTagAdmin" to="/queue-fix" class="action-button">
         <span class="icon">
          <svg

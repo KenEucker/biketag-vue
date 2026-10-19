@@ -107,7 +107,7 @@
 <script setup name="QueueMysteryTag">
 import { formatMysteryUploadCountdownMessage, getMysteryUploadRemainingSeconds, ordinalSuffixOf } from '@/common'
 import { useBikeTagStore } from '@/store/index'
-import exifr from 'exifr'
+import { readImageMetadata } from '@/common/image-metadata'
 import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -263,7 +263,7 @@ const setImage = async (event) => {
         //   // For non-HEIC files, proceed with the original image
         //   image.value = imageFile;
         // }
-        const results = await exifr.parse(await input.files[0].arrayBuffer())
+        const results = await readImageMetadata(input.files[0])
         const createDate = results?.CreateDate ?? results?.DateTimeOriginal ?? Date.now()
 
         if (createDate < getCurrentBikeTag.value.mysteryTime) {

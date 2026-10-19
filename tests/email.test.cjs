@@ -109,6 +109,134 @@ function data() {
     ambassadorEmail: 'rider@example.org',
   }
 }
+
+test('admin email fixtures render every supported template without SMTP configuration', (t) => {
+  const email = mailer(t)
+  delete process.env.G_EMAIL
+  delete process.env.G_PASS
+  const { emailTestTemplates, getEmailTestData } = loadTs('functions/common/email-testing.ts')
+  const available = fs
+    .readdirSync('functions/emails')
+    .filter((name) => name.endsWith('--text.liquid'))
+  assert.deepEqual(
+    emailTestTemplates.map(({ name }) => name).sort(),
+    available.map((name) => name.replace('--text.liquid', '')).sort(),
+  )
+  for (const { name } of emailTestTemplates) {
+    const rendered = email.renderEmail(name, getEmailTestData('demo', host))
+    assert.ok(rendered.html.trim())
+    assert.ok(rendered.text.trim())
+    assert.doesNotMatch(rendered.html, /src=""|\{\{/)
+    for (const match of rendered.html.matchAll(/src="https:\/\/demo\.biketag\.org([^"?]*)/g)) {
+      assert.ok(fs.existsSync(path.join('public', match[1])), `Missing sample asset: ${match[1]}`)
+    }
+  }
+  assert.equal(email.messages.length, 0)
+})
+
+function emailTestHandler(t, { admin = true, deliver } = {}) {
+  const email = mailer(t, deliver)
+  const { default: handler } = loadTs('functions/email-test.mts', {
+    './common': {
+      acceptCorsHeaders: () => ({}),
+      getProfileAuthorization: async () => (admin ? { email: 'admin@example.org' } : null),
+      requireGlobalAdmin: (profile) => profile?.email === 'admin@example.org',
+      getBikeTagClientOpts: () => ({ game: 'demo' }),
+      getGameSiteUrl: () => host,
+    },
+    './common/email': email,
+  })
+  const request = (body, method = 'POST') =>
+    handler(
+      new Request(host + '/api/email-test', {
+        method,
+        ...(method === 'POST' ? { body: JSON.stringify(body) } : {}),
+      }),
+    )
+  return { email, handler, request }
+}
+
+test('email testing requires global admin access for listing, previews and sending', async (t) => {
+  const { email, request } = emailTestHandler(t, { admin: false })
+  for (const [body, method] of [
+    [undefined, 'GET'],
+    [{ action: 'preview', template: 'post-new-biketag' }, 'POST'],
+    [{ action: 'send', template: 'post-new-biketag', recipient: 'one@example.org' }, 'POST'],
+  ]) {
+    assert.equal((await request(body, method)).status, 403)
+  }
+  assert.equal(email.messages.length, 0)
+})
+
+test('email testing previews without SMTP and validates requests before delivery', async (t) => {
+  const { email, handler, request } = emailTestHandler(t)
+  delete process.env.G_PASS
+  const listing = await request(undefined, 'GET')
+  assert.equal(listing.headers.get('cache-control'), 'no-store')
+  assert.equal((await listing.json()).configured, false)
+  const preview = await request({ action: 'preview', template: 'post-new-biketag' })
+  assert.equal(preview.status, 200)
+  assert.match((await preview.json()).subject, /^\[TEST\]/)
+  for (const body of [
+    null,
+    { action: 'preview', template: '../test' },
+    { action: 'unknown', template: 'post-new-biketag' },
+    { action: 'send', template: 'post-new-biketag', recipient: 'one@example.org,two@example.org' },
+    {
+      action: 'send',
+      template: 'post-new-biketag',
+      recipient: 'one@example.org\r\nBcc:x@example.org',
+    },
+  ]) {
+    assert.equal((await request(body)).status, 400)
+  }
+  assert.equal((await handler(new Request(host, { method: 'POST', body: '{' }))).status, 400)
+  assert.equal((await request(undefined, 'DELETE')).status, 405)
+  assert.equal((await request(undefined, 'OPTIONS')).status, 204)
+  assert.equal(
+    (
+      await request({
+        action: 'send',
+        template: 'post-new-biketag',
+        recipient: 'one@example.org',
+      })
+    ).status,
+    503,
+  )
+  assert.equal(email.messages.length, 0)
+})
+
+test('email testing sends one marked message only to the chosen recipient', async (t) => {
+  const { email, request } = emailTestHandler(t)
+  const response = await request({
+    action: 'send',
+    template: 'post-new-biketag',
+    recipient: ' one@example.org ',
+  })
+  assert.equal(response.status, 200)
+  assert.equal(email.messages.length, 1)
+  assert.equal(email.messages[0].to, 'one@example.org')
+  assert.match(email.messages[0].subject, /^\[TEST\]/)
+  assert.match(email.messages[0].html, /No game action was performed/)
+})
+
+test('email testing reports SMTP rejection and failure', async (t) => {
+  for (const deliver of [
+    async () => ({ accepted: [], rejected: ['one@example.org'] }),
+    async () => {
+      throw new Error('SMTP unavailable')
+    },
+  ]) {
+    const { request } = emailTestHandler(t, { deliver })
+    const response = await request({
+      action: 'send',
+      template: 'post-tag-error',
+      recipient: 'one@example.org',
+    })
+    assert.ok([502, 500].includes(response.status))
+    assert.ok((await response.json()).error)
+  }
+})
 async function imageFetch(t, missing = () => false) {
   const image = await sharp({
     create: { width: 32, height: 24, channels: 3, background: '#209dd6' },
