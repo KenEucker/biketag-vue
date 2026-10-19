@@ -5,11 +5,14 @@
   <title>BikeTag Screening Rejection</title>
 </head>
 <body>
+  {% assign headerLogo = subdomainIcon | default: logo %}
+  {% if headerLogo != blank %}<p><img src="{{ headerLogo }}" alt="{{ game }} BikeTag logo" width="96" style="display:block;max-width:120px;max-height:96px;width:auto;height:auto;border:0" /></p>{% endif %}
   <p>A {{ imageType }} BikeTag image was rejected for round #{{ roundNumber }} in {{ game }}.</p>
   <p><strong>Player ID:</strong> {{ playerId }}</p>
   <p><strong>Player IP:</strong> {{ playerIP }}</p>
   <p><strong>Reason:</strong> {{ reason }}</p>
   <p><a href="{{ rejectionsUrl }}">Review rejected images</a></p>
   {% if imageUrl != blank %}<p><img src="{{ imageUrl }}" alt="Rejected BikeTag image" style="max-width: 100%;" /></p>{% endif %}
+  <p><img src="{{ host }}/images/email-logo.png" alt="BikeTag" width="40" style="display:block;width:40px;max-width:40px;height:auto;border:0" /></p>
 </body>
 </html>

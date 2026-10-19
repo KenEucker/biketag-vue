@@ -1,5 +1,5 @@
 import type { Ambassador, Game } from 'biketag'
-import { getGameSiteUrl, log } from '../methods'
+import { getGameSiteUrl, getSanityImageUrl, log } from '../methods'
 import { isGameEmailEnabled, sendEmailsToAmbassadors } from '../email'
 import type { RejectedQueueImage } from './types'
 
@@ -35,7 +35,10 @@ export const sendScreeningRejectionEmail = async (
       imageUrl: rejected.url,
       reason: rejected.reason,
       rejectionsUrl: `${host}/rejections`,
-      subdomainIcon: game.logo?.length ? game.logo : '/images/BikeTag.svg',
+      subdomainIcon: new URL(
+        game.logo?.length ? getSanityImageUrl(game.logo, 's') : '/images/BikeTag.svg',
+        host,
+      ).href,
     }),
     true,
   )

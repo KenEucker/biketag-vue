@@ -145,6 +145,8 @@ function emailTestHandler(
     queueError,
     gameError,
     source = 'aws',
+    gameLogo = 'https://cdn.sanity.io/images/example/demo-game.png',
+    resolvedGameLogo = gameLogo,
   } = {},
 ) {
   const email = mailer(t, deliver)
@@ -160,6 +162,7 @@ function emailTestHandler(
             awsRegion: 'nyc3',
             mainhash: 'main-album',
             queuehash: 'queue-album',
+            logo: gameLogo,
           }
         }
         config(options) {
@@ -188,6 +191,10 @@ function emailTestHandler(
       }),
       getGameSiteUrl: () => host,
       getImageSource: () => source,
+      getSanityImageUrl: (value, size) => {
+        calls.push(['logo', value, size])
+        return resolvedGameLogo
+      },
     },
     './common/email': email,
   })
@@ -215,6 +222,58 @@ const liveSubmission = {
   foundLocation: 'Actual park entrance',
   playerId: 'queue-rider',
 }
+
+test('every test email uses the game logo in a compact header and the main logo in its footer', async (t) => {
+  const { emailTestTemplates } = loadTs('functions/common/email-testing.ts')
+  const { email, request, calls } = emailTestHandler(t)
+  const logo = 'https://cdn.sanity.io/images/example/demo-game.png'
+  for (const { name: template } of emailTestTemplates) {
+    const preview = await (await request({ action: 'preview', template })).json()
+    const images = [...preview.html.matchAll(/<img\b[^>]*>/gi)].map(([image]) => image)
+    assert.ok(images[0].includes(`src="${logo}"`), template)
+    assert.match(images[0], /width="96"/)
+    assert.match(images[0], /max-height:96px/)
+    const footer = images.find((image) => image.includes('/images/email-logo.png'))
+    assert.ok(footer, template)
+    assert.match(footer, /width="40"/)
+    assert.ok(preview.html.indexOf(images[0]) < preview.html.indexOf(footer), template)
+
+    assert.equal(
+      (await request({ action: 'send', template, recipient: 'one@example.org' })).status,
+      200,
+    )
+    assert.ok(email.messages.at(-1).html.includes(`src="${logo}"`), template)
+  }
+  assert.equal(calls.filter(([name]) => name === 'game').length, emailTestTemplates.length * 2)
+  assert.ok(calls.filter(([name]) => name === 'logo').every(([, , size]) => size === 's'))
+})
+
+test('test emails resolve relative and Sanity game logos even when tag data is unavailable', async (t) => {
+  for (const [gameLogo, resolvedGameLogo, expected] of [
+    ['/images/BikeTag.svg', '/images/BikeTag.svg', host + '/images/BikeTag.svg'],
+    [
+      'image-demo-200x200-png',
+      'https://cdn.sanity.io/images/example/demo-200x200.png?h=192',
+      'https://cdn.sanity.io/images/example/demo-200x200.png?h=192',
+    ],
+  ]) {
+    const { request, calls } = emailTestHandler(t, {
+      gameLogo,
+      resolvedGameLogo,
+      currentError: new Error('Current round unavailable'),
+      queueError: new Error('Queue unavailable'),
+    })
+    const preview = await (
+      await request({ action: 'preview', template: 'post-new-biketag' })
+    ).json()
+    assert.ok(preview.html.includes(`src="${expected}"`))
+    assert.match(preview.dataSource, /Sample submission/)
+    assert.deepEqual(
+      calls.find(([name]) => name === 'logo'),
+      ['logo', gameLogo, 's'],
+    )
+  }
+})
 
 test('submission and approval tests preview and send live queue photos and metadata', async (t) => {
   await imageFetch(t)

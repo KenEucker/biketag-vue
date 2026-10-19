@@ -10,7 +10,7 @@ export const emailTestTemplates = [
   { name: 'game-setting-change-request', label: 'Setting change request' },
 ]
 
-export type EmailTestContext = { queuedTag?: Tag; currentTag?: Tag }
+export type EmailTestContext = { queuedTag?: Tag; currentTag?: Tag; logo?: string }
 
 /** Use live tags where available without performing submission or approval actions. */
 export const getEmailTestData = (game: string, host: string, context: EmailTestContext = {}) => {
@@ -20,8 +20,8 @@ export const getEmailTestData = (game: string, host: string, context: EmailTestC
     gameProper: game.charAt(0).toUpperCase() + game.slice(1),
     host,
     gameHost: host,
-    logo: `${host}/images/email-logo.png`,
-    subdomainIcon: `${host}/images/email-logo.png`,
+    logo: context.logo || `${host}/images/email-logo.png`,
+    subdomainIcon: context.logo || `${host}/images/email-logo.png`,
     ambassadorsUrl: `${host}/approve`,
     rejectionsUrl: `${host}/rejections`,
     tag: { tagnumber: 42, foundPlayer: 'Test Rider' },

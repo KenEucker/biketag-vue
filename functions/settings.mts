@@ -39,7 +39,9 @@ const handleSettingChangeRequest = async (
   const settingDescription =
     typeof payload.settingDescription === 'string' ? payload.settingDescription.trim() : ''
   const currentValue =
-    typeof payload.currentValue === 'string' ? payload.currentValue : String(payload.currentValue ?? '')
+    typeof payload.currentValue === 'string'
+      ? payload.currentValue
+      : String(payload.currentValue ?? '')
   const requestedValue =
     typeof payload.requestedValue === 'string' ? payload.requestedValue.trim() : ''
   const reason = typeof payload.reason === 'string' ? payload.reason.trim() : ''
@@ -61,7 +63,10 @@ const handleSettingChangeRequest = async (
     ? `${game.name[0].toUpperCase()}${game.name.slice(1)}`
     : gameSlug
   const host = getGameSiteUrl(gameSlug)
-  const subdomainIcon = game.logo?.length ? getSanityImageUrl(game.logo, 's') : '/images/BikeTag.svg'
+  const subdomainIcon = new URL(
+    game.logo?.length ? getSanityImageUrl(game.logo, 's') : '/images/BikeTag.svg',
+    host,
+  ).href
   const subject = `[${gameSlug}] Setting change request: ${settingKey}`
 
   const emailSent = await sendEmail(
@@ -86,7 +91,11 @@ const handleSettingChangeRequest = async (
   )
 
   if (!emailSent?.accepted?.length || emailSent.rejected?.length) {
-    log('[game-settings] Setting change request email failed', { game: gameSlug, settingKey }, 'error')
+    log(
+      '[game-settings] Setting change request email failed',
+      { game: gameSlug, settingKey },
+      'error',
+    )
     return {
       status: HttpStatusCode.InternalServerError,
       body: { error: 'failed to send setting change request email' },
@@ -226,7 +235,10 @@ export default async (req: Request) => {
 
     for (const setting of validUpdates) {
       try {
-        await sanity.patch(setting._id!).set({ value: setting.value ?? '' }).commit()
+        await sanity
+          .patch(setting._id!)
+          .set({ value: setting.value ?? '' })
+          .commit()
         results.push({ _id: setting._id!, key: setting.key!, success: true })
       } catch (error: any) {
         log('[game-settings] Failed to update setting', { setting, error }, 'error')
