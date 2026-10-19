@@ -1,7 +1,10 @@
 <template>
   <div class="email-test container">
     <h1>Test Emails</h1>
-    <p>Preview BikeTag email templates and send a test using sample content.</p>
+    <p>
+      Preview and test BikeTag emails using queued submissions and the current round where
+      available. Sample content is used when live data is unavailable.
+    </p>
 
     <p v-if="!isBikeTagAdmin" role="alert">This page requires BikeTag Admin access.</p>
     <template v-else>
@@ -57,6 +60,7 @@
 
         <section v-if="preview" class="email-preview" aria-label="Email preview">
           <h2>{{ preview.subject }}</h2>
+          <p>{{ preview.dataSource }}</p>
           <p>HTML preview</p>
           <iframe title="Test email HTML preview" sandbox="" :srcdoc="preview.html" />
           <details>
@@ -142,7 +146,7 @@ async function sendTest() {
       template: template.value,
       recipient: recipient.value.trim(),
     })
-    success.value = `Test email accepted by the mail server for ${result.recipient}.`
+    success.value = `Test email accepted by the mail server for ${result.recipient}. ${result.dataSource}`
   } catch (cause) {
     error.value = cause.message || 'Unable to send the test email.'
   } finally {
