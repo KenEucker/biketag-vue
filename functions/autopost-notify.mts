@@ -24,7 +24,7 @@ export const autoNotifyNewBikeTagPosted = async (
     skipEmails: false,
     force: false,
   })
-  const errors = false
+  let errors = false
   let results: any = []
   const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
   const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
@@ -35,18 +35,22 @@ export const autoNotifyNewBikeTagPosted = async (
   )) as Game
 
   const imageSource = getImageSource(game)
-  nonAdminBiketag.config({
-    aws: {
-      region: game.awsRegion,
-    }
-  }, false, true)
-  adminBiketagOpts.aws.region =  game.awsRegion
+  nonAdminBiketag.config(
+    {
+      aws: {
+        region: game.awsRegion,
+      },
+    },
+    false,
+    true,
+  )
+  adminBiketagOpts.aws.region = game.awsRegion
   const twoMostRecentTags = await nonAdminBiketag.getTags(
     { game: game.slug, limit: 2 },
     { source: imageSource },
   )
-  if (twoMostRecentTags.data?.length !== 2) {
-    const errorMessage = 'Could not retrieve two most recent tags.'
+  if (!twoMostRecentTags.success || !twoMostRecentTags.data?.length) {
+    const errorMessage = 'Could not retrieve the latest tag.'
     log(errorMessage, { twoMostRecentTags }, 'error')
     return {
       results: [errorMessage],
@@ -55,6 +59,9 @@ export const autoNotifyNewBikeTagPosted = async (
   }
 
   const [winningTag, previousTag] = twoMostRecentTags.data
+  if (!previousTag && winningTag.tagnumber !== 1) {
+    return { results: ['Could not retrieve the previous tag.'], errors: true }
+  }
   const twentyFourHoursAgo = new Date().getTime() - 60 * 60 * 24 * 1000
 
   if (twentyFourHoursAgo > winningTag.mysteryTime * 1000 && !payloadOpts.force) {
@@ -76,16 +83,24 @@ export const autoNotifyNewBikeTagPosted = async (
     payloadOpts.skipEmails,
     payloadOpts.skipSocials,
   ).catch((err) => {
+    errors = true
+    results.push({ error: err instanceof Error ? err.message : String(err) })
     log('error sending notifications', err, 'error')
   })
 
   if (notificationsSent?.length) {
-    results = await Promise.allSettled(notificationsSent)
-      .then((r) => r.map((p: any) => p.value))
-      .catch((e) => {
-        log('error sending notifications', { e }, 'error')
-        return []
-      })
+    const settled = await Promise.allSettled(notificationsSent)
+    for (const result of settled) {
+      if (result.status === 'fulfilled') {
+        results.push(result.value)
+      } else {
+        errors = true
+        results.push({
+          error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+        })
+        log('error sending notification', result.reason, 'error')
+      }
+    }
   }
 
   return {
@@ -98,7 +113,7 @@ export default async (req: Request) => {
   const { results, errors } = await autoNotifyNewBikeTagPosted(req)
 
   if (results.length) {
-    log('notifications sent', { results }, 'info')
+    log('notification delivery completed', { results, errors }, errors ? 'error' : 'info')
     return new Response(JSON.stringify(results), {
       status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
     })

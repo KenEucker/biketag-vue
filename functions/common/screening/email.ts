@@ -1,5 +1,6 @@
 import type { Ambassador, Game } from 'biketag'
-import { getGameSiteUrl, log, sendEmailsToAmbassadors } from '../methods'
+import { getGameSiteUrl, log } from '../methods'
+import { isGameEmailEnabled, sendEmailsToAmbassadors } from '../email'
 import type { RejectedQueueImage } from './types'
 
 const SCREENING_REJECTION_EMAIL = 'post-biketag-screening-rejection'
@@ -10,13 +11,17 @@ export const sendScreeningRejectionEmail = async (
   rejected: RejectedQueueImage,
   playerIp?: string,
 ): Promise<void> => {
+  if (!isGameEmailEnabled(game, SCREENING_REJECTION_EMAIL)) {
+    log('[screening] rejection email disabled', { game: game.name }, 'info')
+    return
+  }
   const host = getGameSiteUrl(game.name)
   const imageTypeLabel = rejected.type === 'found' ? 'found' : 'mystery'
   const roundNumber =
     rejected.type === 'found' ? rejected.tagnumber : Math.max(1, rejected.tagnumber - 1)
   const subject = `A ${imageTypeLabel} BikeTag image was rejected for round #${roundNumber} in [${game.name}]`
 
-  await sendEmailsToAmbassadors(
+  const delivery = await sendEmailsToAmbassadors(
     SCREENING_REJECTION_EMAIL,
     subject,
     ambassadors,
@@ -26,7 +31,7 @@ export const sendScreeningRejectionEmail = async (
       roundNumber,
       imageType: imageTypeLabel,
       playerId: rejected.playerId ?? '',
-      playerIP: playerIp ?? '',
+      playerIP: playerIp ?? rejected.playerIp ?? '',
       imageUrl: rejected.url,
       reason: rejected.reason,
       rejectionsUrl: `${host}/rejections`,
@@ -35,5 +40,14 @@ export const sendScreeningRejectionEmail = async (
     true,
   )
 
-  log('[screening] sent rejection email', { game: game.name, roundNumber, imageTypeLabel }, 'info')
+  log(
+    '[screening] rejection email delivery',
+    {
+      game: game.name,
+      roundNumber,
+      imageTypeLabel,
+      ...delivery,
+    },
+    delivery.rejected.length ? 'error' : 'info',
+  )
 }
