@@ -5,6 +5,7 @@ import {
   getGameSiteUrl,
   getImageSource,
   getProfileAuthorization,
+  getSanityImageUrl,
   requireGlobalAdmin,
 } from './common'
 import { renderEmail, sendEmail } from './common/email'
@@ -19,12 +20,16 @@ const loadLiveContext = async (
   template: string,
 ): Promise<EmailTestContext> => {
   const useQueue = submissionTemplates.includes(template)
-  if (!useQueue && template !== 'biketag-auto-posted') return {}
+  let logo: string | undefined
 
   try {
     const client = new BikeTagClient(getBikeTagClientOpts(req, true))
     const gameData = (await client.game(game, { source: 'sanity', concise: true })) as Game
     if (!gameData?.name) return {}
+    logo = gameData.logo?.length
+      ? new URL(getSanityImageUrl(gameData.logo, 's'), getGameSiteUrl(game)).href
+      : undefined
+    if (!useQueue && template !== 'biketag-auto-posted') return { logo }
     client.config(getBikeTagClientOpts(req, true, false, gameData), false, true)
     const source = getImageSource(gameData)
     const [current, queue] = await Promise.allSettled([
@@ -44,10 +49,10 @@ const loadLiveContext = async (
     const queuedTag =
       queuedTags.find((tag) => tag.foundImageUrl?.length && tag.mysteryImageUrl?.length) ??
       queuedTags.find((tag) => tag.foundImageUrl?.length || tag.mysteryImageUrl?.length)
-    return { currentTag, queuedTag }
+    return { logo, currentTag, queuedTag }
   } catch (error) {
     console.warn('[email-test] Could not load live data; using sample content', error)
-    return {}
+    return { logo }
   }
 }
 

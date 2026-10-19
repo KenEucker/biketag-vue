@@ -29,6 +29,8 @@
 </head>
 
 <body>
+    {% assign headerLogo = subdomainIcon | default: logo %}
+    {% if headerLogo != blank %}<p><img src="{{ headerLogo }}" alt="{{ game }} BikeTag logo" width="96" style="display:block;max-width:120px;max-height:96px;width:auto;height:auto;border:0" /></p>{% endif %}
     <h2>Game setting change request</h2>
     <p>
         <strong>{{ ambassadorName }}</strong>
@@ -68,6 +70,7 @@
             <td><a href="{{ host }}">{{ host }}</a></td>
         </tr>
     </table>
+    <p><img src="{{ host }}/images/email-logo.png" alt="BikeTag" width="40" style="display:block;width:40px;max-width:40px;height:auto;border:0" /></p>
 </body>
 
 </html>
