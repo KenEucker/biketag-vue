@@ -1,11 +1,11 @@
-Hello BikeTag Ambassador! A new BikeTag submission is ready for review in {{ game }}.
+New BikeTag submission needs review — {{ game }}
 
 Round #{{ tag.tagnumber }} was submitted by {{ tag.foundPlayer }}.
-{% if currentMysteryHint != blank %}{{ currentMysteryHint }}
+{{ mainTitleText }}
+Location: {{ foundLocation }}
+{% if currentMysteryHint != blank %}Current hint: {{ currentMysteryHint }}
 {% endif %}
-Review and approve the submission: {{ ambassadorsUrl }}&expiry={{ expiryHash }}
+Review submission: {{ ambassadorsUrl }}
+View the submission photos in the ambassador queue.
 
-Found tag image: {{ foundImageUrl }}
-New mystery tag image: {{ mysteryImageUrl }}
-
-Reply to this email to request to be removed from this admin list.
+Reply to request removal from this ambassador list.

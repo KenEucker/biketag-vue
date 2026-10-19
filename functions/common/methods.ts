@@ -16,18 +16,22 @@ import type { Ambassador, Game, Tag } from 'biketag'
 import BikeTagClient from 'biketag'
 import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
-import { readFileSync } from 'fs'
 import * as jose from 'jose'
-import { Liquid } from 'liquidjs'
 import lzutf8 from 'lzutf8'
 import moment from 'moment-timezone'
-import nodemailer from 'nodemailer'
-import { extname, join } from 'path'
 import qs from 'qs'
 import sharp from 'sharp'
 import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue, BikeTagProfile } from './types'
 import { summarizeTagGps } from '../../src/common/gps'
+import { isGameEmailEnabled, sendEmailsToAmbassadors } from './email'
+export {
+  liquidOpts,
+  sendEmail,
+  sendEmailsToAmbassadors,
+  isGameEmailEnabled,
+  getSubmissionQueuePosition,
+} from './email'
 
 const ajv = new Ajv()
 
@@ -3124,7 +3128,7 @@ export const getPayloadAuthorization = async (
   return authProfile
 }
 
-export const defaultLogo = '/images/BikeTag.svg'
+export const defaultLogo = '/images/email-logo.png'
 
 const noKey = 'BikeTag'
 export const createMd5 = (text: string): Buffer => {
@@ -3171,116 +3175,6 @@ export const decrypt = (encryptedBase64: string, key?: string) => {
 export const compress = lzutf8.compress
 export const decompress = lzutf8.decompress
 
-let liquidInstance: Liquid
-export const liquidOpts: any = {
-  dynamicPartials: true,
-  strict_filters: true,
-  extname: '.liquid',
-  // root: [join('functions', 'emails')],
-  customFilters: {
-    biketag_image: (url = '', size = '') => {
-      const ext = extname(url)
-      /// Make sure the image type is supported
-      if (['.jpg', '.jpeg', '.png', '.bmp', '.webp'].indexOf(ext) === -1) return url
-
-      switch (size) {
-        default:
-        case 'original':
-        case '':
-          break
-
-        case 's':
-        case 'm':
-        case 'small':
-        case 'medium':
-          size = 's'
-          break
-
-        case 'l':
-        case 'large':
-          size = 'l'
-          break
-      }
-
-      return url.replace(ext, `${size}${ext}`)
-    },
-  },
-}
-
-const getLiquidInstance = () => {
-  if (liquidInstance) return liquidInstance
-
-  liquidInstance = new Liquid(liquidOpts)
-
-  return liquidInstance
-}
-
-export const sendEmail = async (
-  to: string,
-  subject: string,
-  locals: any,
-  template?: string,
-  replyTo?: string,
-) => {
-  if (!(process.env.G_EMAIL && process.env.G_PASS)) return null
-
-  template = template ?? subject
-  let html = ''
-  let text = ''
-
-  const liquid = getLiquidInstance()
-
-  Object.keys(liquidOpts.customFilters).forEach((filter: string) => {
-    const filterMethod: any = liquidOpts.customFilters[filter]
-    liquid.registerFilter(filter, filterMethod)
-  })
-  const templateFilePath = join('functions', 'emails', template)
-  const htmlTemplateFilePath = `${templateFilePath}.liquid`
-  const textTemplateFilePath = `${templateFilePath}--text.liquid`
-
-  try {
-    // if (existsSync(htmlTemplateFilePath)) {
-    const htmlTemplate = readFileSync(htmlTemplateFilePath).toString()
-    html = liquid.parseAndRenderSync(htmlTemplate, locals)
-    // }
-    // if (existsSync(textTemplateFilePath)) {
-    const textTemplate = readFileSync(textTemplateFilePath).toString()
-    text = liquid.parseAndRenderSync(textTemplate, locals)
-    // }
-  } catch (e: any) {
-    console.error(ErrorMessage.sendEmail, { e })
-  }
-
-  if (!html.length) {
-    log(ErrorMessage.NoHtmlLoaded, { templateFilePath, htmlTemplateFilePath }, 'error')
-    return null
-  }
-
-  const emailOpts = {
-    from: process.env.G_EMAIL, // sender address
-    to, // list of receivers
-    subject, // subject
-    text, // plain text body
-    html, // html body
-    ...(replyTo?.length ? { replyTo } : {}),
-  }
-
-  const transporterOpts: any = {
-    auth: {
-      user: process.env.G_EMAIL,
-      pass: process.env.G_PASS,
-    },
-    service: 'gmail',
-  }
-
-  const transporter = nodemailer.createTransport(transporterOpts)
-
-  const info = await transporter.sendMail(emailOpts)
-
-  /// TODO: formulate the response into something usable
-  return info
-}
-
 export const getEncodedExpiry = (data = {}, days = 2) => {
   const expiryData = {
     ...data,
@@ -3289,61 +3183,9 @@ export const getEncodedExpiry = (data = {}, days = 2) => {
       new Date().getTime() + 1000 * 60 * 60 * 24 * days,
     ),
   }
-  return encodeURIComponent(!encrypt(expiryData))
-}
-
-export const sendEmailsToAmbassadors = async (
-  emailName: string,
-  emailSubject: string,
-  ambassadors: Ambassador[],
-  getEmailData: (a?: Ambassador) => any,
-  sendToAdmin = false,
-): Promise<{ accepted: any[]; rejected: any[] }> => {
-  if (!(process.env.G_EMAIL && process.env.G_PASS))
-    return Promise.resolve({ accepted: [], rejected: [ErrorMessage.EmailNotConfigured] })
-  let emailSent
-  let accepted: any = []
-  let rejected: any = []
-  const defaultEmailData = {
-    host: 'eh?',
-    subdomainIcon: '/images/BikeTag.svg',
-  }
-
-  for (const ambassador of ambassadors) {
-    if (ambassador.email) {
-      log(`sending ${emailName} email to BikeTag Ambassador`, { email: ambassador.email }, 'info')
-      emailSent = await sendEmail(
-        ambassador.email,
-        emailSubject,
-        {
-          ...defaultEmailData,
-          ...getEmailData(ambassador),
-        },
-        emailName,
-      )
-      accepted = accepted.concat(emailSent?.accepted ?? [])
-      rejected = rejected.concat(emailSent?.rejected ?? [])
-    }
-  }
-  if (sendToAdmin) {
-    const biketagAdminEmail = process.env.ADMIN_EMAIL ?? ''
-    if (biketagAdminEmail?.length) {
-      log(`sending ${emailName} email to BikeTag Administrator:`, { biketagAdminEmail }, 'info')
-      emailSent = await sendEmail(
-        biketagAdminEmail,
-        emailSubject,
-        {
-          ...defaultEmailData,
-          ...getEmailData({ id: biketagAdminEmail } as unknown as Ambassador),
-        },
-        emailName,
-      )
-      accepted = accepted.concat(emailSent?.accepted ?? [])
-      rejected = rejected.concat(emailSent?.rejected ?? [])
-    }
-  }
-
-  return { accepted, rejected }
+  const encrypted = encrypt(expiryData)
+  if (!encrypted) throw new Error('Could not encode expiry')
+  return encodeURIComponent(encrypted)
 }
 
 export const getSanityImageUrl = (
@@ -3351,12 +3193,11 @@ export const getSanityImageUrl = (
   size = '',
   sanityBaseCDNUrl = 'https://cdn.sanity.io/images/x37ikhvs/production/',
 ) => {
-  const properFilePath = logo
-    .replace('image-', '')
-    .replace('-png', '.png')
-    .replace('-jpg', '.jpg')
-    .replace('-webp', '.webp')
-  return `${sanityBaseCDNUrl}${properFilePath}${size.length ? `?${size}` : ''}`
+  if (/^https?:\/\//i.test(logo) || logo.startsWith('/')) return logo
+  const properFilePath = logo.replace(/^image-/, '').replace(/-(png|jpe?g|gif|webp|svg)$/i, '.$1')
+  const sizes: Record<string, string> = { s: 'h=192', m: 'h=256', l: 'h=512' }
+  const query = sizes[size] ?? size
+  return `${sanityBaseCDNUrl}${properFilePath}${query.length ? `?${query}` : ''}`
 }
 
 export const archiveAndClearQueue = async (
@@ -4037,7 +3878,7 @@ export const sendBikeTagPostNotificationToWebhook = (
 
 export const sendNewBikeTagNotifications = async (
   game: Game,
-  currentTag: Tag,
+  currentTag: Tag | undefined,
   winningTag: Tag,
   adminBiketag?: BikeTagClient,
   skipEmails = false,
@@ -4050,17 +3891,13 @@ export const sendNewBikeTagNotifications = async (
   const ambassadors = (await adminBiketag.ambassadors(undefined, {
     source: 'sanity',
   })) as Ambassador[]
-  const thisGamesAmbassadors = ambassadors.filter((a) => game.ambassadors.indexOf(a.name) !== -1)
+  const thisGamesAmbassadors = ambassadors.filter((a) => game.ambassadors?.includes(a.name))
   const winningTagnumber = winningTag.tagnumber
   const host = getGameSiteUrl(game.name)
   const socialLinks = getGameSocialLinks(game)
-  const logo = game.logo?.length
-    ? game.logo.indexOf('imgur.co') !== -1
-      ? game.logo
-      : getSanityImageUrl(game.logo)
-    : `${host}${defaultLogo}`
+  const logo = new URL(game.logo?.length ? getSanityImageUrl(game.logo) : defaultLogo, host).href
 
-  if (!skipSocials) {
+  if (!skipSocials && currentTag) {
     const sendGlobalDiscordNotification = process.env.DCN
     if (sendGlobalDiscordNotification) {
       log('Sending global Discord notification', { game: game.name }, 'info')
@@ -4134,8 +3971,7 @@ export const sendNewBikeTagNotifications = async (
 
   if (
     !skipEmails &&
-    (!game.settings['emails::disable'] ||
-      game.settings['emails::disable'].split(',').indexOf('new-biketag-notification') === -1)
+    isGameEmailEnabled(game, 'biketag-auto-posted', ['new-biketag-notification'])
   ) {
     log(
       'Sending new BikeTag email notifications',
@@ -4145,17 +3981,17 @@ export const sendNewBikeTagNotifications = async (
     notificationPromises.push(
       sendEmailsToAmbassadors(
         'biketag-auto-posted',
-        `New BikeTag Round (#${winningTagnumber}) Auto-Posted for [${game.name}]`,
+        `New BikeTag Round (#${winningTagnumber}) is live for [${game.name}]`,
         thisGamesAmbassadors,
-        (a) => ({
+        () => ({
           currentBikeTag: currentTag,
           newBikeTagPost: winningTag,
           logo,
-          ambassadorsUrl: `${host}/queue?btaId=${a?.id}`,
-          tagAutoApprovedText:
-            'This tag was auto-approved by the AutoPost feature for being the first, completed, BikeTag Post to be submitted. If there is a problem with this tag, please click the button below to address the issue.',
+          ambassadorsUrl: `${host}/queue`,
+          roundPublishedText: `Round #${winningTagnumber} is now live in ${game.name}. If there is a problem with this round, open the ambassador dashboard to address it.`,
+          footerText: 'BikeTag is an open-source project that you can contribute to anytime.',
           newBikeTagRoundTitle: ``,
-          newBikeTagRoundText: `BikeTag Round #${winningTagnumber} was just auto-posted!`,
+          newBikeTagRoundText: `BikeTag Round #${winningTagnumber} is now live!`,
           tosText: 'Terms & Conditions',
           replyToRemoveLink:
             'reply to this email to request that these emails no longer be sent to you',
@@ -4168,7 +4004,11 @@ export const sendNewBikeTagNotifications = async (
           blueskyLink: socialLinks.blueskyLink,
           instagramLink: socialLinks.instagramLink,
         }),
-      ).then((results) => results.accepted.concat(results.rejected)),
+      ).then((results) => {
+        if (results.rejected.length)
+          throw new Error(`Email delivery failed for: ${results.rejected.join(', ')}`)
+        return results.accepted
+      }),
     )
   } else {
     log(

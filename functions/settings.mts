@@ -85,7 +85,7 @@ const handleSettingChangeRequest = async (
     ambassadorEmail,
   )
 
-  if (!emailSent) {
+  if (!emailSent?.accepted?.length || emailSent.rejected?.length) {
     log('[game-settings] Setting change request email failed', { game: gameSlug, settingKey }, 'error')
     return {
       status: HttpStatusCode.InternalServerError,

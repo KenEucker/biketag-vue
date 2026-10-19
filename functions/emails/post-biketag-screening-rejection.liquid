@@ -10,6 +10,6 @@
   <p><strong>Player IP:</strong> {{ playerIP }}</p>
   <p><strong>Reason:</strong> {{ reason }}</p>
   <p><a href="{{ rejectionsUrl }}">Review rejected images</a></p>
-  <p><img src="{{ imageUrl }}" alt="Rejected BikeTag image" style="max-width: 100%;" /></p>
+  {% if imageUrl != blank %}<p><img src="{{ imageUrl }}" alt="Rejected BikeTag image" style="max-width: 100%;" /></p>{% endif %}
 </body>
 </html>
