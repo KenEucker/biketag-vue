@@ -7,6 +7,8 @@
     "url": "https://github.com/keneucker/biketag-vue/issues"
   },
   "scripts": {
+    "test:images": "node --test tests/images.test.cjs",
+    "test:gps": "node --test tests/gps.test.cjs",
     "test:emails": "node --test tests/email.test.cjs",
     "build:functions": "tsc --project tsconfig.functions.json",
     "watch:functions": "tsc --project tsconfig.functions.json --watch",

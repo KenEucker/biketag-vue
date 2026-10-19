@@ -166,6 +166,18 @@ export const embedEmailQueueImages = async (html: string, cache: EmailImageCache
   return { html, attachments: [...attachments.values()].sort((a, b) => a.cid.localeCompare(b.cid)) }
 }
 
+export const renderEmail = (template: string, locals: any) => {
+  if (!/^[a-z0-9-]+$/.test(template)) throw new Error('Invalid email template')
+  const basePath = join('functions', 'emails', template)
+  const html = htmlRenderer.parseAndRenderSync(readFileSync(`${basePath}.liquid`, 'utf8'), locals)
+  const text = textRenderer.parseAndRenderSync(
+    readFileSync(`${basePath}--text.liquid`, 'utf8'),
+    locals,
+  )
+  if (!html.trim() || !text.trim()) throw new Error(`Empty email template: ${template}`)
+  return { html, text }
+}
+
 export const sendEmail = async (
   to: string,
   subject: string,
@@ -175,14 +187,7 @@ export const sendEmail = async (
   imageCache: EmailImageCache = new Map(),
 ) => {
   if (!(process.env.G_EMAIL && process.env.G_PASS)) return null
-  if (!/^[a-z0-9-]+$/.test(template)) throw new Error('Invalid email template')
-  const basePath = join('functions', 'emails', template)
-  const html = htmlRenderer.parseAndRenderSync(readFileSync(`${basePath}.liquid`, 'utf8'), locals)
-  const text = textRenderer.parseAndRenderSync(
-    readFileSync(`${basePath}--text.liquid`, 'utf8'),
-    locals,
-  )
-  if (!html.trim() || !text.trim()) throw new Error(`Empty email template: ${template}`)
+  const { html, text } = renderEmail(template, locals)
   const message = await embedEmailQueueImages(html, imageCache)
   const transporter = nodemailer.createTransport({
     auth: { user: process.env.G_EMAIL, pass: process.env.G_PASS },

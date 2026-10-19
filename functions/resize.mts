@@ -39,7 +39,7 @@ export default async (req: Request) => {
 
       const rotation = rotate ? parseInt(rotate, 10) : undefined
       // Create Sharp instance
-      let transformer = sharp(inputBuffer).rotate(rotation)
+      let transformer = sharp(inputBuffer, { animated: true }).rotate(rotation)
       log('[resize] Applied rotation', { rotation })
 
       if (widthNum) {

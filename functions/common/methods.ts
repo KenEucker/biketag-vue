@@ -25,6 +25,7 @@ import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { BackgroundProcessResults, activeQueue, BikeTagProfile } from './types'
 import { summarizeTagGps } from '../../src/common/gps'
 import { isGameEmailEnabled, sendEmailsToAmbassadors } from './email'
+import { decodeQueueMetadataValue, parseQueueObjectMetadata } from './storage-metadata'
 export {
   liquidOpts,
   sendEmail,
@@ -1104,7 +1105,7 @@ const convertQueueBufferToMainWebp = async (
     maxEdge: MAIN_IMAGE_MAX_EDGE,
   })
 
-  const output = await sharp(input)
+  const output = await sharp(input, { animated: true })
     .rotate()
     .resize({
       width: MAIN_IMAGE_MAX_EDGE,
@@ -1404,35 +1405,6 @@ export const createQueueStorageClient = (region: string): S3Client => {
       secretAccessKey: process.env.S3_BE_ACCESS_KEY ?? '',
     },
   })
-}
-
-const decodeQueueMetadataValue = (value: string): string => {
-  try {
-    if (!value || !/^[A-Za-z0-9+/=]+$/.test(value)) return value
-    return Buffer.from(value, 'base64').toString('utf-8')
-  } catch {
-    return value
-  }
-}
-
-const parseQueueObjectMetadata = (data?: string) => {
-  if (!data) return undefined
-  try {
-    const tag = JSON.parse(decodeQueueMetadataValue(data))
-    const tagnumber = typeof tag.t === 'number' ? tag.t : undefined
-    if (tagnumber === undefined) return undefined
-    return {
-      tagnumber,
-      playerId: tag.p as string | undefined,
-      mysteryPlayer: tag.mp as string | undefined,
-      foundPlayer: tag.fp as string | undefined,
-      foundTime: typeof tag.ft === 'number' ? tag.ft : undefined,
-      foundLocation: typeof tag.fl === 'string' ? tag.fl : tag.foundLocation as string | undefined,
-      gps: tag.gps as Tag['gps'],
-    }
-  } catch {
-    return undefined
-  }
 }
 
 const loadFoundFieldsFromStorageMetadata = async (
