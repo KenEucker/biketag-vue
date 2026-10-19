@@ -485,8 +485,14 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         },
         ...(payload ? { body: JSON.stringify(payload) } : {}),
       })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || 'Email test request failed')
+      const body = await response.text()
+      let result: any
+      try {
+        result = JSON.parse(body)
+      } catch {
+        result = null
+      }
+      if (!response.ok) throw new Error(result?.error || 'Email test request failed')
       return result
     },
     async scanQueueIssues() {
