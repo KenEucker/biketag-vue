@@ -67,6 +67,23 @@
       />
     </div>
 
+    <form
+      ref="queueError"
+      name="post-tag-error"
+      action="post-tag-error"
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+      hidden
+    >
+      <input type="hidden" name="form-name" value="post-tag-error" />
+      <input type="hidden" name="submission" />
+      <input type="hidden" name="playerId" :value="getPlayerId" />
+      <input type="hidden" name="game" :value="getGameName" />
+      <input type="hidden" name="message" />
+      <input type="hidden" name="ip" value="" />
+      <input v-for="field in diagnosticFields" :key="field" type="hidden" :name="field" />
+    </form>
     <div v-if="!uploadInProgress" class="mb-5">
       <div v-if="getFormStep === BiketagQueueFormSteps[BiketagQueueFormSteps.addFoundImage]">
         <queue-found :tag="getPlayerTag" @submit="onQueueSubmit" />
@@ -91,22 +108,6 @@
       <span v-if="isSubmittingData()" class="player-agree">
         * {{ t('pages.round.user_agree') }}
       </span>
-      <form
-        ref="queueError"
-        name="post-tag-error"
-        action="post-tag-error"
-        method="POST"
-        data-netlify="true"
-        data-netlify-honeypot="bot-field"
-        hidden
-      >
-        <input type="hidden" name="form-name" value="post-tag-error" />
-        <input type="hidden" name="submission" />
-        <input type="hidden" name="playerId" :value="getPlayerId" />
-        <input type="hidden" name="game" :value="getGameName" />
-        <input type="hidden" name="message" />
-        <input type="hidden" name="ip" value="" />
-      </form>
     </div>
   </div>
 </template>
@@ -124,6 +125,11 @@ import {
   summarizeTagGps,
 } from '@/common'
 import { BiketagQueueFormSteps } from '@/common/types'
+import {
+  createSubmissionAttempt,
+  getSubmissionContext,
+  observeSubmissionStage,
+} from '@/common/submission-diagnostics'
 import { useBikeTagStore } from '@/store/index'
 import { publicIp } from 'public-ip'
 import { computed, inject, onMounted, ref, watchEffect } from 'vue'
@@ -156,6 +162,21 @@ time.setSeconds(time.getSeconds() + 900) // 10 minutes timer
 const timer = ref(useTimer(time.getSeconds()))
 const uploadInProgress = ref(false)
 const queueError = ref(null)
+const diagnosticFields = [
+  'playerName',
+  'tagnumber',
+  'action',
+  'formStep',
+  'imageSource',
+  'context',
+  'event',
+  'stage',
+  'correlationId',
+  'attemptId',
+  'attemptNumber',
+  'previousAttemptId',
+  'diagnostics',
+]
 const lineSvg = LineSvg
 const arrowSvg = ArrowSvg
 const store = useBikeTagStore()
@@ -183,166 +204,174 @@ const isSubmittingData = () =>
     getFormStep.value === BiketagQueueFormSteps[BiketagQueueFormSteps.queuePostedShare]
   )
 async function onQueueSubmit(newTagSubmission) {
-  let isFoundTag = true
-  const ipAddress = await publicIp()
-
-  // Check to see if player is banned
-  if ((await getIPIsBanned(ipAddress)) || (await getPlayerIsBanned(getPlayerId.value))) {
-    localStorage.setItem('banned', 'true')
-    return
-  }
-
-  if (getGame.value.settings['post::only-logged-in'] === 'true') {
-    if (!getProfile.value?.nonce) {
-      toast.open({
-        message: `this game now requires you to log in to create new BikeTag posts`,
-        type: 'error',
-        position: 'top',
-      })
-      return
-    }
-
-    console.log('game is set to only allow logged in posts')
-  }
-
+  if (uploadInProgress.value) return
   const { tag, formAction, formData, storeAction } = newTagSubmission
   const storeActionIsPosting = storeAction === 'postNewBikeTag'
-
-  debug(
-    'gps::play::queue-submit',
-    {
-      storeAction,
-      tagGps: summarizeTagGps(tag?.gps),
-      playerTagGps: summarizeTagGps(getPlayerTag.value?.gps),
-      tagnumber: tag?.tagnumber ?? getPlayerTag.value?.tagnumber,
-    },
-    'info',
-  )
-
-  if (!tag.foundImage) {
-    isFoundTag = false
+  const isFoundTag = !!tag.foundImage
+  const fields = getSubmissionContext({
+    game: getGameName.value,
+    action: storeAction,
+    tag,
+    queuedTag: getPlayerTag.value,
+    currentTag: getCurrentBikeTag.value,
+    playerId: getPlayerId.value,
+    playerName: getPlayerName.value,
+    formStep: getFormStep.value,
+    imageSource: store.getImageSource,
+  })
+  let diagnosticStorage
+  try {
+    diagnosticStorage = window.sessionStorage
+  } catch {
+    /* optional storage */
   }
-
-  const alreadyUploaded = localStorage.getItem(
-    `${getGameName.value}-${getCurrentBikeTag.value?.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`,
+  const attempt = createSubmissionAttempt(
+    fields,
+    (report) => sendNetlifyError(report.message, queueError.value, report),
+    diagnosticStorage,
   )
-  if (!storeActionIsPosting && alreadyUploaded) {
-    const alreadyUploadedTime = parseInt(alreadyUploaded)
-    const uploadDelay = getGameNotices.value?.imgurDelay ?? 1
-    const delayMultiplier = Number.isNaN(parseInt(uploadDelay, 10)) ? 1 : parseInt(uploadDelay, 10)
-    const delayMs = delayMultiplier * 60 * 1000
-    const alreadyUploadedCheck = Date.now() - alreadyUploadedTime < delayMs
+  let phase = 'preflight'
+  const record = (stage, details) => {
+    if (details.event === 'started') phase = stage
+    attempt.record(stage, details)
+  }
+  void attempt.started()
+  uploadInProgress.value = true
 
-    if (alreadyUploadedCheck) {
-      window.scrollTo(0, 0)
+  try {
+    const ipAddress = await observeSubmissionStage('public-ip', () => publicIp(), record)
+    fields.ip = ipAddress
+    // Check to see if player is banned.
+    phase = 'ban-check'
+    if ((await getIPIsBanned(ipAddress)) || (await getPlayerIsBanned(getPlayerId.value))) {
+      localStorage.setItem('banned', 'true')
+      void attempt.blocked('Player or IP is banned')
+      return
+    }
+
+    if (getGame.value.settings['post::only-logged-in'] === 'true' && !getProfile.value?.nonce) {
       toast.open({
-        message: t('notifications.already-uploaded'),
+        message: 'this game now requires you to log in to create new BikeTag posts',
         type: 'error',
         position: 'top',
       })
-      if (store.getImageSource === 'imgur' && getGameNotices.value?.imgurDelayNotice) {
-        toast.open({
-          duration: 10000,
-          message: getGameNotices.value.imgurDelayNotice,
-          type: 'error',
-          position: 'top',
-        })
-      }
+      void attempt.blocked('Game requires login')
       return
     }
-  }
 
-  if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual'
-  }
-  window.scrollTo(0, 0)
+    debug(
+      'gps::play::queue-submit',
+      {
+        storeAction,
+        tagGps: summarizeTagGps(tag?.gps),
+        playerTagGps: summarizeTagGps(getPlayerTag.value?.gps),
+        tagnumber: tag?.tagnumber ?? getPlayerTag.value?.tagnumber,
+      },
+      'info',
+    )
 
-  toast.open({
-    message: t(storeActionIsPosting ? 'notifications.posting' : 'notifications.uploading'),
-    type: 'info',
-    position: 'bottom',
-  })
-  const errorFields = {
-    game: getGameName.value,
-    submission: `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
-    ip: ipAddress,
-  }
+    phase = 'upload-delay-check'
+    const uploadKey = `${getGameName.value}-${getCurrentBikeTag.value?.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`
+    const alreadyUploaded = localStorage.getItem(uploadKey)
+    if (!storeActionIsPosting && alreadyUploaded) {
+      const uploadDelay = getGameNotices.value?.imgurDelay ?? 1
+      const delayMultiplier = Number.isNaN(parseInt(uploadDelay, 10))
+        ? 1
+        : parseInt(uploadDelay, 10)
+      if (Date.now() - parseInt(alreadyUploaded) < delayMultiplier * 60 * 1000) {
+        window.scrollTo(0, 0)
+        toast.open({ message: t('notifications.already-uploaded'), type: 'error', position: 'top' })
+        if (store.getImageSource === 'imgur' && getGameNotices.value?.imgurDelayNotice) {
+          toast.open({
+            duration: 10000,
+            message: getGameNotices.value.imgurDelayNotice,
+            type: 'error',
+            position: 'top',
+          })
+        }
+        void attempt.blocked('Upload delay is still active')
+        return
+      }
+    }
 
-  uploadInProgress.value = true
-  tag.playerIP = ipAddress
-  const success = await store[storeAction](tag)
-  uploadInProgress.value = false
-
-  debug(
-    'gps::play::queue-submit-result',
-    {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+    window.scrollTo(0, 0)
+    toast.open({
+      message: t(storeActionIsPosting ? 'notifications.posting' : 'notifications.uploading'),
+      type: 'info',
+      position: 'bottom',
+    })
+    tag.playerIP = ipAddress
+    const success = await observeSubmissionStage(
       storeAction,
-      success: success === true,
-      tagGps: summarizeTagGps(tag?.gps),
-      playerTagGps: summarizeTagGps(getPlayerTag.value?.gps),
-    },
-    'info',
-  )
+      () => store[storeAction](tag, record),
+      record,
+    )
+    // The store can fill in the ID as part of preparing the upload.
+    fields.playerId ||= tag.playerId || getPlayerId.value || ''
+    if (success !== true) throw success || new Error('Submission did not complete')
 
-  if (success === true) {
-    /// Get a clean cache
-    await store.fetchTags(false)
-    /// Update the queue
-    await store.fetchQueuedTags(false)
+    debug(
+      'gps::play::queue-submit-result',
+      {
+        storeAction,
+        success: true,
+        tagGps: summarizeTagGps(tag?.gps),
+        playerTagGps: summarizeTagGps(getPlayerTag.value?.gps),
+      },
+      'info',
+    )
 
+    await observeSubmissionStage('refresh-tags', () => store.fetchTags(false), record)
+    await observeSubmissionStage('refresh-queued-tags', () => store.fetchQueuedTags(false), record)
+    phase = 'prepare-notification'
     formData.set('game', getGameName.value)
     formData.set('tag', JSON.stringify(getPlayerTag.value))
-    formData.set(
-      'submission',
-      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
-    )
+    formData.set('submission', fields.submission)
     formData.set('ip', ipAddress)
+    if (tag.foundImage) formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
+    else if (tag.mysteryImage) formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
 
-    if (tag.foundImage) {
-      formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
-    } else if (tag.mysteryImage) {
-      formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
-    }
+    if (!storeActionIsPosting) localStorage.setItem(uploadKey, String(Date.now()))
 
-    if (!storeActionIsPosting) {
-      localStorage.setItem(
-        `${getGameName.value}-${getCurrentBikeTag.value?.tagnumber}${isFoundTag ? '--found' : '--mystery'}::posted`,
-        new Date().getTime(),
-      )
-    }
-
-    return sendNetlifyForm(
-      formAction,
-      new URLSearchParams(formData).toString(),
-      () => {
-        toast.open({
-          message: `${storeAction} ${t('notifications.success')}`,
-          type: 'success',
-          position: 'bottom',
-        })
-      },
-      (m) => {
-        toast.open({
-          message: `${t('notifications.error')} ${m}`,
-          type: 'error',
-          duration: 10000,
-          timeout: false,
-          position: 'bottom',
-        })
-        return sendNetlifyError(m, queueError.value, errorFields)
-      },
+    await observeSubmissionStage(
+      'notify-submission',
+      () =>
+        sendNetlifyForm(
+          formAction,
+          new URLSearchParams(formData).toString(),
+          (response) => response,
+          (error) => {
+            throw error
+          },
+        ),
+      record,
     )
-  } else {
-    store.fetchCredentials(true)
-    const message = `${t('notifications.error')}: ${success}`
+    toast.open({
+      message: `${storeAction} ${t('notifications.success')}`,
+      type: 'success',
+      position: 'bottom',
+    })
+    void attempt.succeeded()
+  } catch (error) {
+    // Record the error before refreshing credentials or rendering the notice.
+    void attempt.failed(error, phase)
+    const message = `${t('notifications.error')}: ${error?.message ?? error}`
     toast.open({
       message,
       type: 'error',
-      timeout: false,
       duration: 10000,
       position: 'bottom',
+      // A click is observable; timeout is not evidence that a player read or ignored it.
+      onClick: () => {
+        void attempt.dismissed()
+      },
     })
-    return sendNetlifyError(message, queueError.value, errorFields)
+    void store.fetchCredentials(true).catch((error) => {
+      console.warn('Could not refresh credentials after submission error', error?.message)
+    })
+  } finally {
+    uploadInProgress.value = false
   }
 }
 

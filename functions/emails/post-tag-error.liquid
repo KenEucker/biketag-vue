@@ -12,13 +12,18 @@
       <table class="email-shell" role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:100%;border-collapse:collapse">
         {% include '_header' %}
         <tr><td style="background:#ffffff;padding:26px 32px;color:#283c4b">
-          <p style="margin:0 0 8px;color:#208bc5;letter-spacing:2px;font-size:12px;font-weight:bold">SUBMISSION ERROR</p>
-          <h1 style="margin:0 0 12px;color:#121b39;font-size:30px;line-height:1.15">A submission needs attention</h1>
-          <p style="margin:0;font-size:16px;line-height:1.6">An error has occurred for the {{ game }} game. Review the details below before trying again.</p>
+          <p style="margin:0 0 8px;color:#208bc5;letter-spacing:2px;font-size:12px;font-weight:bold">SUBMISSION ACTIVITY</p>
+          <h1 style="margin:0 0 12px;color:#121b39;font-size:30px;line-height:1.15">{{ eventLabel | default: 'Submission error' }}</h1>
+          <p style="margin:0;font-size:16px;line-height:1.6">Activity was reported for the {{ game }} game. Match the reference below with other reports to follow the player's attempts.</p>
         </td></tr>
         <tr><td style="background:#edf7fc;padding:20px 32px;color:#283c4b;font-size:15px;line-height:1.6">
+          <p style="margin:0 0 12px"><strong>Player:</strong> {{ playerName | default: 'Not provided' }}<br><strong>Player ID:</strong> {{ playerID | default: 'Not provided' }}<br><strong>Round:</strong> {{ roundNumber | default: 'Not provided' }}</p>
           <p style="margin:0 0 12px"><strong>Player IP:</strong> {{ playerIp }}</p>
-          <p style="margin:0 0 8px"><strong>Error payload</strong></p>
+          <p style="margin:0 0 12px"><strong>Message:</strong> {{ errorMessage | default: 'See payload below' }}<br><strong>Action:</strong> {{ action | default: 'Not provided' }}<br><strong>Stage:</strong> {{ stage | default: 'Not provided' }}</p>
+          <p style="margin:0 0 12px;overflow-wrap:anywhere;word-break:break-word"><strong>Reference:</strong> {{ correlationId | default: 'Not provided' }}<br><strong>Attempt:</strong> {{ attemptNumber | default: 'Not provided' }} ({{ attemptId | default: 'Not provided' }}){% if previousAttemptId != blank %}<br><strong>Previous failed attempt:</strong> {{ previousAttemptId }}{% endif %}</p>
+          {% if contextText != blank %}<p style="margin:0 0 8px"><strong>Submission context and image metadata</strong></p><pre style="font-size:13px">{{ contextText }}</pre>{% endif %}
+          {% if diagnosticsText != blank %}<p style="margin:0 0 8px"><strong>Upload stages and retry history</strong></p><pre style="font-size:13px">{{ diagnosticsText }}</pre>{% endif %}
+          <p style="margin:0 0 8px"><strong>Full report payload</strong></p>
           <pre style="margin:0;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word">{{ payload }}</pre>
         </td></tr>
         <tr><td style="background:#ffffff;padding:26px 32px">

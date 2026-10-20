@@ -60,6 +60,40 @@ export const getSubmissionQueuePosition = (queue: Tag[], tag: Tag): number | und
   return index === -1 ? undefined : index + 1
 }
 
+/** Accept both the older error forms and correlated upload diagnostics. */
+export const getSubmissionErrorEmailData = (data: Record<string, any> = {}) => {
+  const labels: Record<string, string> = {
+    error: 'Submission error',
+    'retry-started': 'Player retried after an error',
+    'retry-succeeded': 'Retry succeeded',
+    'retry-blocked': 'Retry was blocked',
+    'error-dismissed': 'Player dismissed the error notice',
+  }
+  const pretty = (value: string) => {
+    try {
+      return JSON.stringify(JSON.parse(value), null, 2)
+    } catch {
+      return value || ''
+    }
+  }
+  return {
+    eventLabel: labels[data.event] || 'Submission error',
+    playerName: data.playerName || 'Not provided',
+    playerID: data.playerId || 'Not provided',
+    roundNumber: data.tagnumber || 'Not provided',
+    submission: data.submission || 'Not provided',
+    errorMessage: data.message || 'Not provided',
+    action: data.action || 'Not provided',
+    stage: data.stage || 'Not provided',
+    attemptNumber: data.attemptNumber || 'Not provided',
+    correlationId: data.correlationId || 'Not provided',
+    attemptId: data.attemptId || 'Not provided',
+    previousAttemptId: data.previousAttemptId || '',
+    contextText: pretty(data.context),
+    diagnosticsText: pretty(data.diagnostics),
+  }
+}
+
 export const liquidOpts = { dynamicPartials: true, strictFilters: true, extname: '.liquid' }
 const createRenderer = (html: boolean) => {
   const renderer = new Liquid({
