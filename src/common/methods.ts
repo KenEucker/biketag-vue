@@ -6,12 +6,7 @@ import domtoimage from 'dom-to-image'
 import log from 'loglevel'
 import moment from 'moment-timezone'
 import { useCookies } from 'vue3-cookies'
-import {
-  BikeTagDefaults,
-  BikeTagEnv,
-  BikeTagProfile,
-  BiketagQueueFormSteps,
-} from '.'
+import { BikeTagDefaults, BikeTagEnv, BikeTagProfile, BiketagQueueFormSteps } from '.'
 import { getDomainInfo } from './domain'
 
 export { getDomainInfo } from './domain'
@@ -241,13 +236,19 @@ export const sendNetlifyError = function (
     }
   }
 
+  const body = params.toString()
   return fetch(action, {
     method: 'POST',
     headers: {
       Accept: 'application/x-www-form-urlencoded;charset=UTF-8',
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
     },
-    body: params.toString(),
+    body,
+    // Browsers limit the total body size of outstanding keepalive requests.
+    keepalive: body.length < 30000,
+  }).then((response) => {
+    if (!response.ok) throw new Error(`Error report returned HTTP ${response.status}`)
+    return response
   })
 }
 
@@ -265,7 +266,10 @@ export const sendNetlifyForm = function (
     },
     body,
   })
-    .then(then)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Form submission returned HTTP ${response.status}`)
+      return then(response)
+    })
     .catch((e) => error(e))
 }
 

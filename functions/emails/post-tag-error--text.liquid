@@ -1,10 +1,28 @@
-An error has occurred for the {{ game }} game.
+{{ eventLabel | default: 'Submission error' }} for the {{ game }} game.
 
 You are getting this email because you are listed as an ambassador for this game ({{ host }}).
 
-The player who submitted the error has an IP address of {{ playerIp }}.
+Player: {{ playerName | default: 'Not provided' }}
+Player ID: {{ playerID | default: 'Not provided' }}
+Player IP: {{ playerIp }}
+Round: {{ roundNumber | default: 'Not provided' }}
+Message: {{ errorMessage | default: 'See payload below' }}
+Action: {{ action | default: 'Not provided' }}
+Stage: {{ stage | default: 'Not provided' }}
+Reference: {{ correlationId | default: 'Not provided' }}
+Attempt: {{ attemptNumber | default: 'Not provided' }} ({{ attemptId | default: 'Not provided' }})
+{% if previousAttemptId != blank %}Previous failed attempt: {{ previousAttemptId }}
+{% endif %}
+Match the reference with other reports to follow the player's attempts.
+{% if contextText != blank %}
+Submission context and image metadata:
+{{ contextText }}
+{% endif %}{% if diagnosticsText != blank %}
+Upload stages and retry history:
+{{ diagnosticsText }}
+{% endif %}
 
-This was the payload sent with the error:
+Full report payload:
 {{ payload }}
 
 Reply to this email to request to be removed from this admin list.

@@ -2,6 +2,10 @@ import BikeTagClient from 'biketag'
 import { Achievement, Game, Player, Tag } from 'biketag/dist/common/schema'
 import { defineStore } from 'pinia'
 import {
+  observeSubmissionStage,
+  type SubmissionStageRecorder,
+} from '../common/submission-diagnostics'
+import {
   BikeTagDefaults,
   BikeTagEnv,
   BikeTagStoreState,
@@ -474,7 +478,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return 'incorrect permissions'
     },
-    async testEmail(payload?: { action: 'preview' | 'send'; template: string; recipient?: string }) {
+    async testEmail(payload?: {
+      action: 'preview' | 'send'
+      template: string
+      recipient?: string
+    }) {
       if (!this.isBikeTagAdmin) throw new Error('Admin access required')
 
       const response = await fetch(getApiUrl('email-test'), {
@@ -543,9 +551,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return 'error loading game settings'
       }
     },
-    async updateGameSettings(
-      settings: Array<{ _id?: string; key: string; value: string }>,
-    ) {
+    async updateGameSettings(settings: Array<{ _id?: string; key: string; value: string }>) {
       if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'
       }
@@ -1374,7 +1380,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         })
       }
     },
-    async addFoundTag(d: any) {
+    async addFoundTag(d: any, record?: SubmissionStageRecorder) {
       debug(
         'gps::store::add-found-tag',
         {
@@ -1388,11 +1394,19 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.foundImage && !d.foundImageUrl) {
         d.playerId = this.profile.sub
 
-        await this.cleanupRejectedUploadForSlot('found', this.playerRejectedUpload?.imageUrl)
+        await observeSubmissionStage(
+          'found:cleanup-rejected-upload',
+          () => this.cleanupRejectedUploadForSlot('found', this.playerRejectedUpload?.imageUrl),
+          record,
+        )
 
         this.screenedUploadKeys = this.screenedUploadKeys.filter((key) => !key.startsWith('found:'))
 
-        return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
+        return observeSubmissionStage(
+          'found:queue-tag',
+          () => client.queueTag(d, { source: this.imageSource }),
+          record,
+        ).then(async (t) => {
           if (t.success) {
             debug(
               'gps::store::add-found-tag-response',
@@ -1403,7 +1417,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               },
               'info',
             )
-            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            await observeSubmissionStage(
+              'found:refresh-queue',
+              () => client.getQueue({ resize: true, reindex: true }, { source: 'biketag' }),
+              record,
+            )
             const imageUrl = t.data?.foundImageUrl
             if (imageUrl) {
               void this.screenUploadedImage(imageUrl, 'found', d.playerIP ?? '')
@@ -1424,17 +1442,31 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
       return this.SET_QUEUE_FOUND(d)
     },
-    async addMysteryTag(d: any) {
+    async addMysteryTag(d: any, record?: SubmissionStageRecorder) {
       if (d.mysteryImage && !d.mysteryImageUrl) {
         d.playerId = this.profile.sub
 
-        await this.cleanupRejectedUploadForSlot('mystery', this.playerRejectedUpload?.imageUrl)
+        await observeSubmissionStage(
+          'mystery:cleanup-rejected-upload',
+          () => this.cleanupRejectedUploadForSlot('mystery', this.playerRejectedUpload?.imageUrl),
+          record,
+        )
 
-        this.screenedUploadKeys = this.screenedUploadKeys.filter((key) => !key.startsWith('mystery:'))
+        this.screenedUploadKeys = this.screenedUploadKeys.filter(
+          (key) => !key.startsWith('mystery:'),
+        )
 
-        return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
+        return observeSubmissionStage(
+          'mystery:queue-tag',
+          () => client.queueTag(d, { source: this.imageSource }),
+          record,
+        ).then(async (t) => {
           if (t.success) {
-            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            await observeSubmissionStage(
+              'mystery:refresh-queue',
+              () => client.getQueue({ resize: true, reindex: true }, { source: 'biketag' }),
+              record,
+            )
             const imageUrl = t.data?.mysteryImageUrl
             if (imageUrl) {
               void this.screenUploadedImage(imageUrl, 'mystery', d.playerIP ?? '')
@@ -1442,7 +1474,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
             this.SET_PLAYER_REJECTED_UPLOAD(null)
             this.SET_QUEUE_MYSTERY(t.data)
-            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            await observeSubmissionStage(
+              'mystery:refresh-queue',
+              () => client.getQueue({ resize: true, reindex: true }, { source: 'biketag' }),
+              record,
+            )
           } else {
             debug(
               `${BikeTagDefaults.store}::queue-mystery-tag`,
@@ -1456,7 +1492,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
       return this.SET_QUEUE_MYSTERY(d)
     },
-    async postNewBikeTag(d: any) {
+    async postNewBikeTag(d: any, record?: SubmissionStageRecorder) {
       debug(
         'gps::store::post-new-biketag',
         {
@@ -1469,7 +1505,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.mysteryImageUrl && d.foundImageUrl) {
         d.playerId = this.profile.sub
 
-        return client.queueTag(d, { source: this.imageSource }).then(async (t) => {
+        return observeSubmissionStage(
+          'post:queue-tag',
+          () => client.queueTag(d, { source: this.imageSource }),
+          record,
+        ).then(async (t) => {
           if (t.success) {
             debug(
               'gps::store::post-new-biketag-response',
@@ -1481,7 +1521,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               'info',
             )
             this.SET_QUEUED_SUBMITTED(t.data)
-            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            await observeSubmissionStage(
+              'post:refresh-queue',
+              () => client.getQueue({ resize: true, reindex: true }, { source: 'biketag' }),
+              record,
+            )
           } else {
             debug(
               `${BikeTagDefaults.store}::queue-post-tag`,

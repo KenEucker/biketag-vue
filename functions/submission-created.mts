@@ -1,6 +1,7 @@
 import { Ambassador, BikeTagClient, Game, Tag } from 'biketag'
 import { ordinalSuffixOf } from '../src/common/format'
 import { summarizeTagGps } from '../src/common/gps'
+import { getSubmissionErrorEmailData } from './common/email'
 import {
   defaultLogo,
   getBikeTagClientOpts,
@@ -34,6 +35,7 @@ export default async (req: Request) => {
 
   if (payload) {
     const formName = payload.form_name
+    const isErrorReport = formName === 'post-tag-error' || formName === 'approve-tag-error'
     const playerID = payload.data?.playerId
     const playerIP = payload.data?.playerIP ?? payload.data?.ip ?? payload.ip
     const tag = JSON.parse(payload.data?.tag ?? '{}')
@@ -113,12 +115,16 @@ export default async (req: Request) => {
           ? ambassadors.filter((a) => game!.ambassadors?.includes(a?.name))
           : []
 
-        const currentMysteryTagResponse = await nonAdminBiketag.getTag(undefined, {
-          source: imageSource,
-        })
-        currentMysteryTag = currentMysteryTagResponse.success
-          ? (currentMysteryTagResponse.data as Tag)
-          : undefined
+        // Error reports already contain a snapshot. They must not depend on the
+        // queue or tag API that may have caused the player's error.
+        if (!isErrorReport) {
+          const currentMysteryTagResponse = await nonAdminBiketag.getTag(undefined, {
+            source: imageSource,
+          })
+          currentMysteryTag = currentMysteryTagResponse.success
+            ? (currentMysteryTagResponse.data as Tag)
+            : undefined
+        }
 
         const requiresAmbassadorEmail =
           formName === 'post-new-biketag' ||
@@ -147,7 +153,7 @@ export default async (req: Request) => {
           }
         }
 
-        if (!currentMysteryTag) {
+        if (!currentMysteryTag && !isErrorReport) {
           log(
             'current mystery tag unavailable; continuing with submission email',
             { gameName },
@@ -155,12 +161,14 @@ export default async (req: Request) => {
           )
         }
 
-        try {
-          const queueResponse = await nonAdminBiketag.getQueue(undefined, { source: imageSource })
-          queuedTags = queueResponse.success ? (queueResponse.data as Tag[]) : []
-          numberInQueue = getSubmissionQueuePosition(queuedTags, tag)
-        } catch (err) {
-          log('could not load queue for submission email', { gameName, err }, 'warn')
+        if (!isErrorReport) {
+          try {
+            const queueResponse = await nonAdminBiketag.getQueue(undefined, { source: imageSource })
+            queuedTags = queueResponse.success ? (queueResponse.data as Tag[]) : []
+            numberInQueue = getSubmissionQueuePosition(queuedTags, tag)
+          } catch (err) {
+            log('could not load queue for submission email', { gameName, err }, 'warn')
+          }
         }
       } else {
         /// doing nothing, eh?
@@ -268,7 +276,7 @@ export default async (req: Request) => {
           case 'post-tag-error':
             emailSent = await sendEmailsToAmbassadors(
               formName,
-              `An error has occured for [${game.name}] BikeTag`,
+              `${getSubmissionErrorEmailData(payload.data).eventLabel} for [${game.name}] BikeTag`,
               thisGamesAmbassadors,
               () => {
                 return {
@@ -278,7 +286,7 @@ export default async (req: Request) => {
                   logo,
                   playerIP,
                   playerIp: playerIP,
-                  playerID,
+                  ...getSubmissionErrorEmailData(payload.data),
                 }
               },
             )

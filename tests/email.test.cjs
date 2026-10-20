@@ -842,3 +842,115 @@ test('inline snapshots produce a self-contained MIME message without SMTP', asyn
   assert.match(mime, /Content-Type: image\/jpeg/)
   assert.match(mime, /Content-Disposition: inline/)
 })
+
+test('submission activity emails expose identity and distinguish retries from errors while supporting legacy reports', (t) => {
+  const email = mailer(t)
+  const fields = {
+    playerName: 'Rider <script>example</script>',
+    playerId: 'player-42',
+    tagnumber: '42',
+    action: 'addFoundTag',
+    stage: 'found:queue-tag',
+    event: 'retry-succeeded',
+    message: 'Retry completed successfully',
+    correlationId: 'shared-reference',
+    attemptId: 'second-attempt',
+    previousAttemptId: 'first-attempt',
+    attemptNumber: '2',
+    context: JSON.stringify({
+      currentMysteryPlayer: 'Previous rider',
+      foundImage: { size: 2048, type: 'image/jpeg' },
+    }),
+    diagnostics: JSON.stringify({ online: true, previousError: { message: 'Network Error' } }),
+  }
+  const detail = email.getSubmissionErrorEmailData(fields)
+  const rendered = email.renderEmail('post-tag-error', { ...data(), ...detail })
+  for (const value of [
+    'Retry succeeded',
+    'player-42',
+    'shared-reference',
+    'second-attempt',
+    'first-attempt',
+    'Network Error',
+    'image/jpeg',
+    '2048',
+  ]) {
+    assert.ok(rendered.html.includes(value), value)
+    assert.ok(rendered.text.includes(value), value)
+  }
+  assert.doesNotMatch(rendered.html, /<script>/)
+  assert.match(rendered.html, /&lt;script&gt;/)
+  assert.match(rendered.text, /Rider <script>/)
+  const legacy = email.getSubmissionErrorEmailData({ message: 'Network Error', playerId: '' })
+  assert.equal(legacy.eventLabel, 'Submission error')
+  assert.equal(legacy.playerID, 'Not provided')
+  assert.equal(legacy.errorMessage, 'Network Error')
+  assert.equal(legacy.diagnosticsText, '')
+})
+
+test('submission handler forwards correlated activity details into the email and labels retry subjects', async (t) => {
+  const email = mailer(t)
+  const messages = []
+  const handler = loadTs('functions/submission-created.mts', {
+    biketag: {
+      BikeTagClient: class {
+        config() {}
+        async game() {
+          return { name: 'demo', ambassadors: ['ambassador'], settings: {} }
+        }
+        async ambassadors() {
+          return [{ name: 'ambassador', email: 'one@example.org' }]
+        }
+        async getTag() {
+          throw new Error('Tag API is unavailable')
+        }
+        async getQueue() {
+          throw new Error('Queue API is unavailable')
+        }
+      },
+    },
+    './common': {
+      defaultLogo: '/images/BikeTag.svg',
+      getBikeTagClientOpts: () => ({}),
+      getGameSiteUrl: () => host,
+      getGameSocialLinks: () => ({}),
+      getImageSource: () => 'aws',
+      getSanityImageUrl: (url) => url,
+      getSubmissionQueuePosition: email.getSubmissionQueuePosition,
+      isGameEmailEnabled: email.isGameEmailEnabled,
+      log() {},
+      sendEmailsToAmbassadors: async (template, subject, ambassadors, builder) => {
+        messages.push({ template, subject, data: builder(ambassadors[0]) })
+        return { accepted: ['one@example.org'], rejected: [] }
+      },
+    },
+  }).default
+  const response = await handler(
+    new Request(host, {
+      method: 'POST',
+      body: JSON.stringify({
+        payload: {
+          form_name: 'post-tag-error',
+          data: {
+            game: 'demo',
+            event: 'retry-succeeded',
+            message: 'Retry completed successfully',
+            playerId: 'player-42',
+            playerName: 'Rider',
+            tagnumber: '42',
+            ip: '192.0.2.1',
+            correlationId: 'shared-reference',
+            attemptNumber: '2',
+          },
+        },
+      }),
+    }),
+  )
+  assert.equal(response.data, true)
+  assert.match(messages[0].subject, /Retry succeeded/)
+  assert.equal(messages[0].data.playerID, 'player-42')
+  assert.equal(messages[0].data.playerName, 'Rider')
+  assert.equal(messages[0].data.playerIp, '192.0.2.1')
+  assert.equal(messages[0].data.correlationId, 'shared-reference')
+  assert.equal(messages[0].data.attemptNumber, '2')
+})
