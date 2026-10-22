@@ -45,6 +45,30 @@
           </bike-tag-button>
         </p>
       </div>
+      <div class="about__block">
+        <h3>
+          {{ $t('pages.about.about-socials.title') }}
+        </h3>
+        <hr class="about__hr" :style="`background-image: url(${styledHr})`" />
+        <section-content filename="docs/about-socials.html" />
+        <p>
+          <bike-tag-button
+            variant="medium-orange"
+            class="m-1 big-btn"
+            onclick="window.open('https://www.reddit.com/r/biketag/')"
+          >
+            {{ $t('pages.about.about-socials.reddit') }}
+            <img class="about__icon" :src="Reddit" alt="about" />
+          </bike-tag-button>
+          <bike-tag-button
+            variant="medium-orange"
+            class="m-1 big-btn"
+            onclick="window.open('https://biketag.slack.com/signup#/domain-signup')"
+          >
+            {{ $t('pages.about.about-socials.slack') }}
+          </bike-tag-button>
+        </p>
+      </div>
       <bike-tag-map variant="worldwide" />
       <bike-tag-games class="mt-5 mb-5" />
       <div class="about__block">
@@ -126,6 +150,7 @@ import Donate from '@/assets/images/donate.svg'
 import StyledHr from '@/assets/images/hr.svg'
 import Pin from '@/assets/images/pin.svg'
 import Profile from '@/assets/images/profile-icon.svg'
+import Reddit from '@/assets/images/Reddit.svg'
 import { ref } from 'vue'
 
 // components
