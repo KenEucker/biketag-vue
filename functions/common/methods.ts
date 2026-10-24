@@ -3090,8 +3090,9 @@ export const getPayloadAuthorization = async (
         originalAuthorization: req.headers.get('authorization') ? '[present]' : null,
         authorizationType,
         authProfile: {
-          ...authProfile,
-          token: authProfile.token ? '[redacted]' : undefined,
+          type: authProfile.type,
+          isValid: authProfile.isValid,
+          hasProfile: !!authProfile.profile,
         },
       },
       'info',
