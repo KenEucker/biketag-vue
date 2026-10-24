@@ -5,14 +5,14 @@ const path = require('node:path')
 const Module = require('node:module')
 const ts = require('typescript')
 
-function load(file, dependencies = {}) {
+function load(file, dependencies = {}, source) {
   const filename = path.resolve(file)
   const loaded = new Module(filename, module)
   loaded.paths = Module._nodeModulePaths(path.dirname(filename))
   const originalRequire = loaded.require.bind(loaded)
   loaded.require = (name) => dependencies[name] ?? originalRequire(name)
   loaded._compile(
-    ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
+    ts.transpileModule(source ?? fs.readFileSync(filename, 'utf8'), {
       compilerOptions: {
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ES2022,
@@ -99,7 +99,7 @@ test('unchanged edits do nothing; empty hints are saved; game launch has no prev
   assert.equal(mergeTagsForEdit(current).foundImageUrl, '')
 })
 
-function editorHarness(changes, result = true) {
+function editorHarness(changes, result = true, { sendForm, refreshError, errorReportError } = {}) {
   const source = fs.readFileSync('src/views/Edit.vue', 'utf8')
   const handler = source.slice(
     source.indexOf('async function doSave()'),
@@ -107,6 +107,9 @@ function editorHarness(changes, result = true) {
   )
   const calls = []
   const reports = []
+  const notices = []
+  const warnings = []
+  let cacheResets = 0
   const dependencies = {
     getTagEditUpdates,
     currentTag: { value: current },
@@ -116,26 +119,42 @@ function editorHarness(changes, result = true) {
     editSuccess: { value: false },
     editError: { value: null },
     getGameName: { value: 'seattle' },
+    getAmbassadorId: { value: 'admin' },
     history: {},
     window: { scrollTo() {} },
-    toast: { open() {} },
-    console: { error() {} },
+    toast: { open: (notice) => notices.push(notice) },
+    console: { error() {}, warn: (...args) => warnings.push(args) },
     t: (key) => key,
     store: {
       async updateCurrentTag(payload) {
         calls.push(payload)
         return result
       },
-      fetchQueuedTags() {},
-      resetBikeTagCache() {},
+      async fetchQueuedTags() {
+        if (refreshError) throw refreshError
+      },
+      resetBikeTagCache() {
+        cacheResets++
+      },
     },
-    sendNetlifyForm: async (_name, _data, success) => success(),
-    sendNetlifyError: async (message) => reports.push(message),
+    sendNetlifyForm: sendForm ?? (async (_name, _data, success) => success()),
+    sendNetlifyError: async (message) => {
+      reports.push(message)
+      if (errorReportError) throw errorReportError
+    },
   }
   const save = new Function(...Object.keys(dependencies), `${handler}\nreturn doSave`)(
     ...Object.values(dependencies),
   )
-  return { save, calls, reports, ...dependencies }
+  return {
+    save,
+    calls,
+    reports,
+    notices,
+    warnings,
+    getCacheResets: () => cacheResets,
+    ...dependencies,
+  }
 }
 
 test('actual editor save submits the hint once even with duplicate clicks', async () => {
@@ -158,6 +177,82 @@ test('actual editor stops on the first failure and reports the affected round', 
   assert.match(flow.reports[0], /#1700: metadata failed/)
   assert.equal(flow.editSuccess.value, false)
   assert.equal(flow.editInProgress.value, false)
+})
+
+test('saved edits remain successful when the follow-up Netlify form returns 404', async (t) => {
+  const source = fs.readFileSync('src/common/methods.ts', 'utf8')
+  const { sendNetlifyForm } = load(
+    'src/common/methods.ts',
+    {},
+    source.slice(
+      source.indexOf('export const sendNetlifyError'),
+      source.indexOf('export const GetQueryString'),
+    ),
+  )
+  const flow = editorHarness({ hint: 'Inching towards Ballard' }, true, {
+    sendForm: sendNetlifyForm,
+  })
+  let request
+  t.mock.method(globalThis, 'fetch', async (url, options) => {
+    assert.equal(flow.editSuccess.value, true)
+    assert.equal(flow.getCacheResets(), 1)
+    request = { url, ...options }
+    return new Response('', { status: 404 })
+  })
+  await flow.save()
+  assert.equal(flow.editSuccess.value, true)
+  assert.equal(flow.editInProgress.value, false)
+  assert.equal(flow.calls.length, 1)
+  assert.equal(flow.notices.at(-1).type, 'success')
+  assert.equal(
+    flow.notices.some((notice) => notice.type === 'error'),
+    false,
+  )
+  assert.equal(flow.reports.length, 0)
+  assert.match(String(flow.warnings[0]), /Edit saved.*HTTP 404/)
+  assert.equal(request.url, '/')
+  assert.equal(request.method, 'POST')
+  assert.deepEqual(Object.fromEntries(new URLSearchParams(request.body)), {
+    'form-name': 'edit-tag-success',
+    game: 'seattle',
+    tagnumber: '1700',
+    ambassadorId: 'admin',
+  })
+})
+
+test('queue refresh failures cannot turn a saved edit into an error', async () => {
+  const flow = editorHarness({ hint: 'new hint' }, true, { refreshError: new Error('HTTP 404') })
+  await flow.save()
+  assert.equal(flow.editSuccess.value, true)
+  assert.equal(flow.notices.at(-1).type, 'success')
+  assert.equal(flow.reports.length, 0)
+  assert.match(String(flow.warnings[0]), /queue refresh failed/)
+})
+
+test('an actual update failure remains visible even if its error report also fails', async () => {
+  const flow = editorHarness({ hint: 'new hint' }, 'Update returned HTTP 404', {
+    errorReportError: new Error('Report HTTP 404'),
+  })
+  await flow.save()
+  assert.equal(flow.editSuccess.value, false)
+  assert.equal(flow.notices.at(-1).type, 'error')
+  assert.match(flow.notices.at(-1).message, /Update returned HTTP 404/)
+  assert.equal(flow.calls.length, 1)
+  assert.match(String(flow.warnings[0]), /Could not report the edit failure/)
+})
+
+test('edit activity forms and their fields are declared in deploy-time HTML', () => {
+  const html = fs.readFileSync('index.html', 'utf8')
+  for (const [name, fields] of [
+    ['edit-tag-success', ['form-name', 'game', 'tagnumber', 'ambassadorId']],
+    ['edit-tag-error', ['form-name', 'game', 'tagnumber', 'ambassadorId', 'message', 'ip']],
+  ]) {
+    const form = html.match(new RegExp(`<form name="${name}"[\\s\\S]*?<\\/form>`))?.[0]
+    assert.ok(form, `Missing deploy-time form: ${name}`)
+    assert.match(form, /data-netlify="true"/)
+    for (const field of fields)
+      assert.ok(form.includes(`name="${field}"`), `Missing ${name}.${field}`)
+  }
 })
 
 test('explicit metadata edits strip unchanged URLs and storage controls', () => {

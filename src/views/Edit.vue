@@ -74,7 +74,6 @@
 <script setup name="EditView">
 import { useBikeTagStore } from '@/store/index'
 import { computed, inject, onMounted, reactive, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import { sendNetlifyError, sendNetlifyForm } from '@/common'
@@ -87,7 +86,6 @@ import Loading from 'vue-loading-overlay'
 const store = useBikeTagStore()
 const router = useRouter()
 const toast = inject('toast')
-const { t } = useI18n()
 
 const editInProgress = ref(true)
 const editSuccess = ref(false)
@@ -149,29 +147,28 @@ async function doSave() {
   editInProgress.value = false
 
   if (updateResults.every(({ result }) => result === true)) {
-    store.fetchQueuedTags(false)
+    editSuccess.value = true
+    store.resetBikeTagCache()
+    toast.open({
+      message: 'Edit successful!',
+      type: 'success',
+      position: 'top',
+    })
+    try {
+      await store.fetchQueuedTags(false)
+    } catch (error) {
+      console.warn('Edit saved, but queue refresh failed', error)
+    }
     return sendNetlifyForm(
-      'edit-tag-success',
-      `game=${getGameName.value}`,
-      () => {
-        toast.open({
-          message: 'Edit successful!',
-          type: 'success',
-          position: 'top',
-        })
-        editSuccess.value = true
-        store.resetBikeTagCache()
-      },
-      (m) => {
-        toast.open({
-          message: `${t('notifications.error')} ${m}`,
-          type: 'error',
-          duration: 10000,
-          timeout: false,
-          position: 'bottom',
-        })
-        return sendNetlifyError(m, editError.value, errorFields)
-      },
+      '/',
+      new URLSearchParams({
+        'form-name': 'edit-tag-success',
+        game: getGameName.value,
+        tagnumber: String(currentTag.value.tagnumber),
+        ambassadorId: getAmbassadorId.value,
+      }).toString(),
+      (response) => response,
+      (error) => console.warn('Edit saved, but activity reporting failed', error),
     )
   } else {
     const failed = updateResults.find(({ result }) => result !== true)
@@ -184,7 +181,9 @@ async function doSave() {
       position: 'bottom',
     })
     console.error(message, updateResults)
-    return sendNetlifyError(message, editError.value, errorFields)
+    return sendNetlifyError(message, editError.value, errorFields).catch((error) => {
+      console.warn('Could not report the edit failure', error)
+    })
   }
 }
 
