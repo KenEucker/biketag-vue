@@ -11,6 +11,7 @@
     "test:gps": "node --test tests/gps.test.cjs",
     "test:emails": "node --test tests/email.test.cjs",
     "test:submissions": "node --test tests/submission-diagnostics.test.cjs",
+    "test:tag-edits": "node --test tests/tag-edits.test.cjs",
     "build:functions": "tsc --project tsconfig.functions.json",
     "watch:functions": "tsc --project tsconfig.functions.json --watch",
     "lint": "npm run lint:js && npm run lint:style",

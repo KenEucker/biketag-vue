@@ -852,20 +852,24 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           const updateTagResponse = await client.plainRequest({
             method: 'POST',
             url: getApiUrl('update'),
-            data: { tag: d, ambassadorId: this.profile.sub },
+            data: { tag: d, ambassadorId: this.profile.sub, metadataOnly: true },
             headers: {
               authorization: `Bearer ${this.auth0Token}`,
             },
           })
-          if (updateTagResponse.status > 199 && updateTagResponse.status < 300) {
+          if (
+            updateTagResponse.status > 199 &&
+            updateTagResponse.status < 300 &&
+            updateTagResponse.data?.success !== false
+          ) {
             this.resetBikeTagCache()
             return true
           } else {
-            return `BikeTag #${d.tagnumber} couldn't be updated`
+            return updateTagResponse.data?.error || `BikeTag #${d.tagnumber} couldn't be updated`
           }
         } catch (e: any) {
           console.error('error updating tag', e?.message ?? e)
-          return 'error updating tag'
+          return e?.response?.data?.error || 'error updating tag'
         }
       }
 
