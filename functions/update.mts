@@ -1,7 +1,8 @@
 import { BikeTagClient, Game, Tag } from 'biketag'
-import { prepareTagMetadataUpdate } from './common/tag-update'
+import { prepareTagMetadataUpdate, updateMainTagMetadata } from './common/tag-update'
 import {
   acceptCorsHeaders,
+  createQueueStorageClient,
   getBikeTagClientOpts,
   getImageSource,
   getPayloadOpts,
@@ -36,7 +37,7 @@ export default async (req: Request) => {
       })
     }
     log('[update-tag] Profile authorization', {
-      isValid: profile.isValid,
+      authenticated: true,
       isAmbassador: profile.isBikeTagAmbassador,
       p_id: profile.p_id,
     })
@@ -51,7 +52,7 @@ export default async (req: Request) => {
       })
     }
     const biketagOpts = getBikeTagClientOpts(req, true)
-    log('[update-tag] Parsed BikeTagClient options', biketagOpts)
+    log('[update-tag] Client context', { game: biketagOpts.game, cached: biketagOpts.cached })
 
     const biketag = new BikeTagClient(biketagOpts)
 
@@ -142,13 +143,32 @@ export default async (req: Request) => {
       })
     }
 
-    log('[update-tag] Prepared update', { tagUpdate, metadataOnly })
-    const updateResponse = await biketag.updateTag(tagUpdate, updateOptions)
+    log('[update-tag] Prepared update', {
+      game: biketagOpts.game,
+      tagnumber: input.tagnumber,
+      fields: Object.keys(tagUpdate),
+      metadataOnly,
+    })
+    let updateResponse
+    if (metadataOnly && imageSource === 'aws') {
+      if (!game.awsRegion) {
+        return new Response(JSON.stringify({ error: 'Game storage region is required' }), {
+          status: HttpStatusCode.BadRequest,
+          headers,
+        })
+      }
+      updateResponse = await updateMainTagMetadata(
+        createQueueStorageClient(game.awsRegion),
+        tagUpdate,
+      )
+    } else {
+      updateResponse = await biketag.updateTag(tagUpdate, updateOptions)
+    }
     log('[update-tag] updateTag response', {
       success: updateResponse.success,
       status: updateResponse.status,
-      tagUpdate,
-      response: updateResponse,
+      tagnumber: input.tagnumber,
+      error: typeof updateResponse.error === 'string' ? updateResponse.error : undefined,
     })
 
     const { success, data } = updateResponse
@@ -159,7 +179,7 @@ export default async (req: Request) => {
       headers,
     })
   } catch (err: any) {
-    log('[update-tag] Unexpected error', err, 'error')
+    log('[update-tag] Unexpected error', { message: err?.message ?? 'Update failed' }, 'error')
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: HttpStatusCode.InternalServerError,
       headers,
