@@ -49,16 +49,21 @@ const auth0 = isAuthenticationEnabled() ? useAuth0() : undefined
 const isLogout = computed(() => router.currentRoute.value.name === 'Logout')
 const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name !== 'Landing')
 const isWhiteBackground = computed(() =>
-  router.currentRoute.value.name === 'About' ? 'white-bck' : '',
+  ['About', 'API'].includes(router.currentRoute.value.name) ? 'white-bck' : '',
 )
 const logo = computed(() => store.getLogoUrl('m'))
 const siteName = computed(
   () => `BikeTag ${store.getGameNameProper?.length ? store.getGameNameProper : 'Game'}`,
 )
 const title = computed(function () {
+  if (router.currentRoute.value.name === 'API') return 'BikeTag API'
   return `${isNotLanding.value ? store.getGameNameProper : t('app.gameof')} BikeTag!`
 })
-const description = computed(() => `The BikeTag game in ${store.getGame?.region?.description}`)
+const description = computed(() =>
+  router.currentRoute.value.name === 'API'
+    ? 'Explore the BikeTag API with endpoint examples and expandable JSON responses.'
+    : `The BikeTag game in ${store.getGame?.region?.description}`,
+)
 
 onMounted(async () => {
   await nextTick()
