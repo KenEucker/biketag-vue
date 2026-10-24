@@ -1,4 +1,5 @@
 import About from '@/views/About.vue'
+import ApiExplorer from '@/views/ApiExplorer.vue'
 import Approve from '@/views/Approve.vue'
 import BikeTags from '@/views/BikeTags.vue'
 import Dashboard from '@/views/Dashboard.vue'
@@ -99,6 +100,11 @@ const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
   : []
 
 const routes: Array<RouteRecordRaw> = [
+  {
+    path: '/api/:endpoint(.*)*',
+    name: 'API',
+    component: ApiExplorer,
+  },
   {
     path: '/',
     name: 'Landing',

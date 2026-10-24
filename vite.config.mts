@@ -74,6 +74,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Raw response links must reach the functions, even in an installed PWA.
+        navigateFallbackDenylist: [/^\/\.netlify\/functions(?:\/|$)/],
         maximumFileSizeToCacheInBytes: 5000000, // Example: allow up to 5 MB
       },
     }),
