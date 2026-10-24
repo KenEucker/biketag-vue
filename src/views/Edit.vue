@@ -78,6 +78,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import { sendNetlifyError, sendNetlifyForm } from '@/common'
+import { getTagEditUpdates, mergeTagsForEdit } from '@/common/tag-edits'
 import BikeTag from '@/components/BikeTag.vue'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import EditBikeTag from '@/components/EditBikeTag.vue'
@@ -107,42 +108,6 @@ function togglePreview() {
   previewMode.value = !previewMode.value
 }
 
-function mergeTags(forward = true) {
-  if (forward) {
-    if (currentTag.value && previousTag.value) {
-      Object.assign(mergedTag, {
-        ...currentTag.value,
-        foundPlayer: previousTag.value.foundPlayer,
-        foundTime: previousTag.value.foundTime,
-        foundLocation: previousTag.value.foundLocation,
-        foundImageUrl: previousTag.value.foundImageUrl,
-      })
-    } else {
-      console.log('issue merging current and previous tags', {
-        currentTag: currentTag.value,
-        previousTag: previousTag.value,
-      })
-    }
-  } else {
-    return {
-      currentTag: {
-        ...currentTag.value,
-        foundPlayer: pendingEdits.foundPlayer,
-        foundTime: pendingEdits.foundTime,
-        foundLocation: pendingEdits.foundLocation,
-        foundImageUrl: pendingEdits.foundImageUrl,
-      },
-      previousTag: {
-        ...previousTag.value,
-        mysteryPlayer: pendingEdits.mysteryPlayer,
-        mysteryTime: pendingEdits.mysteryTime,
-        mysteryLocation: pendingEdits.mysteryLocation,
-        mysteryImageUrl: pendingEdits.mysteryImageUrl,
-      },
-    }
-  }
-}
-
 async function onFieldUpdate({ field, value, tag }) {
   if (tag) {
     Object.assign(mergedTag, tag)
@@ -158,6 +123,7 @@ async function onSaveClick() {
 }
 
 async function doSave() {
+  if (editInProgress.value) return
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual'
   }
@@ -173,13 +139,16 @@ async function doSave() {
 
   editInProgress.value = true
 
-  const updatePayloads = mergeTags(false)
-
-  const currentUpdateResult = await store.updateCurrentTag(updatePayloads.currentTag)
-  const previousUpdateResult = await store.updateCurrentTag(updatePayloads.previousTag)
+  const updatePayloads = getTagEditUpdates(currentTag.value, previousTag.value, pendingEdits)
+  const updateResults = []
+  for (const payload of updatePayloads) {
+    const result = await store.updateCurrentTag(payload)
+    updateResults.push({ tagnumber: payload.tagnumber, result })
+    if (result !== true) break
+  }
   editInProgress.value = false
 
-  if (currentUpdateResult === true && previousUpdateResult === true) {
+  if (updateResults.every(({ result }) => result === true)) {
     store.fetchQueuedTags(false)
     return sendNetlifyForm(
       'edit-tag-success',
@@ -205,7 +174,8 @@ async function doSave() {
       },
     )
   } else {
-    const message = `Error saving edits for${currentUpdateResult !== true ? ' current' : ''}${previousUpdateResult !== true ? ' previous' : ''}`
+    const failed = updateResults.find(({ result }) => result !== true)
+    const message = `Error saving edits for BikeTag #${failed.tagnumber}: ${failed.result}`
     toast.open({
       message,
       type: 'error',
@@ -213,17 +183,14 @@ async function doSave() {
       timeout: false,
       position: 'bottom',
     })
-    console.error(message, {
-      currentUpdateResult,
-      previousUpdateResult,
-    })
+    console.error(message, updateResults)
     return sendNetlifyError(message, editError.value, errorFields)
   }
 }
 
 onMounted(async () => {
   await store.isReady()
-  mergeTags()
+  Object.assign(mergedTag, mergeTagsForEdit(currentTag.value, previousTag.value))
   editInProgress.value = false
 })
 </script>
