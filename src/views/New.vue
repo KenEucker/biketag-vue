@@ -49,6 +49,7 @@
       <input type="hidden" name="form-name" value="new-round-error" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
       <input type="hidden" name="game" :value="getGameName" />
+      <input type="hidden" name="tagnumber" :value="newTag.tagnumber" />
       <input type="hidden" name="message" />
       <input type="hidden" name="ip" value="" />
     </form>
@@ -57,7 +58,6 @@
 
 <script setup name="NewRound">
 import { computed, inject, onMounted, reactive, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import { sendNetlifyError, sendNetlifyForm } from '@/common'
@@ -70,7 +70,6 @@ import Loading from 'vue-loading-overlay'
 const store = useBikeTagStore()
 const router = useRouter()
 const toast = inject('toast')
-const { t } = useI18n()
 
 const submitInProgress = ref(false)
 const submitSuccess = ref(false)
@@ -120,6 +119,8 @@ async function onFieldUpdate({ field, value, tag }) {
 }
 
 async function onSubmitClick() {
+  if (submitInProgress.value || submitSuccess.value) return
+
   if (!newTag.foundImage && !newTag.foundImageUrl) {
     toast.open({
       message: 'Please add a found image before submitting.',
@@ -146,34 +147,34 @@ async function onSubmitClick() {
   }
 
   submitInProgress.value = true
-  const errorFields = { game: getGameName.value }
+  const errorFields = {
+    game: getGameName.value,
+    tagnumber: String(newTag.tagnumber),
+    ambassadorId: getAmbassadorId.value,
+  }
 
-  const result = await store.createNewRoundTag(newTag)
-  submitInProgress.value = false
+  let result
+  try {
+    result = await store.createNewRoundTag(newTag)
+  } catch (error) {
+    result = error?.message || 'error creating new round'
+  } finally {
+    submitInProgress.value = false
+  }
 
   if (result === true) {
+    submitSuccess.value = true
     store.resetBikeTagCache()
+    toast.open({
+      message: 'New round submitted!',
+      type: 'success',
+      position: 'top',
+    })
     return sendNetlifyForm(
-      'new-round-success',
-      `game=${getGameName.value}`,
-      () => {
-        toast.open({
-          message: 'New round submitted!',
-          type: 'success',
-          position: 'top',
-        })
-        submitSuccess.value = true
-      },
-      (m) => {
-        toast.open({
-          message: `${t('notifications.error')} ${m}`,
-          type: 'error',
-          duration: 10000,
-          timeout: false,
-          position: 'bottom',
-        })
-        return sendNetlifyError(m, submitError.value, errorFields)
-      },
+      '/',
+      new URLSearchParams({ 'form-name': 'new-round-success', ...errorFields }).toString(),
+      (response) => response,
+      (error) => console.warn('Round created, but activity reporting failed', error),
     )
   } else {
     const message = `Error creating new round: ${result}`
@@ -185,7 +186,9 @@ async function onSubmitClick() {
       position: 'bottom',
     })
     console.error(message)
-    return sendNetlifyError(message, submitError.value, errorFields)
+    return sendNetlifyError(message, submitError.value, errorFields).catch((error) => {
+      console.warn('Could not report the new round failure', error)
+    })
   }
 }
 

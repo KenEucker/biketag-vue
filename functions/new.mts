@@ -53,7 +53,7 @@ export default async (req: Request) => {
       hint,
     } = payload
 
-    if (!profile?.sub || profile.sub !== ambassadorId) {
+    if (!profile?.sub || profile.sub !== ambassadorId || !profile.isBikeTagAmbassador) {
       log('[new-tag] Unauthorized attempt', { profile: profile?.sub ?? 'none' }, 'warn')
       return new Response("you don't have permission to do that", {
         headers,
@@ -61,11 +61,16 @@ export default async (req: Request) => {
       })
     }
 
+    if (!Number.isSafeInteger(tagnumber) || tagnumber < 1) {
+      return new Response(JSON.stringify({ error: 'A valid round number is required' }), {
+        headers,
+        status: HttpStatusCode.BadRequest,
+      })
+    }
+
     const nonAdminOpts = getBikeTagClientOpts(req, true)
     const nonAdminBiketag = new BikeTagClient(nonAdminOpts)
     const game = (await nonAdminBiketag.game(undefined, { source: 'sanity' })) as Game
-    const imageSource = getImageSource(game)
-
     if (!game?.name) {
       log('[new-tag] No game found', { game: gameName }, 'error')
       return new Response(`Game not found for: ${gameName}`, {
@@ -74,11 +79,45 @@ export default async (req: Request) => {
       })
     }
 
+    const imageSource = getImageSource(game)
     const updatedOpts = getBikeTagClientOpts(req, true, true, game)
     const adminBiketag = new BikeTagClient(updatedOpts)
 
-    const currentBikeTag = (await adminBiketag.getTag(undefined, { source: imageSource })).data
+    const currentResponse = await adminBiketag.getTag(undefined, {
+      source: imageSource,
+      cached: false,
+    })
+    if (!currentResponse.success) {
+      return new Response(
+        JSON.stringify({ error: 'Could not read the current round. Try again.' }),
+        {
+          headers,
+          status: HttpStatusCode.BadGateway,
+        },
+      )
+    }
+    const currentBikeTag = currentResponse.data
     log('[new-tag] Current tag', { current: currentBikeTag?.tagnumber ?? 'none' })
+
+    if (
+      !currentBikeTag ||
+      !Number.isSafeInteger(currentBikeTag.tagnumber) ||
+      currentBikeTag.tagnumber < 1
+    ) {
+      return new Response(
+        JSON.stringify({ error: 'Launch the game before creating a new round' }),
+        {
+          headers,
+          status: HttpStatusCode.BadRequest,
+        },
+      )
+    }
+    if (tagnumber !== currentBikeTag.tagnumber + 1) {
+      return new Response(
+        JSON.stringify({ error: 'The current round has changed. Refresh before submitting.' }),
+        { headers, status: HttpStatusCode.Conflict },
+      )
+    }
 
     const gameSlug = getGameStorageSlug(game, gameName)
 

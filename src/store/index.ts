@@ -957,34 +957,57 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         await this.fetchCredentials(true)
 
         const uploadPlayerId = d.playerId?.length ? d.playerId : this.profile.sub
-        let tag = { ...d, game: this.gameName, playerId: uploadPlayerId }
+        const tag = { ...d, game: this.gameName, playerId: uploadPlayerId }
 
         if (d.foundImage && !d.foundImageUrl) {
-          const foundUpload = await client.queueTag(
-            { ...tag, foundImage: d.foundImage },
+          // A find belongs to the previous round. Upload only that photo so the
+          // adapters cannot interpret a two-photo payload as a queued submission.
+          const foundUpload = await client.uploadTagImage(
+            {
+              ...tag,
+              tagnumber: d.tagnumber - 1,
+              folder: 'queue',
+              hash: this.game.queuehash,
+              type: 'stream',
+              contentType: d.foundImage.type || 'image/jpeg',
+              mysteryImage: undefined,
+              mysteryImageUrl: undefined,
+            },
             { source: this.imageSource },
           )
           if (!foundUpload.success) {
             return foundUpload.error || 'failed to upload found image'
           }
-          tag = { ...tag, ...foundUpload.data }
-          await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+          tag.foundImageUrl = foundUpload.data?.foundImageUrl
+          tag.foundTime = foundUpload.data?.foundTime ?? tag.foundTime
         }
 
         if (d.mysteryImage && !d.mysteryImageUrl) {
-          const mysteryUpload = await client.queueTag(
-            { ...tag, mysteryImage: d.mysteryImage },
+          const mysteryUpload = await client.uploadTagImage(
+            {
+              ...tag,
+              folder: 'queue',
+              hash: this.game.queuehash,
+              type: 'stream',
+              contentType: d.mysteryImage.type || 'image/jpeg',
+              foundImage: undefined,
+              foundImageUrl: undefined,
+            },
             { source: this.imageSource },
           )
           if (!mysteryUpload.success) {
             return mysteryUpload.error || 'failed to upload mystery image'
           }
-          tag = { ...tag, ...mysteryUpload.data }
-          await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+          tag.mysteryImageUrl = mysteryUpload.data?.mysteryImageUrl
+          tag.mysteryTime = mysteryUpload.data?.mysteryTime ?? tag.mysteryTime
         }
 
         if (!tag.foundImageUrl?.length || !tag.mysteryImageUrl?.length) {
           return 'found and mystery images are required'
+        }
+
+        if ((d.foundImage && !d.foundImageUrl) || (d.mysteryImage && !d.mysteryImageUrl)) {
+          await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
         }
 
         const response = await client.plainRequest({
@@ -1023,10 +1046,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           return true
         }
 
-        return `BikeTag round #${tag.tagnumber} couldn't be created`
+        return response.data?.error || `BikeTag round #${tag.tagnumber} couldn't be created`
       } catch (e: any) {
         console.error('error creating new round', e?.message ?? e)
-        return 'error creating new round'
+        return e?.response?.data?.error || 'error creating new round'
       }
     },
     async assignPlayerName(profile: any) {

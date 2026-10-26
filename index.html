@@ -86,6 +86,22 @@
       <input name="game" type="text" required />
       <input name="tag" type="text" required />
     </form>
+    <form name="new-round-success" action="/" method="POST" data-netlify="true"
+      data-netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="new-round-success" />
+      <input type="hidden" name="game" />
+      <input type="hidden" name="tagnumber" />
+      <input type="hidden" name="ambassadorId" />
+    </form>
+    <form name="new-round-error" action="new-round-error" method="POST" data-netlify="true"
+      data-netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="new-round-error" />
+      <input type="hidden" name="game" />
+      <input type="hidden" name="tagnumber" />
+      <input type="hidden" name="ambassadorId" />
+      <input type="hidden" name="message" />
+      <input type="hidden" name="ip" />
+    </form>
     <form name="edit-tag-success" action="/" method="POST" data-netlify="true"
       data-netlify-honeypot="bot-field" hidden>
       <input type="hidden" name="form-name" value="edit-tag-success" />
