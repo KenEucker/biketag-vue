@@ -2,7 +2,7 @@
 <template>
   <div class="queue-page">
     <div v-if="props.usingTimer && isViewingQueue()" class="mt-2 clock-div">
-      <i class="far fa-clock" />
+      <bike-tag-icon name="clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
     <div class="container round-page-description">
@@ -36,6 +36,7 @@ import { useTimer } from 'vue-timer-hook'
 
 // components
 import QueueView from '@/components/QueueView.vue'
+import BikeTagIcon from '@/components/BikeTagIcon.vue'
 import { useI18n } from 'vue-i18n'
 
 // props
@@ -69,7 +70,7 @@ onMounted(async () => {
 </script>
 
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 #app {
   .queue-page {
@@ -86,10 +87,10 @@ onMounted(async () => {
 }
 </style>
 <style scoped lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .queue-page {
-  .clock-div > i {
+  .clock-div > .biketag-icon {
     color: forestgreen;
     cursor: pointer;
     font-size: 25px;

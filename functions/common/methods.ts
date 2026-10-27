@@ -26,6 +26,7 @@ import { BackgroundProcessResults, activeQueue, BikeTagProfile } from './types'
 import { summarizeTagGps } from '../../src/common/gps'
 import { isGameEmailEnabled, sendEmailsToAmbassadors } from './email'
 import { decodeQueueMetadataValue, parseQueueObjectMetadata } from './storage-metadata'
+import { RoundPublicationError, roundConflict, withRoundPublicationLock } from './round-publication'
 export {
   liquidOpts,
   sendEmail,
@@ -4317,10 +4318,10 @@ export const launchGameTag = async (
 export const setNewBikeTagPost = async (
   game: Game,
   winningBikeTagPost: Tag,
-  previousBikeTag: Tag,
+  _previousBikeTag: Tag | undefined,
   adminBiketag?: BikeTagClient,
   nonAdminBiketag?: BikeTagClient,
-): Promise<BackgroundProcessResults> => {
+): Promise<BackgroundProcessResults & { status?: HttpStatusCode }> => {
   const gameSlug = getGameStorageSlug(game)
   winningBikeTagPost = { ...winningBikeTagPost, game: gameSlug }
   log(
@@ -4334,18 +4335,42 @@ export const setNewBikeTagPost = async (
   )
 
   try {
-    return await finalizeNewBikeTagPost(
-      game,
-      winningBikeTagPost,
-      previousBikeTag,
-      adminBiketag,
-      nonAdminBiketag,
-    )
+    adminBiketag =
+      adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
+    const publisher = adminBiketag
+    return await withRoundPublicationLock(gameSlug, async () => {
+      const currentResponse = await publisher.getTag(undefined, {
+        source: getImageSource(game),
+        cached: false,
+      })
+      if (!currentResponse.success) {
+        throw new RoundPublicationError(
+          'Could not read the current round. Try again.',
+          HttpStatusCode.BadGateway,
+        )
+      }
+      const current = currentResponse.data
+      if (!current || !Number.isSafeInteger(current.tagnumber) || current.tagnumber < 1) {
+        throw new RoundPublicationError(
+          'Launch the game before creating a new round',
+          HttpStatusCode.BadRequest,
+        )
+      }
+      if (winningBikeTagPost.tagnumber !== current.tagnumber + 1) throw roundConflict()
+
+      return finalizeNewBikeTagPost(game, winningBikeTagPost, current, publisher, nonAdminBiketag)
+    })
   } catch (err: any) {
     log('setNewBikeTagPost failed', err, 'error')
     return {
-      results: [{ message: 'BikeTag post failed', error: err.message ?? String(err) }],
+      results: [
+        {
+          message: err instanceof RoundPublicationError ? err.message : 'BikeTag post failed',
+          error: err.message ?? String(err),
+        },
+      ],
       errors: true,
+      ...(err instanceof RoundPublicationError ? { status: err.status } : {}),
     }
   }
 }

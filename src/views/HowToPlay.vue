@@ -17,11 +17,11 @@
         <p>{{ $t('pages.howto.swiper1.text1') }}</p>
         <p>
           {{ $t('pages.howto.swiper1.text2') }}
-          <span
+          <bike-tag-icon
             v-if="getEasterEgg && !playingEaster"
-            class="fas fa-volume-down"
+            name="volume-low"
             @click="playEasterEgg"
-          ></span>
+          />
         </p>
         <br />
         <p>{{ $t('pages.howto.swiper1.text3') }}</p>
@@ -126,6 +126,7 @@ import 'swiper/css/bundle'
 import { computed, ref } from 'vue'
 
 // components
+import BikeTagIcon from '@/components/BikeTagIcon.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { useI18n } from 'vue-i18n'

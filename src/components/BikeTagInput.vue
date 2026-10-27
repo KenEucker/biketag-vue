@@ -65,7 +65,7 @@ function update(e) {
 </script>
 
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .biketag-input {
   @include background-btn;
@@ -126,7 +126,7 @@ function update(e) {
 }
 </style>
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .biketag-input {
   max-width: $btn-max-width;

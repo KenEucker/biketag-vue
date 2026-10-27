@@ -1049,7 +1049,16 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return response.data?.error || `BikeTag round #${tag.tagnumber} couldn't be created`
       } catch (e: any) {
         console.error('error creating new round', e?.message ?? e)
-        return e?.response?.data?.error || 'error creating new round'
+        const body = e?.response?.data
+        if (typeof body === 'string') return body
+        if (body?.errors && Array.isArray(body.results)) {
+          const errorMessages = body.results
+            .filter((r: any) => r?.error)
+            .map((r: any) => r.message || r.error)
+            .join(', ')
+          if (errorMessages) return errorMessages
+        }
+        return body?.error || 'error creating new round'
       }
     },
     async assignPlayerName(profile: any) {

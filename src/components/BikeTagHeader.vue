@@ -18,11 +18,11 @@
       <!-- Right Button -->
       <bike-tag-button class="button-group__right" :text="$t('menu.howto')" @click="goHowPage" />
     </div>
-    <span
+    <bike-tag-icon
       v-if="getEasterEgg && playingEaster"
-      class="fas fa-volume-mute"
+      name="volume-muted"
       @click="muteEasterEgg"
-    ></span>
+    />
     <audio id="biketag-jingle" ref="jingle">
       <source id="audioSource" :autoplay="playingEaster" type="audio/mpeg" :src="getEasterEgg" />
       {{ $t('pages.howto.browser_not_support_audio') }}
@@ -38,6 +38,7 @@ import { useI18n } from 'vue-i18n'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagIcon from '@/components/BikeTagIcon.vue'
 
 // data
 const jingle = ref(null)

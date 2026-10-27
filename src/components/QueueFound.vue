@@ -544,7 +544,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 input#found {
   margin-left: 3.5rem;

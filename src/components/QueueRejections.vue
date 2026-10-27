@@ -84,7 +84,7 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .queue-rejections {
   &__item {

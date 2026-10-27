@@ -199,7 +199,7 @@ onMounted(() => {
 }
 </style>
 <style scoped lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .queue-posted-share {
   .tab-logo {

@@ -3,7 +3,6 @@ import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
   getGameStorageSlug,
-  getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
   log,
@@ -79,45 +78,8 @@ export default async (req: Request) => {
       })
     }
 
-    const imageSource = getImageSource(game)
     const updatedOpts = getBikeTagClientOpts(req, true, true, game)
     const adminBiketag = new BikeTagClient(updatedOpts)
-
-    const currentResponse = await adminBiketag.getTag(undefined, {
-      source: imageSource,
-      cached: false,
-    })
-    if (!currentResponse.success) {
-      return new Response(
-        JSON.stringify({ error: 'Could not read the current round. Try again.' }),
-        {
-          headers,
-          status: HttpStatusCode.BadGateway,
-        },
-      )
-    }
-    const currentBikeTag = currentResponse.data
-    log('[new-tag] Current tag', { current: currentBikeTag?.tagnumber ?? 'none' })
-
-    if (
-      !currentBikeTag ||
-      !Number.isSafeInteger(currentBikeTag.tagnumber) ||
-      currentBikeTag.tagnumber < 1
-    ) {
-      return new Response(
-        JSON.stringify({ error: 'Launch the game before creating a new round' }),
-        {
-          headers,
-          status: HttpStatusCode.BadRequest,
-        },
-      )
-    }
-    if (tagnumber !== currentBikeTag.tagnumber + 1) {
-      return new Response(
-        JSON.stringify({ error: 'The current round has changed. Refresh before submitting.' }),
-        { headers, status: HttpStatusCode.Conflict },
-      )
-    }
 
     const gameSlug = getGameStorageSlug(game, gameName)
 
@@ -135,15 +97,16 @@ export default async (req: Request) => {
       hint,
     })
 
-    const result = await setNewBikeTagPost(
-      game,
-      newTag,
-      currentBikeTag,
-      adminBiketag,
-      nonAdminBiketag,
-    )
+    const result = await setNewBikeTagPost(game, newTag, undefined, adminBiketag, nonAdminBiketag)
 
     log('[new-tag] setNewBikeTagPost result', result)
+
+    if (result.status) {
+      return new Response(JSON.stringify({ error: result.results[0].message }), {
+        headers,
+        status: result.status,
+      })
+    }
 
     const status = result.errors ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted
 

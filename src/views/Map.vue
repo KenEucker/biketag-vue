@@ -41,7 +41,7 @@ function goBikeTagsPage() {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .map {
   align-items: center;

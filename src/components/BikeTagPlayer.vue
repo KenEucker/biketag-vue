@@ -116,7 +116,7 @@ function tagColorNumber(count) {
 </script>
 
 <style scoped lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .player-bicon {
   position: relative;

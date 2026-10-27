@@ -40,7 +40,7 @@ const next = {
   hint: 'Around the corner',
 }
 
-function endpoint({ profile, currentResponse, publishResult } = {}) {
+function endpoint({ profile, currentResponse, publishResult, finalize, locks = new Map() } = {}) {
   const clients = []
   const reads = []
   const publications = []
@@ -56,6 +56,51 @@ function endpoint({ profile, currentResponse, publishResult } = {}) {
       return currentResponse ?? { success: true, data: { ...current } }
     }
   }
+  const lock = load('functions/common/round-publication.ts', {
+    './constants': constants,
+    '@netlify/blobs': {
+      getStore: () => ({
+        async set(key, value, options) {
+          assert.equal(options.onlyIfNew, true)
+          if (locks.has(key)) return { modified: false }
+          locks.set(key, value)
+          return { modified: true }
+        },
+        async delete(key) {
+          locks.delete(key)
+        },
+      }),
+    },
+  })
+  const methods = fs.readFileSync('functions/common/methods.ts', 'utf8')
+  const source = methods.slice(
+    methods.indexOf('export const setNewBikeTagPost ='),
+    methods.indexOf('export const getWinningTagForCurrentRound ='),
+  )
+  const setNewBikeTagPost = new Function(
+    ...Object.keys(lock),
+    'getGameStorageSlug',
+    'summarizeTagGps',
+    'log',
+    'getImageSource',
+    'HttpStatusCode',
+    'finalizeNewBikeTagPost',
+    ts.transpileModule(source.replace('export const ', 'const '), {
+      compilerOptions: { target: ts.ScriptTarget.ES2022 },
+    }).outputText + '\nreturn setNewBikeTagPost',
+  )(
+    ...Object.values(lock),
+    () => 'demo',
+    () => ({}),
+    () => {},
+    () => 'aws',
+    constants.HttpStatusCode,
+    async (...args) => {
+      publications.push(args)
+      if (finalize) return finalize(...args)
+      return publishResult ?? { errors: false, results: [] }
+    },
+  )
   const handler = load('functions/new.mts', {
     biketag: { BikeTagClient: Client, createTagObject },
     './common/constants': constants,
@@ -68,10 +113,7 @@ function endpoint({ profile, currentResponse, publishResult } = {}) {
       getGameStorageSlug: () => 'demo',
       getImageSource: () => 'aws',
       log() {},
-      setNewBikeTagPost: async (...args) => {
-        publications.push(args)
-        return publishResult ?? { errors: false, results: [] }
-      },
+      setNewBikeTagPost,
     },
   }).default
   return {
@@ -131,6 +173,98 @@ test('new endpoint rejects a form after the live round advances and repeated req
   assert.equal(response.status, 409)
   assert.match((await response.json()).error, /round|refresh/i)
   assert.equal(flow.publications.length, 1)
+})
+
+test('separate invocations cannot publish the same successor concurrently', async () => {
+  const locks = new Map()
+  const live = { success: true, data: { ...current } }
+  let release
+  let started
+  const publishing = new Promise((resolve) => {
+    started = resolve
+  })
+  const blocked = new Promise((resolve) => {
+    release = resolve
+  })
+  const winner = endpoint({
+    locks,
+    currentResponse: live,
+    async finalize() {
+      started()
+      await blocked
+      live.data = { ...next }
+      return { errors: false, results: [] }
+    },
+  })
+  const contender = endpoint({ locks, currentResponse: live })
+  const first = winner.request()
+  await publishing
+  try {
+    const conflict = await contender.request()
+    assert.equal(conflict.status, 409)
+    assert.deepEqual(await conflict.json(), {
+      error: 'The current round has changed. Refresh before submitting.',
+    })
+    assert.equal(contender.reads.length, 0)
+    assert.equal(contender.publications.length, 0)
+  } finally {
+    release()
+  }
+  assert.equal((await first).status, 202)
+  assert.equal(locks.size, 0)
+  assert.equal((await contender.request()).status, 409)
+  assert.equal(contender.publications.length, 0)
+})
+
+test('publication lock is released on failed reads, stale rounds and thrown publications', async () => {
+  for (const options of [
+    { currentResponse: { success: false } },
+    { currentResponse: { success: true, data: next } },
+    {
+      finalize: async () => {
+        throw Error('storage unavailable')
+      },
+    },
+  ]) {
+    const locks = new Map()
+    const flow = endpoint({ ...options, locks })
+    assert.ok((await flow.request()).status >= 400)
+    assert.equal(locks.size, 0)
+  }
+})
+
+test('actual Blobs adapter refuses contention and storage errors before publication', async (t) => {
+  const blobs = require('@netlify/blobs')
+  const { withRoundPublicationLock } = load('functions/common/round-publication.ts', {
+    './constants': constants,
+    '@netlify/blobs': {
+      getStore: (options) =>
+        blobs.getStore({
+          ...options,
+          siteID: 'test-site',
+          token: 'test-token',
+          apiURL: 'https://example.org',
+        }),
+    },
+  })
+  for (const status of [412, 403]) {
+    let publications = 0
+    t.mock.method(globalThis, 'fetch', async (url, options) => {
+      if (url.startsWith('https://example.org/')) {
+        return Response.json({ url: 'https://storage.example.org/lock' })
+      }
+      assert.equal(new Headers(options.headers).get('if-none-match'), '*')
+      return new Response('', { status })
+    })
+    await assert.rejects(
+      withRoundPublicationLock('demo', async () => {
+        publications++
+      }),
+      status === 412 ? /current round has changed/ : /lock storage failed/,
+    )
+    assert.equal(publications, 0)
+    t.mock.restoreAll()
+  }
 })
 
 test('new endpoint fails closed when the current tag cannot be read or the game has not launched', async () => {
@@ -288,6 +422,33 @@ test('store retains the server conflict message for a stale round', async () => 
     },
   })
   assert.equal(await action(next), error.response.data.error)
+})
+
+test('store preserves rejected publication details, plain text and error fallbacks', async () => {
+  for (const [body, expected] of [
+    [
+      {
+        errors: true,
+        results: [
+          { message: 'success' },
+          { error: 'write failed', message: 'Current tag was not updated' },
+          { error: 'new tag failed' },
+        ],
+      },
+      'Current tag was not updated, new tag failed',
+    ],
+    ["you don't have permission to do that", "you don't have permission to do that"],
+    [{ errors: true, results: [], error: 'Server error' }, 'Server error'],
+    [{ errors: true, results: null }, 'error creating new round'],
+    [undefined, 'error creating new round'],
+  ]) {
+    const action = storeAction({
+      async plainRequest() {
+        throw { response: { data: body } }
+      },
+    })
+    assert.equal(await action(next), expected)
+  }
 })
 
 const methods = fs.readFileSync('src/common/methods.ts', 'utf8')

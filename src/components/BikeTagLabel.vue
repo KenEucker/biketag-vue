@@ -33,7 +33,7 @@ const backgroundSrc = computed(
 </script>
 
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .biketag-label {
   @include background-btn;
@@ -75,7 +75,7 @@ const backgroundSrc = computed(
 }
 </style>
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .biketag-label {
   font-family: $default-secondary-font-family;
