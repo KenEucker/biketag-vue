@@ -112,6 +112,117 @@ test('client API uses the current deployment while preserving development functi
   }
 })
 
+function createGameStore(t) {
+  const previousWindow = global.window
+  const previousStorage = global.localStorage
+  t.after(() => {
+    global.window = previousWindow
+    global.localStorage = previousStorage
+  })
+  global.window = { location: new URL('https://portland.biketag.org') }
+  global.localStorage = { getItem: () => null }
+  const fixture = { response: { success: false }, requests: [], configurations: [] }
+  const { initBikeTagStore, useBikeTagStore } = load('src/store/index.ts', {
+    biketag: class {
+      async getGame(...args) {
+        fixture.requests.push(args)
+        return fixture.response
+      }
+      config(...args) {
+        fixture.configurations.push(args)
+        return args[0]
+      }
+    },
+    pinia: { defineStore: (_id, options) => options },
+    '../common/submission-diagnostics': {},
+    '../common': {
+      BikeTagEnv: {},
+      BikeTagDefaults: { gameName: '', store: 'biketag', gameSource: 'sanity' },
+      getDomainInfo,
+      getApiUrl: () => '/api',
+      getBikeTagClientOpts: () => ({ imgur: {}, aws: {} }),
+      getTokenFromCookie: () => '',
+      getQueryParam: () => undefined,
+      debug() {},
+    },
+  })
+  initBikeTagStore()
+  fixture.store = {
+    ...useBikeTagStore.actions,
+    gameName: 'portland',
+    game: {},
+    allGames: [],
+    imageSource: 'aws',
+  }
+  return fixture
+}
+
+test('landing-page startup does not look up a game without a name', async (t) => {
+  const { store, requests } = createGameStore(t)
+  for (const name of [undefined, null, '', '   ']) {
+    store.gameName = name
+    assert.equal(await store.setGame(), false)
+    assert.equal(await store.setGame(''), false)
+  }
+  assert.equal(requests.length, 0)
+  assert.deepEqual(store.game, {})
+})
+
+test('games without settings load with defaults and retain their configured image source', async (t) => {
+  const fixture = createGameStore(t)
+  for (const settings of [undefined, null]) {
+    fixture.store.game = {}
+    fixture.store.imageSource = 'imgur'
+    fixture.response = {
+      success: true,
+      data: {
+        name: 'portland',
+        mainhash: 'main',
+        queuehash: 'queue',
+        awsRegion: 'region',
+        settings,
+      },
+    }
+    const game = await fixture.store.setGame()
+    assert.equal(game.name, 'portland')
+    assert.deepEqual(game.settings, {})
+    assert.equal(fixture.store.imageSource, 'imgur')
+    assert.equal(fixture.configurations.at(-1)[0].imgur.hash, 'main')
+    assert.equal(fixture.configurations.at(-1)[0].aws.region, 'region')
+  }
+})
+
+test('game settings still select AWS or Imgur storage', async (t) => {
+  const fixture = createGameStore(t)
+  for (const [settings, initialSource, expectedSource] of [
+    [{ 'data::aws': 'true', 'data::imgur': 'true' }, 'imgur', 'aws'],
+    [{ 'data::aws': 'false', 'data::imgur': 'true' }, 'aws', 'imgur'],
+    [{ 'data::aws': 'false', 'data::imgur': 'false' }, 'aws', 'aws'],
+  ]) {
+    fixture.store.game = {}
+    fixture.store.imageSource = initialSource
+    fixture.response = { success: true, data: { name: 'portland', settings } }
+    const game = await fixture.store.setGame()
+    assert.deepEqual(game.settings, settings)
+    assert.equal(fixture.store.imageSource, expectedSource)
+  }
+})
+
+test('game collections and missing game responses cannot replace the selected game', async (t) => {
+  const fixture = createGameStore(t)
+  for (const data of [undefined, null, {}, [], [{ name: 'portland' }]]) {
+    fixture.response = { success: true, data }
+    assert.equal(await fixture.store.setGame(), false)
+    assert.deepEqual(fixture.store.game, {})
+  }
+  assert.equal(fixture.configurations.length, 0)
+
+  fixture.store.allGames = [{ name: 'portland', mainhash: 'cached-main' }]
+  const cachedGame = await fixture.store.setGame()
+  assert.equal(cachedGame.name, 'portland')
+  assert.deepEqual(cachedGame.settings, {})
+})
+
 test('the home page only renders its player button when the player has a name', async () => {
   const filename = 'src/views/Home.vue'
   const { descriptor } = parse(fs.readFileSync(filename, 'utf8'), { filename })

@@ -209,17 +209,19 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     async setGame(newGameName?: string) {
       newGameName = newGameName ?? this.gameName
+      if (!newGameName?.trim()) return false
+
       if (this.game?.name !== newGameName || !this.game?.mainhash) {
         this.fetchingData = false
         return client
           .getGame({ game: newGameName }, { source: BikeTagDefaults.gameSource })
           .then(async (r) => {
-            if (r.success) {
+            if (r.success && !Array.isArray(r.data) && r.data?.name) {
               const game = r.data as Game
 
-              if (game.settings['data::aws'] && game.settings['data::aws'] === 'true') {
+              if (game.settings?.['data::aws'] === 'true') {
                 this.imageSource = 'aws'
-              } else if (game.settings['data::imgur'] && game.settings['data::imgur'] === 'true') {
+              } else if (game.settings?.['data::imgur'] === 'true') {
                 this.imageSource = 'imgur'
               }
               /// TODO: split these up based on the imageSource?
@@ -1641,7 +1643,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     SET_GAME(game: any) {
       const oldState = this.game
-      this.game = game
+      this.game = game ? { ...game, settings: game.settings ?? {} } : game
       this.fetchingData = true
 
       if (oldState?.name !== game?.name) {
