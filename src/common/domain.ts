@@ -6,6 +6,7 @@ export const getDomainInfo = (req: any): DomainInfo => {
     `${BikeTagEnv.HOST ?? 'biketag.local'}`,
     'biketag.dev',
     '0.0.0.0',
+    '127.0.0.1',
     'localhost',
   ]
   let host = (
@@ -16,7 +17,7 @@ export const getDomainInfo = (req: any): DomainInfo => {
         : ''
   )
     .toLowerCase()
-    .replace(/www./g, '')
+    .replace(/^www\./, '')
   let port = null
   let subdomain = null
 
@@ -24,7 +25,8 @@ export const getDomainInfo = (req: any): DomainInfo => {
     ;[host, port] = host.split(':')
   }
 
-  const isSubdomain = nonSubdomainHosts.indexOf(host) === -1
+  // Netlify deploy IDs and branch names identify deployments, not BikeTag games.
+  const isSubdomain = !nonSubdomainHosts.includes(host) && !host.endsWith('.netlify.app')
 
   if (isSubdomain) {
     const hostSplit = host.split('.')

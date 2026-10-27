@@ -54,8 +54,7 @@ export const initBikeTagStore = () => {
     biketagClientOpts = {
       cached: true,
       verbose: getQueryParam(window, 'debug_a') === 'true' || BikeTagEnv.DEBUG_FE === 'true',
-      host:
-        BikeTagEnv.CONTEXT === 'dev' ? getApiUrl() : `https://${gameName}.${BikeTagEnv.HOST}/api`,
+      host: new URL(getApiUrl(), window.location.origin).href,
       clientToken: getTokenFromCookie(),
       // game: gameName,
       ...getBikeTagClientOpts(window, BikeTagEnv.BIKETAG_AUTHED === 'true'),

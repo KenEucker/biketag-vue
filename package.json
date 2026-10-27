@@ -11,6 +11,7 @@
     "test:images": "node --test tests/images.test.cjs",
     "test:gps": "node --test tests/gps.test.cjs",
     "test:map": "node --test tests/map.test.cjs",
+    "test:startup": "node --test tests/startup.test.cjs",
     "test:emails": "node --test tests/email.test.cjs",
     "test:submissions": "node --test tests/submission-diagnostics.test.cjs",
     "test:tag-edits": "node --test tests/tag-edits.test.cjs",

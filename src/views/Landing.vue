@@ -37,7 +37,7 @@
         <a
           href="https://biketag.bike/2021/12/31/biketag-terms-of-service/"
           rel="noopener"
-          style="text-decoration: none; color: #851fe5"
+          style="text-decoration: underline; color: #851fe5"
           target="_blank"
           title="Terms Of Service"
           >You can read those here.</a
