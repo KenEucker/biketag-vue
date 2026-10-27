@@ -17,7 +17,6 @@
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#000000" />
   <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png">
-  <link rel="stylesheet" type="text/css" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" />
   <script>
     // Workaround stupid i18n console warning
     Object.assign(window, {
@@ -29,7 +28,6 @@
   <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
     data-cf-beacon='{"token": "31b6f22971ed40bfbd2b5c107c330646"}'></script><!-- End Cloudflare Web Analytics -->
-  <link rel="stylesheet" type="text/css" href="assets/index.css" />
 </head>
 
 <body>
@@ -85,6 +83,22 @@
       <input name="submission" type="text" required />
       <input name="game" type="text" required />
       <input name="tag" type="text" required />
+    </form>
+    <form name="new-round-success" action="/" method="POST" data-netlify="true"
+      data-netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="new-round-success" />
+      <input type="hidden" name="game" />
+      <input type="hidden" name="tagnumber" />
+      <input type="hidden" name="ambassadorId" />
+    </form>
+    <form name="new-round-error" action="new-round-error" method="POST" data-netlify="true"
+      data-netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="new-round-error" />
+      <input type="hidden" name="game" />
+      <input type="hidden" name="tagnumber" />
+      <input type="hidden" name="ambassadorId" />
+      <input type="hidden" name="message" />
+      <input type="hidden" name="ip" />
     </form>
     <form name="edit-tag-success" action="/" method="POST" data-netlify="true"
       data-netlify-honeypot="bot-field" hidden>

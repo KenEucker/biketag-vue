@@ -1,4 +1,5 @@
 import { App, Plugin } from 'vue'
+import './assets/styles/style.scss'
 
 import { getBikeTagClientOpts } from './common'
 import { BikeTagDefaults, BikeTagEnv } from './common/constants'

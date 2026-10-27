@@ -289,7 +289,7 @@ onMounted(async () => {
 })
 </script>
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .flx-columns {
   @include flx-center($flow: column nowrap, $al: flex-start);
@@ -322,7 +322,7 @@ onMounted(async () => {
 }
 </style>
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .icon-container {
   width: 100%;

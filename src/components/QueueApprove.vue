@@ -193,7 +193,7 @@ onMounted(async () => {
 </script>
 
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .queue-approve {
   .card .tag-number {
@@ -214,7 +214,7 @@ onMounted(async () => {
 }
 </style>
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 i {
   color: #000;

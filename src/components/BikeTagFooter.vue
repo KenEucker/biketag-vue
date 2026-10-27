@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .popover {
   background-color: $silver-sand;
@@ -261,7 +261,7 @@ onBeforeUnmount(() => {
 }
 </style>
 <style scoped lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .foss-container {
   i {

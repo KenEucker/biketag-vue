@@ -10,7 +10,7 @@
   </loading>
   <div class="queue-page">
     <div v-if="props.usingTimer && isViewingQueue()" class="mt-2 clock-div">
-      <i class="far fa-clock" />
+      <bike-tag-icon name="clock" />
       <span>{{ timer.minutes }}:{{ timer.seconds }}</span>
     </div>
     <span
@@ -138,6 +138,7 @@ import { useTimer } from 'vue-timer-hook'
 
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
+import BikeTagIcon from '@/components/BikeTagIcon.vue'
 import BikeTagQueue from '@/components/BikeTagQueue.vue'
 import QueueFound from '@/components/QueueFound.vue'
 import QueueJoined from '@/components/QueueJoined.vue'
@@ -411,7 +412,7 @@ onMounted(async () => {
 </script>
 
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 #app {
   .queue-page {
@@ -432,10 +433,10 @@ onMounted(async () => {
 }
 </style>
 <style scoped lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .queue-page {
-  .clock-div > i {
+  .clock-div > .biketag-icon {
     color: forestgreen;
     cursor: pointer;
     font-size: 25px;

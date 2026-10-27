@@ -257,7 +257,7 @@ onBeforeUnmount(() => {
 }
 </style>
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .leaflet-map {
   height: 500px;

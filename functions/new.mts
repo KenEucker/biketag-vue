@@ -3,7 +3,6 @@ import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
   getGameStorageSlug,
-  getImageSource,
   getPayloadOpts,
   getProfileAuthorization,
   log,
@@ -53,7 +52,7 @@ export default async (req: Request) => {
       hint,
     } = payload
 
-    if (!profile?.sub || profile.sub !== ambassadorId) {
+    if (!profile?.sub || profile.sub !== ambassadorId || !profile.isBikeTagAmbassador) {
       log('[new-tag] Unauthorized attempt', { profile: profile?.sub ?? 'none' }, 'warn')
       return new Response("you don't have permission to do that", {
         headers,
@@ -61,11 +60,16 @@ export default async (req: Request) => {
       })
     }
 
+    if (!Number.isSafeInteger(tagnumber) || tagnumber < 1) {
+      return new Response(JSON.stringify({ error: 'A valid round number is required' }), {
+        headers,
+        status: HttpStatusCode.BadRequest,
+      })
+    }
+
     const nonAdminOpts = getBikeTagClientOpts(req, true)
     const nonAdminBiketag = new BikeTagClient(nonAdminOpts)
     const game = (await nonAdminBiketag.game(undefined, { source: 'sanity' })) as Game
-    const imageSource = getImageSource(game)
-
     if (!game?.name) {
       log('[new-tag] No game found', { game: gameName }, 'error')
       return new Response(`Game not found for: ${gameName}`, {
@@ -76,9 +80,6 @@ export default async (req: Request) => {
 
     const updatedOpts = getBikeTagClientOpts(req, true, true, game)
     const adminBiketag = new BikeTagClient(updatedOpts)
-
-    const currentBikeTag = (await adminBiketag.getTag(undefined, { source: imageSource })).data
-    log('[new-tag] Current tag', { current: currentBikeTag?.tagnumber ?? 'none' })
 
     const gameSlug = getGameStorageSlug(game, gameName)
 
@@ -96,15 +97,16 @@ export default async (req: Request) => {
       hint,
     })
 
-    const result = await setNewBikeTagPost(
-      game,
-      newTag,
-      currentBikeTag,
-      adminBiketag,
-      nonAdminBiketag,
-    )
+    const result = await setNewBikeTagPost(game, newTag, undefined, adminBiketag, nonAdminBiketag)
 
     log('[new-tag] setNewBikeTagPost result', result)
+
+    if (result.status) {
+      return new Response(JSON.stringify({ error: result.results[0].message }), {
+        headers,
+        status: result.status,
+      })
+    }
 
     const status = result.errors ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted
 

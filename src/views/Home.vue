@@ -13,7 +13,7 @@
         <bike-tag id="the-tag" :tag="tag" image-size="l" />
       </div>
       <div v-else class="mb-5">
-        <div class="play-screen__mystery-player">
+        <div v-if="getCurrentBikeTag?.mysteryPlayer?.trim()" class="play-screen__mystery-player">
           <bike-tag-button
             variant="medium"
             class="play-screen__mystery-player__button"
@@ -139,7 +139,7 @@ onMounted(async () => {
 </script>
 
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .tag-hidden {
   visibility: hidden;

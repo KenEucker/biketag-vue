@@ -165,7 +165,7 @@ onMounted(async () => {
 </script>
 
 <style lang="scss">
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .bikedex-modal {
   .modal-content {
@@ -203,7 +203,7 @@ onMounted(async () => {
 }
 </style>
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .achievements {
   margin-left: 5%;

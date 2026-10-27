@@ -55,7 +55,7 @@ const backgroundSrc = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .biketag {
   &__text {

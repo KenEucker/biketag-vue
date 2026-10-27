@@ -93,7 +93,7 @@ function deleteTagFunction() {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .delete-bike-tag {
   text-align: center;

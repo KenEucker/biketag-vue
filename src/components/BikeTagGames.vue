@@ -6,7 +6,12 @@
       <div class="m-auto games__list">
         <div v-for="(game, index) in getAllGames" :key="index" class="games__list__biketag">
           <a :href="`https://${game.slug}.biketag.org`">
-            <img :src="getLogoUrl('s', game.logo)" alt="BikeTag Logo" /> </a
+            <img
+              :src="getLogoUrl('s', game.logo)"
+              width="125"
+              height="100"
+              alt="BikeTag Logo"
+            /> </a
           ><br />
         </div>
       </div>
@@ -48,7 +53,7 @@ const getLogoUrl = computed(() => store.getLogoUrl)
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 hr {
   width: 90%;
@@ -77,10 +82,9 @@ hr {
       align-items: center;
 
       img {
-        width: auto;
-        height: auto;
-        max-width: 125px;
-        max-height: 100px;
+        width: 125px;
+        height: 100px;
+        object-fit: contain;
       }
     }
   }

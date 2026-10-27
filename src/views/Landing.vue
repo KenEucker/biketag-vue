@@ -6,12 +6,20 @@
       title="What is BikeTag?"
       subtitle="BikeTag is a mystery photo tag game played on bicycles"
       :img-src="BikeTagSvg"
+      :img-width="321"
+      :img-height="638"
       link-text="Support BikeTag"
       link="https://patreon.com/biketag"
       variant="left"
     >
       <p>
-        <img src="/images/biketag-example-1.webp" alt="BikeTag Post" class="mb-3" />
+        <img
+          src="/images/biketag-example-1.webp"
+          width="464"
+          height="363"
+          alt="BikeTag Post"
+          class="mb-3 landing-example"
+        />
       </p>
       <p>
         BikeTag is a mystery photo tag game played on bicycles. BikeTag.Org is a place for people to
@@ -29,7 +37,7 @@
         <a
           href="https://biketag.bike/2021/12/31/biketag-terms-of-service/"
           rel="noopener"
-          style="text-decoration: none; color: #851fe5"
+          style="text-decoration: underline; color: #851fe5"
           target="_blank"
           title="Terms Of Service"
           >You can read those here.</a
@@ -47,6 +55,8 @@
       title="BikeTag Ambassador Program"
       subtitle="Start a new game of BikeTag in your area"
       :img-src="BikeTagAmbassadorSvg"
+      :img-width="1157"
+      :img-height="1261"
       variant="right"
     >
       <p>
@@ -75,6 +85,8 @@
       title="Open-Source"
       subtitle="BikeTag is an Open-Source Project Deployed on Netlify "
       img-src="/images/github-netlify.webp"
+      :img-width="147"
+      :img-height="79"
       link-text="Contribute to BikeTag"
       link="https://github.com/KenEucker/biketag-vue/discussions/78"
       variant="left"
@@ -119,7 +131,7 @@
     </div>
     <div class="img-container">
       <a href=" https://biketag.bike/">
-        <img :src="BikeTagSvg" alt="BikeTag" />
+        <img :src="BikeTagSvg" width="321" height="638" alt="BikeTag" />
       </a>
     </div>
     <p><i>© 2023 The BikeTag Project. All Rights Reserved. </i></p>
@@ -224,10 +236,15 @@ main {
 }
 </style>
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 #mg-top {
   height: calc(113px + 2rem);
+}
+
+.landing-example {
+  max-width: 100%;
+  height: auto;
 }
 
 header {
@@ -353,6 +370,7 @@ footer {
     margin: auto;
 
     img {
+      width: auto;
       height: 150px;
     }
   }

@@ -26,7 +26,7 @@ const rejectionMessage = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .queue-rejection-alert {
   margin: 1rem auto 2rem;

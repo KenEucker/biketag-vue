@@ -49,7 +49,7 @@ function cardClick(i, e) {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/styles/style';
+@import '../assets/styles/settings';
 
 .deck {
   margin: 3rem 0;

@@ -60,12 +60,13 @@ async function created() {
 
     if (manifestLinkEl) {
       const existingManifest = await fetch(manifestLinkEl.href)
+      const baseManifest = await existingManifest.json()
       const slugIsSet = !!getGameSlug.value?.length
       const smallLogo = await store.getLogoUrl('s', undefined, true)
       const bigLogo = await store.getLogoUrl('l', undefined, true)
 
       const applicationManifest = {
-        ...(await existingManifest.json()),
+        ...baseManifest,
         name: getGameTitle.value.toLowerCase(),
         id: `${slugIsSet ? `${getGameSlug.value}.` : ''}biketag`,
         description: `The game of BikeTag ${
@@ -74,6 +75,11 @@ async function created() {
         start_url: window.location.origin,
         scope: window.location.origin,
         icons: [
+          // Keep the PNG icons required for splash screens when adding game logos.
+          ...(baseManifest.icons ?? []).map((icon) => ({
+            ...icon,
+            src: new URL(icon.src, existingManifest.url).href,
+          })),
           {
             src: smallLogo[0] === '/' ? `${window.location.origin}${smallLogo}` : smallLogo,
             sizes: smallLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(smallLogo),
@@ -85,12 +91,6 @@ async function created() {
             type: 'image/webp',
             purpose: 'maskable any',
           },
-          // {
-          //   src: `${window.location.origin}/maskable_icon_x512.png`,
-          //   sizes: '512x512',
-          //   type: 'image/png',
-          //   purpose: 'maskable',
-          // },
         ],
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
