@@ -34,6 +34,7 @@ function harness({
   metadata,
   tag,
   missingIndex = false,
+  indexContent,
   source = 'aws',
 } = {}) {
   const calls = []
@@ -68,7 +69,11 @@ function harness({
           }
           if (command.constructor.name === 'GetObjectCommand') {
             if (missingIndex) throw Object.assign(new Error('Missing index'), { name: 'NoSuchKey' })
-            return { Body: { transformToString: async () => JSON.stringify(tag ? [tag] : []) } }
+            return {
+              Body: {
+                transformToString: async () => indexContent ?? JSON.stringify(tag ? [tag] : []),
+              },
+            }
           }
           if (command.constructor.name === 'HeadObjectCommand')
             return { Metadata: metadata ?? { data: encode({ t: 42, h: 'Café 🚲' }) } }
@@ -244,6 +249,16 @@ test('load supports games using another image source', async () => {
   assert.deepEqual((await api.request(request('load'))).body.tag, tag)
   assert.deepEqual(api.calls[1][0], { game: 'seattle', tagnumbers: [42], folder: 'main' })
   assert.equal(api.calls[1][1].cached, false)
+})
+
+test('malformed JSON and non-array published indexes return the same 502 error', async () => {
+  for (const indexContent of ['{invalid JSON', '', '{}', 'null', '42', '"text"']) {
+    const api = harness({ indexContent })
+    const result = await api.request(request('load'))
+    assert.equal(result.status, 502, `Index content: ${indexContent}`)
+    assert.deepEqual(result.body, { error: 'Invalid published tag index' })
+    assert.equal(api.calls.length, 2)
+  }
 })
 
 test('invalid actions, tag numbers, types, and field types fail before storage access', async () => {

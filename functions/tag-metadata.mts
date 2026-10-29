@@ -141,7 +141,13 @@ export default async (req: Request) => {
         }
         throw error
       }
-      const tags: Tag[] = JSON.parse(await response.Body!.transformToString('utf-8'))
+      const indexContent = await response.Body!.transformToString('utf-8')
+      let tags: Tag[]
+      try {
+        tags = JSON.parse(indexContent)
+      } catch {
+        return respond({ error: 'Invalid published tag index' }, 502)
+      }
       if (!Array.isArray(tags)) return respond({ error: 'Invalid published tag index' }, 502)
       const tag = tags.find((tag) => tag.tagnumber === tagnumber)
       if (!tag) return respond({ error: `Tag #${tagnumber} not found` }, 404)
