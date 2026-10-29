@@ -2,11 +2,9 @@ import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { defineConfig } from 'vite'
-import envCompatible from 'vite-plugin-env-compatible'
-import EnvironmentPlugin from 'vite-plugin-environment'
-import { createHtmlPlugin } from 'vite-plugin-html'
 import { VitePWA } from 'vite-plugin-pwa'
-import { BikeTagDefaults, BikeTagEnv } from './src/common/constants'
+import { BikeTagDefaults } from './src/common/constants'
+import { frontendEnvironment } from './config/frontend-environment'
 
 const host = process.env.HOST ?? BikeTagDefaults.host
 // https://vitejs.dev/config/
@@ -23,7 +21,7 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    EnvironmentPlugin(BikeTagEnv),
+    frontendEnvironment(),
     VitePWA({
       srcDir: 'src',
       // filename: 'worker.ts',
@@ -80,8 +78,6 @@ export default defineConfig({
       },
     }),
     viteCommonjs(),
-    envCompatible(),
-    createHtmlPlugin(),
   ],
   build: {
     cssCodeSplit: false,

@@ -7,6 +7,7 @@
     "url": "https://github.com/keneucker/biketag-vue/issues"
   },
   "scripts": {
+    "test:frontend-secrets": "node --test tests/frontend-secrets.test.cjs",
     "test:api": "node --test tests/api.test.cjs",
     "test:images": "node --test tests/images.test.cjs",
     "test:gps": "node --test tests/gps.test.cjs",

@@ -26,17 +26,14 @@ export const getTagDateISOFromTimezone = (time: number, tz?: string) => {
   return datetime.utc().format()
 }
 
-export const getBikeTagClientOpts = (win?: Window, withToken = false) => {
+export const getBikeTagClientOpts = (win?: Window) => {
   const domainInfo = getDomainInfo(win)
   return {
     game: domainInfo.subdomain ?? BikeTagEnv.GAME_NAME,
     clientKey: BikeTagEnv.B_KEY,
     imgur: {
       clientId: BikeTagEnv.I_CID,
-      // clientSecret: BikeTagEnv.I_CSECRET,
-      accessToken: BikeTagEnv.I_TOKEN,
       rapidApiKey: BikeTagEnv.RA_FE_KEY,
-      refreshToken: withToken ? BikeTagEnv.I_RTOKEN : undefined,
     },
     sanity: {
       projectId: BikeTagEnv.S_PID,

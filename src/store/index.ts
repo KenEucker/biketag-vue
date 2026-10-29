@@ -57,7 +57,7 @@ export const initBikeTagStore = () => {
       host: new URL(getApiUrl(), window.location.origin).href,
       clientToken: getTokenFromCookie(),
       // game: gameName,
-      ...getBikeTagClientOpts(window, BikeTagEnv.BIKETAG_AUTHED === 'true'),
+      ...getBikeTagClientOpts(window),
     }
 
     debug(`${BikeTagDefaults.store}::init`, {

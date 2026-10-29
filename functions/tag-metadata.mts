@@ -1,8 +1,6 @@
-import { GetObjectCommand, HeadObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
 import { BikeTagClient, type Game, type Tag } from 'biketag'
 import {
   acceptCorsHeaders,
-  createQueueStorageClient,
   getBikeTagClientOpts,
   getGameStorageSlug,
   getImageSource,
@@ -107,89 +105,30 @@ export default async (req: Request) => {
     if (!game?.name) return respond({ error: 'Game not found' }, 404)
     const gameSlug = getGameStorageSlug(game, opts.game)
 
-    if (action === 'load' && getImageSource(game) !== 'aws') {
-      biketag.config(getBikeTagClientOpts(req, true, false, game), false, true)
-      const result = await biketag.getTags(
-        { game: gameSlug, tagnumbers: [tagnumber], folder: 'main' },
-        {
-          source: getImageSource(game),
-          hash: game.mainhash,
-          cached: false,
-        },
-      )
-      if (!result.success) return respond({ error: 'Unable to load BikeTag fields' }, 502)
-      const tag = (result.data as Tag[])?.find((tag) => tag.tagnumber === tagnumber)
-      if (!tag) return respond({ error: `Tag #${tagnumber} not found` }, 404)
-      return respond({ tag })
-    }
-
-    if (!game.awsRegion?.length)
-      return respond({ error: 'DigitalOcean storage is not configured for this game' }, 400)
-    const client = createQueueStorageClient(game.awsRegion)
-    const Bucket = `${gameSlug}-biketag`
-    if (action === 'load') {
-      // The SDK rebuilds and saves a missing index even for getTags. Read it directly here.
-      let response
-      try {
-        response = await client.send(new GetObjectCommand({ Bucket, Key: 'main/index.json' }))
-      } catch (error: any) {
-        if (error?.name === 'NoSuchKey' || error?.$metadata?.httpStatusCode === 404) {
-          return respond(
-            { error: 'Published tag index is missing. Enter the BikeTag fields manually.' },
-            404,
-          )
-        }
-        throw error
-      }
-      const indexContent = await response.Body!.transformToString('utf-8')
-      let tags: Tag[]
-      try {
-        tags = JSON.parse(indexContent)
-      } catch {
-        return respond({ error: 'Invalid published tag index' }, 502)
-      }
-      if (!Array.isArray(tags)) return respond({ error: 'Invalid published tag index' }, 502)
-      const tag = tags.find((tag) => tag.tagnumber === tagnumber)
-      if (!tag) return respond({ error: `Tag #${tagnumber} not found` }, 404)
-      return respond({ tag })
-    }
-    const Prefix = `main/${gameSlug}-tag-${tagnumber}--${type}`
-    const keys: string[] = []
-    let ContinuationToken: string | undefined
-    do {
-      const list = await client.send(
-        new ListObjectsV2Command({ Bucket, Prefix, ContinuationToken }),
-      )
-      for (const object of list.Contents ?? []) {
-        // Only original images of this exact tag/type; exclude resized siblings.
-        if (
-          object.Key?.startsWith(`${Prefix}.`) &&
-          /^\.(webp|jpe?g|png|gif|avif)$/i.test(object.Key.slice(Prefix.length))
-        ) {
-          keys.push(object.Key)
-        }
-      }
-      ContinuationToken = list.IsTruncated ? list.NextContinuationToken : undefined
-    } while (ContinuationToken)
-    if (!keys.length)
-      return respond({ error: `No published ${type} image found for tag #${tagnumber}` }, 404)
-    const entries = await Promise.all(
-      keys.sort().map(async (Key) => {
-        const head = await client.send(new HeadObjectCommand({ Bucket, Key }))
-        const encoded = head.Metadata?.data ?? null
-        let decoded: unknown = null
-        if (encoded) {
-          const raw = decodeQueueMetadataValue(encoded)
-          try {
-            decoded = JSON.parse(raw)
-          } catch {
-            decoded = raw
-          }
-        }
-        return { key: Key, encoded, decoded }
-      }),
+    // Let BikeTag normalize modern data and legacy title/description metadata.
+    biketag.config(getBikeTagClientOpts(req, true, false, game), false, true)
+    const result = await biketag.getTags(
+      { game: gameSlug, tagnumbers: [tagnumber], folder: 'main', reindex: false },
+      {
+        source: getImageSource(game),
+        hash: game.mainhash,
+        cached: false,
+      },
     )
-    return respond({ entries })
+    if (!result.success) return respond({ error: 'Unable to load BikeTag fields' }, 502)
+    if (!Array.isArray(result.data))
+      return respond({ error: 'Invalid published tag index' }, 502)
+    const tag = (result.data as Tag[]).find((tag) => tag?.tagnumber === tagnumber)
+    if (!tag) return respond({ error: `Tag #${tagnumber} not found` }, 404)
+    if (action === 'load') return respond({ tag })
+
+    // Legacy images may have only encoded title/description. Reconstruct data from
+    // the API's normalized fields rather than requiring a data header on the image.
+    const encoded = encodeTagMetadata(metadataType, { ...tag })
+    return respond({
+      tag,
+      entries: [{ encoded, decoded: JSON.parse(decodeQueueMetadataValue(encoded)) }],
+    })
   } catch (error) {
     console.error('[tag-metadata] Request failed', error)
     return respond({ error: 'Unable to process tag metadata. Check the server logs.' }, 500)
