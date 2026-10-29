@@ -121,6 +121,49 @@ RF_TIMEOUT_MS=120000
 ```
 <div align="center">
 
+## Bot traffic and crawler controls
+
+`public/robots.txt` opts out of the listed AI crawlers and bulk dataset collectors while
+allowing ordinary search engines and link previews. Vite copies it to the root of each
+deployment, including game subdomains served by that deployment. These are voluntary
+crawler instructions, not access control; unidentified bots and clients that ignore
+robots.txt can still make requests.
+
+Compare the same date range, hostnames, and metric before interpreting traffic totals.
+[Netlify Web Analytics](https://docs.netlify.com/manage/monitoring/web-analytics/how-web-analytics-works/)
+uses server logs, and its unique visitor metric counts IP addresses.
+[Netlify Observability](https://docs.netlify.com/manage/monitoring/observability/overview/)
+counts HTTP requests, including bots, errors, assets, and API calls.
+[Cloudflare Web Analytics](https://developers.cloudflare.com/web-analytics/faq/)
+uses a browser beacon. Its totals do not establish how much traffic Cloudflare's
+proxy has inspected or blocked.
+
+Use Netlify's controls for enforced protection; Cloudflare Web Analytics alone does
+not require or provide a Cloudflare proxy:
+
+1. In Netlify Observability, inspect request URLs (including hostnames), user agents,
+   status codes, bandwidth, and function traffic to identify the sources of excess
+   usage. Include the production `netlify.app` hostname and deploy URLs, not just
+   `biketag.org`. Separate normal browser asset/API requests from automated crawling.
+2. Install Netlify's
+   [User Agent Blocker extension](https://docs.netlify.com/build/build-with-ai/block-ai-crawlers/)
+   from the dashboard's Extensions section. Activate it for each production project,
+   select the AI crawlers to block, and redeploy following the extension's setup
+   prompts. Preserve ordinary search crawlers and social link previews. This uses
+   an Edge Function and matches declared user agents; bots can disguise themselves.
+   Check the deployed robots.txt and legitimate API clients, identity flows,
+   uploads, and federation after enabling it. Verify blocking on custom domains
+   and direct `netlify.app` URLs.
+3. Add [Netlify rate limits](https://docs.netlify.com/manage/security/secure-access-to-sites/rate-limiting/)
+   to abused functions using observed legitimate request rates. Code-based rules
+   are supported on all plans, with plan-specific rule limits. Protect both `/api`
+   aliases and direct `/.netlify/functions/` URLs, and verify rule acceptance in the
+   deploy log. Monitor false positives and usage after rollout.
+4. Use Netlify
+   [Firewall Traffic Rules](https://docs.netlify.com/manage/security/secure-access-to-sites/traffic-rules/)
+   for confirmed abusive IP addresses or ranges when appropriate. Prefer evidence
+   from request logs over broad geographic blocks that could exclude real players.
+
 ## Credits
 
 This project was started, managed, funded, deployed, and ultimately delivered by a single contributor. This project, and the [BikeTag API][biketag-api] that it uses, is the culmination of four years of attempting to _"make it easy for anyone and everyone to play the game of BikeTag in their area"_. Thanks to those who helped finish up features and polish the UI so that this one single contributor could meet their goal.

@@ -1,0 +1,17 @@
+# Ask AI crawlers and bulk dataset collectors not to fetch BikeTag content.
+# These directives are voluntary; enforce abuse controls at the CDN/firewall.
+# Ordinary search engines and link previews may continue crawling public pages.
+User-agent: *
+Allow: /
+
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: CCBot
+Disallow: /
