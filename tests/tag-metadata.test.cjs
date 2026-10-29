@@ -25,20 +25,15 @@ const encoder = load('functions/common/tag-metadata.ts', {
   '../../src/common/tag-metadata': fields,
 })
 const storage = load('functions/common/storage-metadata.ts')
-const base = 'main/seattle-tag-42--mystery'
 const encode = (data) => Buffer.from(JSON.stringify(data), 'utf8').toString('base64')
 
 function harness({
   profile = { email: 'admin@example.org' },
-  pages,
-  metadata,
   tag,
-  missingIndex = false,
-  indexContent,
+  apiResult,
   source = 'aws',
 } = {}) {
   const calls = []
-  let page = 0
   class BikeTagClient {
     constructor() {
       calls.push('client')
@@ -46,10 +41,10 @@ function harness({
     async game() {
       return { name: 'Seattle', slug: 'seattle', awsRegion: 'sfo2' }
     }
-    config() {}
+    config(...args) { calls.push({ config: args }) }
     async getTags(...args) {
       calls.push(args)
-      return { success: true, data: tag ? [tag] : [] }
+      return apiResult ?? { success: true, data: tag ? [tag] : [] }
     }
   }
   const handler = load('functions/tag-metadata.mts', {
@@ -61,25 +56,7 @@ function harness({
       getBikeTagClientOpts: () => ({ game: 'seattle' }),
       getGameStorageSlug: (game) => game.slug,
       getImageSource: () => source,
-      createQueueStorageClient: () => ({
-        send: async (command) => {
-          calls.push({ name: command.constructor.name, ...command.input })
-          if (command.constructor.name === 'ListObjectsV2Command') {
-            return pages?.[page++] ?? { Contents: [{ Key: base + '.webp' }] }
-          }
-          if (command.constructor.name === 'GetObjectCommand') {
-            if (missingIndex) throw Object.assign(new Error('Missing index'), { name: 'NoSuchKey' })
-            return {
-              Body: {
-                transformToString: async () => indexContent ?? JSON.stringify(tag ? [tag] : []),
-              },
-            }
-          }
-          if (command.constructor.name === 'HeadObjectCommand')
-            return { Metadata: metadata ?? { data: encode({ t: 42, h: 'Café 🚲' }) } }
-          throw new Error('Unexpected storage mutation')
-        },
-      }),
+      createQueueStorageClient: () => { throw new Error('Tag metadata must use the BikeTag API') },
     },
     './common/storage-metadata': storage,
     './common/tag-metadata': encoder,
@@ -119,58 +96,27 @@ test('anonymous users and ambassadors cannot retrieve, load, or generate metadat
   }
 })
 
-test('retrieve returns exact stored bytes, handles pagination, and excludes variants and other tags', async () => {
-  const encoded = '  {"t":42,"h":"legacy JSON"}  '
-  const api = harness({
-    metadata: { data: encoded },
-    pages: [
-      {
-        Contents: [{ Key: base + '_small.webp' }, { Key: base + '--other.webp' }],
-        IsTruncated: true,
-        NextContinuationToken: 'page2',
-      },
-      {
-        Contents: [
-          { Key: base + '.jpg' },
-          { Key: base + '.webp' },
-          { Key: base + '.extra.webp' },
-          { Key: 'main/seattle-tag-420--mystery.webp' },
-        ],
-      },
-    ],
-  })
+test('retrieve encodes fields from the BikeTag API without requiring image metadata', async () => {
+  const tag = { tagnumber: 42, mysteryPlayer: 'Zoë 🚲', hint: 'Café', mysteryTime: 0, foundPlayer: 'Finder', foundTime: 12, foundLocation: 'Park', gps: { lat: 0, long: -122, alt: 0 }, confirmedBoundary: false }
+  const api = harness({ tag })
   const result = await api.request(request('retrieve'))
   assert.equal(result.status, 200)
   assert.equal(result.headers.get('cache-control'), 'no-store')
-  assert.deepEqual(
-    result.body.entries.map((entry) => entry.key),
-    [base + '.jpg', base + '.webp'],
-  )
-  for (const entry of result.body.entries) {
-    assert.equal(entry.encoded, encoded)
-    assert.deepEqual(entry.decoded, { t: 42, h: 'legacy JSON' })
-  }
-  assert.equal(
-    api.calls.filter((call) => call.name === 'ListObjectsV2Command')[1].ContinuationToken,
-    'page2',
-  )
-  assert.ok(
-    api.calls
-      .filter((call) => call.name)
-      .every((call) => ['ListObjectsV2Command', 'HeadObjectCommand'].includes(call.name)),
-  )
+  assert.deepEqual(result.body.tag, tag)
+  assert.deepEqual(result.body.entries, [{ encoded: encode({ t: 42, mp: 'Zoë 🚲', mt: 0, h: 'Café' }), decoded: { t: 42, mp: 'Zoë 🚲', mt: 0, h: 'Café' } }])
+  const found = await api.request(request('retrieve', { type: 'found' }))
+  assert.deepEqual(found.body.entries[0].decoded, { t: 42, fp: 'Finder', ft: 12, fl: 'Park', g: { lat: 0, long: -122, alt: 0 }, c: false })
 })
 
-test('missing images, absent data metadata, and malformed stored data remain distinguishable', async () => {
-  const missing = harness({ pages: [{ Contents: [] }] })
-  assert.equal((await missing.request(request('retrieve'))).status, 404)
-  const absent = await harness({ metadata: {} }).request(request('retrieve'))
-  assert.equal(absent.body.entries[0].encoded, null)
-  const malformed = await harness({ metadata: { data: '{invalid JSON' } }).request(
-    request('retrieve'),
-  )
-  assert.equal(malformed.body.entries[0].encoded, '{invalid JSON')
-  assert.equal(malformed.body.entries[0].decoded, '{invalid JSON')
+test('API lookup errors and missing tags do not produce encoded output', async () => {
+  for (const action of ['retrieve', 'load']) {
+    const missing = await harness().request(request(action))
+    assert.equal(missing.status, 404)
+    assert.equal(missing.body.entries, undefined)
+    const failed = await harness({ apiResult: { success: false, data: null } }).request(request(action))
+    assert.equal(failed.status, 502)
+    assert.deepEqual(failed.body, { error: 'Unable to load BikeTag fields' })
+  }
 })
 
 test('generate uses SDK-compatible compact keys and UTF-8 encoding without touching storage', async () => {
@@ -226,38 +172,34 @@ test('generate uses SDK-compatible compact keys and UTF-8 encoding without touch
   })
 })
 
-test('load reads the published index directly without rebuilding a missing index', async () => {
+test('load and retrieve use the configured BikeTag API for the exact published tag', async () => {
   const tag = { tagnumber: 42, mysteryPlayer: 'Rider', hint: 'Corner' }
   const api = harness({ tag })
   const result = await api.request(request('load'))
   assert.equal(result.status, 200)
   assert.deepEqual(result.body.tag, tag)
-  assert.deepEqual(api.calls[1], {
-    name: 'GetObjectCommand',
-    Bucket: 'seattle-biketag',
-    Key: 'main/index.json',
-  })
+  assert.ok(api.calls[1].config)
+  assert.deepEqual(api.calls[2], [{ game: 'seattle', tagnumbers: [42], folder: 'main', reindex: false }, { source: 'aws', cached: false, hash: undefined }])
   assert.equal((await harness().request(request('load'))).status, 404)
-  const missing = harness({ missingIndex: true })
-  assert.equal((await missing.request(request('load'))).status, 404)
-  assert.equal(missing.calls.length, 2)
 })
 
 test('load supports games using another image source', async () => {
   const tag = { tagnumber: 42, hint: 'Corner' }
   const api = harness({ source: 'imgur', tag })
   assert.deepEqual((await api.request(request('load'))).body.tag, tag)
-  assert.deepEqual(api.calls[1][0], { game: 'seattle', tagnumbers: [42], folder: 'main' })
-  assert.equal(api.calls[1][1].cached, false)
+  assert.deepEqual(api.calls[2][0], { game: 'seattle', tagnumbers: [42], folder: 'main', reindex: false })
+  assert.equal(api.calls[2][1].cached, false)
+  assert.equal(api.calls[2][1].source, 'imgur')
 })
 
-test('malformed JSON and non-array published indexes return the same 502 error', async () => {
-  for (const indexContent of ['{invalid JSON', '', '{}', 'null', '42', '"text"']) {
-    const api = harness({ indexContent })
-    const result = await api.request(request('load'))
-    assert.equal(result.status, 502, `Index content: ${indexContent}`)
-    assert.deepEqual(result.body, { error: 'Invalid published tag index' })
-    assert.equal(api.calls.length, 2)
+test('invalid API tag collections return the existing invalid-index 502 response', async () => {
+  for (const data of ['{invalid JSON', '', {}, null, 42, 'text']) {
+    const api = harness({ apiResult: { success: true, data } })
+    for (const action of ['load', 'retrieve']) {
+      const result = await api.request(request(action))
+      assert.equal(result.status, 502)
+      assert.deepEqual(result.body, { error: 'Invalid published tag index' })
+    }
   }
 })
 

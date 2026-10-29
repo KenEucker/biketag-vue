@@ -4,8 +4,9 @@
     <p v-if="!isBikeTagAdmin" role="alert">This page requires BikeTag Admin access.</p>
     <template v-else>
       <p>
-        Retrieve the exact <code>data</code> value from a published tag image in DigitalOcean, or
-        generate it from BikeTag fields. This tool does not save changes to the tag or storage.
+        Look up a tag through the BikeTag API and generate its encoded <code>data</code> value,
+        including older images that use title and description metadata. You can also enter fields
+        manually. Generating and copying values does not update image metadata.
       </p>
       <form class="metadata-form" @submit.prevent="retrieve">
         <fieldset :disabled="working">
@@ -32,7 +33,7 @@
           </div>
           <p class="form-text">Found metadata belongs to the tag number that was found.</p>
           <button type="submit" class="btn btn-primary" :disabled="!ready">
-            {{ operation === 'retrieve' ? 'Retrieving…' : 'Get saved encoded data' }}
+            {{ operation === 'retrieve' ? 'Retrieving…' : 'Get encoded data from BikeTag API' }}
           </button>
         </fieldset>
       </form>
@@ -98,9 +99,6 @@
       <section v-if="entries.length" aria-label="Encoded metadata results" class="results">
         <h2>{{ resultLabel }}</h2>
         <div v-for="(entry, index) in entries" :key="entry.key || index" class="metadata-entry">
-          <p v-if="entry.key">
-            <code>{{ entry.key }}</code>
-          </p>
           <template v-if="entry.encoded !== null">
             <label :for="`encoded-${index}`" class="form-label">Encoded data</label>
             <textarea
@@ -119,10 +117,6 @@
               <pre>{{ JSON.stringify(entry.decoded, null, 2) }}</pre>
             </details>
           </template>
-          <p v-else role="status">
-            This image has no saved <code>data</code> metadata. You can generate it from the fields
-            above.
-          </p>
         </div>
       </section>
     </template>
@@ -199,7 +193,7 @@ async function request(action, tag) {
       ...(tag ? { tag } : {}),
     })
     if (!isBikeTagAdmin.value) return
-    if (action === 'load') {
+    if (result.tag) {
       clearFields()
       for (const field of [
         ...Object.values(tagMetadataFields.mystery),
@@ -214,10 +208,12 @@ async function request(action, tag) {
         confirmedBoundary.value = String(result.tag.confirmedBoundary)
       // Field watchers finish before publishing the load status.
       await nextTick()
+    }
+    if (action === 'load') {
       notice.value = `Loaded fields from tag #${tagnumber.value}. Review them before generating.`
     } else {
       entries.value = result.entries
-      resultLabel.value = `${action === 'retrieve' ? 'Saved' : 'Generated'} ${type.value} metadata for tag #${tagnumber.value}`
+      resultLabel.value = `Generated ${type.value} metadata for tag #${tagnumber.value}${action === 'retrieve' ? ' from BikeTag API fields' : ''}`
     }
   } catch (cause) {
     error.value = cause.message || 'Unable to process tag metadata.'
