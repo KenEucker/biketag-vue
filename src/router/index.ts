@@ -23,6 +23,7 @@ import Profile from '@/views/Profile.vue'
 import QueueFix from '@/views/QueueFix.vue'
 import Rejections from '@/views/Rejections.vue'
 import Round from '@/views/Round.vue'
+import TagMetadata from '@/views/TagMetadata.vue'
 import Worldwide from '@/views/Worldwide.vue'
 import { authGuard } from '@auth0/auth0-vue'
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router'
@@ -65,6 +66,12 @@ const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
         name: 'EmailTest',
         beforeEnter: authGuard,
         component: EmailTest,
+      },
+      {
+        path: '/tag-metadata',
+        name: 'TagMetadata',
+        beforeEnter: authGuard,
+        component: TagMetadata,
       },
       {
         path: '/queue-fix',

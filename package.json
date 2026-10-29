@@ -15,6 +15,7 @@
     "test:emails": "node --test tests/email.test.cjs",
     "test:submissions": "node --test tests/submission-diagnostics.test.cjs",
     "test:tag-edits": "node --test tests/tag-edits.test.cjs",
+    "test:tag-metadata": "node --test tests/tag-metadata.test.cjs",
     "test:new-round": "node --test tests/new-round.test.cjs",
     "build:functions": "tsc --project tsconfig.functions.json",
     "watch:functions": "tsc --project tsconfig.functions.json --watch",

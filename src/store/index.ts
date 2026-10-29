@@ -479,6 +479,27 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       return 'incorrect permissions'
     },
+    async tagMetadata(payload: {
+      action: 'retrieve' | 'load' | 'generate'
+      type: 'mystery' | 'found'
+      tagnumber: number
+      tag?: Record<string, unknown>
+    }) {
+      if (!this.isBikeTagAdmin) throw new Error('Admin access required')
+      const response = await fetch(getApiUrl('tag-metadata'), {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${this.auth0Token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+      const result = await response.json().catch(() => null)
+      if (!response.ok || !result) {
+        throw new Error(result?.error || 'Tag metadata request failed')
+      }
+      return result
+    },
     async testEmail(payload?: {
       action: 'preview' | 'send'
       template: string

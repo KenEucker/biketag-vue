@@ -89,6 +89,15 @@
         Game Settings
       </router-link>
 
+      <router-link v-if="isBikeTagAdmin" to="/tag-metadata" class="action-button">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-12-2 14" />
+          </svg>
+        </span>
+        Tag Metadata
+      </router-link>
+
       <router-link v-if="isBikeTagAdmin" to="/email-test" class="action-button">
         <span class="icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
