@@ -241,6 +241,11 @@
         "privacy_policy": "Read the Privacy Policy",
         "code_of_conduct": "Read the Code of Conduct",
         "organization": "Read about the BikeTag Project Organization"
+      },
+      "about-socials": {
+        "title": "Social Media Outlets",
+        "reddit": "/r/BikeTag",
+        "slack": "Slack"
       }
     },
     "approve": {
