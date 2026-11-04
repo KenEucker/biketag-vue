@@ -49,7 +49,9 @@ const auth0 = isAuthenticationEnabled() ? useAuth0() : undefined
 const isLogout = computed(() => router.currentRoute.value.name === 'Logout')
 const isNotLanding = computed(() => gameIsSet.value && router.currentRoute.value.name !== 'Landing')
 const isWhiteBackground = computed(() =>
-  ['About', 'API'].includes(router.currentRoute.value.name) ? 'white-bck' : '',
+  ['About', 'API', 'Privacy', 'Terms', 'Code of Conduct'].includes(router.currentRoute.value.name)
+    ? 'white-bck'
+    : '',
 )
 const logo = computed(() => store.getLogoUrl('m'))
 const siteName = computed(

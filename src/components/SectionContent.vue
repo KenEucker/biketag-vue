@@ -1,12 +1,13 @@
 <template>
   <!-- eslint-disable vue/no-v-html -->
+  <p v-if="error" role="alert">Unable to load this content. Please try again.</p>
   <div class="container" v-html="html" />
   <markdown :source="mkdown" />
   <!--eslint-enable-->
 </template>
 
 <script setup name="SectionContent">
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import axios from 'axios'
 import Markdown from 'vue3-markdown-it'
 
@@ -25,20 +26,34 @@ const props = defineProps({
 // data
 const html = ref('')
 const mkdown = ref('')
+const error = ref(false)
 
-// mounted
-onMounted(() => {
-  if (props.content && !props.filename?.length) {
-    mkdown.value = props.content
-    return
-  }
+watch(
+  () => [props.filename, props.content],
+  async ([filename, content], _previous, onCleanup) => {
+    let active = true
+    onCleanup(() => (active = false))
+    html.value = ''
+    mkdown.value = ''
+    error.value = false
 
-  axios.get('./' + props.filename).then((response) => {
-    if (props.filename.lastIndexOf('.md') === props.filename.length - 3) {
-      mkdown.value = response.data
-    } else {
-      html.value = response.data
+    if (!filename) {
+      mkdown.value = content ?? ''
+      return
     }
-  })
-})
+
+    try {
+      const response = await axios.get('/' + filename.replace(/^\/+/, ''))
+      if (!active) return
+      if (filename.endsWith('.md')) {
+        mkdown.value = response.data
+      } else {
+        html.value = response.data
+      }
+    } catch {
+      if (active) error.value = true
+    }
+  },
+  { immediate: true },
+)
 </script>

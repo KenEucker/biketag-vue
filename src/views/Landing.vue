@@ -34,13 +34,11 @@
       <br />
       <p>
         When using biketag.org, you agree to our Terms Of Service.
-        <a
-          href="https://biketag.bike/2021/12/31/biketag-terms-of-service/"
-          rel="noopener"
+        <router-link
+          to="/terms"
           style="text-decoration: underline; color: #851fe5"
-          target="_blank"
           title="Terms Of Service"
-          >You can read those here.</a
+          >You can read those here.</router-link
         >
       </p>
     </bike-tag-blurb>
@@ -104,19 +102,13 @@
     <div class="container">
       <ul>
         <li>
-          <a href="https://github.com/KenEucker/biketag-vue/wiki/Privacy-Policy">
-            PRIVACY POLICY
-          </a>
+          <router-link to="/privacy">PRIVACY POLICY</router-link>
         </li>
         <li>
-          <a href="https://github.com/KenEucker/biketag-vue/wiki/Terms-Of-Service">
-            TERMS OF SERVICE
-          </a>
+          <router-link to="/terms">TERMS OF SERVICE</router-link>
         </li>
         <li>
-          <a href="https://github.com/KenEucker/biketag-vue/wiki/Code-Of-Conduct">
-            CODE OF CONDUCT
-          </a>
+          <router-link to="/code-of-conduct">CODE OF CONDUCT</router-link>
         </li>
         <li class="nav-item" @click="toSection('FAQS')">FAQS</li>
         <li>
