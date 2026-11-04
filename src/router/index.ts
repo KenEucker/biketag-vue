@@ -20,6 +20,7 @@ import Play from '@/views/Play.vue'
 import Player from '@/views/Player.vue'
 import Players from '@/views/Players.vue'
 import Profile from '@/views/Profile.vue'
+import ProjectDocument from '@/views/ProjectDocument.vue'
 import QueueFix from '@/views/QueueFix.vue'
 import Rejections from '@/views/Rejections.vue'
 import Round from '@/views/Round.vue'
@@ -172,6 +173,26 @@ const routes: Array<RouteRecordRaw> = [
     path: '/about',
     name: 'About',
     component: About,
+  },
+  {
+    path: '/privacy',
+    alias: '/privacy-policy',
+    name: 'Privacy',
+    component: ProjectDocument,
+    props: { title: 'Privacy Policy', filename: 'docs/privacy_policy.html' },
+  },
+  {
+    path: '/terms',
+    alias: '/terms-of-service',
+    name: 'Terms',
+    component: ProjectDocument,
+    props: { title: 'Terms of Service', filename: 'docs/terms_of_service.md' },
+  },
+  {
+    path: '/code-of-conduct',
+    name: 'Code of Conduct',
+    component: ProjectDocument,
+    props: { title: 'Code of Conduct', filename: 'docs/code_of_conduct.md' },
   },
   {
     path: '/login',
