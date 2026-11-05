@@ -363,15 +363,12 @@ async function onQueueSubmit(newTagSubmission) {
       type: 'error',
       duration: 10000,
       position: 'bottom',
-      // A click is observable; timeout is not evidence that a player read or ignored it.
-      onClick: () => {
-        void attempt.dismissed()
-      },
     })
     void store.fetchCredentials(true).catch((error) => {
       console.warn('Could not refresh credentials after submission error', error?.message)
     })
   } finally {
+    attempt.dispose()
     uploadInProgress.value = false
   }
 }

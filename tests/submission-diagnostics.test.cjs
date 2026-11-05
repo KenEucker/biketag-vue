@@ -115,7 +115,7 @@ test('stages retain SDK status, returned failures and thrown browser errors with
   )
 })
 
-test('a failed upload, notice dismissal, reload, retry failure and eventual success share a reference', async () => {
+test('failures across reloads share a reference and successful retries send no telemetry', async () => {
   const saved = storage()
   const reports = []
   const send = async (fields) => reports.push(fields)
@@ -123,7 +123,6 @@ test('a failed upload, notice dismissal, reload, retry failure and eventual succ
   await first.started()
   assert.equal(reports.length, 0)
   await first.failed(new Error('Network Error'), 'found:queue-tag')
-  await first.dismissed()
   const retry = loadDiagnostics().createSubmissionAttempt(context(), send, saved)
   await retry.started()
   await retry.failed('File could not be read', 'found:queue-tag')
@@ -132,20 +131,19 @@ test('a failed upload, notice dismissal, reload, retry failure and eventual succ
   await third.succeeded()
   assert.deepEqual(
     reports.map((r) => r.event),
-    ['error', 'error-dismissed', 'retry-started', 'error', 'retry-started', 'retry-succeeded'],
+    ['error', 'error'],
   )
   assert.equal(new Set(reports.map((r) => r.correlationId)).size, 1)
-  assert.equal(reports[2].previousAttemptId, reports[0].attemptId)
-  assert.equal(reports[4].previousAttemptId, reports[3].attemptId)
-  assert.notEqual(reports[2].attemptId, reports[0].attemptId)
-  assert.equal(reports.at(-1).attemptNumber, '3')
+  assert.equal(reports[1].previousAttemptId, reports[0].attemptId)
+  assert.notEqual(reports[1].attemptId, reports[0].attemptId)
+  assert.equal(reports.at(-1).attemptNumber, '2')
   const afterSuccess = loadDiagnostics().createSubmissionAttempt(context(), send, saved)
   await afterSuccess.started()
   await afterSuccess.succeeded()
-  assert.equal(reports.length, 6)
+  assert.equal(reports.length, 2)
 })
 
-test('blocked retries are observable and different players, actions and rounds do not inherit failures', async () => {
+test('blocked retries send nothing and different players, actions and rounds do not inherit failures', async () => {
   const saved = storage()
   const reports = []
   const create = (fields) =>
@@ -154,7 +152,7 @@ test('blocked retries are observable and different players, actions and rounds d
   const retry = create(context())
   await retry.started()
   await retry.blocked('Upload delay is still active')
-  assert.equal(reports.at(-1).event, 'retry-blocked')
+  assert.equal(reports.length, 1)
   for (const fields of [
     context({ playerId: 'other' }),
     context({ action: 'addMysteryTag' }),
@@ -168,6 +166,63 @@ test('blocked retries are observable and different players, actions and rounds d
       JSON.stringify({ ...JSON.parse(value), updatedAt: Date.now() - 25 * 60 * 60 * 1000 }),
     )
   assert.equal(create(context()).retrying, false)
+})
+
+test('changing a player name preserves retry identity while anonymous names remain separate', async () => {
+  const saved = storage()
+  const reports = []
+  const create = (fields) =>
+    loadDiagnostics().createSubmissionAttempt(fields, async (r) => reports.push(r), saved)
+  await create(context({ tag: { tagnumber: 42, foundPlayer: 'Dufault' } })).failed(
+    'Network Error',
+    'upload',
+  )
+  const renamed = create(context({ tag: { tagnumber: 42, foundPlayer: 'ConnorD' } }))
+  assert.equal(renamed.retrying, true)
+  await renamed.started()
+  assert.equal(reports.length, 1)
+  await renamed.failed('Network Error again', 'upload')
+  assert.equal(reports[1].correlationId, reports[0].correlationId)
+  assert.equal(reports[1].previousAttemptId, reports[0].attemptId)
+  assert.equal(reports[1].attemptNumber, '2')
+  assert.equal(reports[1].playerName, 'ConnorD')
+  const anonymous = (name) => context({ playerId: '', tag: { tagnumber: 42, foundPlayer: name } })
+  await create(anonymous('Anonymous one')).failed('Network Error', 'upload')
+  assert.equal(create(anonymous('Anonymous two')).retrying, false)
+})
+
+test('visibility and progress stay bounded and local until failure, with visibility listeners disposed', async (t) => {
+  const previousDocument = globalThis.document
+  const document = new EventTarget()
+  document.visibilityState = 'visible'
+  globalThis.document = document
+  t.after(() => {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  })
+  const remove = t.mock.method(document, 'removeEventListener')
+  const reports = []
+  const saved = storage()
+  const attempt = loadDiagnostics().createSubmissionAttempt(
+    context(),
+    async (r) => reports.push(r),
+    saved,
+  )
+  await attempt.started()
+  for (let i = 0; i < 100; i++) {
+    document.visibilityState = i % 2 ? 'hidden' : 'visible'
+    document.dispatchEvent(new Event('visibilitychange'))
+    attempt.record('image:upload', { event: 'progress', loaded: i })
+  }
+  assert.equal(reports.length, 0)
+  assert.doesNotMatch(JSON.stringify([...saved.values.values()]), /visibility|progress/)
+  await attempt.failed('Network Error', 'image:upload')
+  const events = JSON.parse(reports[0].diagnostics).events
+  assert.equal(events.length, 40)
+  assert.ok(events.some((e) => e.stage === 'visibility' && e.visibility === 'hidden'))
+  assert.ok(events.some((e) => e.event === 'progress' && e.loaded === 99))
+  attempt.dispose()
+  assert.equal(remove.mock.callCount(), 1)
 })
 
 test('storage denial falls back to memory and telemetry delivery failure never rejects the upload flow', async (t) => {
@@ -191,7 +246,7 @@ test('storage denial falls back to memory and telemetry delivery failure never r
   const retry = create(async (r) => reports.push(r))
   assert.equal(retry.retrying, true)
   await retry.started()
-  assert.equal(reports[0].event, 'retry-started')
+  assert.equal(reports.length, 0)
 })
 
 function playHarness({ result = 'Network Error', ipError, notifyError } = {}) {
@@ -274,7 +329,7 @@ function playHarness({ result = 'Network Error', ipError, notifyError } = {}) {
   }
 }
 
-test('Play reports a first-upload rejection with identity, round and explicit dismissal even without the form', async () => {
+test('Play reports failures with identity and round, without extra dismissal or retry reports', async () => {
   const flow = playHarness()
   await flow.submit()
   assert.equal(flow.uploadInProgress.value, false)
@@ -282,13 +337,11 @@ test('Play reports a first-upload rejection with identity, round and explicit di
   assert.equal(flow.reports[0].submission, 'portland-42--Rider')
   assert.equal(flow.reports[0].ip, '192.0.2.1')
   assert.equal(flow.reports[0].event, 'error')
-  assert.equal(flow.reports.length, 1) // Timeout alone does not imply dismissal.
-  flow.notices.at(-1).onClick()
-  assert.equal(flow.reports.at(-1).event, 'error-dismissed')
+  assert.equal(flow.reports.length, 1)
   await flow.submit()
   assert.deepEqual(
     flow.reports.slice(-2).map((r) => r.event),
-    ['retry-started', 'error'],
+    ['error', 'error'],
   )
 })
 
@@ -347,7 +400,7 @@ test('Netlify helpers reject HTTP failures and retain explicit diagnostic fields
   assert.match(reported.message, /HTTP 503/)
 })
 
-test('Play emits a recovery report only after a retry succeeds and suppresses duplicate submit clicks', async () => {
+test('Play keeps successful retries silent and suppresses duplicate submit clicks', async () => {
   const flow = playHarness()
   await flow.submit()
   flow.store.addFoundTag = async () => {
@@ -357,7 +410,7 @@ test('Play emits a recovery report only after a retry succeeds and suppresses du
   await Promise.all([flow.submit(), flow.submit()])
   assert.deepEqual(
     flow.reports.map((r) => r.event),
-    ['error', 'retry-started', 'retry-succeeded'],
+    ['error'],
   )
   assert.equal(flow.calls.filter((c) => c === 'upload').length, 2)
   assert.equal(flow.uploadInProgress.value, false)

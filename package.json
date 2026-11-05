@@ -15,7 +15,7 @@
     "test:startup": "node --test tests/startup.test.cjs",
     "test:documents": "node --test tests/project-documents.test.cjs",
     "test:emails": "node --test tests/email.test.cjs",
-    "test:submissions": "node --test tests/submission-diagnostics.test.cjs",
+    "test:submissions": "node --test tests/submission-diagnostics.test.cjs tests/upload-recovery.test.cjs",
     "test:tag-edits": "node --test tests/tag-edits.test.cjs",
     "test:tag-metadata": "node --test tests/tag-metadata.test.cjs",
     "test:new-round": "node --test tests/new-round.test.cjs",

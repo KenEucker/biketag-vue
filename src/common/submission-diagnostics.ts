@@ -124,8 +124,7 @@ export function createSubmissionAttempt(
     fields.game,
     fields.action,
     fields.tagnumber,
-    fields.playerId,
-    fields.playerName,
+    fields.playerId || fields.playerName,
   ])}`
   const makeId = () =>
     globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -164,6 +163,12 @@ export function createSubmissionAttempt(
     events.push({ stage, at: new Date().toISOString(), ...details })
     if (events.length > 40) events.shift()
   }
+  const document = globalThis.document
+  const recordVisibility = () =>
+    record('visibility', { event: 'changed', visibility: document?.visibilityState })
+  record('visibility', { event: 'initial', visibility: document?.visibilityState })
+  document?.addEventListener('visibilitychange', recordVisibility)
+  const dispose = () => document?.removeEventListener('visibilitychange', recordVisibility)
   const report = async (event: string, message: unknown, stage: string) => {
     const connection = (globalThis.navigator as any)?.connection
     const reportFields = {
@@ -208,11 +213,13 @@ export function createSubmissionAttempt(
   return {
     fields,
     record,
+    dispose,
     retrying: !!previousError,
-    started: () =>
-      previousError
-        ? report('retry-started', 'Player submitted again after an error', 'preflight')
-        : Promise.resolve(),
+    // Only failed() sends telemetry; successful retries and blocked submits remain local.
+    started: () => {
+      if (previousError) record('preflight', { event: 'retry-started' })
+      return Promise.resolve()
+    },
     failed: (error: unknown, stage: string) => {
       const summary = summarizeSubmissionError(error)
       record(stage, { event: 'failed', error: summary })
@@ -228,13 +235,9 @@ export function createSubmissionAttempt(
     succeeded: () => {
       delete state.lastError
       save()
-      return previousError
-        ? report('retry-succeeded', 'Retry completed successfully', 'complete')
-        : Promise.resolve()
+      return Promise.resolve()
     },
     blocked: (reason: string) =>
-      previousError ? report('retry-blocked', reason, 'preflight') : Promise.resolve(),
-    dismissed: () =>
-      report('error-dismissed', 'Player clicked to dismiss the error notice', 'error-notice'),
+      Promise.resolve(record('preflight', { event: 'blocked', reason: safeText(reason) })),
   }
 }
