@@ -1,12 +1,14 @@
 // Keep diagnostics explicit: never serialize a tag, profile, HTTP config, or image bytes.
 export type SubmissionStageRecorder = (stage: string, details: Record<string, unknown>) => void
 
+/** Bound diagnostic text and redact URL signatures and authorization tokens. */
 const safeText = (value: unknown): string =>
   String(value ?? '')
     .replace(/(https?:\/\/[^\s?]+)\?[^\s]*/g, '$1?[redacted]')
     .replace(/\b(Bearer|JWT)\s+\S+/gi, '$1 [redacted]')
     .slice(0, 2000)
 
+/** Extract error details without serializing HTTP configuration, headers or bodies. */
 export const summarizeSubmissionError = (error: any): Record<string, unknown> => ({
   name: safeText(error?.name),
   message: safeText(error?.message ?? error?.error ?? error),
@@ -15,6 +17,7 @@ export const summarizeSubmissionError = (error: any): Record<string, unknown> =>
   ...(error?.stack ? { stack: safeText(error.stack) } : {}),
 })
 
+/** Record a stage's timing and outcome while preserving its result and thrown errors. */
 export async function observeSubmissionStage<T>(
   stage: string,
   operation: () => Promise<T>,
@@ -22,6 +25,7 @@ export async function observeSubmissionStage<T>(
 ): Promise<T> {
   const started = Date.now()
   // Observability must never change the result of an upload.
+  /** Deliver optional stage details without affecting the observed operation. */
   const report = (details: Record<string, unknown>) => {
     try {
       record?.(stage, details)
@@ -51,6 +55,7 @@ export async function observeSubmissionStage<T>(
   }
 }
 
+/** Describe a submission using identity and file metadata, excluding credentials and image bytes. */
 export const getSubmissionContext = ({
   game,
   action,
@@ -67,6 +72,7 @@ export const getSubmissionContext = ({
   const number = [tag.tagnumber, queuedTag.tagnumber, currentTag.tagnumber].find(
     (value) => Number.isFinite(value) && value > 0,
   )
+  /** Retain file attributes while excluding file contents. */
   const imageInfo = (image: any) =>
     image
       ? {
@@ -120,18 +126,32 @@ export function createSubmissionAttempt(
   send: SendReport,
   storage?: DiagnosticStorage,
 ) {
-  const key = `biketag:submission-diagnostics:${JSON.stringify([
-    fields.game,
-    fields.action,
-    fields.tagnumber,
-    fields.playerId,
-    fields.playerName,
-  ])}`
+  const scope = [fields.game, fields.action, fields.tagnumber]
+  const identity = fields.playerId || fields.playerName
+  /** Encode reference components without delimiter ambiguity. */
+  const keyFor = (parts: unknown[]) => `biketag:submission-diagnostics:${JSON.stringify(parts)}`
+  const key = keyFor([...scope, fields.playerId ? 'player-id' : 'player-name', identity])
+  // Preserve saved retries from both earlier key layouts when the new key is absent.
+  const legacyKeys = [
+    keyFor([...scope, identity]),
+    keyFor([...scope, fields.playerId, fields.playerName]),
+  ]
+  /** Read one reference without allowing denied browser storage to block submissions. */
+  const readSaved = (reference: string) => {
+    try {
+      return storage?.getItem(reference) ?? memoryStorage.get(reference)
+    } catch {
+      return memoryStorage.get(reference)
+    }
+  }
+  /** Create an identifier even when randomUUID is unavailable. */
   const makeId = () =>
     globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
   let state: AttemptState | undefined
   try {
-    const saved = JSON.parse(storage?.getItem(key) || memoryStorage.get(key) || 'null')
+    const saved = JSON.parse(
+      readSaved(key) ?? readSaved(legacyKeys[0]) ?? readSaved(legacyKeys[1]) ?? 'null',
+    )
     if (
       saved?.correlationId &&
       Number.isInteger(saved.attemptNumber) &&
@@ -150,6 +170,7 @@ export function createSubmissionAttempt(
   const attemptId = makeId()
   const started = Date.now()
   const events: Record<string, unknown>[] = []
+  /** Persist retry metadata, tolerating unavailable session storage. */
   const save = () => {
     state.updatedAt = Date.now()
     memoryStorage.set(key, JSON.stringify(state))
@@ -160,10 +181,20 @@ export function createSubmissionAttempt(
       /* optional storage */
     }
   }
+  /** Keep at most 40 events locally until a failure report needs them. */
   const record: SubmissionStageRecorder = (stage, details) => {
     events.push({ stage, at: new Date().toISOString(), ...details })
     if (events.length > 40) events.shift()
   }
+  const document = globalThis.document
+  /** Capture visibility transitions while this attempt is active. */
+  const recordVisibility = () =>
+    record('visibility', { event: 'changed', visibility: document?.visibilityState })
+  record('visibility', { event: 'initial', visibility: document?.visibilityState })
+  document?.addEventListener('visibilitychange', recordVisibility)
+  /** Detach the visibility listener after submission finishes. */
+  const dispose = () => document?.removeEventListener('visibilitychange', recordVisibility)
+  /** Send one failure report containing the bounded, sanitized event trail. */
   const report = async (event: string, message: unknown, stage: string) => {
     const connection = (globalThis.navigator as any)?.connection
     const reportFields = {
@@ -208,11 +239,13 @@ export function createSubmissionAttempt(
   return {
     fields,
     record,
+    dispose,
     retrying: !!previousError,
-    started: () =>
-      previousError
-        ? report('retry-started', 'Player submitted again after an error', 'preflight')
-        : Promise.resolve(),
+    // Only failed() sends telemetry; successful retries and blocked submits remain local.
+    started: () => {
+      if (previousError) record('preflight', { event: 'retry-started' })
+      return Promise.resolve()
+    },
     failed: (error: unknown, stage: string) => {
       const summary = summarizeSubmissionError(error)
       record(stage, { event: 'failed', error: summary })
@@ -228,13 +261,9 @@ export function createSubmissionAttempt(
     succeeded: () => {
       delete state.lastError
       save()
-      return previousError
-        ? report('retry-succeeded', 'Retry completed successfully', 'complete')
-        : Promise.resolve()
+      return Promise.resolve()
     },
     blocked: (reason: string) =>
-      previousError ? report('retry-blocked', reason, 'preflight') : Promise.resolve(),
-    dismissed: () =>
-      report('error-dismissed', 'Player clicked to dismiss the error notice', 'error-notice'),
+      Promise.resolve(record('preflight', { event: 'blocked', reason: safeText(reason) })),
   }
 }

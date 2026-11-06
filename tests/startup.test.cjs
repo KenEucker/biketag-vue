@@ -93,6 +93,7 @@ test('client API uses the current deployment while preserving development functi
       },
       pinia: { defineStore: () => ({}) },
       '../common/submission-diagnostics': {},
+      '../common/upload-recovery': {},
       '../common': {
         BikeTagEnv: { HOST: 'biketag.org', GAME_NAME: configuredGame },
         BikeTagDefaults: { gameName: '', store: 'biketag' },
@@ -135,6 +136,7 @@ function createGameStore(t) {
     },
     pinia: { defineStore: (_id, options) => options },
     '../common/submission-diagnostics': {},
+    '../common/upload-recovery': {},
     '../common': {
       BikeTagEnv: {},
       BikeTagDefaults: { gameName: '', store: 'biketag', gameSource: 'sanity' },

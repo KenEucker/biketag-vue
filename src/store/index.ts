@@ -1,6 +1,7 @@
 import BikeTagClient from 'biketag'
 import { Achievement, Game, Player, Tag } from 'biketag/dist/common/schema'
 import { defineStore } from 'pinia'
+import { queueTagWithUploadRecovery } from '../common/upload-recovery'
 import {
   observeSubmissionStage,
   type SubmissionStageRecorder,
@@ -1462,7 +1463,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         return observeSubmissionStage(
           'found:queue-tag',
-          () => client.queueTag(d, { source: this.imageSource }),
+          () => queueTagWithUploadRecovery(client, d, this.imageSource, record),
           record,
         ).then(async (t) => {
           if (t.success) {
@@ -1516,7 +1517,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         return observeSubmissionStage(
           'mystery:queue-tag',
-          () => client.queueTag(d, { source: this.imageSource }),
+          () => queueTagWithUploadRecovery(client, d, this.imageSource, record),
           record,
         ).then(async (t) => {
           if (t.success) {
