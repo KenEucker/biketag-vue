@@ -168,7 +168,7 @@ test('blocked retries send nothing and different players, actions and rounds do 
   assert.equal(create(context()).retrying, false)
 })
 
-test('changing a player name preserves retry identity while anonymous names remain separate', async () => {
+test('retry tracking uses player IDs and keeps missing-ID name fallbacks separate', async () => {
   const saved = storage()
   const reports = []
   const create = (fields) =>
@@ -191,6 +191,103 @@ test('changing a player name preserves retry identity while anonymous names rema
   assert.equal(create(anonymous('Anonymous two')).retrying, false)
 })
 
+test('matching player ID and fallback name values use distinct references', async () => {
+  const saved = storage()
+  const reports = []
+  const create = (fields) =>
+    loadDiagnostics().createSubmissionAttempt(fields, async (r) => reports.push(r), saved)
+  const identified = context({ playerId: 'shared-value' })
+  const missingId = context({ playerId: '', tag: { tagnumber: 42, foundPlayer: 'shared-value' } })
+  await create(identified).failed('First failure', 'upload')
+  assert.equal(create(missingId).retrying, false)
+  await create(missingId).failed('Other failure', 'upload')
+  assert.notEqual(reports[0].correlationId, reports[1].correlationId)
+  assert.equal(create(identified).retrying, true)
+})
+
+test('saved retry references migrate from both legacy layouts without sending telemetry', async () => {
+  for (const olderLayout of [false, true]) {
+    const fields = context()
+    const saved = storage()
+    const scope = [fields.game, fields.action, fields.tagnumber]
+    const reference = (parts) => `biketag:submission-diagnostics:${JSON.stringify(parts)}`
+    const legacyKey = reference([
+      ...scope,
+      ...(olderLayout ? [fields.playerId, fields.playerName] : [fields.playerId]),
+    ])
+    const newKey = reference([...scope, 'player-id', fields.playerId])
+    saved.setItem(
+      legacyKey,
+      JSON.stringify({
+        correlationId: 'saved-reference',
+        attemptNumber: 3,
+        updatedAt: Date.now(),
+        lastError: {
+          attemptId: 'saved-attempt',
+          message: 'Network Error',
+          stage: 'upload',
+          at: new Date().toISOString(),
+        },
+      }),
+    )
+    const reports = []
+    const attempt = loadDiagnostics().createSubmissionAttempt(
+      fields,
+      async (r) => reports.push(r),
+      saved,
+    )
+    assert.equal(attempt.retrying, true)
+    await attempt.started()
+    assert.equal(reports.length, 0)
+    assert.equal(JSON.parse(saved.getItem(newKey)).correlationId, 'saved-reference')
+    assert.equal(JSON.parse(saved.getItem(newKey)).attemptNumber, 4)
+    await attempt.failed('Retry failed', 'upload')
+    assert.equal(reports[0].correlationId, 'saved-reference')
+    assert.equal(reports[0].previousAttemptId, 'saved-attempt')
+    assert.equal(reports[0].attemptNumber, '4')
+    attempt.dispose()
+  }
+})
+
+test('an existing new-key state takes priority over legacy retries', async () => {
+  const fields = context()
+  const saved = storage()
+  const scope = [fields.game, fields.action, fields.tagnumber]
+  const reference = (parts) => `biketag:submission-diagnostics:${JSON.stringify(parts)}`
+  const state = (id) => ({
+    correlationId: id,
+    attemptNumber: 2,
+    updatedAt: Date.now(),
+    lastError: {
+      attemptId: id + '-attempt',
+      message: 'Network Error',
+      stage: 'upload',
+      at: new Date().toISOString(),
+    },
+  })
+  saved.setItem(reference([...scope, fields.playerId]), JSON.stringify(state('legacy')))
+  const newKey = reference([...scope, 'player-id', fields.playerId])
+  saved.setItem(newKey, JSON.stringify(state('current')))
+  const reports = []
+  const attempt = loadDiagnostics().createSubmissionAttempt(
+    fields,
+    async (r) => reports.push(r),
+    saved,
+  )
+  await attempt.failed('Retry failed', 'upload')
+  assert.equal(reports[0].correlationId, 'current')
+  assert.equal(reports[0].previousAttemptId, 'current-attempt')
+  attempt.dispose()
+  // A present but stale new key must not resurrect a legacy failure either.
+  saved.setItem(
+    newKey,
+    JSON.stringify({ ...state('expired'), updatedAt: Date.now() - 25 * 60 * 60 * 1000 }),
+  )
+  const expired = loadDiagnostics().createSubmissionAttempt(fields, async () => {}, saved)
+  assert.equal(expired.retrying, false)
+  expired.dispose()
+})
+
 test('visibility and progress stay bounded and local until failure, with visibility listeners disposed', async (t) => {
   const previousDocument = globalThis.document
   const document = new EventTarget()
@@ -200,6 +297,7 @@ test('visibility and progress stay bounded and local until failure, with visibil
     if (previousDocument === undefined) delete globalThis.document
     else globalThis.document = previousDocument
   })
+  const add = t.mock.method(document, 'addEventListener')
   const remove = t.mock.method(document, 'removeEventListener')
   const reports = []
   const saved = storage()
@@ -222,7 +320,10 @@ test('visibility and progress stay bounded and local until failure, with visibil
   assert.ok(events.some((e) => e.stage === 'visibility' && e.visibility === 'hidden'))
   assert.ok(events.some((e) => e.event === 'progress' && e.loaded === 99))
   attempt.dispose()
-  assert.equal(remove.mock.callCount(), 1)
+  assert.deepEqual(
+    remove.mock.calls.map((call) => call.arguments),
+    [add.mock.calls[0].arguments],
+  )
 })
 
 test('storage denial falls back to memory and telemetry delivery failure never rejects the upload flow', async (t) => {
