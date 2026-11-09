@@ -1911,8 +1911,9 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       // this.formStep = getQueuedTagState(tag ?? this.queuedTag)
       /// If the current player won the last round, set the tag state to share post
       if (
-        (this.profile?.name && this.profile?.name === this.currentBikeTag?.mysteryPlayer) ||
-        (this.profile?.sub && this.profile?.sub === this.currentBikeTag?.playerId)
+        this.currentBikeTag?.tagnumber > 1 &&
+        ((this.profile?.name && this.profile?.name === this.currentBikeTag?.mysteryPlayer) ||
+          (this.profile?.sub && this.profile?.sub === this.currentBikeTag?.playerId))
       ) {
         this.formStep = BiketagQueueFormSteps.shareBikeTagPost
       } else if (tag) {
