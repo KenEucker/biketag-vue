@@ -2,7 +2,7 @@
   publish = "dist"
   command = "npm run build"
   functions = "functions/"
-  node_version = "20"
+  node_version = "24"
 
 [dev]
   targetPort = 8080
