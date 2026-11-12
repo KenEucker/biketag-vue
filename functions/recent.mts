@@ -57,12 +57,12 @@ export default async (req: Request) => {
 
     const payload = await getPayloadOpts(req, {
       hash: game.mainhash,
-      game: 'none',
+      game: game.slug || gameName,
       time: 'day',
       cached: false,
     })
-    // The query parameter selects the game, it is not a tag query filter.
-    payload.game = 'none'
+    // Keep bucket selection and returned tag metadata tied to the host's game.
+    payload.game = game.slug || gameName
 
     const recentResponse = await biketag.getTags(payload, {
       source: imageSource,
