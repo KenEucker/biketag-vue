@@ -46,6 +46,12 @@
       title="A worldwide game of tag"
       subtitle="Is there a BikeTag Game in your city?"
     >
+      <bike-tag-button
+        class="landing-worldwide-button"
+        variant="bold"
+        text="See recent tags worldwide"
+        @click="router.push('/worldwide')"
+      />
       <bike-tag-map variant="worldwide" class="mb-5 worldwide__map" />
       <bike-tag-games :show-heading="false" />
     </bike-tag-blurb>
@@ -150,6 +156,7 @@ import { getDomainInfo } from '@/common'
 import { onMounted, ref } from 'vue'
 
 // components
+import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagBlurb from '@/components/BikeTagBlurb'
 import BikeTagGames from '@/components/BikeTagGames.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
@@ -237,6 +244,11 @@ main {
 .landing-example {
   max-width: 100%;
   height: auto;
+}
+
+.landing-worldwide-button {
+  display: block;
+  margin: 0 auto 1.5rem;
 }
 
 header {

@@ -8,6 +8,7 @@ import moment from 'moment-timezone'
 import { useCookies } from 'vue3-cookies'
 import { BikeTagDefaults, BikeTagEnv, BikeTagProfile, BiketagQueueFormSteps } from '.'
 import { getDomainInfo } from './domain'
+import { toUnixSeconds } from './timestamps'
 
 export { getDomainInfo } from './domain'
 export { stringifyNumber, ordinalSuffixOf } from './format'
@@ -15,11 +16,11 @@ export { getSupportedGames } from './games'
 export { summarizeTagGps } from './gps'
 export { getImageSized, getImgurImageSized, getS3ImageSized } from './images'
 
-export const getTagDate = (time: number): Date => new Date(time * 1000)
+export const getTagDate = (time: number): Date => new Date(toUnixSeconds(time) * 1000)
 export const getTagDateISOPlusOffset = (time: number, offset = 'Z'): string =>
-  `${new Date(time * 1000).toISOString().slice(0, -1)}${offset?.length ? offset : 'Z'}`
+  `${new Date(toUnixSeconds(time) * 1000).toISOString().slice(0, -1)}${offset?.length ? offset : 'Z'}`
 export const getTagDateISOFromTimezone = (time: number, tz?: string) => {
-  let datetime = moment(time * 1000)
+  let datetime = moment(toUnixSeconds(time) * 1000)
   if (tz?.length) {
     datetime = datetime.tz(tz)
   }

@@ -1,4 +1,5 @@
 import { BikeTagClient, Game } from 'biketag'
+import { normalizeTagTimestamps } from '../src/common/timestamps'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
@@ -62,7 +63,8 @@ export default async (req: Request) => {
 
     const { success, data } = tagsResponse
 
-    return new Response(JSON.stringify(success ? data : tagsResponse), {
+    const normalizedData = Array.isArray(data) ? data.map(normalizeTagTimestamps) : data
+    return new Response(JSON.stringify(success ? normalizedData : tagsResponse), {
       status: tagsResponse.status,
       headers,
     })
