@@ -183,6 +183,7 @@
 import DatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import type { Player, Tag } from 'biketag'
+import { getTagDate } from '@/common'
 import { useBikeTagStore } from '@/store/index'
 import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue'
 import BikeTag from './BikeTag.vue'
@@ -216,12 +217,10 @@ const props = withDefaults(
 const editableTag = reactive<Tag>({ ...props.tag })
 
 const mysteryDate = ref<Date | null>(
-  editableTag.mysteryTime ? new Date(editableTag.mysteryTime * 1000) : null,
+  editableTag.mysteryTime ? getTagDate(editableTag.mysteryTime) : null,
 )
 
-const foundDate = ref<Date | null>(
-  editableTag.foundTime ? new Date(editableTag.foundTime * 1000) : null,
-)
+const foundDate = ref<Date | null>(editableTag.foundTime ? getTagDate(editableTag.foundTime) : null)
 
 const foundPreview = computed(
   () => editableTag.foundImageUrl || (editableTag as Tag & { foundPreview?: string }).foundPreview,
@@ -376,8 +375,8 @@ watch(
   () => props.tag,
   (newTag) => {
     Object.assign(editableTag, newTag)
-    mysteryDate.value = newTag.mysteryTime ? new Date(newTag.mysteryTime * 1000) : null
-    foundDate.value = newTag.foundTime ? new Date(newTag.foundTime * 1000) : null
+    mysteryDate.value = newTag.mysteryTime ? getTagDate(newTag.mysteryTime) : null
+    foundDate.value = newTag.foundTime ? getTagDate(newTag.foundTime) : null
   },
   { deep: true },
 )

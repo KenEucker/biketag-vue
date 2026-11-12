@@ -1,4 +1,5 @@
 import { BikeTagClient, Game, Tag } from 'biketag'
+import { normalizeTagTimestamps } from '../src/common/timestamps'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
@@ -77,9 +78,13 @@ export default async (req: Request) => {
     }
 
     const cutoff = Date.now() / 1000 - 24 * 60 * 60
-    const recentTags = (recentResponse.data as Tag[]).filter(
-      (tag) => Number.isFinite(tag.mysteryTime) && tag.mysteryTime >= cutoff,
-    )
+    const now = Date.now() / 1000
+    const recentTags = (recentResponse.data as Tag[])
+      .map(normalizeTagTimestamps)
+      .filter(
+        (tag) =>
+          Number.isFinite(tag.mysteryTime) && tag.mysteryTime >= cutoff && tag.mysteryTime <= now,
+      )
 
     return new Response(JSON.stringify(recentTags), {
       status: HttpStatusCode.Ok,
