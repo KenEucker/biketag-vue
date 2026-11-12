@@ -1,4 +1,4 @@
-import { BikeTagClient, Game } from 'biketag'
+import { BikeTagClient, Game, Tag } from 'biketag'
 import {
   acceptCorsHeaders,
   getBikeTagClientOpts,
@@ -14,123 +14,82 @@ export default async (req: Request) => {
   log('[get-recent-tags] Incoming request', { method: req.method, url: req.url })
 
   if (req.method === 'OPTIONS') {
-    log('[get-recent-tags] OPTIONS preflight handled')
     return new Response(undefined, {
       status: HttpStatusCode.NoContent,
       headers,
     })
   }
 
-  let status = 500
-  let body = ''
-
   try {
-    const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
-    log('[get-recent-tags] Parsed BikeTagClient options', nonAdminBiketagOpts)
+    const clientOptions = getBikeTagClientOpts(req, true)
+    const gameName = clientOptions.game
 
-    const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
-
-    if (!nonAdminBiketagOpts.game?.length) {
-      log('[get-recent-tags] No game specified, loading featured/supported games')
-
-      const featuredGames = await nonAdminBiketag
-        .getGame({ game: '', cached: false }, { source: 'sanity' })
-        .then((d) => {
-          if (d.success) {
-            const games = d.data as unknown as Game[]
-            const supportedGames = games.filter(
-              (g: Game) =>
-                g.mainhash?.length &&
-                g.archivehash?.length &&
-                g.queuehash?.length &&
-                g.logo?.length,
-            )
-            return supportedGames
-          }
-          return []
-        })
-
-      log('[get-recent-tags] Featured games retrieved', { count: featuredGames.length })
-
-      const recentResponses: any = []
-      for (let i = 0; i < featuredGames.length; i++) {
-        const game = featuredGames[i]
-        const imageSource = getImageSource(game)
-
-        const biketagPayload = await getPayloadOpts(req, {
-          hash: game.mainhash,
-          game: 'none',
-          time: 'day',
-          cached: true,
-        })
-
-        log('[get-recent-tags] Preparing getTags for game', { game: game.name, imageSource })
-
-        recentResponses.push(
-          nonAdminBiketag.getTags(biketagPayload, {
-            source: imageSource,
-            cached: true,
-          }),
-        )
-      }
-
-      const recentTags = (await Promise.allSettled(recentResponses))
-        .filter((r) => r.status === 'fulfilled' && r.value?.length)
-        .map((d: any) => d.value)
-
-      log('[get-recent-tags] Aggregated recent tags', { count: recentTags.length })
-
-      status = 200
-      body = JSON.stringify(recentTags)
-    } else {
-      log('[get-recent-tags] Game specified', { game: nonAdminBiketagOpts.game })
-
-      const game = (await nonAdminBiketag.game(nonAdminBiketagOpts.game, {
-        source: 'sanity',
-        concise: true,
-      })) as unknown as Game
-
-      log('[get-recent-tags] Retrieved game', { name: game.name, awsRegion: game.awsRegion })
-
-      const biketagPayload = await getPayloadOpts(req, {
-        hash: game.mainhash,
-        game: 'none',
-        time: 'day',
+    if (!gameName?.length) {
+      return new Response(JSON.stringify({ error: 'A game must be specified' }), {
+        status: HttpStatusCode.BadRequest,
+        headers,
       })
-
-      const imageSource = getImageSource(game)
-      log('[get-recent-tags] Using image source', { imageSource })
-
-      if (imageSource === 'aws') {
-        nonAdminBiketag.config(
-          {
-            aws: { region: game.awsRegion },
-          },
-          false,
-          true,
-        )
-        log('[get-recent-tags] AWS config applied', { region: game.awsRegion })
-      }
-
-      const recentResponse = await nonAdminBiketag.getTags(biketagPayload, { source: imageSource })
-      log('[get-recent-tags] getTags response', {
-        success: recentResponse.success,
-        status: recentResponse.status,
-      })
-
-      if (recentResponse.success) {
-        status = recentResponse.status
-        body = JSON.stringify(recentResponse.data)
-      }
     }
+
+    const biketag = new BikeTagClient({ ...clientOptions, game: gameName })
+    const game = (await biketag.game(gameName, {
+      source: 'sanity',
+      concise: true,
+    })) as unknown as Game
+
+    if (!game) {
+      return new Response(JSON.stringify({ error: `Game not found: ${gameName}` }), {
+        status: HttpStatusCode.NotFound,
+        headers,
+      })
+    }
+
+    const imageSource = getImageSource(game)
+    if (imageSource === 'aws') {
+      biketag.config(
+        {
+          aws: { region: game.awsRegion },
+        },
+        false,
+        true,
+      )
+    }
+
+    const payload = await getPayloadOpts(req, {
+      hash: game.mainhash,
+      game: 'none',
+      time: 'day',
+      cached: false,
+    })
+    // The query parameter selects the game, it is not a tag query filter.
+    payload.game = 'none'
+
+    const recentResponse = await biketag.getTags(payload, {
+      source: imageSource,
+      cached: false,
+    })
+
+    if (!recentResponse.success) {
+      return new Response(JSON.stringify({ error: 'Could not retrieve recent tags' }), {
+        status: recentResponse.status || HttpStatusCode.BadGateway,
+        headers,
+      })
+    }
+
+    const cutoff = Date.now() / 1000 - 24 * 60 * 60
+    const recentTags = (recentResponse.data as Tag[]).filter(
+      (tag) => Number.isFinite(tag.mysteryTime) && tag.mysteryTime >= cutoff,
+    )
+
+    return new Response(JSON.stringify(recentTags), {
+      status: HttpStatusCode.Ok,
+      headers,
+    })
   } catch (err: any) {
     log('[get-recent-tags] Unexpected error', err, 'error')
-    status = HttpStatusCode.InternalServerError
-    body = JSON.stringify({ error: 'Internal server error' })
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: HttpStatusCode.InternalServerError,
+      headers,
+    })
   }
-
-  return new Response(body, {
-    status,
-    headers,
-  })
 }
