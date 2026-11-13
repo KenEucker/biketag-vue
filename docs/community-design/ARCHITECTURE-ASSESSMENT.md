@@ -122,7 +122,7 @@ The protected route count is conditional. Route aliases are documented above rat
 
 ## 4. Vue component inventory
 
-The current `src/components/` directory contains 34 Vue files. The groups below describe apparent responsibility; classification is preliminary and not a recommendation to move files.
+The current `src/components/` directory contains 35 Vue files. The groups below describe apparent responsibility; classification is preliminary and not a recommendation to move files.
 
 ### Core visual and interface components
 
@@ -190,6 +190,8 @@ The library and application have distinct Vite configurations:
 - Library entry: `src/index.ts`
 
 The library build uses Vite library mode and `vite-plugin-dts`. It emits ES and UMD builds and a CSS asset. Vue, Vue Router, Pinia, and `biketag` are marked external. Package exports in `package.json` point to the generated JavaScript and CSS.
+
+There is an apparent documentation mismatch: the README example imports `{ BikeTag }` and `biketag-vue/dist/style.css`, but `src/index.ts` currently comments out the `BikeTag` export, while `package.json` exports the stylesheet as `biketag-vue.css`. The example should be reconciled with the actual supported API before being used as contributor guidance.
 
 The current entry point actively exports:
 
