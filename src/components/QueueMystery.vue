@@ -1,6 +1,6 @@
 <template>
   <div class="add-mystery-tag">
-    <b-modal v-model="showModal" title="BootstrapVue" hide-footer hide-header>
+    <b-modal v-model="showModal" title="BootstrapVue" no-footer no-header>
       <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
       <h3 class="modal-header">
         {{ $t('You are ') }}{{ ordinalSuffixOf(numberInQueue) }}
