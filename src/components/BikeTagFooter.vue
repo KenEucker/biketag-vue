@@ -16,7 +16,7 @@
           :text="t('menu.hint')"
           variant="bold"
         />
-        <b-popover ref="hintPopover" hide-header target="hint" triggers="click" placement="top">
+        <b-popover ref="hintPopover" target="hint" click placement="top">
           <img :src="hintIcon" class="popover__hint-icon" alt="Hint" />
           <p class="popover__hint-text">{{ getCurrentHint }}</p>
           <img :src="closeRounded" class="popover__close" alt="close" @click="closePopover" />
