@@ -2,7 +2,7 @@
   <loading v-show="uploadInProgress" v-model:active="uploadInProgress" class="realign-spinner">
     <img class="spinner" src="@/assets/images/SpinningBikeV1.svg" />
   </loading>
-  <b-modal v-model="showModal" title="Authenticate" hide-footer hide-header>
+  <b-modal v-model="showModal" title="Authenticate" no-footer no-header>
     <img class="close-btn" src="@/assets/images/close.svg" @click="hideModal" />
     <form @submit.prevent="onSubmit">
       <div>
@@ -87,7 +87,7 @@
             placeholder="Enter a location"
           />
         </bike-tag-input>
-        <b-popover target="found" :hide="!showMap" placement="top">
+        <b-popover v-model="showMap" target="found" placement="top">
           <template #title> Location: {{ getLocation }} </template>
           <p v-if="locationDisabled">{{ t('pages.round.image_first') }}</p>
           <bike-tag-map
