@@ -397,7 +397,7 @@ function playHarness({ result = 'Network Error', ipError, notifyError } = {}) {
     t: (key) => key,
     toast: { open: (options) => notices.push(options) },
     store: {
-      getImageSource: 'aws',
+      getGameDataAdapter: 'aws',
       addFoundTag: async () => {
         calls.push('upload')
         return result

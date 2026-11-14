@@ -81,7 +81,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     cacheResetInterval: parseInt(BikeTagEnv.CACHE_RESET_INTERVAL),
     gameName,
     gameNameProper: gameName?.length ? gameName[0].toUpperCase() + gameName.slice(1) : '',
-    imageSource: BikeTagEnv.IMAGE_SOURCE,
+    gameDataAdapter: BikeTagEnv.GAME_DATA_ADAPTER,
     gameSource: BikeTagEnv.GAME_SOURCE,
     game: {} as Game,
     allGames: [] as Game[],
@@ -221,11 +221,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               const game = r.data as Game
 
               if (game.settings?.['data::aws'] === 'true') {
-                this.imageSource = 'aws'
+                this.gameDataAdapter = 'aws'
               } else if (game.settings?.['data::imgur'] === 'true') {
-                this.imageSource = 'imgur'
+                this.gameDataAdapter = 'imgur'
               }
-              /// TODO: split these up based on the imageSource?
+              /// TODO: split these up based on the gameDataAdapter?
               biketagClientOpts.imgur.hash = game.mainhash
               biketagClientOpts.imgur.queuehash = game.queuehash
               biketagClientOpts.aws.region = game.awsRegion
@@ -234,7 +234,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               const configuredClient = client.config(biketagClientOpts, true, true)
               debug(`${BikeTagDefaults.store}::client-init`, {
                 configuredClient,
-                imageSource: this.imageSource,
+                gameDataAdapter: this.gameDataAdapter,
               })
 
               return this.SET_GAME(game)
@@ -353,17 +353,17 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         .then((r) => this.SET_ACHIEVEMENTS(r.data))
     },
     fetchCurrentBikeTag(cached = true) {
-      return client.getTag(undefined, { source: this.imageSource, cached }).then((r) => {
+      return client.getTag(undefined, { source: this.gameDataAdapter, cached }).then((r) => {
         return this.SET_CURRENT_TAG(r.data)
       })
     },
     fetchTags(cached = true) {
-      return client.tags(undefined, { source: this.imageSource, cached }).then(this.SET_TAGS)
+      return client.tags(undefined, { source: this.gameDataAdapter, cached }).then(this.SET_TAGS)
     },
     async fetchQueuedTags(cached = true) {
       if (this.currentBikeTag?.tagnumber > 0) {
         return client
-          .queue(undefined, { source: cached ? this.imageSource : 'biketag', cached })
+          .queue(undefined, { source: cached ? this.gameDataAdapter : 'biketag', cached })
           .then((d) => {
             if ((d as Tag[])?.length > 0) {
               const currentBikeTagQueue: Tag[] = d as Tag[]
@@ -398,16 +398,16 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return false
     },
     fetchPlayers(cached = true) {
-      return client.players(undefined, { source: this.imageSource, cached }).then(this.SET_PLAYERS)
+      return client.players(undefined, { source: this.gameDataAdapter, cached }).then(this.SET_PLAYERS)
     },
     fetchLeaderboard(cached = true) {
       return client
-        .players({ sort: 'top', limit: 10 }, { source: this.imageSource, cached })
+        .players({ sort: 'top', limit: 10 }, { source: this.gameDataAdapter, cached })
         .then(this.SET_LEADERBOARD)
     },
     async fetchLeaderboardPlayersProfiles(cached = true) {
       const names = this.leaderboard.map((p) => p.name)
-      return client.players({ names }, { source: this.imageSource, cached }).then(async (d) => {
+      return client.players({ names }, { source: this.gameDataAdapter, cached }).then(async (d) => {
         if (Array.isArray(d)) {
           d.forEach((p) => this.SET_PLAYER(p))
         }
@@ -922,7 +922,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               mysteryImage: d.mysteryImage,
               contentType: d.mysteryImage.type ?? 'image/jpeg',
             },
-            { source: this.imageSource },
+            { source: this.gameDataAdapter },
           )
           if (!upload.success) {
             return upload.error || 'failed to upload mystery image'
@@ -996,7 +996,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               mysteryImage: undefined,
               mysteryImageUrl: undefined,
             },
-            { source: this.imageSource },
+            { source: this.gameDataAdapter },
           )
           if (!foundUpload.success) {
             return foundUpload.error || 'failed to upload found image'
@@ -1016,7 +1016,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
               foundImage: undefined,
               foundImageUrl: undefined,
             },
-            { source: this.imageSource },
+            { source: this.gameDataAdapter },
           )
           if (!mysteryUpload.success) {
             return mysteryUpload.error || 'failed to upload mystery image'
@@ -1386,10 +1386,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async dequeueFoundTag() {
       if (this.playerTag?.playerId === this.profile.sub) {
         const queuedTag: any = this.playerTag
-        let source = this.imageSource
-        if (this.imageSource === 'aws') {
+        let source = this.gameDataAdapter
+        if (this.gameDataAdapter === 'aws') {
           source = 'biketag'
-        } else if (this.imageSource === 'imgur') {
+        } else if (this.gameDataAdapter === 'imgur') {
           queuedTag.hash = this.game.queuehash
         }
         return client.deleteTag(queuedTag, { source }).then(async (t) => {
@@ -1414,10 +1414,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         const queuedMysteryTag: any = BikeTagClient.getters.getOnlyMysteryTagFromTagData(
           this.playerTag,
         )
-        let source = this.imageSource
-        if (this.imageSource === 'aws') {
+        let source = this.gameDataAdapter
+        if (this.gameDataAdapter === 'aws') {
           source = 'biketag'
-        } else if (this.imageSource === 'imgur') {
+        } else if (this.gameDataAdapter === 'imgur') {
           queuedMysteryTag.hash = this.game.queuehash
         }
         return client.deleteTag(queuedMysteryTag, { source }).then(async (t) => {
@@ -1463,7 +1463,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         return observeSubmissionStage(
           'found:queue-tag',
-          () => queueTagWithUploadRecovery(client, d, this.imageSource, record),
+          () => queueTagWithUploadRecovery(client, d, this.gameDataAdapter, record),
           record,
         ).then(async (t) => {
           if (t.success) {
@@ -1517,7 +1517,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         return observeSubmissionStage(
           'mystery:queue-tag',
-          () => queueTagWithUploadRecovery(client, d, this.imageSource, record),
+          () => queueTagWithUploadRecovery(client, d, this.gameDataAdapter, record),
           record,
         ).then(async (t) => {
           if (t.success) {
@@ -1566,7 +1566,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         return observeSubmissionStage(
           'post:queue-tag',
-          () => client.queueTag(d, { source: this.imageSource }),
+          () => client.queueTag(d, { source: this.gameDataAdapter }),
           record,
         ).then(async (t) => {
           if (t.success) {
@@ -1958,10 +1958,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     getImageSized: (state) => {
       return (url: string, s: string = 'm') =>
-        getImageSized(state.imageSource, url, s as 's' | 'm' | 'l' | 'o' | undefined)
+        getImageSized(url, s as 's' | 'm' | 'l' | 'o' | undefined)
     },
-    getImageSource(state) {
-      return state.imageSource
+    getGameDataAdapter(state) {
+      return state.gameDataAdapter
     },
     getQueuedTagState: (state) => {
       return getQueuedTagState(state.playerTag)

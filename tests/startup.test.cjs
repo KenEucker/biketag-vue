@@ -154,7 +154,7 @@ function createGameStore(t) {
     gameName: 'portland',
     game: {},
     allGames: [],
-    imageSource: 'aws',
+    gameDataAdapter: 'aws',
   }
   return fixture
 }
@@ -170,11 +170,11 @@ test('landing-page startup does not look up a game without a name', async (t) =>
   assert.deepEqual(store.game, {})
 })
 
-test('games without settings load with defaults and retain their configured image source', async (t) => {
+test('games without settings load with defaults and retain their configured data adapter', async (t) => {
   const fixture = createGameStore(t)
   for (const settings of [undefined, null]) {
     fixture.store.game = {}
-    fixture.store.imageSource = 'imgur'
+    fixture.store.gameDataAdapter = 'imgur'
     fixture.response = {
       success: true,
       data: {
@@ -188,13 +188,13 @@ test('games without settings load with defaults and retain their configured imag
     const game = await fixture.store.setGame()
     assert.equal(game.name, 'portland')
     assert.deepEqual(game.settings, {})
-    assert.equal(fixture.store.imageSource, 'imgur')
+    assert.equal(fixture.store.gameDataAdapter, 'imgur')
     assert.equal(fixture.configurations.at(-1)[0].imgur.hash, 'main')
     assert.equal(fixture.configurations.at(-1)[0].aws.region, 'region')
   }
 })
 
-test('game settings still select AWS or Imgur storage', async (t) => {
+test('game settings still select the appropriate data adapter', async (t) => {
   const fixture = createGameStore(t)
   for (const [settings, initialSource, expectedSource] of [
     [{ 'data::aws': 'true', 'data::imgur': 'true' }, 'imgur', 'aws'],
@@ -202,11 +202,11 @@ test('game settings still select AWS or Imgur storage', async (t) => {
     [{ 'data::aws': 'false', 'data::imgur': 'false' }, 'aws', 'aws'],
   ]) {
     fixture.store.game = {}
-    fixture.store.imageSource = initialSource
+    fixture.store.gameDataAdapter = initialSource
     fixture.response = { success: true, data: { name: 'portland', settings } }
     const game = await fixture.store.setGame()
     assert.deepEqual(game.settings, settings)
-    assert.equal(fixture.store.imageSource, expectedSource)
+    assert.equal(fixture.store.gameDataAdapter, expectedSource)
   }
 })
 
