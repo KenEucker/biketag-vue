@@ -287,7 +287,7 @@ test('new endpoint retains method handling and publication failures', async () =
   assert.equal((await flow.request()).status, 400)
 })
 
-function storeAction(client, imageSource = 'imgur') {
+function storeAction(client, gameDataAdapter = 'imgur') {
   const source = fs.readFileSync('src/store/index.ts', 'utf8')
   const start = source.indexOf('    async createNewRoundTag(')
   const code = ts.transpileModule(
@@ -304,7 +304,7 @@ function storeAction(client, imageSource = 'imgur') {
     profile: { sub: 'ambassador', isBikeTagAmbassador: true },
     gameName: 'demo',
     game: { queuehash: 'queue-album' },
-    imageSource,
+    gameDataAdapter,
     auth0Token: 'test-token',
     async fetchCredentials() {},
     resetBikeTagCache() {},
