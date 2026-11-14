@@ -6,7 +6,7 @@ export const BikeTagDefaults = {
   hostKey: 'ItsABikeTagGame',
   logo: '/images/BikeTag.svg',
   jingle: 'media/biketag-jingle-1.mp3',
-  imageSource: 'aws',
+  gameDataAdapter: 'aws',
   gameSource: 'sanity',
   store: 'biketag',
   cacheResetInterval: '5000',
@@ -42,7 +42,7 @@ export const BikeTagEnv = {
   /* BikeTag Configuration */
   GAME_NAME: process.env.GAME_NAME ?? null,
   GAME_SOURCE: process.env.GAME_SOURCE ?? BikeTagDefaults.gameSource,
-  IMAGE_SOURCE: process.env.IMAGE_SOURCE ?? BikeTagDefaults.imageSource,
+  GAME_DATA_ADAPTER: process.env.GAME_DATA_ADAPTER ?? BikeTagDefaults.gameDataAdapter,
   HOST: process.env.HOST ?? BikeTagDefaults.host ?? null,
   /* Google Configuration */
   // Use a browser-restricted Maps API key, never an OAuth access token.
