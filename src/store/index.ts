@@ -81,7 +81,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     cacheResetInterval: parseInt(BikeTagEnv.CACHE_RESET_INTERVAL),
     gameName,
     gameNameProper: gameName?.length ? gameName[0].toUpperCase() + gameName.slice(1) : '',
-    gameDataAdapter: BikeTagEnv.IMAGE_SOURCE,
+    gameDataAdapter: BikeTagEnv.GAME_DATA_ADAPTER,
     gameSource: BikeTagEnv.GAME_SOURCE,
     game: {} as Game,
     allGames: [] as Game[],
