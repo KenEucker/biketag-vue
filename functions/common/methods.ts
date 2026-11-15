@@ -1040,7 +1040,7 @@ const requireQueueImageVariants = async (
   imageUrl: string,
   label: string,
   biketag?: BikeTagClient,
-  imageSource = 'biketag',
+  imageSource = 'aws',
 ): Promise<void> => {
   const gameSlug = getGameStorageSlug(game)
   const region = game.awsRegion ?? ''

@@ -6,8 +6,6 @@ export const BikeTagDefaults = {
   hostKey: 'ItsABikeTagGame',
   logo: '/images/BikeTag.svg',
   jingle: 'media/biketag-jingle-1.mp3',
-  imageSource: 'aws',
-  gameSource: 'sanity',
   store: 'biketag',
   cacheResetInterval: '5000',
   manifest: {
@@ -41,8 +39,7 @@ export const BikeTagEnv = {
   B_KEY: process.env.B_KEY ?? process.env.CLIENT_KEY ?? null,
   /* BikeTag Configuration */
   GAME_NAME: process.env.GAME_NAME ?? null,
-  GAME_SOURCE: process.env.GAME_SOURCE ?? BikeTagDefaults.gameSource,
-  IMAGE_SOURCE: process.env.IMAGE_SOURCE ?? BikeTagDefaults.imageSource,
+  API_HOST: process.env.API_HOST ?? null,
   HOST: process.env.HOST ?? BikeTagDefaults.host ?? null,
   /* Google Configuration */
   // Use a browser-restricted Maps API key, never an OAuth access token.
@@ -58,7 +55,6 @@ export const BikeTagEnv = {
   // Intentionally public, restricted frontend credentials.
   S3_FE_AID: process.env.S3_FE_AID ?? process.env.S3_FE_ACCESS_ID ?? null,
   S3_FE_AKEY: process.env.S3_FE_AKEY ?? process.env.S3_FE_ACCESS_KEY ?? null,
-  IMGUR_DELAY_NOTICE: process.env.IMGUR_DELAY_NOTICE ?? null,
   IMGUR_DELAY: process.env.IMGUR_DELAY ?? null,
 }
 

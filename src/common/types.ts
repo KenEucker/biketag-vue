@@ -87,8 +87,6 @@ export interface BikeTagStoreState {
   game: Game
   allGames: Game[]
   achievements: Achievement[]
-  gameSource: string
-  imageSource: string
   gameName: string
   gameNameProper: string
   currentBikeTag: Tag

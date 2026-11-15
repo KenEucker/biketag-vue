@@ -168,7 +168,6 @@ const diagnosticFields = [
   'tagnumber',
   'action',
   'formStep',
-  'imageSource',
   'context',
   'event',
   'stage',
@@ -218,7 +217,6 @@ async function onQueueSubmit(newTagSubmission) {
     playerId: getPlayerId.value,
     playerName: getPlayerName.value,
     formStep: getFormStep.value,
-    imageSource: store.getImageSource,
   })
   let diagnosticStorage
   try {
@@ -282,14 +280,6 @@ async function onQueueSubmit(newTagSubmission) {
       if (Date.now() - parseInt(alreadyUploaded) < delayMultiplier * 60 * 1000) {
         window.scrollTo(0, 0)
         toast.open({ message: t('notifications.already-uploaded'), type: 'error', position: 'top' })
-        if (store.getImageSource === 'imgur' && getGameNotices.value?.imgurDelayNotice) {
-          toast.open({
-            duration: 10000,
-            message: getGameNotices.value.imgurDelayNotice,
-            type: 'error',
-            position: 'top',
-          })
-        }
         void attempt.blocked('Upload delay is still active')
         return
       }
