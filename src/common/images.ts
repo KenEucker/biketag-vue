@@ -37,8 +37,7 @@ export const getS3ImageSized = (
 }
 
 export const getImageSized = (
-  imageSourceOrUrl: 'aws' | 'imgur' | 'sanity' | string = '',
-  imageUrlOrSize?: string,
+  imageUrl = '',
   size: 's' | 'm' | 'l' | 'o' | undefined = 'm',
 ): string => {
   const sizeMap: Record<string, 'small' | 'medium' | 'original'> = {
@@ -48,20 +47,6 @@ export const getImageSized = (
     o: 'original',
   }
 
-  let imageSource
-  let imageUrl: string
-
-  // Handle case where imageSource was omitted
-  if (!['aws', 'imgur', 'sanity'].includes(imageSourceOrUrl)) {
-    imageUrl = imageSourceOrUrl
-    if (imageUrlOrSize !== undefined) {
-      size = imageUrlOrSize as typeof size
-    }
-  } else {
-    imageSource = imageSourceOrUrl as 'aws' | 'imgur' | 'sanity'
-    imageUrl = imageUrlOrSize || ''
-  }
-
   const resolvedSize = sizeMap[size] || 'original'
 
   // Short-circuit based on image URL
@@ -69,16 +54,9 @@ export const getImageSized = (
     return getImgurImageSized(imageUrl, size)
   }
 
-  if (/digitaloceanspaces\.com/.test(imageUrl)) {
+  if (/(digitaloceanspaces\.com|amazonaws\.com)/.test(imageUrl)) {
     return getS3ImageSized(imageUrl, resolvedSize)
   }
 
-  // Fallback based on declared or defaulted source
-  switch (imageSource) {
-    case 'aws':
-      return getS3ImageSized(imageUrl, resolvedSize)
-    case 'imgur':
-    default:
-      return getImgurImageSized(imageUrl, size)
-  }
+  return imageUrl
 }

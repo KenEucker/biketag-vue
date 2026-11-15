@@ -81,8 +81,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     cacheResetInterval: parseInt(BikeTagEnv.CACHE_RESET_INTERVAL),
     gameName,
     gameNameProper: gameName?.length ? gameName[0].toUpperCase() + gameName.slice(1) : '',
-    imageSource: BikeTagEnv.IMAGE_SOURCE,
-    gameSource: BikeTagEnv.GAME_SOURCE,
     game: {} as Game,
     allGames: [] as Game[],
     achievements: [] as Achievement[],
@@ -214,38 +212,22 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       if (this.game?.name !== newGameName || !this.game?.mainhash) {
         this.fetchingData = false
-        return client
-          .getGame({ game: newGameName }, { source: BikeTagDefaults.gameSource })
-          .then(async (r) => {
-            if (r.success && !Array.isArray(r.data) && r.data?.name) {
-              const game = r.data as Game
+        return client.getGame({ game: newGameName }).then(async (r) => {
+          if (r.success && !Array.isArray(r.data) && r.data?.name) {
+            const game = r.data as Game
 
-              if (game.settings?.['data::aws'] === 'true') {
-                this.imageSource = 'aws'
-              } else if (game.settings?.['data::imgur'] === 'true') {
-                this.imageSource = 'imgur'
-              }
-              /// TODO: split these up based on the imageSource?
-              biketagClientOpts.imgur.hash = game.mainhash
-              biketagClientOpts.imgur.queuehash = game.queuehash
-              biketagClientOpts.aws.region = game.awsRegion
+            client.setGameContext(game)
 
-              // TODO: set the default source to something else, now
-              const configuredClient = client.config(biketagClientOpts, true, true)
-              debug(`${BikeTagDefaults.store}::client-init`, {
-                configuredClient,
-                imageSource: this.imageSource,
-              })
-
-              return this.SET_GAME(game)
-            } else {
-              const cachedGame = this.allGames.find((g) => g.name === newGameName)
-              if (cachedGame) {
-                return this.SET_GAME(cachedGame)
-              }
+            return this.SET_GAME(game)
+          } else {
+            const cachedGame = this.allGames.find((g) => g.name === newGameName)
+            if (cachedGame) {
+              client.setGameContext(cachedGame)
+              return this.SET_GAME(cachedGame)
             }
-            return false
-          })
+          }
+          return false
+        })
       }
     },
     async resetBikeTagCache() {
@@ -334,7 +316,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       this.fetchingData = false
       return client
         .getAllGames(undefined, {
-          source: BikeTagDefaults.gameSource,
           cached,
         })
         .then((d) => {
@@ -349,65 +330,61 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     },
     fetchAllAchievements(cached = true) {
       return client
-        .getAchievements(undefined, { source: this.gameSource, cached })
+        .getAchievements(undefined, { cached })
         .then((r) => this.SET_ACHIEVEMENTS(r.data))
     },
     fetchCurrentBikeTag(cached = true) {
-      return client.getTag(undefined, { source: this.imageSource, cached }).then((r) => {
+      return client.getTag(undefined, { cached }).then((r) => {
         return this.SET_CURRENT_TAG(r.data)
       })
     },
     fetchTags(cached = true) {
-      return client.tags(undefined, { source: this.imageSource, cached }).then(this.SET_TAGS)
+      return client.tags(undefined, { cached }).then(this.SET_TAGS)
     },
     async fetchQueuedTags(cached = true) {
       if (this.currentBikeTag?.tagnumber > 0) {
-        return client
-          .queue(undefined, { source: cached ? this.imageSource : 'biketag', cached })
-          .then((d) => {
-            if ((d as Tag[])?.length > 0) {
-              const currentBikeTagQueue: Tag[] = d as Tag[]
-              // const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
-              //   (t) =>
-              //     t.tagnumber > this.currentBikeTag.tagnumber ||
-              //     (t.tagnumber === this.currentBikeTag.tagnumber && !t.mysteryImageUrl),
-              // )
+        return client.queue(undefined, { cached }).then((d) => {
+          if ((d as Tag[])?.length > 0) {
+            const currentBikeTagQueue: Tag[] = d as Tag[]
+            // const currentBikeTagQueue: Tag[] = (d as Tag[]).filter(
+            //   (t) =>
+            //     t.tagnumber > this.currentBikeTag.tagnumber ||
+            //     (t.tagnumber === this.currentBikeTag.tagnumber && !t.mysteryImageUrl),
+            // )
 
-              /// Get the player queued tag by player id
-              const [playerQueuedTag] = currentBikeTagQueue.filter(
-                (t) => this.profile?.sub && t.playerId === this.profile.sub,
-              )
+            /// Get the player queued tag by player id
+            const [playerQueuedTag] = currentBikeTagQueue.filter(
+              (t) => this.profile?.sub && t.playerId === this.profile.sub,
+            )
 
-              if (playerQueuedTag) {
-                this.SET_QUEUED_TAG(playerQueuedTag)
-                this.SET_QUEUED_TAG_STATE(playerQueuedTag)
-              } else {
-                this.SET_QUEUED_TAG()
-                this.SET_QUEUED_TAG_STATE()
-              }
-
-              return this.SET_QUEUED_TAGS(currentBikeTagQueue)
+            if (playerQueuedTag) {
+              this.SET_QUEUED_TAG(playerQueuedTag)
+              this.SET_QUEUED_TAG_STATE(playerQueuedTag)
             } else {
               this.SET_QUEUED_TAG()
               this.SET_QUEUED_TAG_STATE()
-              return this.SET_QUEUED_TAGS([])
             }
-          })
+
+            return this.SET_QUEUED_TAGS(currentBikeTagQueue)
+          } else {
+            this.SET_QUEUED_TAG()
+            this.SET_QUEUED_TAG_STATE()
+            return this.SET_QUEUED_TAGS([])
+          }
+        })
       }
 
       return false
     },
     fetchPlayers(cached = true) {
-      return client.players(undefined, { source: this.imageSource, cached }).then(this.SET_PLAYERS)
+      return client.players(undefined, { cached }).then(this.SET_PLAYERS)
     },
     fetchLeaderboard(cached = true) {
-      return client
-        .players({ sort: 'top', limit: 10 }, { source: this.imageSource, cached })
-        .then(this.SET_LEADERBOARD)
+      return client.players({ sort: 'top', limit: 10 }, { cached }).then(this.SET_LEADERBOARD)
     },
     async fetchLeaderboardPlayersProfiles(cached = true) {
       const names = this.leaderboard.map((p) => p.name)
-      return client.players({ names }, { source: this.imageSource, cached }).then(async (d) => {
+      return client.players({ names }, { cached }).then(async (d) => {
         if (Array.isArray(d)) {
           d.forEach((p) => this.SET_PLAYER(p))
         }
@@ -591,12 +568,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         if (response.status > 199 && response.status < 300) {
           this.resetBikeTagCache()
-          const gameResponse = await client.getGame(
-            { game: this.gameName },
-            { source: BikeTagDefaults.gameSource },
-          )
+          const gameResponse = await client.getGame({ game: this.gameName })
           if (gameResponse.success) {
-            this.SET_GAME(gameResponse.data as Game)
+            const game = gameResponse.data as Game
+            client.setGameContext(game)
+            this.SET_GAME(game)
           }
           return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
         }
@@ -916,14 +892,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         }
 
         if (d.mysteryImage && !d.mysteryImageUrl) {
-          const upload = await client.uploadTagImage(
-            {
-              ...tag,
-              mysteryImage: d.mysteryImage,
-              contentType: d.mysteryImage.type ?? 'image/jpeg',
-            },
-            { source: this.imageSource },
-          )
+          const upload = await client.uploadTagImage({
+            ...tag,
+            mysteryImage: d.mysteryImage,
+            contentType: d.mysteryImage.type ?? 'image/jpeg',
+          })
           if (!upload.success) {
             return upload.error || 'failed to upload mystery image'
           }
@@ -985,19 +958,16 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         if (d.foundImage && !d.foundImageUrl) {
           // A find belongs to the previous round. Upload only that photo so the
           // adapters cannot interpret a two-photo payload as a queued submission.
-          const foundUpload = await client.uploadTagImage(
-            {
-              ...tag,
-              tagnumber: d.tagnumber - 1,
-              folder: 'queue',
-              hash: this.game.queuehash,
-              type: 'stream',
-              contentType: d.foundImage.type || 'image/jpeg',
-              mysteryImage: undefined,
-              mysteryImageUrl: undefined,
-            },
-            { source: this.imageSource },
-          )
+          const foundUpload = await client.uploadTagImage({
+            ...tag,
+            tagnumber: d.tagnumber - 1,
+            folder: 'queue',
+            hash: this.game.queuehash,
+            type: 'stream',
+            contentType: d.foundImage.type || 'image/jpeg',
+            mysteryImage: undefined,
+            mysteryImageUrl: undefined,
+          })
           if (!foundUpload.success) {
             return foundUpload.error || 'failed to upload found image'
           }
@@ -1006,18 +976,15 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         }
 
         if (d.mysteryImage && !d.mysteryImageUrl) {
-          const mysteryUpload = await client.uploadTagImage(
-            {
-              ...tag,
-              folder: 'queue',
-              hash: this.game.queuehash,
-              type: 'stream',
-              contentType: d.mysteryImage.type || 'image/jpeg',
-              foundImage: undefined,
-              foundImageUrl: undefined,
-            },
-            { source: this.imageSource },
-          )
+          const mysteryUpload = await client.uploadTagImage({
+            ...tag,
+            folder: 'queue',
+            hash: this.game.queuehash,
+            type: 'stream',
+            contentType: d.mysteryImage.type || 'image/jpeg',
+            foundImage: undefined,
+            foundImageUrl: undefined,
+          })
           if (!mysteryUpload.success) {
             return mysteryUpload.error || 'failed to upload mystery image'
           }
@@ -1386,13 +1353,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     async dequeueFoundTag() {
       if (this.playerTag?.playerId === this.profile.sub) {
         const queuedTag: any = this.playerTag
-        let source = this.imageSource
-        if (this.imageSource === 'aws') {
-          source = 'biketag'
-        } else if (this.imageSource === 'imgur') {
-          queuedTag.hash = this.game.queuehash
-        }
-        return client.deleteTag(queuedTag, { source }).then(async (t) => {
+        return client.deleteTag(queuedTag).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-found-tag`, this.playerTag)
             await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
@@ -1414,13 +1375,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         const queuedMysteryTag: any = BikeTagClient.getters.getOnlyMysteryTagFromTagData(
           this.playerTag,
         )
-        let source = this.imageSource
-        if (this.imageSource === 'aws') {
-          source = 'biketag'
-        } else if (this.imageSource === 'imgur') {
-          queuedMysteryTag.hash = this.game.queuehash
-        }
-        return client.deleteTag(queuedMysteryTag, { source }).then(async (t) => {
+        return client.deleteTag(queuedMysteryTag).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-mystery-tag`, 'mystery tag dequeued')
             await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
@@ -1463,7 +1418,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         return observeSubmissionStage(
           'found:queue-tag',
-          () => queueTagWithUploadRecovery(client, d, this.imageSource, record),
+          () => queueTagWithUploadRecovery(client, d, record),
           record,
         ).then(async (t) => {
           if (t.success) {
@@ -1517,7 +1472,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
         return observeSubmissionStage(
           'mystery:queue-tag',
-          () => queueTagWithUploadRecovery(client, d, this.imageSource, record),
+          () => queueTagWithUploadRecovery(client, d, record),
           record,
         ).then(async (t) => {
           if (t.success) {
@@ -1564,37 +1519,35 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       if (d.mysteryImageUrl && d.foundImageUrl) {
         d.playerId = this.profile.sub
 
-        return observeSubmissionStage(
-          'post:queue-tag',
-          () => client.queueTag(d, { source: this.imageSource }),
-          record,
-        ).then(async (t) => {
-          if (t.success) {
-            debug(
-              'gps::store::post-new-biketag-response',
-              {
-                responseGps: summarizeTagGps(t.data?.gps),
-                inputGps: summarizeTagGps(d?.gps),
-                playerTagGps: summarizeTagGps(this.playerTag?.gps),
-              },
-              'info',
-            )
-            this.SET_QUEUED_SUBMITTED(t.data)
-            await observeSubmissionStage(
-              'post:refresh-queue',
-              () => client.getQueue({ resize: true, reindex: true }, { source: 'biketag' }),
-              record,
-            )
-          } else {
-            debug(
-              `${BikeTagDefaults.store}::queue-post-tag`,
-              'queue (Post) BikeTag failed: ' + t.error,
-              'error',
-            )
-            return t.error
-          }
-          return t.success
-        })
+        return observeSubmissionStage('post:queue-tag', () => client.queueTag(d), record).then(
+          async (t) => {
+            if (t.success) {
+              debug(
+                'gps::store::post-new-biketag-response',
+                {
+                  responseGps: summarizeTagGps(t.data?.gps),
+                  inputGps: summarizeTagGps(d?.gps),
+                  playerTagGps: summarizeTagGps(this.playerTag?.gps),
+                },
+                'info',
+              )
+              this.SET_QUEUED_SUBMITTED(t.data)
+              await observeSubmissionStage(
+                'post:refresh-queue',
+                () => client.getQueue({ resize: true, reindex: true }, { source: 'biketag' }),
+                record,
+              )
+            } else {
+              debug(
+                `${BikeTagDefaults.store}::queue-post-tag`,
+                'queue (Post) BikeTag failed: ' + t.error,
+                'error',
+              )
+              return t.error
+            }
+            return t.success
+          },
+        )
       }
       return false
     },
@@ -1957,11 +1910,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return null
     },
     getImageSized: (state) => {
-      return (url: string, s: string = 'm') =>
-        getImageSized(state.imageSource, url, s as 's' | 'm' | 'l' | 'o' | undefined)
-    },
-    getImageSource(state) {
-      return state.imageSource
+      return (url: string, s: string = 'm') => getImageSized(url, s)
     },
     getQueuedTagState: (state) => {
       return getQueuedTagState(state.playerTag)
@@ -2072,9 +2021,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
     getProfile(state) {
       return state.profile
     },
-    getGameNotices(state) {
+    getGameNotices() {
       return {
-        imgurDelayNotice: BikeTagEnv.IMGUR_DELAY_NOTICE,
         imgurDelay: BikeTagEnv.IMGUR_DELAY,
       }
     },

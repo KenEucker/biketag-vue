@@ -290,14 +290,19 @@ class QueuedUploadClient extends BikeTagClient {
 export function queueTagWithUploadRecovery(
   client: BikeTagClient,
   payload: any,
-  source: string,
   record?: SubmissionStageRecorder,
 ) {
-  if (source !== 'aws' || (!payload.foundImage && !payload.mysteryImage)) {
-    return client.queueTag(payload, { source })
+  const aws = client.config().aws
+  if (
+    !aws?.accessKeyId ||
+    !aws.secretAccessKey ||
+    (!payload.foundImage && !payload.mysteryImage)
+  ) {
+    return client.queueTag(payload)
   }
   // The SDK mutates image fields even on failure. Keep the caller's file available for manual retry.
   const uploadPayload = { ...payload }
   const uploadClient = new QueuedUploadClient(client.config(), uploadPayload, record)
-  return uploadClient.queueTag(uploadPayload, { source })
+  if (client.gameContext?.game) uploadClient.setGameContext(client.gameContext.game)
+  return uploadClient.queueTag(uploadPayload)
 }
