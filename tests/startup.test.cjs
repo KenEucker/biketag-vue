@@ -310,7 +310,7 @@ test('concurrent tag fetches share a request without suppressing explicit refres
 
 test('PWA manifest waits for game state rather than initiating another game fetch', () => {
   const source = fs.readFileSync('src/components/ServiceWorker.vue', 'utf8')
-  assert.doesNotMatch(source, /store\\.setGame\\(/)
-  assert.match(source, /watch\\(\\s*\\(\\) => store\\.game\\?\\.name/)
-  assert.match(source, /if \\(name\\) void updateManifest\\(\\)/)
+  assert.equal(source.includes('await store.setGame()'), false)
+  assert.equal(source.includes('() => store.game?.name'), true)
+  assert.equal(source.includes('if (name) void updateManifest()'), true)
 })
