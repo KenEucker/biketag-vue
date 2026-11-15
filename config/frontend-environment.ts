@@ -16,6 +16,7 @@ export const publicEnvironmentKeys = [
   'B_KEY',
   'CLIENT_KEY',
   'GAME_NAME',
+  'API_HOST',
   'HOST',
   'G_AKEY',
   'GOOGLE_API_KEY',

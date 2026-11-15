@@ -39,6 +39,7 @@ export const BikeTagEnv = {
   B_KEY: process.env.B_KEY ?? process.env.CLIENT_KEY ?? null,
   /* BikeTag Configuration */
   GAME_NAME: process.env.GAME_NAME ?? null,
+  API_HOST: process.env.API_HOST ?? null,
   HOST: process.env.HOST ?? BikeTagDefaults.host ?? null,
   /* Google Configuration */
   // Use a browser-restricted Maps API key, never an OAuth access token.

@@ -356,6 +356,13 @@ export const getSanityImageUrl = (
 }
 
 export const getApiUrl = (path = '') => {
+  const apiHost = BikeTagEnv.API_HOST?.replace(/\/+$/, '')
+  const apiPath = `/api${path.length ? '/' + path : ''}`
+
+  if (apiHost) {
+    return `${apiHost}${apiPath}`
+  }
+
   if (typeof window === 'undefined') {
     return BikeTagEnv.CONTEXT === 'dev'
       ? `http://localhost:7200/.netlify/functions/${path}`
