@@ -122,7 +122,7 @@ function createGameStore(t) {
   })
   global.window = { location: new URL('https://portland.biketag.org') }
   global.localStorage = { getItem: () => null }
-  const fixture = { response: { success: false }, requests: [], contexts: [] }
+  const fixture = { response: { success: false }, requests: [], contexts: [], tagRequests: [], tagsResponse: [] }
   const { initBikeTagStore, useBikeTagStore } = load('src/store/index.ts', {
     biketag: class {
       async getGame(...args) {
@@ -132,6 +132,10 @@ function createGameStore(t) {
       setGameContext(game) {
         fixture.contexts.push(game)
         return game
+      }
+      async tags(...args) {
+        fixture.tagRequests.push(args)
+        return fixture.tagsResponse
       }
     },
     pinia: { defineStore: (_id, options) => options },
@@ -154,6 +158,7 @@ function createGameStore(t) {
     gameName: 'portland',
     game: {},
     allGames: [],
+    tags: [],
   }
   return fixture
 }
@@ -267,4 +272,45 @@ test('the home page only renders its player button when the player has a name', 
     else assert.doesNotMatch(html, /play-screen__mystery-player__button/)
     assert.doesNotMatch(html, /<button[^>]*>\s*<\/button>/)
   }
+})
+
+test('concurrent game initialization shares a request and caches the loaded game', async (t) => {
+  const fixture = createGameStore(t)
+  let resolveGame
+  fixture.response = new Promise((resolve) => {
+    resolveGame = resolve
+  })
+  const first = fixture.store.setGame()
+  const second = fixture.store.setGame()
+  assert.equal(fixture.requests.length, 1)
+  resolveGame({ success: true, data: { name: 'portland', mainhash: 'main' } })
+  const [game, sameGame] = await Promise.all([first, second])
+  assert.equal(game, sameGame)
+  assert.equal(fixture.requests.length, 1)
+  assert.equal(await fixture.store.setGame(), game)
+  assert.equal(fixture.requests.length, 1)
+})
+
+test('concurrent tag fetches share a request without suppressing explicit refreshes', async (t) => {
+  const fixture = createGameStore(t)
+  let resolveTags
+  fixture.tagsResponse = new Promise((resolve) => {
+    resolveTags = resolve
+  })
+  const first = fixture.store.fetchTags()
+  const second = fixture.store.fetchTags()
+  assert.equal(fixture.tagRequests.length, 1)
+  resolveTags([{ tagnumber: 42 }])
+  assert.deepEqual(await first, [{ tagnumber: 42 }])
+  assert.deepEqual(await second, [{ tagnumber: 42 }])
+  await fixture.store.fetchTags(false)
+  assert.equal(fixture.tagRequests.length, 2)
+  assert.deepEqual(fixture.tagRequests[1][1], { cached: false })
+})
+
+test('PWA manifest waits for game state rather than initiating another game fetch', () => {
+  const source = fs.readFileSync('src/components/ServiceWorker.vue', 'utf8')
+  assert.equal(source.includes('await store.setGame()'), false)
+  assert.equal(source.includes('() => store.game?.name'), true)
+  assert.equal(source.includes('if (name) void updateManifest()'), true)
 })

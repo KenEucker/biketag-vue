@@ -41,6 +41,8 @@ let client: BikeTagClient
 let gameName: string
 let biketagClientOpts: any
 let bikeTagInitialized = false
+const pendingGameRequests = new Map<string, Promise<Game | false>>()
+const pendingTagsRequests = new Map<string, Promise<Tag[]>>()
 
 export const initBikeTagStore = () => {
   if (localStorage.getItem('banned') === 'true') {
@@ -207,28 +209,38 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return this.SET_PROFILE(profile)
     },
     async setGame(newGameName?: string) {
-      newGameName = newGameName ?? this.gameName
-      if (!newGameName?.trim()) return false
+      const requestedGameName = (newGameName ?? this.gameName)?.trim()
+      if (!requestedGameName) return false
 
-      if (this.game?.name !== newGameName || !this.game?.mainhash) {
-        this.fetchingData = false
-        return client.getGame({ game: newGameName }).then(async (r) => {
+      // Share the same pending request between App and other startup consumers.
+      const pending = pendingGameRequests.get(requestedGameName)
+      if (pending) return pending
+
+      if (this.game?.name === requestedGameName && this.game?.mainhash) {
+        return this.game
+      }
+
+      const request = client
+        .getGame({ game: requestedGameName })
+        .then((r) => {
           if (r.success && !Array.isArray(r.data) && r.data?.name) {
             const game = r.data as Game
-
             client.setGameContext(game)
-
             return this.SET_GAME(game)
-          } else {
-            const cachedGame = this.allGames.find((g) => g.name === newGameName)
-            if (cachedGame) {
-              client.setGameContext(cachedGame)
-              return this.SET_GAME(cachedGame)
-            }
           }
+
+          const cachedGame = this.allGames.find((g) => g.name === requestedGameName)
+          if (cachedGame) {
+            client.setGameContext(cachedGame)
+            return this.SET_GAME(cachedGame)
+          }
+
           return false
         })
-      }
+        .finally(() => pendingGameRequests.delete(requestedGameName))
+
+      pendingGameRequests.set(requestedGameName, request)
+      return request
     },
     async resetBikeTagCache() {
       // TODO: add a check for stale cache before unnecessarily resetting
@@ -305,15 +317,13 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         else this.fetchCredentials() // don't include in initial data fetch results
       }
 
-      Promise.allSettled(initResults).then((results) => {
-        this.dataFetched = true
-        this.fetchingData = false
-      })
+      await Promise.allSettled(initResults)
+      this.dataFetched = true
+      this.fetchingData = false
 
       return initResults
     },
     fetchAllGames(cached = true) {
-      this.fetchingData = false
       return client
         .getAllGames(undefined, {
           cached,
@@ -339,7 +349,17 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       })
     },
     fetchTags(cached = true) {
-      return client.tags(undefined, { cached }).then(this.SET_TAGS)
+      const key = `${this.gameName}:${cached}`
+      const pending = pendingTagsRequests.get(key)
+      if (pending) return pending
+
+      const request = client
+        .tags(undefined, { cached })
+        .then((tags) => this.SET_TAGS(tags))
+        .finally(() => pendingTagsRequests.delete(key))
+
+      pendingTagsRequests.set(key, request)
+      return request
     },
     async fetchQueuedTags(cached = true) {
       if (this.currentBikeTag?.tagnumber > 0) {

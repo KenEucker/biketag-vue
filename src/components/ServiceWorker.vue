@@ -13,7 +13,7 @@
 import { BikeTagEnv, debug, getSanityImageResizedSize } from '@/common'
 import { useBikeTagStore } from '@/store/index'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 
 // props
 const props = defineProps({
@@ -51,10 +51,8 @@ async function close() {
   needRefresh.value = false
 }
 
-// created
-async function created() {
-  /// TODO: remove this extra call and ensure that the manifest is still being created
-  await store.setGame()
+// Generate the game-specific manifest once App has loaded the game metadata.
+async function updateManifest() {
   try {
     const manifestLinkEl = document.querySelector('link[rel="manifest"]')
 
@@ -101,7 +99,13 @@ async function created() {
     console.error('app::error loading manifest')
   }
 }
-created()
+watch(
+  () => store.game?.name,
+  (name) => {
+    if (name) void updateManifest()
+  },
+  { immediate: true },
+)
 </script>
 
 <style lang="scss">
