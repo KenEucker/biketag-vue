@@ -360,7 +360,13 @@ export const getApiUrl = (path = '') => {
   const apiPath = `/api${path.length ? '/' + path : ''}`
 
   if (apiHost) {
-    return `${apiHost}${apiPath}`
+    const apiUrl = new URL(apiHost)
+    const game =
+      (typeof window === 'undefined' ? null : getDomainInfo(window).subdomain) ??
+      BikeTagEnv.GAME_NAME
+    const host = apiUrl.hostname.replace(/^www\./, '')
+    apiUrl.hostname = game ? `${game}.${host}` : `www.${host}`
+    return `${apiUrl.origin}${apiPath}`
   }
 
   if (typeof window === 'undefined') {
