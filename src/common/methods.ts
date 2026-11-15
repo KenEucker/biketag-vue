@@ -357,14 +357,10 @@ export const getSanityImageUrl = (
 
 export const getApiUrl = (path = '') => {
   const apiHost = BikeTagEnv.API_HOST?.replace(/\/+$/, '')
-  const functionPath = `/.netlify/functions${path.length ? '/' + path : ''}`
+  const apiPath = `/api${path.length ? '/' + path : ''}`
 
   if (apiHost) {
-    // In the browser, use the Vite proxy so requests stay same-origin and
-    // cross-origin preflight responses cannot be redirected by the remote host.
-    return typeof window === 'undefined'
-      ? `${apiHost}${functionPath}`
-      : `/api${path.length ? '/' + path : ''}`
+    return `${apiHost}${apiPath}`
   }
 
   if (typeof window === 'undefined') {

@@ -1,13 +1,12 @@
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { BikeTagDefaults } from './src/common/constants'
 import { frontendEnvironment } from './config/frontend-environment'
 
 const host = process.env.HOST ?? BikeTagDefaults.host
-const apiHost = loadEnv('development', process.cwd(), '').API_HOST?.replace(/\/+$/, '')
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
@@ -95,17 +94,6 @@ export default defineConfig({
   server: {
     host: 'seattle.localhost',
     port: 8080,
-    ...(apiHost
-      ? {
-          proxy: {
-            '/api': {
-              target: apiHost,
-              changeOrigin: true,
-              rewrite: (path) => path.replace(/^\/api(?=\/|$)/, '/.netlify/functions'),
-            },
-          },
-        }
-      : {}),
   },
   preview: {
     port: 8080,
