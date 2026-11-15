@@ -122,16 +122,16 @@ function createGameStore(t) {
   })
   global.window = { location: new URL('https://portland.biketag.org') }
   global.localStorage = { getItem: () => null }
-  const fixture = { response: { success: false }, requests: [], configurations: [] }
+  const fixture = { response: { success: false }, requests: [], contexts: [] }
   const { initBikeTagStore, useBikeTagStore } = load('src/store/index.ts', {
     biketag: class {
       async getGame(...args) {
         fixture.requests.push(args)
         return fixture.response
       }
-      config(...args) {
-        fixture.configurations.push(args)
-        return args[0]
+      setGameContext(game) {
+        fixture.contexts.push(game)
+        return game
       }
     },
     pinia: { defineStore: (_id, options) => options },
@@ -139,7 +139,7 @@ function createGameStore(t) {
     '../common/upload-recovery': {},
     '../common': {
       BikeTagEnv: {},
-      BikeTagDefaults: { gameName: '', store: 'biketag', gameSource: 'sanity' },
+      BikeTagDefaults: { gameName: '', store: 'biketag' },
       getDomainInfo,
       getApiUrl: () => '/api',
       getBikeTagClientOpts: () => ({ imgur: {}, aws: {} }),
@@ -154,7 +154,6 @@ function createGameStore(t) {
     gameName: 'portland',
     game: {},
     allGames: [],
-    imageSource: 'aws',
   }
   return fixture
 }
@@ -170,43 +169,44 @@ test('landing-page startup does not look up a game without a name', async (t) =>
   assert.deepEqual(store.game, {})
 })
 
-test('games without settings load with defaults and retain their configured image source', async (t) => {
+test('games without storage settings use the BikeTag API context default', async (t) => {
   const fixture = createGameStore(t)
   for (const settings of [undefined, null]) {
     fixture.store.game = {}
-    fixture.store.imageSource = 'imgur'
     fixture.response = {
       success: true,
       data: {
         name: 'portland',
-        mainhash: 'main',
-        queuehash: 'queue',
-        awsRegion: 'region',
         settings,
       },
     }
     const game = await fixture.store.setGame()
     assert.equal(game.name, 'portland')
     assert.deepEqual(game.settings, {})
-    assert.equal(fixture.store.imageSource, 'imgur')
-    assert.equal(fixture.configurations.at(-1)[0].imgur.hash, 'main')
-    assert.equal(fixture.configurations.at(-1)[0].aws.region, 'region')
+    assert.equal(fixture.contexts.at(-1), fixture.response.data)
+    assert.equal(fixture.requests.at(-1).length, 1)
   }
 })
 
-test('game settings still select AWS or Imgur storage', async (t) => {
+test('games with storage settings are passed to the API game context', async (t) => {
   const fixture = createGameStore(t)
-  for (const [settings, initialSource, expectedSource] of [
-    [{ 'data::aws': 'true', 'data::imgur': 'true' }, 'imgur', 'aws'],
-    [{ 'data::aws': 'false', 'data::imgur': 'true' }, 'aws', 'imgur'],
-    [{ 'data::aws': 'false', 'data::imgur': 'false' }, 'aws', 'aws'],
+  for (const settings of [
+    { 'data::aws': 'true', 'data::imgur': 'true' },
+    { 'data::aws': 'false', 'data::imgur': 'true' },
+    { 'data::aws': 'false', 'data::imgur': 'false' },
   ]) {
     fixture.store.game = {}
-    fixture.store.imageSource = initialSource
-    fixture.response = { success: true, data: { name: 'portland', settings } }
+    fixture.response = {
+      success: true,
+      data: {
+        name: 'portland',
+        mainhash: settings['data::imgur'] === 'true' ? 'main' : undefined,
+        settings,
+      },
+    }
     const game = await fixture.store.setGame()
     assert.deepEqual(game.settings, settings)
-    assert.equal(fixture.store.imageSource, expectedSource)
+    assert.equal(fixture.contexts.at(-1), fixture.response.data)
   }
 })
 
@@ -217,12 +217,13 @@ test('game collections and missing game responses cannot replace the selected ga
     assert.equal(await fixture.store.setGame(), false)
     assert.deepEqual(fixture.store.game, {})
   }
-  assert.equal(fixture.configurations.length, 0)
+  assert.equal(fixture.contexts.length, 0)
 
   fixture.store.allGames = [{ name: 'portland', mainhash: 'cached-main' }]
   const cachedGame = await fixture.store.setGame()
   assert.equal(cachedGame.name, 'portland')
   assert.deepEqual(cachedGame.settings, {})
+  assert.equal(fixture.contexts.at(-1), fixture.store.allGames[0])
 })
 
 test('the home page only renders its player button when the player has a name', async () => {

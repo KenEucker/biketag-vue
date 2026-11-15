@@ -500,6 +500,11 @@ test('the actual SDK retries only PUT with a fresh URL and preserves both found 
       clientToken: `header.${Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url')}.signature`,
       aws: { region: 'sfo2', accessKeyId: 'dummy', secretAccessKey: 'dummy' },
     })
+    sdk.setGameContext({
+      name: 'demo',
+      awsRegion: 'sfo2',
+      settings: { 'data::aws': 'true' },
+    })
     const originalAdapter = sdk.plainFetcher.defaults.adapter
     const originalFile = new File(['IMAGE_BYTES'], 'photo.jpeg', { type: 'image/jpeg' })
     const payload = {
@@ -517,7 +522,7 @@ test('the actual SDK retries only PUT with a fresh URL and preserves both found 
       async (fields) => reports.push(fields),
     )
     const { queueTagWithUploadRecovery } = loadRecovery({ biketag: TestSDK })
-    const result = await queueTagWithUploadRecovery(sdk, payload, 'aws', (stage, details) => {
+    const result = await queueTagWithUploadRecovery(sdk, payload, (stage, details) => {
       log.record(stage, details)
       attempt.record(stage, details)
     })
@@ -550,7 +555,7 @@ test('the actual SDK retries only PUT with a fresh URL and preserves both found 
       { game: 'demo', action: slot, playerId: 'player-42', tagnumber: '42' },
       async (fields) => reports.push(fields),
     )
-    const failed = await queueTagWithUploadRecovery(sdk, payload, 'aws', failedAttempt.record)
+    const failed = await queueTagWithUploadRecovery(sdk, payload, failedAttempt.record)
     assert.equal(failed.success, false)
     assert.equal(puts.length, 4)
     assert.equal(payload[slot + 'Image'], originalFile)
@@ -566,7 +571,7 @@ test('the actual SDK retries only PUT with a fresh URL and preserves both found 
     assert.ok(events.some((e) => e.error?.code === 'ERR_NETWORK'))
     assert.doesNotMatch(JSON.stringify(reports), /PRIVATE|IMAGE_BYTES/)
     failAlways = false
-    const manualRetry = await queueTagWithUploadRecovery(sdk, payload, 'aws')
+    const manualRetry = await queueTagWithUploadRecovery(sdk, payload)
     assert.equal(manualRetry.success, true, manualRetry.error)
 
     const unreadable = new File(['unreadable'], 'photo.jpeg', { type: 'image/jpeg' })
@@ -576,7 +581,7 @@ test('the actual SDK retries only PUT with a fresh URL and preserves both found 
     const failedReadPayload = { ...payload, [slot + 'Image']: unreadable }
     const putsBefore = puts.length
     const signsBefore = signs.length
-    const failedRead = await queueTagWithUploadRecovery(sdk, failedReadPayload, 'aws')
+    const failedRead = await queueTagWithUploadRecovery(sdk, failedReadPayload)
     assert.equal(failedRead.success, false)
     assert.match(failedRead.error, /file could not be read/)
     assert.equal(puts.length, putsBefore)
@@ -588,7 +593,8 @@ test('the actual SDK retries only PUT with a fresh URL and preserves both found 
 test('Imgur and completed queue submissions keep the existing client path', async () => {
   const calls = []
   const client = {
-    config: () => assert.fail('Non-upload operations must not create an upload client'),
+    gameContext: undefined,
+    config: () => ({ availableApis: [] }),
     queueTag: async (...args) => {
       calls.push(args)
       return { success: true }
@@ -597,10 +603,7 @@ test('Imgur and completed queue submissions keep the existing client path', asyn
   const { queueTagWithUploadRecovery } = loadRecovery()
   const filePayload = { foundImage: new File(['bytes'], 'photo.jpg') }
   const completePayload = { foundImageUrl: 'found', mysteryImageUrl: 'mystery' }
-  await queueTagWithUploadRecovery(client, filePayload, 'imgur')
-  await queueTagWithUploadRecovery(client, completePayload, 'aws')
-  assert.deepEqual(calls, [
-    [filePayload, { source: 'imgur' }],
-    [completePayload, { source: 'aws' }],
-  ])
+  await queueTagWithUploadRecovery(client, filePayload)
+  await queueTagWithUploadRecovery(client, completePayload)
+  assert.deepEqual(calls, [[filePayload], [completePayload]])
 })

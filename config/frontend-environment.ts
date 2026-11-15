@@ -16,8 +16,6 @@ export const publicEnvironmentKeys = [
   'B_KEY',
   'CLIENT_KEY',
   'GAME_NAME',
-  'GAME_SOURCE',
-  'IMAGE_SOURCE',
   'HOST',
   'G_AKEY',
   'GOOGLE_API_KEY',
@@ -34,7 +32,6 @@ export const publicEnvironmentKeys = [
   'S_PID',
   'SANITY_PROJECT_ID',
   'RELOAD_SW',
-  'IMGUR_DELAY_NOTICE',
   'IMGUR_DELAY',
 ] as const
 

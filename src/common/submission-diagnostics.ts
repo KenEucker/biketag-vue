@@ -65,7 +65,6 @@ export const getSubmissionContext = ({
   playerId,
   playerName,
   formStep,
-  imageSource,
 }: any): Record<string, string> => {
   const id = playerId || tag.playerId || queuedTag.playerId || ''
   const name = tag.foundPlayer || tag.mysteryPlayer || queuedTag.foundPlayer || playerName || ''
@@ -90,7 +89,6 @@ export const getSubmissionContext = ({
     submission: `${game || 'unknown-game'}-${number || 'unknown-round'}--${name || id || 'unknown-player'}`,
     action,
     formStep: String(formStep ?? ''),
-    imageSource: String(imageSource ?? ''),
     context: JSON.stringify({
       submittedRound: tag.tagnumber,
       queuedRound: queuedTag.tagnumber,
