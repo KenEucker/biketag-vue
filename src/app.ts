@@ -1,8 +1,24 @@
 import i18n from '@/i18n'
-import { Components, createBootstrap, Directives } from 'bootstrap-vue-next'
+import {
+  BButton,
+  BCard,
+  BCol,
+  BCollapse,
+  BFormGroup,
+  BFormInput,
+  BModal,
+  BPagination,
+  BPopover,
+  BRow,
+  BTab,
+  BTabs,
+  createBootstrap,
+  vBPopover,
+  vBToggle,
+} from 'bootstrap-vue-next'
 import mitt from 'mitt'
 import { createPinia } from 'pinia'
-import { createApp, type Component } from 'vue'
+import { createApp } from 'vue'
 import VueGoogleMaps from 'vue-google-maps-community-fork'
 import VueSocials from 'vue-socials'
 import { useToast } from 'vue-toast-notification'
@@ -84,12 +100,22 @@ class BikeTagApp {
   components() {
     this.app.provide('toast', useToast())
     this.app.use(createBootstrap())
-    Object.entries(Components).forEach(([name, component]) =>
-      this.app.component(name, component as Component),
-    )
-    Object.entries(Directives).forEach(([name, directive]) =>
-      this.app.directive(name.replace(/^v/, ''), directive),
-    )
+    Object.entries({
+      BButton,
+      BCard,
+      BCol,
+      BCollapse,
+      BFormGroup,
+      BFormInput,
+      BModal,
+      BPagination,
+      BPopover,
+      BRow,
+      BTab,
+      BTabs,
+    }).forEach(([name, component]) => this.app.component(name, component))
+    this.app.directive('BPopover', vBPopover)
+    this.app.directive('BToggle', vBToggle)
     this.app.use(Markdown)
     this.app.use(VueIframe)
     this.app.use(VueSocials)
