@@ -31,9 +31,10 @@ const getGameLogoUrl = (logo: string, size: number) => {
 const getManifest = (origin: string, game?: { name?: string; logo?: string }) => {
   const host = new URL(origin).host
   const name = game?.name?.length ? game.name.toUpperCase() + '.BIKETAG' : 'BikeTag'
-  const hasGameLogo = !!game?.logo?.length
-  const icon192 = hasGameLogo ? getGameLogoUrl(game!.logo!, 192) : `https://${host}/android-chrome-192x192.png`
-  const icon512 = hasGameLogo ? getGameLogoUrl(game!.logo!, 512) : `https://${host}/android-chrome-512x512.png`
+  const logo = game?.logo
+  const hasGameLogo = !!logo?.length
+  const icon192 = logo ? getGameLogoUrl(logo, 192) : `https://${host}/android-chrome-192x192.png`
+  const icon512 = logo ? getGameLogoUrl(logo, 512) : `https://${host}/android-chrome-512x512.png`
 
   return {
     id: '/',
@@ -93,14 +94,17 @@ export default async (req: Request) => {
   }
 
   try {
-    const client = new BikeTagClient(getBikeTagClientOpts(req))
-    const { game } = getBikeTagClientOpts(req)
+    const clientOptions = getBikeTagClientOpts(req)
+    const client = new BikeTagClient(clientOptions)
+    const { game } = clientOptions
     const response = await client.getGame({ game }, { source: 'sanity' })
     const gameData =
       response.success && !Array.isArray(response.data) ? response.data : undefined
 
-    return new Response(JSON.stringify(getManifest(origin, gameData)), { headers })
+    const body = JSON.stringify(getManifest(origin, gameData))
+    return new Response(req.method === 'HEAD' ? null : body, { headers })
   } catch {
-    return new Response(JSON.stringify(getManifest(origin)), { headers })
+    const body = JSON.stringify(getManifest(origin))
+    return new Response(req.method === 'HEAD' ? null : body, { headers })
   }
 }
