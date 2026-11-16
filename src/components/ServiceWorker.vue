@@ -54,9 +54,9 @@ const imageTypes = {
   webp: 'image/webp',
 }
 
-function getManifestIconType(src: string) {
+function getManifestIconType(src) {
   const extension = new URL(src, window.location.origin).pathname.split('.').pop()?.toLowerCase()
-  return imageTypes[extension as keyof typeof imageTypes]
+  return imageTypes[extension]
 }
 
 // methods
