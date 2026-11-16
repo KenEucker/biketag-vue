@@ -43,6 +43,7 @@ let biketagClientOpts: any
 let bikeTagInitialized = false
 const pendingGameRequests = new Map<string, Promise<Game | false>>()
 const pendingTagsRequests = new Map<string, Promise<Tag[]>>()
+let tagRequestGeneration = 0
 
 export const initBikeTagStore = () => {
   if (localStorage.getItem('banned') === 'true') {
@@ -247,6 +248,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       const now = Date.now()
       if (now - this.lastCacheResetTime >= this.cacheResetInterval) {
         this.lastCacheResetTime = now
+        tagRequestGeneration += 1
+        pendingTagsRequests.clear()
         await this.fetchTags(false)
         await this.fetchCurrentBikeTag()
         await this.fetchQueuedTags(false)
@@ -349,13 +352,16 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       })
     },
     fetchTags(cached = true) {
-      const key = `${this.gameName}:${cached}`
+      const generation = tagRequestGeneration
+      const key = `${this.gameName}:${cached}:${generation}`
       const pending = pendingTagsRequests.get(key)
       if (pending) return pending
 
       const request = client
         .tags(undefined, { cached })
-        .then((tags) => this.SET_TAGS(tags))
+        .then((tags) =>
+          generation === tagRequestGeneration ? this.SET_TAGS(tags) : this.tags,
+        )
         .finally(() => pendingTagsRequests.delete(key))
 
       pendingTagsRequests.set(key, request)
@@ -1930,7 +1936,8 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return null
     },
     getImageSized: (state) => {
-      return (url: string, s: string = 'm') => getImageSized(url, s)
+      return (url: string, s: Parameters<typeof getImageSized>[1] = 'm') =>
+        getImageSized(url, s)
     },
     getQueuedTagState: (state) => {
       return getQueuedTagState(state.playerTag)

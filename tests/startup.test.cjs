@@ -308,9 +308,36 @@ test('concurrent tag fetches share a request without suppressing explicit refres
   assert.deepEqual(fixture.tagRequests[1][1], { cached: false })
 })
 
-test('PWA manifest waits for game state rather than initiating another game fetch', () => {
-  const source = fs.readFileSync('src/components/ServiceWorker.vue', 'utf8')
-  assert.equal(source.includes('await store.setGame()'), false)
-  assert.equal(source.includes('() => store.game?.name'), true)
-  assert.equal(source.includes('if (name) void updateManifest()'), true)
+test('reset tag fetches supersede pending requests and reject stale responses', async (t) => {
+  const fixture = createGameStore(t)
+  let resolveOldTags
+  fixture.tagsResponse = new Promise((resolve) => {
+    resolveOldTags = resolve
+  })
+  const oldRequest = fixture.store.fetchTags(false)
+
+  let resolveCurrentTags
+  fixture.tagsResponse = new Promise((resolve) => {
+    resolveCurrentTags = resolve
+  })
+  fixture.store.cacheResetInterval = 0
+  fixture.store.lastCacheResetTime = 0
+  fixture.store.fetchCurrentBikeTag = async () => undefined
+  fixture.store.fetchQueuedTags = async () => undefined
+  const reset = fixture.store.resetBikeTagCache()
+  assert.equal(fixture.tagRequests.length, 2)
+
+  const currentTags = [{ tagnumber: 43 }]
+  resolveCurrentTags(currentTags)
+  await reset
+  resolveOldTags([{ tagnumber: 42 }])
+  await oldRequest
+
+  assert.deepEqual(fixture.store.tags, currentTags)
+})
+
+test('server-generated PWA manifest uses the game slug as its install identity', () => {
+  const source = fs.readFileSync('functions/manifest.mts', 'utf8')
+  assert.equal(source.includes("id: slug ? `${slug}.biketag` : 'biketag'"), true)
+  assert.equal(source.includes('getManifest(origin, gameData, game)'), true)
 })

@@ -28,7 +28,11 @@ const getGameLogoUrl = (logo: string, size: number) => {
   return `https://cdn.sanity.io/images/x37ikhvs/production/${image}?h=${size}&w=${size}`
 }
 
-const getManifest = (origin: string, game?: { name?: string; logo?: string }) => {
+const getManifest = (
+  origin: string,
+  game?: { name?: string; logo?: string },
+  slug?: string,
+) => {
   const host = new URL(origin).host
   const name = game?.name?.length ? game.name.toUpperCase() + '.BIKETAG' : 'BikeTag'
   const logo = game?.logo
@@ -37,7 +41,7 @@ const getManifest = (origin: string, game?: { name?: string; logo?: string }) =>
   const icon512 = logo ? getGameLogoUrl(logo, 512) : `https://${host}/android-chrome-512x512.png`
 
   return {
-    id: '/',
+    id: slug ? `${slug}.biketag` : 'biketag',
     name,
     short_name: game?.name?.length ? game.name : 'BikeTag',
     description: game?.name
@@ -101,7 +105,7 @@ export default async (req: Request) => {
     const gameData =
       response.success && !Array.isArray(response.data) ? response.data : undefined
 
-    const body = JSON.stringify(getManifest(origin, gameData))
+    const body = JSON.stringify(getManifest(origin, gameData, game))
     return new Response(req.method === 'HEAD' ? null : body, { headers })
   } catch {
     const body = JSON.stringify(getManifest(origin))

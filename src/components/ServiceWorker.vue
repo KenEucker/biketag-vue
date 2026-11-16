@@ -40,6 +40,10 @@ const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
   },
 })
 
+const close = () => {
+  offlineReady.value = false
+  needRefresh.value = false
+}
 
 </script>
 

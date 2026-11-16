@@ -41,11 +41,11 @@ The application uses route-level Vue views in `src/views/`. The table below grou
 
 ### Account and administration
 
-These routes are conditionally registered when authentication is enabled. They are useful for a complete design review, but should not be the first focus of a public community redesign.
+Profile and administration routes are registered only when authentication is enabled. `/login` and `/logout` are registered outside `protectedRoutes` and remain available when authentication is disabled. Include login and logout in design reviews for both authentication configurations; the remaining account and administration routes are useful for a complete design review but are not the first focus of a public community redesign.
 
 | Screen | Route | View | Existing components directly imported by view |
 |---|---|---|---|
-| Login / logout | `/login`, `/logout` | `Login.vue`, `Logout.vue` | No local component imports identified |
+| Login / logout (always available) | `/login`, `/logout` (outside `protectedRoutes`) | `Login.vue`, `Logout.vue` | No local component imports identified; include when reviewing with authentication disabled |
 | Profile | `/profile` | `Profile.vue` | No local component imports identified |
 | Ambassador dashboard | `/dashboard` | `Dashboard.vue` | No local component imports identified |
 | Game settings | `/settings` | `GameSettings.vue` | `BikeTagButton` |
