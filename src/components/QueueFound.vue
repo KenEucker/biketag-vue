@@ -220,8 +220,10 @@ const hideModal = () => (showModal.value = false)
 const onSubmit = async (e) => {
   e.preventDefault()
   uploadInProgress.value = true
-  const gpsIsDefault =
-    gps.value.lat === getGame.value?.boundary?.lat && gps.value.lng === getGame.value?.boundary?.lng
+  // Track whether the coordinates came from the game boundary or a user-selected
+  // location. Comparing coordinates to the boundary can misclassify valid EXIF
+  // GPS when the photo was taken at the boundary itself.
+  const gpsIsDefault = isGpsDefault.value
 
   /// Attempts to fix the tagnumber === #NaN issue
   if (!getCurrentBikeTag?.tagnumber) {
