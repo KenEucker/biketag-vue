@@ -332,6 +332,7 @@ test('explicit metadata handler sends edits to main with no image URLs', async (
     game: 'seattle',
     tagnumber: 1700,
     hint: 'Inching towards ballard',
+    metadataOnly: true,
   })
   for (const call of flow.calls.filter((call) => call.method === 'getTags')) {
     assert.equal(call.options.folder, 'main')
