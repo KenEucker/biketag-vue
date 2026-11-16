@@ -49,7 +49,7 @@
     "ajv": "^8.17.1",
     "autoprefixer": "^10.4.17",
     "axios": "^1.13.2",
-    "biketag": "^3.7.1",
+    "biketag": "^3.7.4",
     "bootstrap": "^5.3.3",
     "bootstrap-vue-next": "^1.2.4",
     "crypto-js": "^4.2.0",
@@ -86,7 +86,7 @@
     "vue3-markdown-it": "^1.0.10"
   },
   "peerDependencies": {
-    "biketag": "^3.7.1",
+    "biketag": "^3.7.4",
     "pinia": "^2.0.0",
     "vue": "^3.5.13",
     "vue-router": "^4.0.0"

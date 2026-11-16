@@ -226,7 +226,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         .then((r) => {
           if (r.success && !Array.isArray(r.data) && r.data?.name) {
             const game = r.data as Game
-            client.setGameContext(game)
             return this.SET_GAME(game)
           }
 
@@ -597,7 +596,6 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           const gameResponse = await client.getGame({ game: this.gameName })
           if (gameResponse.success) {
             const game = gameResponse.data as Game
-            client.setGameContext(game)
             this.SET_GAME(game)
           }
           return typeof response.data === 'string' ? JSON.parse(response.data) : response.data
