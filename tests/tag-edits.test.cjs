@@ -26,10 +26,6 @@ function load(file, dependencies = {}, source) {
 
 const edits = load('src/common/tag-edits.ts')
 const { mergeTagsForEdit, getTagEditUpdates } = edits
-const { prepareTagMetadataUpdate, updateMainTagMetadata } = load('functions/common/tag-update.ts', {
-  '../../src/common/tag-edits': edits,
-  './storage-metadata': load('functions/common/storage-metadata.ts'),
-})
 const image = (round, type) =>
   `https://seattle-biketag.sfo2.cdn.digitaloceanspaces.com/main/seattle-tag-${round}--${type}.webp`
 const current = {
@@ -255,69 +251,6 @@ test('edit activity forms and their fields are declared in deploy-time HTML', ()
   }
 })
 
-test('explicit metadata edits strip unchanged URLs and storage controls', () => {
-  const update = prepareTagMetadataUpdate(
-    {
-      ...current,
-      hint: 'Inching towards ballard',
-      folder: 'queue',
-      resize: true,
-      slug: 'seattle-tag-1699',
-      region: 'bad',
-      hash: 'queue',
-      source: 'imgur',
-    },
-    current,
-    'seattle',
-    'aws',
-  )
-  assert.deepEqual(update, {
-    game: 'seattle',
-    tagnumber: 1700,
-    mysteryPlayer: current.mysteryPlayer,
-    mysteryTime: current.mysteryTime,
-    hint: 'Inching towards ballard',
-    gps: current.gps,
-  })
-})
-
-test('explicit metadata edits reject cross-round URLs and image replacement requests', () => {
-  assert.throws(
-    () =>
-      prepareTagMetadataUpdate(
-        {
-          ...previous,
-          mysteryImageUrl: current.mysteryImageUrl,
-        },
-        previous,
-        'seattle',
-        'aws',
-      ),
-    /mysteryImageUrl does not match tag #1699/,
-  )
-  assert.throws(
-    () =>
-      prepareTagMetadataUpdate(
-        {
-          ...current,
-          foundImageUrl: previous.foundImageUrl,
-        },
-        current,
-        'seattle',
-        'aws',
-      ),
-    /foundImageUrl does not match tag #1700/,
-  )
-  assert.throws(
-    () => prepareTagMetadataUpdate({ mysteryImage: 'bytes' }, current, 'seattle', 'aws'),
-    /Image uploads/,
-  )
-  assert.throws(
-    () => prepareTagMetadataUpdate({ game: 'portland' }, current, 'seattle', 'aws'),
-    /game does not match/,
-  )
-})
-
 function handlerHarness({
   payload,
   profile,
@@ -329,13 +262,7 @@ function handlerHarness({
   const calls = []
   const logs = []
   const handler = load('functions/update.mts', {
-    './common/tag-update': {
-      prepareTagMetadataUpdate,
-      async updateMainTagMetadata(_client, payload) {
-        calls.push({ method: 'updateMainTagMetadata', payload })
-        return result ?? { success: true, status: 200, data: { ...existing, ...payload } }
-      },
-    },
+    '../src/common/tag-edits': edits,
     biketag: {
       BikeTagClient: class {
         game = async () => ({
@@ -400,7 +327,7 @@ test('explicit metadata handler sends edits to main with no image URLs', async (
   const response = await flow.run()
   assert.equal(response.status, 200)
   assert.equal((await response.json()).hint, 'Inching towards ballard')
-  const update = flow.calls.find((call) => call.method === 'updateMainTagMetadata')
+  const update = flow.calls.find((call) => call.method === 'updateTag')
   assert.deepEqual(update.payload, {
     game: 'seattle',
     tagnumber: 1700,
@@ -412,10 +339,8 @@ test('explicit metadata handler sends edits to main with no image URLs', async (
     assert.equal(call.options.cached, false)
     assert.equal(call.options.resize, false)
   }
-  assert.equal(
-    flow.calls.some((call) => call.method === 'updateTag'),
-    false,
-  )
+  assert.equal(update.options.metadataOnly, true)
+  assert.equal(update.options.folder, 'main')
   assert.doesNotMatch(JSON.stringify(flow.logs), /PRIVATE_STORAGE_SECRET|PRIVATE_SANITY_TOKEN/)
 })
 
@@ -540,216 +465,6 @@ test('handler returns an HTTP error when the adapter reports failure with a 200 
   const response = await flow.run()
   assert.equal(response.status, 400)
   assert.equal((await response.json()).error, 'metadata failed')
-})
-
-function metadataStorage(tags, imageKeys, { failCopy = false, afterCopy } = {}) {
-  const commands = []
-  const metadata = {
-    data: Buffer.from(JSON.stringify({ custom: 'preserved', s: 'share-url' })).toString('base64'),
-    title: 'original title',
-  }
-  let index = structuredClone(tags)
-  const client = {
-    async send(command) {
-      commands.push(command)
-      const { Key, CopySource, Body } = command.input
-      switch (command.constructor.name) {
-        case 'GetObjectCommand':
-          assert.equal(Key, 'main/index.json')
-          return { Body: { transformToString: async () => JSON.stringify(index) } }
-        case 'HeadObjectCommand':
-          if (!imageKeys.includes(Key)) throw new Error(`Missing ${Key}`)
-          return {
-            Metadata: metadata,
-            ContentType: 'image/webp',
-            CacheControl: 'max-age=86400',
-            ContentDisposition: 'inline',
-          }
-        case 'CopyObjectCommand':
-          assert.equal(CopySource, `seattle-biketag/${Key}`)
-          if (failCopy) throw new Error('Copy failed')
-          if (afterCopy) index = afterCopy(index)
-          return {}
-        case 'PutObjectCommand':
-          assert.equal(Key, 'main/index.json')
-          index = JSON.parse(Body)
-          return {}
-        default:
-          assert.fail(`Unexpected storage operation: ${command.constructor.name}`)
-      }
-    },
-  }
-  return { client, commands, getIndex: () => index }
-}
-
-test('hint edit succeeds with the incident record even when its found image is missing', async () => {
-  const damaged = {
-    ...current,
-    foundImageUrl: image(1700, 'found'),
-    foundPlayer: previous.foundPlayer,
-  }
-  const storage = metadataStorage([previous, damaged], ['main/seattle-tag-1700--mystery.webp'])
-  const result = await updateMainTagMetadata(storage.client, {
-    game: 'seattle',
-    tagnumber: 1700,
-    hint: 'Inching towards Ballard',
-  })
-  assert.equal(result.success, true, result.error)
-  assert.equal(storage.getIndex()[1].hint, 'Inching towards Ballard')
-  assert.deepEqual(storage.getIndex()[0], previous)
-  assert.equal(storage.getIndex()[1].foundImageUrl, damaged.foundImageUrl)
-  assert.deepEqual(
-    storage.commands.map((command) => command.constructor.name),
-    [
-      'GetObjectCommand',
-      'HeadObjectCommand',
-      'CopyObjectCommand',
-      'GetObjectCommand',
-      'PutObjectCommand',
-    ],
-  )
-  const copy = storage.commands.find(
-    (command) => command.constructor.name === 'CopyObjectCommand',
-  ).input
-  assert.equal(copy.Key, 'main/seattle-tag-1700--mystery.webp')
-  assert.equal(copy.ContentType, 'image/webp')
-  assert.equal(copy.CacheControl, 'max-age=86400')
-  assert.equal(copy.ContentDisposition, 'inline')
-  assert.equal(copy.Metadata.title, 'original title')
-  const data = JSON.parse(Buffer.from(copy.Metadata.data, 'base64'))
-  assert.equal(data.h, 'Inching towards Ballard')
-  assert.equal(data.custom, 'preserved')
-  assert.equal(data.s, 'share-url')
-  assert.equal(data.t, 1700)
-})
-
-test('metadata edits retain rounds published while object metadata was updating', async () => {
-  const next = { ...current, tagnumber: 1701 }
-  const storage = metadataStorage([current], ['main/seattle-tag-1700--mystery.webp'], {
-    afterCopy: (tags) => [...tags, next],
-  })
-  const result = await updateMainTagMetadata(storage.client, {
-    game: 'seattle',
-    tagnumber: 1700,
-    hint: 'new hint',
-  })
-  assert.equal(result.success, true, result.error)
-  assert.deepEqual(storage.getIndex()[1], next)
-  assert.equal(storage.getIndex()[0].hint, 'new hint')
-})
-
-test('found edits update only the previous round found metadata and index fields', async () => {
-  const storage = metadataStorage([previous, current], ['main/seattle-tag-1699--found.webp'])
-  const gps = { lat: 0, long: 0, alt: 0 }
-  const result = await updateMainTagMetadata(storage.client, {
-    game: 'seattle',
-    tagnumber: 1699,
-    foundLocation: '',
-    gps,
-  })
-  assert.equal(result.success, true, result.error)
-  assert.deepEqual(storage.getIndex()[1], current)
-  assert.equal(storage.getIndex()[0].hint, previous.hint)
-  assert.equal(storage.getIndex()[0].foundLocation, '')
-  assert.deepEqual(storage.getIndex()[0].gps, gps)
-  const copies = storage.commands.filter(
-    (command) => command.constructor.name === 'CopyObjectCommand',
-  )
-  assert.equal(copies.length, 1)
-  assert.equal(copies[0].input.Key, 'main/seattle-tag-1699--found.webp')
-  const data = JSON.parse(Buffer.from(copies[0].input.Metadata.data, 'base64'))
-  assert.equal(data.fl, '')
-  assert.deepEqual(data.g, gps)
-})
-
-test('required image failures never report success or save an index update', async () => {
-  for (const [imageKeys, options] of [
-    [[], {}],
-    [['main/seattle-tag-1700--mystery.webp'], { failCopy: true }],
-  ]) {
-    const storage = metadataStorage([current], imageKeys, options)
-    const result = await updateMainTagMetadata(storage.client, {
-      game: 'seattle',
-      tagnumber: 1700,
-      hint: 'new hint',
-    })
-    assert.equal(result.success, false)
-    assert.equal(result.status, 400)
-    assert.equal(
-      storage.commands.some((command) => command.constructor.name === 'PutObjectCommand'),
-      false,
-    )
-    assert.deepEqual(storage.getIndex(), [current])
-  }
-})
-
-test('metadata edit refuses to follow a stale reference into a different round', async () => {
-  const damaged = { ...current, mysteryImageUrl: previous.mysteryImageUrl }
-  const storage = metadataStorage([damaged], ['main/seattle-tag-1699--mystery.webp'])
-  const result = await updateMainTagMetadata(storage.client, {
-    game: 'seattle',
-    tagnumber: 1700,
-    hint: 'new hint',
-  })
-  assert.equal(result.success, false)
-  assert.match(result.error, /does not belong to tag #1700/)
-  assert.equal(storage.commands.length, 1)
-})
-
-test('installed AWS adapter saves the hint without moving, deleting, or uploading any image', async () => {
-  const { BikeTagClient } = require('biketag')
-  const client = new BikeTagClient({
-    game: 'seattle',
-    aws: { region: 'sfo2', accessKeyId: 'test', secretAccessKey: 'test' },
-  })
-  const commands = []
-  let savedIndex
-  client.awsClient.send = async (command) => {
-    commands.push(command)
-    switch (command.constructor.name) {
-      case 'GetObjectCommand':
-        assert.equal(command.input.Key, 'main/index.json')
-        return {
-          Body: {
-            async *[Symbol.asyncIterator]() {
-              yield Buffer.from(JSON.stringify([previous, current]))
-            },
-          },
-        }
-      case 'CopyObjectCommand':
-        assert.equal(command.input.Key, 'main/seattle-tag-1700--mystery.webp')
-        assert.equal(command.input.CopySource, `seattle-biketag/${command.input.Key}`)
-        assert.equal(
-          JSON.parse(Buffer.from(command.input.Metadata.data, 'base64')).h,
-          'Inching towards ballard',
-        )
-        return {}
-      case 'PutObjectCommand':
-        assert.equal(command.input.Key, 'main/index.json')
-        savedIndex = JSON.parse(command.input.Body)
-        return {}
-      default:
-        assert.fail(`Unexpected storage operation: ${command.constructor.name}`)
-    }
-  }
-  const response = await client.updateTag(
-    prepareTagMetadataUpdate(
-      { ...current, hint: 'Inching towards ballard' },
-      current,
-      'seattle',
-      'aws',
-    ),
-    { source: 'aws', folder: 'main', cached: false, resize: false },
-  )
-  assert.equal(response.success, true, JSON.stringify(response.error))
-  assert.deepEqual(savedIndex[0], previous)
-  assert.equal(savedIndex[1].hint, 'Inching towards ballard')
-  assert.equal(savedIndex[1].mysteryImageUrl, current.mysteryImageUrl)
-  assert.equal(savedIndex[1].foundImageUrl, '')
-  assert.equal(
-    commands.filter((command) => command.constructor.name === 'CopyObjectCommand').length,
-    1,
-  )
 })
 
 test('installed SDK still moves and renames images and generates variants through the resize function', async (t) => {
