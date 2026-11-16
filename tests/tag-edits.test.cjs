@@ -284,10 +284,6 @@ function handlerHarness({
           calls.push({ method: 'updateTag', payload, options })
           return result ?? { success: true, status: 200, data: { ...existing, ...payload } }
         }
-        async updateTagMetadata(payload, options) {
-          calls.push({ method: 'updateTagMetadata', payload, options })
-          return result ?? { success: true, status: 200, data: { ...existing, ...payload } }
-        }
       },
     },
     './common': {
@@ -331,7 +327,7 @@ test('explicit metadata handler sends edits to main with no image URLs', async (
   const response = await flow.run()
   assert.equal(response.status, 200)
   assert.equal((await response.json()).hint, 'Inching towards ballard')
-  const update = flow.calls.find((call) => call.method === 'updateTagMetadata')
+  const update = flow.calls.find((call) => call.method === 'updateTag')
   assert.deepEqual(update.payload, {
     game: 'seattle',
     tagnumber: 1700,
