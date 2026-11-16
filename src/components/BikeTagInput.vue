@@ -15,7 +15,7 @@
       :disabled="props.disabled"
       v-bind="$attrs"
       :type="props.type"
-      @input="update"
+      @update:model-value="emit('update:modelValue', $event)"
     />
     <span>
       <slot></slot>
