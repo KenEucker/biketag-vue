@@ -73,11 +73,7 @@ async function updateManifest() {
         start_url: window.location.origin,
         scope: window.location.origin,
         icons: [
-          // Keep the PNG icons required for splash screens when adding game logos.
-          ...(baseManifest.icons ?? []).map((icon) => ({
-            ...icon,
-            src: new URL(icon.src, existingManifest.url).href,
-          })),
+          // Put the game logo first so install surfaces prefer the city identity.
           {
             src: smallLogo[0] === '/' ? `${window.location.origin}${smallLogo}` : smallLogo,
             sizes: smallLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(smallLogo),
@@ -89,6 +85,11 @@ async function updateManifest() {
             type: 'image/webp',
             purpose: 'maskable any',
           },
+          // Keep the PNG icons required for splash screens as fallbacks.
+          ...(baseManifest.icons ?? []).map((icon) => ({
+            ...icon,
+            src: new URL(icon.src, existingManifest.url).href,
+          })),
         ],
       }
       const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
