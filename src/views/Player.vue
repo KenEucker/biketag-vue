@@ -4,8 +4,8 @@
     v-if="player && bikedex?.length"
     v-model="modal"
     title="BikeDex"
-    hide-footer
-    hide-header
+    no-footer
+    no-header
     modal-class="bikedex-modal"
   >
     <div class="container mt-5">

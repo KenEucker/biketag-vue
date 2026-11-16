@@ -28,7 +28,7 @@
         <b-tab>
           <template #title>
             <img
-              v-b-popover.click.blur.top="'Copied!'"
+              v-b-popover.click.top="'Copied!'"
               src="@/assets/images/Reddit.svg"
               class="tab-logo img-fluid"
               @click="copyTabContents(redditPostText)"
@@ -42,7 +42,7 @@
         <b-tab>
           <template #title>
             <img
-              v-b-popover.click.blur.top="'Copied!'"
+              v-b-popover.click.top="'Copied!'"
               src="@/assets/images/Diaspora.svg"
               class="tab-logo img-fluid"
               @click="copyTabContents(postText)"
@@ -55,7 +55,7 @@
         <b-tab v-if="!!getGame?.page?.length">
           <template #title>
             <img
-              v-b-popover.click.blur.top="'Copied!'"
+              v-b-popover.click.top="'Copied!'"
               src="@/assets/images/Instagram.svg"
               class="tab-logo img-fluid"
               @click="copyTabContents(instagramPostText)"

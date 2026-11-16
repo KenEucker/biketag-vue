@@ -4,8 +4,8 @@
     v-if="profile && !getPlayerName?.length"
     v-model="showModal"
     title="User Name"
-    hide-footer
-    hide-header
+    no-footer
+    no-header
   >
     <!-- SHOW THIS MODAL IF THE PLAYER DOES NOT YET HAVE A SANITY PROFILE -->
     <!-- First, show this modal to set the name in the user_metadata of auth0 -->

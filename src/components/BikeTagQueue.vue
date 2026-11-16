@@ -17,7 +17,7 @@
       <b-popover
         target="current-mystery-popover"
         class="current-mystery"
-        triggers="hover focus"
+        hover focus
         placement="bottom"
       >
         <template #title>{{ t('components.queue.current_mystery_location') }}</template>
@@ -30,7 +30,7 @@
       <b-popover
         v-if="getPlayerTag.foundImageUrl?.length > 0"
         target="queued-found-popover"
-        triggers="hover focus"
+        hover focus
         placement="bottom"
         class="queued-found"
       >
@@ -53,7 +53,7 @@
       <b-popover
         v-if="getPlayerTag.mysteryImageUrl?.length > 0"
         target="queued-mystery-popover"
-        triggers="hover focus"
+        hover focus
         placement="bottom"
         class="queued-mystery"
       >

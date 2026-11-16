@@ -78,7 +78,7 @@
     <b-modal
       v-model="requestModalOpen"
       title="Request Setting Change"
-      hide-footer
+      no-footer
       @hidden="resetRequestForm"
     >
       <div v-if="requestSetting" class="request-modal">
