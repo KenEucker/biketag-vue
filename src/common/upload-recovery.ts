@@ -207,7 +207,7 @@ export async function uploadWithRecovery(
     ]
     if (
       transferAttempt === policy.maxAttempts ||
-      !transient.includes(failure?.code) ||
+      !(transient.includes(failure?.code) || failure?.response?.status === 403) ||
       config.signal?.aborted
     ) {
       throw failure
