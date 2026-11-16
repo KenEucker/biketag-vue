@@ -2435,8 +2435,14 @@ export const completeOrphanedQueueFoundMoveToMain = async (
   })
 
   const patchResult = await biketag.updateTag(
-    { ...patch, game: gameSlug, tagnumber: targetRound },
-    { source: 'aws', folder: 'main', region: game.awsRegion, indexOnlyFoundRepair: true },
+    {
+      ...patch,
+      game: gameSlug,
+      tagnumber: targetRound,
+      region: game.awsRegion,
+      indexOnlyFoundRepair: true,
+    },
+    { source: 'aws' },
   )
 
   if (!patchResult.success) {
@@ -2503,8 +2509,14 @@ export const repairMainFoundIndexFromStorage = async (
   log('[queue-fix] Repairing main index from storage metadata', { targetRound, patch })
 
   const patchResult = await biketag.updateTag(
-    { ...patch, game: gameSlug, tagnumber: targetRound },
-    { source: 'aws', folder: 'main', region: game.awsRegion, indexOnlyFoundRepair: true },
+    {
+      ...patch,
+      game: gameSlug,
+      tagnumber: targetRound,
+      region: game.awsRegion,
+      indexOnlyFoundRepair: true,
+    },
+    { source: 'aws' },
   )
 
   if (!patchResult.success) {
