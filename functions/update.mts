@@ -168,9 +168,7 @@ export default async (req: Request) => {
       fields: Object.keys(tagUpdate),
       metadataOnly,
     })
-    const updateResponse = metadataOnly && imageSource === 'aws'
-      ? await biketag.updateTagMetadata(tagUpdate, updateOptions)
-      : await biketag.updateTag(tagUpdate, updateOptions)
+    const updateResponse = await biketag.updateTag(tagUpdate, updateOptions)
     log('[update-tag] updateTag response', {
       success: updateResponse.success,
       status: updateResponse.status,
