@@ -144,7 +144,7 @@ export default async (req: Request) => {
         // The AWS adapter safely applies partial edits to the existing record.
         // Other adapters retain the complete object they previously received.
         tagUpdate = imageSource === 'aws'
-          ? { game: biketagOpts.game, tagnumber: existing.tagnumber, metadataOnly: true, ...changes }
+          ? { game: biketagOpts.game, tagnumber: existing.tagnumber, ...changes }
           : { ...existing, ...changes, game: biketagOpts.game, tagnumber: existing.tagnumber }
       } catch (error) {
         return new Response(JSON.stringify({ error: (error as Error).message }), {
@@ -168,8 +168,9 @@ export default async (req: Request) => {
       fields: Object.keys(tagUpdate),
       metadataOnly,
     })
-    let updateResponse
-    updateResponse = await biketag.updateTag(tagUpdate, updateOptions)
+    const updateResponse = metadataOnly && imageSource === 'aws'
+      ? await biketag.updateTagMetadata(tagUpdate, updateOptions)
+      : await biketag.updateTag(tagUpdate, updateOptions)
     log('[update-tag] updateTag response', {
       success: updateResponse.success,
       status: updateResponse.status,
