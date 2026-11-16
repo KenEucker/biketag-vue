@@ -3,10 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import { BikeTagDefaults } from './src/common/constants'
 import { frontendEnvironment } from './config/frontend-environment'
 
-const host = process.env.HOST ?? BikeTagDefaults.host
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
@@ -29,48 +27,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['**/*'],
       // includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.png'],
-      manifest: {
-        name: BikeTagDefaults.manifest.name,
-        short_name: BikeTagDefaults.manifest.shortName,
-        description: BikeTagDefaults.manifest.description,
-        theme_color: BikeTagDefaults.manifest.themeColor,
-        icons: [
-          {
-            src: `https://${host}/android-chrome-192x192.png`,
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any',
-          },
-          {
-            src: `https://${host}/android-chrome-512x512.png`,
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any',
-          },
-          {
-            src: `https://${host}/maskable_icon_x512.png`,
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
-        ],
-        screenshots: [
-          {
-            src: `https://${host}/images/biketag-screen-desktop-1.webp`,
-            sizes: '389x366',
-            type: 'image/webp',
-            form_factor: 'wide',
-            label: 'BikeTag',
-          },
-          {
-            src: `https://${host}/images/biketag-screen-mobile-1.webp`,
-            sizes: '321x609',
-            type: 'image/webp',
-            form_factor: 'narrow',
-            label: 'BikeTag',
-          },
-        ],
-      },
+      // The manifest URL is served dynamically by the Netlify function rewrite.
+      manifest: false,
       workbox: {
         // Raw response links must reach the functions, even in an installed PWA.
         navigateFallbackDenylist: [/^\/\.netlify\/functions(?:\/|$)/],

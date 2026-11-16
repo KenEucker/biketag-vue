@@ -4,6 +4,7 @@
     v-if="profile && !getPlayerName?.length"
     v-model="showModal"
     title="User Name"
+    aria-label="User Name"
     no-footer
     no-header
   >

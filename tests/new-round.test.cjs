@@ -324,6 +324,12 @@ test('actual Imgur adapter uploads both photos to the queue with separate round 
     game: 'demo',
     imgur: { clientId: 'test', hash: 'main-album', queuehash: 'queue-album' },
   })
+  sdk.setGameContext({
+    name: 'demo',
+    mainhash: 'main-album',
+    queuehash: 'queue-album',
+    settings: { 'data::imgur': 'true' },
+  })
   const uploads = []
   sdk.imgurClient.upload = async (payload) => {
     uploads.push(payload)
@@ -365,6 +371,11 @@ test('actual AWS adapter preserves photo rounds, types and metadata when uploadi
   const sdk = new BikeTagClient({
     game: 'demo',
     aws: { region: 'sfo2', accessKeyId: 'test', secretAccessKey: 'test' },
+  })
+  sdk.setGameContext({
+    name: 'demo',
+    awsRegion: 'sfo2',
+    settings: { 'data::aws': 'true' },
   })
   const uploads = []
   sdk.awsClient.send = async (command) => {

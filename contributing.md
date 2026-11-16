@@ -197,13 +197,13 @@ You can also participate through:
 
 **Patreon**
 
-We'll maintain a public community participation space on Patreon. You can share ideas, provide feedback, and submit contributions there.
+Join the public community participation space at [patreon.com/BikeTag](https://patreon.com/BikeTag) to share ideas, provide feedback, and submit contributions.
 
 A free Patreon supporter account is sufficient to participate. No paid membership is required.
 
 **Email**
 
-You can also email the BikeTag founders with your ideas, designs, artwork, or suggestions.
+You can also email the BikeTag founders at [hello@biketag.org](mailto:hello@biketag.org) with your ideas, designs, artwork, or suggestions.
 
 Please include a description of your contribution and how you'd like to be credited.
 
