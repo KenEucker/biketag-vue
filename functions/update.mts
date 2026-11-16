@@ -1,8 +1,7 @@
 import { BikeTagClient, Game, Tag } from 'biketag'
-import { prepareTagMetadataUpdate, updateMainTagMetadata } from './common/tag-update'
+import { mysteryEditFields, foundEditFields } from '../src/common/tag-edits'
 import {
   acceptCorsHeaders,
-  createQueueStorageClient,
   getBikeTagClientOpts,
   getImageSource,
   getPayloadOpts,
@@ -100,6 +99,7 @@ export default async (req: Request) => {
         hash: game.mainhash,
         cached: false,
         resize: false,
+        metadataOnly: true,
       }
       const existingResponse = await biketag.getTags(
         { game: biketagOpts.game, tagnumbers: [input.tagnumber] },
@@ -126,7 +126,27 @@ export default async (req: Request) => {
       }
       playerId = existing.playerId
       try {
-        tagUpdate = prepareTagMetadataUpdate(input, existing, biketagOpts.game, imageSource)
+        if (input.game && input.game !== biketagOpts.game) {
+          throw new Error('Tag game does not match request game')
+        }
+        if (input.foundImage || input.mysteryImage) {
+          throw new Error('Image uploads are not supported when editing tag metadata')
+        }
+        for (const field of ['foundImageUrl', 'mysteryImageUrl'] as const) {
+          if (input[field] !== undefined && input[field] !== existing[field]) {
+            throw new Error(`${field} does not match tag #${existing.tagnumber}`)
+          }
+        }
+        const changes = Object.fromEntries(
+          [...mysteryEditFields, ...foundEditFields]
+            .filter((field) => input[field] !== undefined)
+            .map((field) => [field, input[field]]),
+        )
+        // The AWS adapter safely applies partial edits to the existing record.
+        // Other adapters retain the complete object they previously received.
+        tagUpdate = imageSource === 'aws'
+          ? { game: biketagOpts.game, tagnumber: existing.tagnumber, ...changes }
+          : { ...existing, ...changes, game: biketagOpts.game, tagnumber: existing.tagnumber }
       } catch (error) {
         return new Response(JSON.stringify({ error: (error as Error).message }), {
           status: HttpStatusCode.BadRequest,
@@ -150,20 +170,7 @@ export default async (req: Request) => {
       metadataOnly,
     })
     let updateResponse
-    if (metadataOnly && imageSource === 'aws') {
-      if (!game.awsRegion) {
-        return new Response(JSON.stringify({ error: 'Game storage region is required' }), {
-          status: HttpStatusCode.BadRequest,
-          headers,
-        })
-      }
-      updateResponse = await updateMainTagMetadata(
-        createQueueStorageClient(game.awsRegion),
-        tagUpdate,
-      )
-    } else {
-      updateResponse = await biketag.updateTag(tagUpdate, updateOptions)
-    }
+    updateResponse = await biketag.updateTag(tagUpdate, updateOptions)
     log('[update-tag] updateTag response', {
       success: updateResponse.success,
       status: updateResponse.status,
