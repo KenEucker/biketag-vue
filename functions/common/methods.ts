@@ -2440,6 +2440,7 @@ export const completeOrphanedQueueFoundMoveToMain = async (
       game: gameSlug,
       tagnumber: targetRound,
       region: game.awsRegion,
+      indexOnlyFoundRepair: true,
     },
     { source: 'aws' },
   )
@@ -2513,6 +2514,7 @@ export const repairMainFoundIndexFromStorage = async (
       game: gameSlug,
       tagnumber: targetRound,
       region: game.awsRegion,
+      indexOnlyFoundRepair: true,
     },
     { source: 'aws' },
   )
