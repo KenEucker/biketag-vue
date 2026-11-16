@@ -224,18 +224,45 @@ test('visibility changes detect expired deadlines even if browser timers did not
   assert.ok(log.events.at(-1).durationMs > UPLOAD_POLICY.timeoutMs)
 })
 
-test('network recovery is bounded and definitive HTTP errors do not trigger retries', async () => {
-  for (const status of [undefined, 403]) {
+test('a Spaces 403 gets one fresh signed URL and a second PUT', async () => {
+  const log = trail()
+  const urls = []
+  let renewals = 0
+  const result = await uploadWithRecovery(
+    async (config) => {
+      urls.push(config.url)
+      if (urls.length === 1) {
+        throw Object.assign(new Error('Access denied'), {
+          code: 'ERR_BAD_REQUEST',
+          response: { status: 403, data: 'PRIVATE_RESPONSE' },
+        })
+      }
+      return response(config)
+    },
+    request(),
+    async () => {
+      renewals++
+      return destination + '?X-Amz-Signature=PRIVATE_RENEWED'
+    },
+    log.record,
+  )
+  assert.equal(result.status, 200)
+  assert.equal(urls.length, 2)
+  assert.equal(renewals, 1)
+  assert.equal(urls[1], destination + '?X-Amz-Signature=PRIVATE_RENEWED')
+  assert.equal(log.events.find((e) => e.event === 'failed').error.status, 403)
+  assert.doesNotMatch(JSON.stringify(log.events), /PRIVATE/)
+})
+
+test('403 retry is bounded and other definitive HTTP errors do not trigger retries', async () => {
+  for (const status of [403, 400, 401]) {
     const log = trail()
     let calls = 0
     let renewals = 0
-    const failure = status
-      ? Object.assign(new Error('Access denied'), {
-          code: 'ERR_BAD_REQUEST',
-          config: { private: 'PRIVATE_CONFIG' },
-          response: { status, data: 'PRIVATE_RESPONSE', headers: { private: 'PRIVATE_HEADER' } },
-        })
-      : networkError()
+    const failure = Object.assign(new Error('HTTP failure'), {
+      code: 'ERR_BAD_REQUEST',
+      response: { status, data: 'PRIVATE_RESPONSE' },
+    })
     await assert.rejects(
       uploadWithRecovery(
         async () => {
@@ -251,9 +278,9 @@ test('network recovery is bounded and definitive HTTP errors do not trigger retr
       ),
       failure,
     )
-    assert.equal(calls, status ? 1 : 2)
-    assert.equal(renewals, status ? 0 : 1)
-    if (status) assert.equal(log.events.at(-1).error.status, 403)
+    assert.equal(calls, status === 403 ? 2 : 1)
+    assert.equal(renewals, status === 403 ? 1 : 0)
+    assert.equal(log.events.at(-1).error.status, status)
     assert.doesNotMatch(JSON.stringify(log.events), /PRIVATE/)
   }
 })
