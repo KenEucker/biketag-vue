@@ -10,7 +10,7 @@
 </template>
 
 <script setup name="ServiceWorker">
-import { BikeTagEnv, debug, getSanityImageResizedSize } from '@/common'
+import { BikeTagEnv, debug } from '@/common'
 import { useBikeTagStore } from '@/store/index'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { computed, watch } from 'vue'
@@ -45,6 +45,20 @@ const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
 const getGameSlug = computed(() => store.getGameSlug)
 const getGameTitle = computed(() => store.getGameTitle)
 
+const imageTypes = {
+  gif: 'image/gif',
+  jpeg: 'image/jpeg',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  svg: 'image/svg+xml',
+  webp: 'image/webp',
+}
+
+function getManifestIconType(src: string) {
+  const extension = new URL(src, window.location.origin).pathname.split('.').pop()?.toLowerCase()
+  return imageTypes[extension as keyof typeof imageTypes]
+}
+
 // methods
 async function close() {
   offlineReady.value = false
@@ -62,6 +76,21 @@ async function updateManifest() {
       const slugIsSet = !!getGameSlug.value?.length
       const smallLogo = await store.getLogoUrl('s', undefined, true)
       const bigLogo = await store.getLogoUrl('l', undefined, true)
+      const gameLogoIcons = store.game?.logo?.length
+        ? [
+            {
+              src: smallLogo[0] === '/' ? `${window.location.origin}${smallLogo}` : smallLogo,
+              sizes: '192x192',
+              type: getManifestIconType(smallLogo),
+            },
+            {
+              src: bigLogo[0] === '/' ? `${window.location.origin}${bigLogo}` : bigLogo,
+              sizes: '512x512',
+              type: getManifestIconType(bigLogo),
+              purpose: 'maskable any',
+            },
+          ]
+        : []
 
       const applicationManifest = {
         ...baseManifest,
@@ -74,17 +103,7 @@ async function updateManifest() {
         scope: window.location.origin,
         icons: [
           // Put the game logo first so install surfaces prefer the city identity.
-          {
-            src: smallLogo[0] === '/' ? `${window.location.origin}${smallLogo}` : smallLogo,
-            sizes: smallLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(smallLogo),
-            type: 'image/webp',
-          },
-          {
-            src: bigLogo[0] === '/' ? `${window.location.origin}${bigLogo}` : bigLogo,
-            sizes: bigLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(bigLogo),
-            type: 'image/webp',
-            purpose: 'maskable any',
-          },
+          ...gameLogoIcons,
           // Keep the PNG icons required for splash screens as fallbacks.
           ...(baseManifest.icons ?? []).map((icon) => ({
             ...icon,
