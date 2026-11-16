@@ -10,6 +10,12 @@
   command = "vite --host localhost --port 8080"
 
 [[redirects]]
+  from = "/manifest.webmanifest"
+  to = "/.netlify/functions/manifest"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200

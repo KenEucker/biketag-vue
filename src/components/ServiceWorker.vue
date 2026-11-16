@@ -13,7 +13,6 @@
 import { BikeTagEnv, debug } from '@/common'
 import { useBikeTagStore } from '@/store/index'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
-import { computed, watch } from 'vue'
 
 // props
 const props = defineProps({
@@ -41,91 +40,7 @@ const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
   },
 })
 
-// computed
-const getGameSlug = computed(() => store.getGameSlug)
-const getGameTitle = computed(() => store.getGameTitle)
 
-const imageTypes = {
-  gif: 'image/gif',
-  jpeg: 'image/jpeg',
-  jpg: 'image/jpeg',
-  png: 'image/png',
-  svg: 'image/svg+xml',
-  webp: 'image/webp',
-}
-
-function getManifestIconType(src) {
-  const extension = new URL(src, window.location.origin).pathname.split('.').pop()?.toLowerCase()
-  return imageTypes[extension]
-}
-
-// methods
-async function close() {
-  offlineReady.value = false
-  needRefresh.value = false
-}
-
-// Generate the game-specific manifest once App has loaded the game metadata.
-async function updateManifest() {
-  try {
-    const manifestLinkEl = document.querySelector('link[rel="manifest"]')
-
-    if (manifestLinkEl) {
-      const existingManifest = await fetch(manifestLinkEl.href)
-      const baseManifest = await existingManifest.json()
-      const slugIsSet = !!getGameSlug.value?.length
-      const smallLogo = await store.getLogoUrl('s', undefined, true)
-      const bigLogo = await store.getLogoUrl('l', undefined, true)
-      const gameLogoIcons = store.game?.logo?.length
-        ? [
-            {
-              src: smallLogo[0] === '/' ? `${window.location.origin}${smallLogo}` : smallLogo,
-              sizes: '192x192',
-              type: getManifestIconType(smallLogo),
-            },
-            {
-              src: bigLogo[0] === '/' ? `${window.location.origin}${bigLogo}` : bigLogo,
-              sizes: '512x512',
-              type: getManifestIconType(bigLogo),
-              purpose: 'maskable any',
-            },
-          ]
-        : []
-
-      const applicationManifest = {
-        ...baseManifest,
-        name: getGameTitle.value.toLowerCase(),
-        id: `${slugIsSet ? `${getGameSlug.value}.` : ''}biketag`,
-        description: `The game of BikeTag ${
-          slugIsSet ? `in ${getGameSlug.value}` : ''
-        } - BikeTag is a photo mystery tag game played on bicycles. No login required.`,
-        start_url: window.location.origin,
-        scope: window.location.origin,
-        icons: [
-          // Put the game logo first so install surfaces prefer the city identity.
-          ...gameLogoIcons,
-          // Keep the PNG icons required for splash screens as fallbacks.
-          ...(baseManifest.icons ?? []).map((icon) => ({
-            ...icon,
-            src: new URL(icon.src, existingManifest.url).href,
-          })),
-        ],
-      }
-      const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
-      manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
-      debug('worker::manifest', applicationManifest)
-    }
-  } catch (e) {
-    console.error('app::error loading manifest')
-  }
-}
-watch(
-  () => store.game?.name,
-  (name) => {
-    if (name) void updateManifest()
-  },
-  { immediate: true },
-)
 </script>
 
 <style lang="scss">
