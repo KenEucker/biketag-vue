@@ -1040,7 +1040,7 @@ const requireQueueImageVariants = async (
   imageUrl: string,
   label: string,
   biketag?: BikeTagClient,
-  imageSource = 'biketag',
+  imageSource = 'aws',
 ): Promise<void> => {
   const gameSlug = getGameStorageSlug(game)
   const region = game.awsRegion ?? ''
@@ -2263,121 +2263,6 @@ const saveMainTagIndex = async (gameSlug: string, region: string, tags: Tag[]): 
 }
 
 /**
- * Patch found fields on one main/index.json entry for orphan repair.
- * Merges queue/storage-sourced found metadata even when foundImageUrl already points at main/.
- */
-const patchMainTagFoundFieldsForOrphanRepair = async (
-  gameSlug: string,
-  region: string,
-  tagnumber: number,
-  patch: Partial<Tag>,
-): Promise<{ success: boolean; error?: string; tag?: Tag }> => {
-  const foundFieldKeys = [
-    'foundImageUrl',
-    'foundPlayer',
-    'playerId',
-    'foundTime',
-    'foundLocation',
-    'gps',
-    'title',
-    'description',
-  ] as const
-
-  try {
-    const index = await loadMainTagIndex(gameSlug, region)
-    const entryIndex = index.findIndex((tag) => tag.tagnumber === tagnumber)
-    if (entryIndex === -1) {
-      return { success: false, error: `main index has no entry for tag #${tagnumber}` }
-    }
-
-    const existing = index[entryIndex]
-    const updated = { ...existing, tagnumber } as Tag
-
-    for (const field of foundFieldKeys) {
-      const value = patch[field]
-      if (value === undefined || value === null || value === '') continue
-
-      if (field === 'foundImageUrl') {
-        const patchUrl = String(value)
-        if (!foundImageUrlPointsToMain(existing.foundImageUrl)) {
-          updated.foundImageUrl = patchUrl
-          continue
-        }
-        const existingKey = getStorageKeyFromUrl(existing.foundImageUrl)
-        const patchKey = getStorageKeyFromUrl(patchUrl)
-        if (existingKey !== patchKey) {
-          return {
-            success: false,
-            error: `main index tag #${tagnumber} foundImageUrl points at ${existingKey}, not ${patchKey}`,
-          }
-        }
-        continue
-      }
-
-      ;(updated as Record<string, unknown>)[field] = value
-    }
-
-    if (patch.slug?.length) updated.slug = patch.slug
-    if (patch.name?.length) updated.name = patch.name
-    if (patch.game?.length) updated.game = patch.game
-
-    index[entryIndex] = updated
-    await saveMainTagIndex(gameSlug, region, index)
-    log('[queue-fix] Patched main index for orphan found repair', {
-      tagnumber,
-      appliedFields: foundFieldKeys.filter((field) => {
-        const value = patch[field]
-        return value !== undefined && value !== null && value !== ''
-      }),
-    })
-    return { success: true, tag: updated }
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'failed to patch main index',
-    }
-  }
-}
-
-/**
- * Patch found fields on one main/index.json entry. Never touches storage objects.
- * Refuses if foundImageUrl already points at main/ (no index overwrite).
- * Do NOT use biketag updateTag for Move to main — see completeOrphanedQueueFoundMoveToMain.
- */
-const patchMainTagFoundFieldsIfAbsent = async (
-  gameSlug: string,
-  region: string,
-  tagnumber: number,
-  patch: Partial<Tag>,
-): Promise<{ success: boolean; error?: string; tag?: Tag }> => {
-  try {
-    const index = await loadMainTagIndex(gameSlug, region)
-    const entryIndex = index.findIndex((tag) => tag.tagnumber === tagnumber)
-    if (entryIndex === -1) {
-      return { success: false, error: `main index has no entry for tag #${tagnumber}` }
-    }
-
-    const existing = index[entryIndex]
-    if (foundImageUrlPointsToMain(existing.foundImageUrl)) {
-      return {
-        success: false,
-        error: `main index tag #${tagnumber} already has foundImageUrl in main/ — refusing to overwrite`,
-      }
-    }
-
-    const updated = { ...existing, ...patch, tagnumber } as Tag
-    index[entryIndex] = updated
-    await saveMainTagIndex(gameSlug, region, index)
-    return { success: true, tag: updated }
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'failed to patch main index',
-    }
-  }
-}
-
-/**
  * Repair: copy one orphaned queue found image into main/ for targetRound, then patch index.
  *
  * Preconditions (when main context provided):
@@ -2549,11 +2434,15 @@ export const completeOrphanedQueueFoundMoveToMain = async (
     },
   })
 
-  const patchResult = await patchMainTagFoundFieldsForOrphanRepair(
-    gameSlug,
-    game.awsRegion,
-    targetRound,
-    patch,
+  const patchResult = await biketag.updateTag(
+    {
+      ...patch,
+      game: gameSlug,
+      tagnumber: targetRound,
+      region: game.awsRegion,
+      indexOnlyFoundRepair: true,
+    },
+    { source: 'aws' },
   )
 
   if (!patchResult.success) {
@@ -2619,11 +2508,15 @@ export const repairMainFoundIndexFromStorage = async (
 
   log('[queue-fix] Repairing main index from storage metadata', { targetRound, patch })
 
-  const patchResult = await patchMainTagFoundFieldsForOrphanRepair(
-    gameSlug,
-    game.awsRegion,
-    targetRound,
-    patch,
+  const patchResult = await biketag.updateTag(
+    {
+      ...patch,
+      game: gameSlug,
+      tagnumber: targetRound,
+      region: game.awsRegion,
+      indexOnlyFoundRepair: true,
+    },
+    { source: 'aws' },
   )
 
   if (!patchResult.success) {

@@ -10,10 +10,9 @@
 </template>
 
 <script setup name="ServiceWorker">
-import { BikeTagEnv, debug, getSanityImageResizedSize } from '@/common'
+import { BikeTagEnv, debug } from '@/common'
 import { useBikeTagStore } from '@/store/index'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
-import { computed } from 'vue'
 
 // props
 const props = defineProps({
@@ -41,67 +40,11 @@ const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
   },
 })
 
-// computed
-const getGameSlug = computed(() => store.getGameSlug)
-const getGameTitle = computed(() => store.getGameTitle)
-
-// methods
-async function close() {
+const close = () => {
   offlineReady.value = false
   needRefresh.value = false
 }
 
-// created
-async function created() {
-  /// TODO: remove this extra call and ensure that the manifest is still being created
-  await store.setGame()
-  try {
-    const manifestLinkEl = document.querySelector('link[rel="manifest"]')
-
-    if (manifestLinkEl) {
-      const existingManifest = await fetch(manifestLinkEl.href)
-      const baseManifest = await existingManifest.json()
-      const slugIsSet = !!getGameSlug.value?.length
-      const smallLogo = await store.getLogoUrl('s', undefined, true)
-      const bigLogo = await store.getLogoUrl('l', undefined, true)
-
-      const applicationManifest = {
-        ...baseManifest,
-        name: getGameTitle.value.toLowerCase(),
-        id: `${slugIsSet ? `${getGameSlug.value}.` : ''}biketag`,
-        description: `The game of BikeTag ${
-          slugIsSet ? `in ${getGameSlug.value}` : ''
-        } - BikeTag is a photo mystery tag game played on bicycles. No login required.`,
-        start_url: window.location.origin,
-        scope: window.location.origin,
-        icons: [
-          // Keep the PNG icons required for splash screens when adding game logos.
-          ...(baseManifest.icons ?? []).map((icon) => ({
-            ...icon,
-            src: new URL(icon.src, existingManifest.url).href,
-          })),
-          {
-            src: smallLogo[0] === '/' ? `${window.location.origin}${smallLogo}` : smallLogo,
-            sizes: smallLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(smallLogo),
-            type: 'image/webp',
-          },
-          {
-            src: bigLogo[0] === '/' ? `${window.location.origin}${bigLogo}` : bigLogo,
-            sizes: bigLogo[0] === '/' ? '321x638' : getSanityImageResizedSize(bigLogo),
-            type: 'image/webp',
-            purpose: 'maskable any',
-          },
-        ],
-      }
-      const blob = new Blob([JSON.stringify(applicationManifest)], { type: 'application/json' })
-      manifestLinkEl.setAttribute('href', URL.createObjectURL(blob))
-      debug('worker::manifest', applicationManifest)
-    }
-  } catch (e) {
-    console.error('app::error loading manifest')
-  }
-}
-created()
 </script>
 
 <style lang="scss">

@@ -8,7 +8,7 @@
         <b-tab v-if="!!getGame?.subreddit?.length">
           <template #title>
             <img
-              v-b-popover.click.blur.top="'Copied!'"
+              v-b-popover.click.top="'Copied!'"
               src="@/assets/images/Reddit.svg"
               class="tab-logo img-fluid"
               @click="copyTabContents(redditPostText)"
@@ -22,7 +22,7 @@
         <b-tab v-if="!!getGame?.account?.length">
           <template #title>
             <img
-              v-b-popover.click.blur.top="'Copied!'"
+              v-b-popover.click.top="'Copied!'"
               src="@/assets/images/Bluesky.svg"
               class="tab-logo img-fluid"
               @click="copyTabContents(BlueskyPostText)"
@@ -36,7 +36,7 @@
         <b-tab v-if="!!getGame?.page?.length">
           <template #title>
             <img
-              v-b-popover.click.blur.top="'Copied!'"
+              v-b-popover.click.top="'Copied!'"
               src="@/assets/images/Instagram.svg"
               class="tab-logo img-fluid"
               @click="copyTabContents(instagramPostText)"

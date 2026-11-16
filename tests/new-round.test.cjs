@@ -287,7 +287,7 @@ test('new endpoint retains method handling and publication failures', async () =
   assert.equal((await flow.request()).status, 400)
 })
 
-function storeAction(client, imageSource = 'imgur') {
+function storeAction(client) {
   const source = fs.readFileSync('src/store/index.ts', 'utf8')
   const start = source.indexOf('    async createNewRoundTag(')
   const code = ts.transpileModule(
@@ -304,7 +304,6 @@ function storeAction(client, imageSource = 'imgur') {
     profile: { sub: 'ambassador', isBikeTagAmbassador: true },
     gameName: 'demo',
     game: { queuehash: 'queue-album' },
-    imageSource,
     auth0Token: 'test-token',
     async fetchCredentials() {},
     resetBikeTagCache() {},
@@ -324,6 +323,12 @@ test('actual Imgur adapter uploads both photos to the queue with separate round 
   const sdk = new BikeTagClient({
     game: 'demo',
     imgur: { clientId: 'test', hash: 'main-album', queuehash: 'queue-album' },
+  })
+  sdk.setGameContext({
+    name: 'demo',
+    mainhash: 'main-album',
+    queuehash: 'queue-album',
+    settings: { 'data::imgur': 'true' },
   })
   const uploads = []
   sdk.imgurClient.upload = async (payload) => {
@@ -367,6 +372,11 @@ test('actual AWS adapter preserves photo rounds, types and metadata when uploadi
     game: 'demo',
     aws: { region: 'sfo2', accessKeyId: 'test', secretAccessKey: 'test' },
   })
+  sdk.setGameContext({
+    name: 'demo',
+    awsRegion: 'sfo2',
+    settings: { 'data::aws': 'true' },
+  })
   const uploads = []
   sdk.awsClient.send = async (command) => {
     assert.equal(command.constructor.name, 'PutObjectCommand')
@@ -384,7 +394,7 @@ test('actual AWS adapter preserves photo rounds, types and metadata when uploadi
       return { status: 202, data: { errors: false } }
     },
   }
-  assert.equal(await storeAction(client, 'aws')(photos()), true)
+  assert.equal(await storeAction(client)(photos()), true)
   assert.equal(uploads.length, 2)
   assert.match(uploads[0].Key, /^queue\/demo-tag-42--found--.*\.jpg$/)
   assert.match(uploads[1].Key, /^queue\/demo-tag-43--mystery--.*\.png$/)
