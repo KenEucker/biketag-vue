@@ -17,7 +17,8 @@
       <b-popover
         target="current-mystery-popover"
         class="current-mystery"
-        hover focus
+        hover
+        focus
         placement="bottom"
       >
         <template #title>{{ t('components.queue.current_mystery_location') }}</template>
@@ -30,7 +31,8 @@
       <b-popover
         v-if="getPlayerTag.foundImageUrl?.length > 0"
         target="queued-found-popover"
-        hover focus
+        hover
+        focus
         placement="bottom"
         class="queued-found"
       >
@@ -53,7 +55,8 @@
       <b-popover
         v-if="getPlayerTag.mysteryImageUrl?.length > 0"
         target="queued-mystery-popover"
-        hover focus
+        hover
+        focus
         placement="bottom"
         class="queued-mystery"
       >
@@ -80,9 +83,8 @@
 
 <script setup name="BikeTagQueue">
 import VLazyImage from 'v-lazy-image'
-import { computed, nextTick } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import { BiketagQueueFormSteps } from '../common/types'
 import { useBikeTagStore } from '../store/index'
 
@@ -116,7 +118,6 @@ const props = defineProps({
 
 // data
 const store = useBikeTagStore()
-const router = useRouter()
 const { t } = useI18n()
 const emit = defineEmits(['dequeing', 'dequeue-success', 'dequeue-error'])
 
@@ -134,34 +135,24 @@ function canReset() {
   return getQueuedTagState.value !== BiketagQueueFormSteps.roundPosted
 }
 async function resetToFound() {
-  // await store.fetchCredentials()
-
   emit('dequeing')
-  return store.dequeueFoundTag().then((dequeueSuccessful) => {
-    if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-      /// TODO: this notification needs to be removed before publishing v3.0.0
-      emit('dequeue-success')
-      return emit('dequeue-error', dequeueSuccessful)
-    } else {
-      nextTick(() => {
-        router.go()
-      })
-    }
-  })
+  try {
+    const result = await store.dequeueFoundTag()
+    if (result === true) return emit('dequeue-success')
+    emit('dequeue-error', result || 'failed to remove found submission')
+  } catch (error) {
+    emit('dequeue-error', error?.message || 'failed to remove found submission')
+  }
 }
 async function resetToMystery() {
-  // await store.fetchCredentials()
   emit('dequeing')
-  return store.dequeueMysteryTag().then((dequeueSuccessful) => {
-    if (!dequeueSuccessful || typeof dequeueSuccessful === 'string') {
-      emit('dequeue-success')
-      return emit('dequeue-error', dequeueSuccessful)
-    } else {
-      nextTick(() => {
-        router.go()
-      })
-    }
-  })
+  try {
+    const result = await store.dequeueMysteryTag()
+    if (result === true) return emit('dequeue-success')
+    emit('dequeue-error', result || 'failed to remove mystery submission')
+  } catch (error) {
+    emit('dequeue-error', error?.message || 'failed to remove mystery submission')
+  }
 }
 function paginationClick(key) {
   if (props.paginationRef) {

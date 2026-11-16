@@ -26,7 +26,7 @@
     <bike-tag-queue
       :only-mine="true"
       :show-number="false"
-      @dequeue-error="dequeueErrorNotify(toast)"
+      @dequeue-error="onDequeueError"
       @dequeing="uploadInProgress = true"
       @dequeue-success="uploadInProgress = false"
     />
@@ -182,6 +182,11 @@ const arrowSvg = ArrowSvg
 const store = useBikeTagStore()
 const toast = inject('toast')
 const { t } = useI18n()
+
+function onDequeueError(error) {
+  uploadInProgress.value = false
+  return dequeueErrorNotify(toast)(error)
+}
 
 // computed
 const getFormStep = computed(() => store.getFormStep)

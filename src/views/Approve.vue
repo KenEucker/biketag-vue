@@ -105,8 +105,19 @@ async function onApproveSubmit(newTagSubmission) {
   uploadInProgress.value = false
 
   if (success === true) {
-    /// Update the queue
-    store.fetchQueuedTags(false)
+    // Reflect the successful API mutation before showing the result.
+    await store.fetchQueuedTags(false)
+
+    // Removing a queued submission does not need the approve form submission
+    // or its notification callback. The API has already completed the action.
+    if (storeAction === 'dequeueTag') {
+      toast.open({
+        message: `${storeAction} ${t('notifications.success')}`,
+        type: 'success',
+        position: 'top',
+      })
+      return true
+    }
 
     formData.set('game', getGameName.value)
     formData.set('tag', JSON.stringify(getPlayerTag.value))

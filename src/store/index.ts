@@ -358,9 +358,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
 
       const request = client
         .tags(undefined, { cached })
-        .then((tags) =>
-          generation === tagRequestGeneration ? this.SET_TAGS(tags) : this.tags,
-        )
+        .then((tags) => (generation === tagRequestGeneration ? this.SET_TAGS(tags) : this.tags))
         .finally(() => pendingTagsRequests.delete(key))
 
       pendingTagsRequests.set(key, request)
@@ -1375,13 +1373,16 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       }
     },
     async dequeueFoundTag() {
-      if (this.playerTag?.playerId === this.profile.sub) {
+      if (this.profile?.sub && this.playerTag?.playerId === this.profile.sub) {
         const queuedTag: any = this.playerTag
         return client.deleteTag(queuedTag).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-found-tag`, this.playerTag)
-            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
-            this.SET_QUEUED_TAG({})
+            await client.getQueue(
+              { resize: true, reindex: true },
+              { source: 'biketag', cached: false },
+            )
+            this.SET_QUEUED_TAG()
             this.RESET_FORM_STEP_TO_FOUND()
 
             return true
@@ -1394,7 +1395,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return false
     },
     async dequeueMysteryTag() {
-      if (this.playerTag?.playerId === this.profile.sub) {
+      if (this.profile?.sub && this.playerTag?.playerId === this.profile.sub) {
         const queuedFoundTag: any = BikeTagClient.getters.getOnlyFoundTagFromTagData(this.playerTag)
         const queuedMysteryTag: any = BikeTagClient.getters.getOnlyMysteryTagFromTagData(
           this.playerTag,
@@ -1402,7 +1403,10 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.deleteTag(queuedMysteryTag).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-mystery-tag`, 'mystery tag dequeued')
-            await client.getQueue({ resize: true, reindex: true }, { source: 'biketag' })
+            await client.getQueue(
+              { resize: true, reindex: true },
+              { source: 'biketag', cached: false },
+            )
             this.SET_QUEUED_TAG(queuedFoundTag)
             this.RESET_FORM_STEP_TO_MYSTERY()
 
@@ -1417,6 +1421,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           }
         })
       }
+      return false
     },
     async addFoundTag(d: any, record?: SubmissionStageRecorder) {
       debug(
@@ -1934,8 +1939,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
       return null
     },
     getImageSized: (state) => {
-      return (url: string, s: Parameters<typeof getImageSized>[1] = 'm') =>
-        getImageSized(url, s)
+      return (url: string, s: Parameters<typeof getImageSized>[1] = 'm') => getImageSized(url, s)
     },
     getQueuedTagState: (state) => {
       return getQueuedTagState(state.playerTag)

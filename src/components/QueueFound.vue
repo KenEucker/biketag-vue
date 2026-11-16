@@ -136,7 +136,13 @@
 
 <script setup name="QueueFoundTag">
 import Pin from '@/assets/images/pin.svg'
-import { debug, isAuthenticationEnabled, isGmapsEnabled, summarizeTagGps } from '@/common'
+import {
+  debug,
+  hasGpsCoordinates,
+  isAuthenticationEnabled,
+  isGmapsEnabled,
+  summarizeTagGps,
+} from '@/common'
 import { isPointInPolygon } from '@/common/geo'
 import { readImageMetadata } from '@/common/image-metadata'
 import { useBikeTagStore } from '@/store/index'
@@ -197,7 +203,7 @@ const getPlayerId = computed(() => store.getPlayerId)
 const getCurrentBikeTag = computed(() => store.getCurrentBikeTag)
 const getGame = computed(() => store.getGame)
 const getPlayerName = computed(() => store.getPlayerName ?? props.tag?.foundPlayer ?? '')
-const isGps = computed(() => gps.value.lat && gps.value.lng)
+const isGps = computed(() => hasGpsCoordinates(gps.value.lat, gps.value.lng))
 const getLocation = computed(() => {
   if (location.value.length > 0) {
     return location.value
@@ -215,7 +221,7 @@ const onSubmit = async (e) => {
   e.preventDefault()
   uploadInProgress.value = true
   const gpsIsDefault =
-    gps.value.lat === getGame.value?.boundary.lat && gps.value.lng === getGame.value?.boundary.lng
+    gps.value.lat === getGame.value?.boundary?.lat && gps.value.lng === getGame.value?.boundary?.lng
 
   /// Attempts to fix the tagnumber === #NaN issue
   if (!getCurrentBikeTag?.tagnumber) {
@@ -310,7 +316,7 @@ const onSubmit = async (e) => {
     return
   }
   if (location.value?.length == 0) {
-    if (!gps.value.lat) {
+    if (!hasGpsCoordinates(gps.value.lat, gps.value.lng)) {
       debug('play::queue-found', 'location must be set')
       uploadInProgress.value = false
       return
@@ -454,7 +460,7 @@ const setImage = async (event) => {
           const GPSData = results
           let gpsSource = 'none'
 
-          if (GPSData?.latitude && GPSData?.longitude) {
+          if (hasGpsCoordinates(GPSData?.latitude, GPSData?.longitude)) {
             gpsSource = 'exif'
             gps.value = {
               lat: round(GPSData.latitude),
@@ -463,7 +469,9 @@ const setImage = async (event) => {
             isGpsDefault.value = false
             showMap.value = true
             center.value = { ...gps.value }
-          } else if (getGame.value?.boundary.lat && getGame.value?.boundary.lng) {
+          } else if (
+            hasGpsCoordinates(getGame.value?.boundary?.lat, getGame.value?.boundary?.lng)
+          ) {
             gpsSource = 'game-boundary-default'
             gps.value = {
               lat: getGame.value?.boundary.lat,
