@@ -54,7 +54,11 @@ const getMapPoint = (gps) => {
     return null
   }
   const [lat, lng] = coordinates.map(Number)
-  return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
+  return Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 &&
+    Math.abs(lng) <= 180 &&
+    (lat !== 0 || lng !== 0)
     ? [lat, lng]
     : null
 }

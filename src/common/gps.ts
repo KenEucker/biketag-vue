@@ -15,7 +15,7 @@ export const hasGpsCoordinates = (lat: unknown, long: unknown): boolean => {
     !(typeof value === 'string' && value.trim() === '') &&
     Number.isFinite(Number(value))
 
-  return isCoordinate(lat) && isCoordinate(long)
+  return isCoordinate(lat) && isCoordinate(long) && (Number(lat) !== 0 || Number(long) !== 0)
 }
 
 /** Compact GPS snapshot for tracing coordinates through the post pipeline. */

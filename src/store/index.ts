@@ -1378,17 +1378,12 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.deleteTag(queuedTag).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-found-tag`, this.playerTag)
+            await client.getQueue(
+              { resize: true, reindex: true },
+              { source: 'biketag', cached: false },
+            )
             this.SET_QUEUED_TAG()
             this.RESET_FORM_STEP_TO_FOUND()
-            // Refresh the queue without cache so the current view reflects the
-            // persisted result without a full-page reload.
-            await this.fetchQueuedTags(false).catch((error) => {
-              debug(
-                `${BikeTagDefaults.store}::dequeue-found-tag-refresh`,
-                error?.message ?? error,
-                'warn',
-              )
-            })
 
             return true
           } else {
@@ -1408,15 +1403,12 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return client.deleteTag(queuedMysteryTag).then(async (t) => {
           if (t.success) {
             debug(`${BikeTagDefaults.store}::dequeue-mystery-tag`, 'mystery tag dequeued')
+            await client.getQueue(
+              { resize: true, reindex: true },
+              { source: 'biketag', cached: false },
+            )
             this.SET_QUEUED_TAG(queuedFoundTag)
             this.RESET_FORM_STEP_TO_MYSTERY()
-            await this.fetchQueuedTags(false).catch((error) => {
-              debug(
-                `${BikeTagDefaults.store}::dequeue-mystery-tag-refresh`,
-                error?.message ?? error,
-                'warn',
-              )
-            })
 
             return true
           } else {
