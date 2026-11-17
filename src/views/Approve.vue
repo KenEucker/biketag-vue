@@ -109,12 +109,26 @@ async function onApproveSubmit(newTagSubmission) {
   }
 
   uploadInProgress.value = true
-  const success = await store[storeAction](tag)
+  const result = await store[storeAction](tag)
   uploadInProgress.value = false
 
-  if (success === true) {
+  if (result === true || (storeAction === 'approveTag' && Array.isArray(result))) {
+    if (
+      storeAction === 'approveTag' &&
+      result.some((entry) => entry.message === 'error clearing queue')
+    ) {
+      toast.open({
+        message: 'Approval completed, but the queue could not be cleared.',
+        type: 'warning',
+        duration: 10000,
+        position: 'bottom',
+      })
+    }
+
     // Reflect the successful API mutation before showing the result.
-    await store.fetchQueuedTags(false)
+    await store.fetchQueuedTags(false).catch((error) => {
+      console.warn('Could not refresh the queued tags after approval', error)
+    })
 
     // Removing a queued submission does not need the approve form submission
     // or its notification callback. The API has already completed the action.
@@ -156,7 +170,7 @@ async function onApproveSubmit(newTagSubmission) {
       },
     )
   } else {
-    const message = `${t('notifications.error')}: ${success}`
+    const message = `${t('notifications.error')}: ${result}`
     toast.open({
       message,
       type: 'error',

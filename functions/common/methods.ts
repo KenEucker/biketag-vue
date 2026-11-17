@@ -4066,7 +4066,7 @@ export const finalizeNewBikeTagPost = async (
       const queueClearResponse = await axios.post(
         getApiUrl(game.name, 'autopost-clear'),
         {},
-        { headers: { 'Content-Type': 'application/json' } },
+        { headers: { 'Content-Type': 'application/json' }, timeout: 10000 },
       )
       log(
         'Result of clearing non-winning queue entries',
@@ -4091,7 +4091,6 @@ export const finalizeNewBikeTagPost = async (
         error: queueClearError,
         game: game.name,
       })
-      errors = true
     }
   }
 

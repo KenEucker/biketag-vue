@@ -221,7 +221,9 @@ const onSubmit = async (e) => {
   e.preventDefault()
   uploadInProgress.value = true
   const gpsIsDefault =
-    gps.value.lat === getGame.value?.boundary?.lat && gps.value.lng === getGame.value?.boundary?.lng
+    !hasGpsCoordinates(gps.value.lat, gps.value.lng) ||
+    (gps.value.lat === getGame.value?.boundary?.lat &&
+      gps.value.lng === getGame.value?.boundary?.lng)
 
   /// Attempts to fix the tagnumber === #NaN issue
   if (!getCurrentBikeTag?.tagnumber) {
