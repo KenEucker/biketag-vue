@@ -467,8 +467,11 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
             },
           })
           if (approveTagResponse.status > 199 && approveTagResponse.status < 300) {
-            this.resetBikeTagCache()
-            return true
+            tagRequestGeneration += 1
+            pendingTagsRequests.clear()
+            await Promise.allSettled([this.fetchTags(false), this.fetchCurrentBikeTag(false)])
+            await Promise.allSettled([this.fetchQueuedTags(false)])
+            return Array.isArray(approveTagResponse.data) ? approveTagResponse.data : []
           } else {
             return `BikeTag round #${d.tagnumber} couldn't be posted`
           }
