@@ -21,18 +21,16 @@ import lzutf8 from 'lzutf8'
 import moment from 'moment-timezone'
 import qs from 'qs'
 import sharp from 'sharp'
-import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
-import { BackgroundProcessResults, activeQueue, BikeTagProfile } from './types'
 import { summarizeTagGps } from '../../src/common/gps'
+import { ErrorMessage, HttpStatusCode, JSONModels } from './constants'
 import { isGameEmailEnabled, sendEmailsToAmbassadors } from './email'
-import { decodeQueueMetadataValue, parseQueueObjectMetadata } from './storage-metadata'
 import { RoundPublicationError, roundConflict, withRoundPublicationLock } from './round-publication'
+import { decodeQueueMetadataValue, parseQueueObjectMetadata } from './storage-metadata'
+import { BackgroundProcessResults, BikeTagProfile, activeQueue } from './types'
 export {
-  liquidOpts,
+  getSubmissionQueuePosition, isGameEmailEnabled, liquidOpts,
   sendEmail,
-  sendEmailsToAmbassadors,
-  isGameEmailEnabled,
-  getSubmissionQueuePosition,
+  sendEmailsToAmbassadors
 } from './email'
 
 const ajv = new Ajv()
@@ -186,9 +184,8 @@ export const getGameSiteUrl = (gameName = ''): string => {
 }
 
 export const getGameSocialLinks = (game: Game) => {
-  const subreddit = game.subreddit?.length
-    ? game.subreddit
-    : game.settings?.['social::reddit']?.length
+  const subreddit = 
+    game.settings?.['social::reddit']?.length
       ? game.settings['social::reddit']
       : game.settings?.['subreddit']?.length
         ? game.settings['subreddit']
@@ -202,9 +199,8 @@ export const getGameSocialLinks = (game: Game) => {
         ? game.settings['bsky']
         : 'biketag.bsky.social'
 
-  const instagramHandle = game.page?.length
-    ? game.page
-    : game.settings?.['social::instagram']?.length
+  const instagramHandle = 
+    game.settings?.['social::instagram']?.length
       ? game.settings['social::instagram']
       : ''
 
@@ -850,7 +846,7 @@ export const triggerQueueResizeBackground = (
     body: JSON.stringify({
       ...payload,
       cached: false,
-      reindex: payload.reindex ?? true,
+      reindex: !!(payload.reindex ?? true),
       resize: true,
       imageSource,
     }),
@@ -871,7 +867,7 @@ const deferQueueResizeToBackground = async (
     {
       ...payload,
       cached: false,
-      reindex: payload.reindex ?? true,
+      reindex: !!(payload.reindex ?? true),
       resize: false,
     },
     { source: imageSource },
@@ -986,7 +982,7 @@ export const getQueueWithResizeRetry = async (
           {
             ...payload,
             cached: false,
-            reindex: payload.reindex ?? true,
+            reindex: !!(payload.reindex ?? true),
             resize,
           },
           { source: imageSource },
@@ -3155,9 +3151,11 @@ export const archiveAndClearQueue = async (
           )
           results.push({
             message: ErrorMessage.NonWinningTagNotDeleted,
+            error: deleteArchivedTagFromQueueResult.error,
             game: gameName,
             tag: nonWinningTag,
           })
+          errors = true
         }
       }
     } else {
@@ -3167,9 +3165,13 @@ export const archiveAndClearQueue = async (
           message: deletedTagResult.success
             ? 'tag deleted from queue'
             : ErrorMessage.QueuedTagNotDeleted,
+          ...(!deletedTagResult.success ? { error: deletedTagResult.error } : {}),
           game: gameName,
           tag: queuedTag,
         })
+        if (!deletedTagResult.success) {
+          errors = true
+        }
       }
     }
   } else {
@@ -4056,13 +4058,36 @@ export const finalizeNewBikeTagPost = async (
       errors = true
     }
 
-    axios
-      .post(
+    try {
+      const queueClearResponse = await axios.post(
         getApiUrl(game.name, 'autopost-clear'),
         {},
-        { headers: { 'Content-Type': 'application/json' } },
+        { headers: { 'Content-Type': 'application/json' }, timeout: 10000 },
       )
-      .catch((e) => log(ErrorMessage.QueueNotCleared, e.message ?? e, 'warn'))
+      log(
+        'Result of clearing non-winning queue entries',
+        {
+          status: queueClearResponse.status,
+          results: queueClearResponse.data,
+        },
+        'info',
+      )
+    } catch (e: any) {
+      const queueClearError = e?.response?.data ?? e?.message ?? e
+      log(
+        ErrorMessage.QueueNotCleared,
+        {
+          status: e?.response?.status,
+          error: queueClearError,
+        },
+        'warn',
+      )
+      results.push({
+        message: ErrorMessage.QueueNotCleared,
+        error: queueClearError,
+        game: game.name,
+      })
+    }
   }
 
   return { results, errors }
@@ -4332,6 +4357,7 @@ export const acceptCorsHeaders = (
   'Access-Control-Allow-Methods': methods,
   'Access-Control-Allow-Origin': origin,
   'Access-Control-Max-Age': maxAge,
+  'Cache-Control': '',
 })
 
 export const constructAmbassadorProfile = (

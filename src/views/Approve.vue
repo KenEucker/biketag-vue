@@ -31,6 +31,7 @@
       <input type="hidden" name="form-name" value="approve-tag-error" />
       <input type="hidden" name="submission" />
       <input type="hidden" name="tag" />
+      <input type="hidden" name="queueSnapshot" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
       <input type="hidden" name="game" :value="getGameName" />
       <input type="hidden" name="message" />
@@ -73,7 +74,6 @@ const toast = inject('toast')
 const { t } = useI18n()
 
 // computed
-const getPlayerTag = computed(() => store.getPlayerTag)
 const getGameName = computed(() => store.getGameName)
 const getGameNameProper = computed(() => store.getGameNameProper)
 const getAmbassadorId = computed(() => store.getAmbassadorId)
@@ -81,6 +81,13 @@ const getAmbassadorId = computed(() => store.getAmbassadorId)
 // methods
 async function onApproveSubmit(newTagSubmission) {
   const { tag, formAction, formData, storeAction } = newTagSubmission
+  const submittedTag = JSON.parse(JSON.stringify(tag ?? {}))
+  const serializedTag = JSON.stringify(submittedTag)
+  const queueSnapshot = JSON.stringify(newTagSubmission.queueSnapshot ?? [])
+  const gameName = getGameName.value
+  const submissionPlayer =
+    submittedTag.foundPlayer || submittedTag.mysteryPlayer || submittedTag.playerId || ''
+  const submission = `${gameName}-${submittedTag.tagnumber ?? ''}--${submissionPlayer}`
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual'
   }
@@ -95,31 +102,50 @@ async function onApproveSubmit(newTagSubmission) {
     position: 'top',
   })
   const errorFields = {
-    game: getGameName.value,
-    tag: JSON.stringify(getPlayerTag.value),
-    submission: `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
+    game: gameName,
+    tag: serializedTag,
+    submission,
+    queueSnapshot,
   }
 
   uploadInProgress.value = true
-  const success = await store[storeAction](tag)
+  const result = await store[storeAction](tag)
   uploadInProgress.value = false
 
-  if (success === true) {
-    /// Update the queue
-    store.fetchQueuedTags(false)
-
-    formData.set('game', getGameName.value)
-    formData.set('tag', JSON.stringify(getPlayerTag.value))
-    formData.set(
-      'approve',
-      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
-    )
-
-    if (tag.foundImage) {
-      formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
-    } else if (tag.mysteryImage) {
-      formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
+  if (result === true || (storeAction === 'approveTag' && Array.isArray(result))) {
+    if (
+      storeAction === 'approveTag' &&
+      result.some((entry) => entry.message === 'error clearing queue')
+    ) {
+      toast.open({
+        message: 'Approval completed, but the queue could not be cleared.',
+        type: 'warning',
+        duration: 10000,
+        position: 'bottom',
+      })
     }
+
+    // Reflect the successful API mutation before showing the result.
+    await store.fetchQueuedTags(false).catch((error) => {
+      console.warn('Could not refresh the queued tags after approval', error)
+    })
+
+    // Removing a queued submission does not need the approve form submission
+    // or its notification callback. The API has already completed the action.
+    if (storeAction === 'dequeueTag') {
+      toast.open({
+        message: `${storeAction} ${t('notifications.success')}`,
+        type: 'success',
+        position: 'top',
+      })
+      return true
+    }
+
+    formData.set('game', gameName)
+    formData.set('ambassadorId', getAmbassadorId.value ?? '')
+    formData.set('tag', serializedTag)
+    formData.set('submission', submission)
+    formData.set('queueSnapshot', queueSnapshot)
     return sendNetlifyForm(
       formAction,
       new URLSearchParams(formData).toString(),
@@ -144,7 +170,7 @@ async function onApproveSubmit(newTagSubmission) {
       },
     )
   } else {
-    const message = `${t('notifications.error')}: ${success}`
+    const message = `${t('notifications.error')}: ${result}`
     toast.open({
       message,
       type: 'error',
