@@ -31,6 +31,7 @@
       <input type="hidden" name="form-name" value="approve-tag-error" />
       <input type="hidden" name="submission" />
       <input type="hidden" name="tag" />
+      <input type="hidden" name="queueSnapshot" />
       <input type="hidden" name="ambassadorId" :value="getAmbassadorId" />
       <input type="hidden" name="game" :value="getGameName" />
       <input type="hidden" name="message" />
@@ -81,6 +82,11 @@ const getAmbassadorId = computed(() => store.getAmbassadorId)
 // methods
 async function onApproveSubmit(newTagSubmission) {
   const { tag, formAction, formData, storeAction } = newTagSubmission
+  const submittedTag = JSON.parse(JSON.stringify(tag ?? {}))
+  const serializedTag = JSON.stringify(submittedTag)
+  const queueSnapshot = JSON.stringify(newTagSubmission.queueSnapshot ?? [])
+  const gameName = getGameName.value
+  const submission = `${gameName}-${submittedTag.tagnumber ?? ''}--${submittedTag.foundPlayer || submittedTag.mysteryPlayer || submittedTag.playerId || ''}`
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual'
   }
@@ -95,9 +101,10 @@ async function onApproveSubmit(newTagSubmission) {
     position: 'top',
   })
   const errorFields = {
-    game: getGameName.value,
-    tag: JSON.stringify(getPlayerTag.value),
-    submission: `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
+    game: gameName,
+    tag: serializedTag,
+    submission,
+    queueSnapshot,
   }
 
   uploadInProgress.value = true
@@ -119,18 +126,11 @@ async function onApproveSubmit(newTagSubmission) {
       return true
     }
 
-    formData.set('game', getGameName.value)
-    formData.set('tag', JSON.stringify(getPlayerTag.value))
-    formData.set(
-      'approve',
-      `${getGameName.value}-${getPlayerTag.value.tagnumber}--${getPlayerTag.value.foundPlayer}`,
-    )
-
-    if (tag.foundImage) {
-      formData.set('foundImageUrl', getPlayerTag.value.foundImageUrl)
-    } else if (tag.mysteryImage) {
-      formData.set('mysteryImageUrl', getPlayerTag.value.mysteryImageUrl)
-    }
+    formData.set('game', gameName)
+    formData.set('ambassadorId', getAmbassadorId.value ?? '')
+    formData.set('tag', serializedTag)
+    formData.set('submission', submission)
+    formData.set('queueSnapshot', queueSnapshot)
     return sendNetlifyForm(
       formAction,
       new URLSearchParams(formData).toString(),
