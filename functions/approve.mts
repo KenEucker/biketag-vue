@@ -127,7 +127,9 @@ export default async (req: Request) => {
             const publicationErrors = newBikeTagPostedResults.results
               .filter((result: any) => result?.error)
               .map((result: any) => result.error)
-            errors.push(...(publicationErrors.length ? publicationErrors : ['tag publication failed']))
+            errors.push(
+              ...(publicationErrors.length ? publicationErrors : ['tag publication failed']),
+            )
           }
         } else {
           log(
