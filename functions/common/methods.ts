@@ -3173,7 +3173,9 @@ export const archiveAndClearQueue = async (
           game: gameName,
           tag: queuedTag,
         })
-        if (!deletedTagResult.success) errors = true
+        if (!deletedTagResult.success) {
+          errors = true
+        }
       }
     }
   } else {
