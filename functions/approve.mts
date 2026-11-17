@@ -80,6 +80,16 @@ export default async (req: Request) => {
           approvePayload.ambassadorId,
         )
         log('[approve-tag] Active queue loaded', {
+          queuedTags: activeQueue.queuedTags.map((tag) => ({
+            tagnumber: tag.tagnumber,
+            playerId: tag.playerId,
+            foundPlayer: tag.foundPlayer ?? '',
+            hasFoundImage: !!tag.foundImageUrl?.length,
+            foundTime: tag.foundTime ?? 0,
+            mysteryPlayer: tag.mysteryPlayer ?? '',
+            hasMysteryImage: !!tag.mysteryImageUrl?.length,
+            mysteryTime: tag.mysteryTime ?? 0,
+          })),
           completedTags: activeQueue.completedTags.length,
         })
 
@@ -113,7 +123,12 @@ export default async (req: Request) => {
             tag: approvedTag.tagnumber,
           })
           results = results.concat(newBikeTagPostedResults.results)
-          errors = errors.concat(newBikeTagPostedResults.errors)
+          if (newBikeTagPostedResults.errors) {
+            const publicationErrors = newBikeTagPostedResults.results
+              .filter((result: any) => result?.error)
+              .map((result: any) => result.error)
+            errors.push(...(publicationErrors.length ? publicationErrors : ['tag publication failed']))
+          }
         } else {
           log(
             '[approve-tag] Tag could not be approved',
