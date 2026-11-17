@@ -5,34 +5,93 @@ on:
     branches:
       - production
 
-jobs:
-  release:
-    name: Release
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
 
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
-      - name: Reconfigure git to use HTTP authentication
-        run: >
-          git config --global url."https://github.com/".insteadOf
-          ssh://git@github.com/
+          node-version: '24'
+          cache: npm
       - name: Install dependencies
         run: npm ci --ignore-scripts
       - name: Run linters
         run: npm run lint
-      - name: Run Build
+      - name: Build library
         run: npm run pub:build
-      - name: Expose build
+      - name: Verify dependency signatures
+        run: npm audit signatures
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: verify
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Install release tooling
+        run: npm install --no-save --package-lock=false --ignore-scripts semantic-release@25.0.9 @semantic-release/git@10.0.1
+      - name: Build library
+        run: npm run pub:build
+      - name: Expose library artifacts
         run: npm run pub:expose
-      - name: Run Release
+      - name: Verify package contents
+        run: |
+          npm pack --dry-run
+          node --input-type=module -e "
+            import { existsSync } from 'node:fs';
+            for (const file of ['index.d.ts', 'biketag-vue.es.js', 'biketag-vue.umd.js', 'biketag-vue.css']) {
+              if (!existsSync(file)) throw new Error('Missing package artifact: ' + file);
+            }
+          "
+      - name: Verify dependency signatures
+        run: npm audit signatures
+      - name: Record production revision before release
+        run: echo "BEFORE_RELEASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Release
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx --no-install semantic-release
+      - name: Merge released production into develop
+        run: |
+          set -euo pipefail
+          git fetch origin production develop
+          AFTER_RELEASE_SHA=$(git rev-parse origin/production)
+          if [ "$AFTER_RELEASE_SHA" = "$BEFORE_RELEASE_SHA" ]; then
+            echo 'No release commit was created; skipping develop merge.'
+            exit 0
+          fi
+          RELEASE_COMMIT_SUBJECT=$(git log -1 --format=%s origin/production)
+          if [[ ! "$RELEASE_COMMIT_SUBJECT" =~ ^chore\(release\):[[:space:]] ]]; then
+            echo 'Production advanced without an expected release commit; refusing to merge.'
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -C develop origin/develop
+          git merge --no-ff --no-edit origin/production
+          git push origin HEAD:develop
