@@ -4056,13 +4056,37 @@ export const finalizeNewBikeTagPost = async (
       errors = true
     }
 
-    axios
-      .post(
+    try {
+      const queueClearResponse = await axios.post(
         getApiUrl(game.name, 'autopost-clear'),
         {},
         { headers: { 'Content-Type': 'application/json' } },
       )
-      .catch((e) => log(ErrorMessage.QueueNotCleared, e.message ?? e, 'warn'))
+      log(
+        'Result of clearing non-winning queue entries',
+        {
+          status: queueClearResponse.status,
+          results: queueClearResponse.data,
+        },
+        'info',
+      )
+    } catch (e: any) {
+      const queueClearError = e?.response?.data ?? e?.message ?? e
+      log(
+        ErrorMessage.QueueNotCleared,
+        {
+          status: e?.response?.status,
+          error: queueClearError,
+        },
+        'warn',
+      )
+      results.push({
+        message: ErrorMessage.QueueNotCleared,
+        error: queueClearError,
+        game: game.name,
+      })
+      errors = true
+    }
   }
 
   return { results, errors }
