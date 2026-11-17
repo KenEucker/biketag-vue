@@ -85,7 +85,9 @@ async function onApproveSubmit(newTagSubmission) {
   const serializedTag = JSON.stringify(submittedTag)
   const queueSnapshot = JSON.stringify(newTagSubmission.queueSnapshot ?? [])
   const gameName = getGameName.value
-  const submission = `${gameName}-${submittedTag.tagnumber ?? ''}--${submittedTag.foundPlayer || submittedTag.mysteryPlayer || submittedTag.playerId || ''}`
+  const submissionPlayer =
+    submittedTag.foundPlayer || submittedTag.mysteryPlayer || submittedTag.playerId || ''
+  const submission = `${gameName}-${submittedTag.tagnumber ?? ''}--${submissionPlayer}`
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual'
   }
