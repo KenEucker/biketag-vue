@@ -74,7 +74,6 @@ const toast = inject('toast')
 const { t } = useI18n()
 
 // computed
-const getPlayerTag = computed(() => store.getPlayerTag)
 const getGameName = computed(() => store.getGameName)
 const getGameNameProper = computed(() => store.getGameNameProper)
 const getAmbassadorId = computed(() => store.getAmbassadorId)
