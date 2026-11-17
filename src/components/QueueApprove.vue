@@ -161,11 +161,22 @@ function approveTagFunction() {
   const formAction = approveTag.value.getAttribute('action')
   const formData = new FormData(approveTag.value)
   const approvedTag = currentlySelectedTag.value
+  const queueSnapshot = getQueuedTags.value.map((queuedTag) => ({
+    tagnumber: queuedTag.tagnumber,
+    playerId: queuedTag.playerId,
+    foundPlayer: queuedTag.foundPlayer ?? '',
+    foundImageUrl: queuedTag.foundImageUrl ?? '',
+    foundTime: queuedTag.foundTime ?? 0,
+    mysteryPlayer: queuedTag.mysteryPlayer ?? '',
+    mysteryImageUrl: queuedTag.mysteryImageUrl ?? '',
+    mysteryTime: queuedTag.mysteryTime ?? 0,
+  }))
 
   emit('submit', {
     formAction,
     formData,
     tag: approvedTag,
+    queueSnapshot,
     storeAction: 'approveTag',
   })
 }
