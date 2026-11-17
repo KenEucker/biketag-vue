@@ -3155,9 +3155,11 @@ export const archiveAndClearQueue = async (
           )
           results.push({
             message: ErrorMessage.NonWinningTagNotDeleted,
+            error: deleteArchivedTagFromQueueResult.error,
             game: gameName,
             tag: nonWinningTag,
           })
+          errors = true
         }
       }
     } else {
@@ -3167,9 +3169,11 @@ export const archiveAndClearQueue = async (
           message: deletedTagResult.success
             ? 'tag deleted from queue'
             : ErrorMessage.QueuedTagNotDeleted,
+          ...(!deletedTagResult.success ? { error: deletedTagResult.error } : {}),
           game: gameName,
           tag: queuedTag,
         })
+        if (!deletedTagResult.success) errors = true
       }
     }
   } else {
