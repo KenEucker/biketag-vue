@@ -5,6 +5,9 @@ on:
     branches:
       - production
 
+permissions:
+  contents: write
+
 jobs:
   release:
     name: Release
@@ -12,13 +15,15 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
       - name: Reconfigure git to use HTTP authentication
         run: >
           git config --global url."https://github.com/".insteadOf
@@ -31,8 +36,18 @@ jobs:
         run: npm run pub:build
       - name: Expose build
         run: npm run pub:expose
+      - name: Verify package contents
+        run: |
+          npm pack --dry-run
+          node --input-type=module -e "
+            import { existsSync } from 'node:fs';
+            for (const file of ['index.d.ts', 'biketag-vue.es.js', 'biketag-vue.umd.js', 'biketag-vue.css']) {
+              if (!existsSync(file)) throw new Error('Missing package artifact: ' + file);
+            }
+          "
       - name: Run Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
