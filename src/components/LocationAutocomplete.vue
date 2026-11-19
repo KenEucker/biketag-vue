@@ -124,12 +124,15 @@ const onInput = (event) => {
       const params = new URLSearchParams({
         key: BikeTagEnv.LOQ_AKEY,
         q: query,
-        limit: '5',
+        limit: '10',
       })
       const viewbox = getSearchViewbox(props.searchCenter)
       if (viewbox) {
         params.set('viewbox', viewbox)
         params.set('bounded', '0')
+        // LocationIQ defaults to importance ranking, which can favor distant
+        // popular places despite a preferred viewbox. Rank by distance instead.
+        params.set('importancesort', '0')
       }
       const response = await fetch('https://api.locationiq.com/v1/autocomplete?' + params, {
         signal: pending.signal,

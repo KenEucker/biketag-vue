@@ -212,6 +212,8 @@ test('biases autocomplete toward the game center without restricting other ZIP c
   const params = calls[0].searchParams
   assert.equal(params.get('q'), 'Pioneer Square', 'ZIP code must not be appended to search text')
   assert.equal(params.get('bounded'), '0', 'geographic bias must not exclude other areas')
+  assert.equal(params.get('importancesort'), '0', 'prioritize distance to the game, not global prominence')
+  assert.equal(params.get('limit'), '10', 'include more nearby candidates for ZIP matching')
   const bounds = params.get('viewbox').split(',').map(Number)
   assert.equal(bounds.length, 4)
   assert.ok(bounds[0] < -122.67 && bounds[2] > -122.67)
@@ -260,6 +262,7 @@ test('ignores invalid game coordinates rather than biasing toward zero', async (
   view.input().props.onInput({ target: { value: 'Pioneer' } })
   await new Promise((resolve) => setTimeout(resolve, 400))
   assert.equal(calls[0].searchParams.has('viewbox'), false)
+  assert.equal(calls[0].searchParams.has('importancesort'), false)
 })
 
 test('updates location bias when the game loads after typing has started', async (t) => {
@@ -283,6 +286,7 @@ test('updates location bias when the game loads after typing has started', async
   assert.equal(calls.length, 2)
   assert.equal(calls[0].searchParams.has('viewbox'), false)
   assert.ok(calls[1].searchParams.has('viewbox'))
+  assert.equal(calls[1].searchParams.get('importancesort'), '0')
 })
 
 test('a selected place is retained when game search hints update', async (t) => {

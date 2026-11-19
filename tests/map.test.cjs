@@ -473,7 +473,7 @@ test('input map rejects (0, 0) and uses the game center for its initial pin', (t
   t.after(() => app.unmount())
   assert.equal(markers.length, 1)
   assert.deepEqual(markers[0].point, [45.52, -122.67])
-  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 15 })
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 12 })
 })
 
 test('input map prefers real photo GPS over the game boundary', (t) => {
@@ -507,5 +507,17 @@ test('input map adds its marker when game coordinates load later', async (t) => 
   store.getGame = { boundary: { lat: 45.52, long: -122.67 } }
   await nextTick()
   assert.deepEqual(markers.map((marker) => marker.point), [[45.52, -122.67]])
-  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 15 })
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 12 })
+})
+
+test('input map starts zoomed out without changing the tag-map fit zoom', (t) => {
+  const input = mountMap([], 'play/input', 'test-token', {
+    start: { lat: 45.52, lng: -122.67 },
+  })
+  t.after(() => input.app.unmount())
+  assert.deepEqual(input.map.views.at(-1), { center: [45.52, -122.67], zoom: 12 })
+
+  const tags = mountMap([tag(1)])
+  t.after(() => tags.app.unmount())
+  assert.equal(tags.map.fits[0].options.maxZoom, 15)
 })
