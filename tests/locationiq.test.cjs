@@ -284,3 +284,30 @@ test('updates location bias when the game loads after typing has started', async
   assert.equal(calls[0].searchParams.has('viewbox'), false)
   assert.ok(calls[1].searchParams.has('viewbox'))
 })
+
+test('a selected place is retained when game search hints update', async (t) => {
+  const calls = []
+  const originalFetch = global.fetch
+  global.fetch = async (url) => {
+    calls.push(new URL(url))
+    return { ok: true, json: async () => [place] }
+  }
+  t.after(() => {
+    global.fetch = originalFetch
+  })
+  const view = mount('public-token')
+  t.after(() => view.app.unmount())
+  view.input().props.onInput({ target: { value: 'Pioneer' } })
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  await nextTick()
+  view.option().props.onClick()
+  await nextTick()
+  assert.equal(view.state.value, 'Pioneer Square')
+
+  view.state.searchCenter = { lat: 45.52, lng: -122.67 }
+  view.state.postalCode = '97205'
+  await nextTick()
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  assert.equal(view.state.value, 'Pioneer Square')
+  assert.equal(calls.length, 1, 'changing hints should not reopen a selected search')
+})
