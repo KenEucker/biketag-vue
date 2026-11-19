@@ -129,6 +129,11 @@ function mountMap(tags = [], variant = 'biketags', token = 'public-test-token') 
           this.openPopup = content
           return this
         },
+        on(event, listener) {
+          this.listeners ??= {}
+          this.listeners[event] = listener
+          return this
+        },
       }
     },
     Icon: class {
