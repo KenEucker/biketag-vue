@@ -186,10 +186,8 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .location-autocomplete {
-  display: block;
-  position: relative;
-  width: 100%;
-  height: 100%;
+  // Keep the input and suggestion menu positioned against BikeTagInput's frame.
+  display: contents;
 
   &__options {
     position: absolute;
