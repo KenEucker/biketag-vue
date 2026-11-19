@@ -399,8 +399,9 @@ test('boundary map centers when game data arrives after initial mount', async (t
 
   const count = map.views.length
   store.getGame.otherSetting = 'unchanged location'
+  store.getGame.boundary.lat = 45.53
   await nextTick()
-  assert.equal(map.views.length, count)
+  assert.equal(map.views.length, count, 'a refresh must not reset the user view')
 })
 
 test('boundary map fits its region polygon when the region loads later', async (t) => {
