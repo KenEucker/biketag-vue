@@ -84,6 +84,7 @@ function mount(apiKey, options = {}) {
     disabled: false,
     searchCenter: options.searchCenter ?? null,
     postalCode: options.postalCode ?? '',
+    gameCity: options.gameCity ?? '',
   })
   const selected = []
   const component = loadComponent(apiKey)
@@ -96,6 +97,7 @@ function mount(apiKey, options = {}) {
           disabled: state.disabled,
           searchCenter: state.searchCenter,
           postalCode: state.postalCode,
+          gameCity: state.gameCity,
           'onUpdate:modelValue': (value) => {
             state.value = value
           },
@@ -314,4 +316,80 @@ test('a selected place is retained when game search hints update', async (t) => 
   await new Promise((resolve) => setTimeout(resolve, 400))
   assert.equal(view.state.value, 'Pioneer Square')
   assert.equal(calls.length, 1, 'changing hints should not reopen a selected search')
+})
+
+test('shows only the place name for a result in the game city and full addresses elsewhere', async (t) => {
+  const originalFetch = global.fetch
+  global.fetch = async () => ({
+    ok: true,
+    json: async () => [
+      {
+        ...place,
+        address: { city: 'Portland', state: 'Oregon', postcode: '97205' },
+        display_name: 'Pioneer Square, 5th Avenue, Portland, Oregon, 97205, USA',
+      },
+      {
+        ...place,
+        place_id: 'out-of-state',
+        lat: '43.6591',
+        lon: '-70.2568',
+        address: { city: 'Portland', state: 'Maine', postcode: '04101' },
+        display_name: 'Pioneer Square, Portland, Maine, 04101, USA',
+      },
+      {
+        ...place,
+        place_id: 'another-city',
+        address: { city: 'Beaverton', state: 'Oregon', postcode: '97005' },
+        display_name: 'Pioneer Square, Beaverton, Oregon, 97005, USA',
+      },
+    ],
+  })
+  t.after(() => {
+    global.fetch = originalFetch
+  })
+  const view = mount('public-token', {
+    gameCity: 'Portland',
+    searchCenter: { lat: 45.52, lng: -122.67 },
+  })
+  t.after(() => view.app.unmount())
+  view.input().props.onInput({ target: { value: 'Pioneer' } })
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  await nextTick()
+  const options = find(view.root, (node) => node.props.role === 'listbox').children
+  assert.deepEqual(
+    options.map((option) => option.text),
+    [
+      'Pioneer Square',
+      'Pioneer Square, Portland, Maine, 04101, USA',
+      'Pioneer Square, Beaverton, Oregon, 97005, USA',
+    ],
+  )
+  options[0].props.onClick()
+  await nextTick()
+  assert.equal(view.state.value, 'Pioneer Square')
+  assert.deepEqual(view.selected, [{ lat: 45.5181, lng: -122.6794 }])
+})
+
+test('keeps the full address when the game city or trustworthy coordinates are unavailable', async (t) => {
+  const originalFetch = global.fetch
+  global.fetch = async () => ({
+    ok: true,
+    json: async () => [{
+      ...place,
+      address: { town: 'Portland' },
+      display_name: 'Pioneer Square, Portland, Oregon, 97205, USA',
+    }],
+  })
+  t.after(() => {
+    global.fetch = originalFetch
+  })
+  const view = mount('public-token', { gameCity: 'Portland' })
+  t.after(() => view.app.unmount())
+  view.input().props.onInput({ target: { value: 'Pioneer' } })
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  await nextTick()
+  assert.equal(view.option().text, 'Pioneer Square, Portland, Oregon, 97205, USA')
+  view.state.searchCenter = { lat: 45.52, long: -122.67 }
+  await nextTick()
+  assert.equal(view.option().text, 'Pioneer Square', 'town can identify the local city')
 })

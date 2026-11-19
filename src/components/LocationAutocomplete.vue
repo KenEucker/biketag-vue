@@ -35,7 +35,7 @@
         @mousedown.prevent
         @click="selectPlace(place)"
       >
-        {{ place.display_name }}
+        {{ suggestionLabel(place) }}
       </button>
     </span>
     <span v-if="unavailable" class="location-autocomplete__status" role="status">
@@ -61,6 +61,7 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   searchCenter: { type: Object, default: null },
   postalCode: { type: String, default: '' },
+  gameCity: { type: String, default: '' },
 })
 const emit = defineEmits(['update:modelValue', 'select'])
 const suggestions = ref([])
@@ -93,6 +94,26 @@ const getSearchViewbox = (center) => {
   const lngRadius = latRadius / Math.cos((lat * Math.PI) / 180)
   if (lng - lngRadius < -180 || lng + lngRadius > 180) return null
   return [lng - lngRadius, lat - latRadius, lng + lngRadius, lat + latRadius].join(',')
+}
+
+const suggestionLabel = (place) => {
+  const city = props.gameCity?.trim().toLowerCase()
+  const placeCity =
+    place.address?.city ??
+    place.address?.town ??
+    place.address?.village ??
+    place.address?.municipality
+  const viewbox = getSearchViewbox(props.searchCenter)
+  if (city && placeCity?.trim().toLowerCase() === city && viewbox) {
+    const [west, south, east, north] = viewbox.split(',').map(Number)
+    const lat = Number(place.lat)
+    const lng = Number(place.lon)
+    // City names can repeat in different states. Only shorten local results.
+    if (lng >= west && lng <= east && lat >= south && lat <= north) {
+      return place.display_place?.trim() || place.display_name.split(',')[0].trim()
+    }
+  }
+  return place.display_name
 }
 
 const clearSuggestions = () => {

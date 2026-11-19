@@ -75,9 +75,12 @@ function mountMap(tags = [], variant = 'biketags', token = 'public-test-token', 
     invalidateSize(options) {
       this.invalidations.push(options)
     },
-    setView(center, zoom) {
-      this.views.push({ center, zoom })
+    setView(center, zoom, options) {
+      this.views.push({ center, zoom, ...(options ? { options } : {}) })
       return this
+    },
+    getZoom() {
+      return this.views.at(-1)?.zoom ?? 3
     },
     fitBounds(bounds, options) {
       this.fits.push({ bounds, options })
@@ -391,7 +394,18 @@ test('recalculates tile coverage when a hidden map becomes visible and disconnec
   callback([{ contentRect: { width: 0, height: 500 } }])
   assert.equal(map.invalidations.length, 0)
   callback([{ contentRect: { width: 320, height: 500 } }])
-  assert.deepEqual(map.invalidations, [{ pan: false }])
+  assert.deepEqual(map.invalidations, [{ pan: true }])
+  assert.deepEqual(map.views.at(-1), {
+    center: [47.6, -122.3],
+    zoom: 12,
+    options: { animate: false },
+  })
+  const viewCount = map.views.length
+  callback([{ contentRect: { width: 360, height: 500 } }])
+  assert.equal(map.views.length, viewCount, 'regular resizing should not reset a panned map')
+  callback([{ contentRect: { width: 0, height: 500 } }])
+  callback([{ contentRect: { width: 320, height: 500 } }])
+  assert.equal(map.views.length, viewCount + 1, 'reopening should show the pin')
   app.unmount()
   assert.equal(disconnectCount, 1)
 })
@@ -520,4 +534,56 @@ test('input map starts zoomed out without changing the tag-map fit zoom', (t) =>
   const tags = mountMap([tag(1)])
   t.after(() => tags.app.unmount())
   assert.equal(tags.map.fits[0].options.maxZoom, 15)
+})
+
+test('resize keeps an input marker visible after it was placed while the map was hidden', (t) => {
+  const originalObserver = global.ResizeObserver
+  let callback
+  global.ResizeObserver = class {
+    constructor(handler) {
+      callback = handler
+    }
+    observe() {}
+    disconnect() {}
+  }
+  t.after(() => {
+    if (originalObserver === undefined) delete global.ResizeObserver
+    else global.ResizeObserver = originalObserver
+  })
+
+  const { map, app } = mountMap([], 'play/input', 'test-token', { game: {} })
+  t.after(() => app.unmount())
+  callback([{ contentRect: { width: 0, height: 500 } }])
+  map.listeners.click({ latlng: { lat: 45.53, lng: -122.65 } })
+  const viewsBeforeOpen = map.views.length
+  callback([{ contentRect: { width: 320, height: 500 } }])
+  assert.equal(map.views.length, viewsBeforeOpen + 1)
+  assert.deepEqual(map.views.at(-1), {
+    center: [45.53, -122.65],
+    zoom: 12,
+    options: { animate: false },
+  })
+})
+
+test('non-input maps retain their existing resize behavior', (t) => {
+  const originalObserver = global.ResizeObserver
+  let callback
+  global.ResizeObserver = class {
+    constructor(handler) {
+      callback = handler
+    }
+    observe() {}
+    disconnect() {}
+  }
+  t.after(() => {
+    if (originalObserver === undefined) delete global.ResizeObserver
+    else global.ResizeObserver = originalObserver
+  })
+
+  const { map, app } = mountMap([], 'biketags')
+  t.after(() => app.unmount())
+  const originalViews = map.views.length
+  callback([{ contentRect: { width: 320, height: 500 } }])
+  assert.deepEqual(map.invalidations, [{ pan: false }])
+  assert.equal(map.views.length, originalViews)
 })
