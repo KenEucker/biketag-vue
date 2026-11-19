@@ -42,6 +42,7 @@ const emit = defineEmits(['dragend'])
 const store = useBikeTagStore()
 const worldZoom = 3
 const cityZoom = 10
+const inputZoom = 12
 const playZoom = 15
 const centerNorthAmerica = [40, -45]
 const markerHeight = 50
@@ -239,7 +240,7 @@ const showInputPoint = (point) => {
   }
 
   lastInputPoint = point
-  map.setView(point, playZoom)
+  map.setView(point, inputZoom)
 }
 
 watch(inputPoint, (point) => {
