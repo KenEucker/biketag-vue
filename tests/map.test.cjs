@@ -121,6 +121,7 @@ function mountMap(tags = [], variant = 'biketags', token = 'public-test-token') 
         point,
         options,
         addTo(group) {
+          group.layers ??= []
           group.layers.push(this)
           return this
         },
