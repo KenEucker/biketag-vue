@@ -46,6 +46,7 @@ let map
 let markerLayer
 let fittedTagBounds = false
 let fittedRegionBounds = false
+let gameCenterApplied = false
 let regionRequest = 0
 let resizeObserver
 
@@ -182,12 +183,13 @@ const addPolygons = (paths) => {
 // The game loads after the map on a direct visit to /map. Center it when its
 // boundary arrives, but don't override a region fit or a tag fit afterwards.
 watch(gameCenter, (center) => {
-  if (!map || !center) return
+  if (!map || !center || gameCenterApplied) return
   if (
     (props.variant === 'boundary' && !fittedRegionBounds) ||
     (props.variant === 'biketags' && !fittedTagBounds)
   ) {
     map.setView(center, cityZoom)
+    gameCenterApplied = true
   }
 })
 
@@ -266,10 +268,14 @@ onMounted(async () => {
     markerLayer = L.featureGroup().addTo(map)
     syncMarkers()
   } else if (props.variant == 'boundary') {
-    if (gameCenter.value) map.setView(gameCenter.value, cityZoom)
+    if (gameCenter.value) {
+      map.setView(gameCenter.value, cityZoom)
+      gameCenterApplied = true
+    }
     await fitRegionBoundary()
   } else if (props.variant === 'biketags') {
     map.setView(gameCenter.value ?? centerNorthAmerica, cityZoom)
+    gameCenterApplied = !!gameCenter.value
     L.control.locate().addTo(map)
     markerLayer = L.featureGroup().addTo(map)
     syncMarkers()
