@@ -59,6 +59,8 @@ import { onBeforeUnmount, ref, watch } from 'vue';
 const props = defineProps({
   modelValue: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
+  searchCenter: { type: Object, default: null },
+  postalCode: { type: String, default: '' },
 })
 const emit = defineEmits(['update:modelValue', 'select'])
 const suggestions = ref([])
@@ -69,6 +71,29 @@ let blurTimer
 let controller
 let request = 0
 let lastTyped = ''
+
+// Bias results toward the game's location without excluding nearby ZIP codes.
+// LocationIQ accepts viewbox as a preferred search area when bounded is false.
+const getSearchViewbox = (center) => {
+  const lat = Number(center?.lat)
+  const lng = Number(center?.long ?? center?.lng)
+  if (
+    center?.lat == null ||
+    (center?.long ?? center?.lng) == null ||
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    Math.abs(lat) > 85 ||
+    Math.abs(lng) > 180 ||
+    (lat === 0 && lng === 0)
+  ) {
+    return null
+  }
+
+  const latRadius = 50 / 111.32 // Approximately 50 km from the game center
+  const lngRadius = latRadius / Math.cos((lat * Math.PI) / 180)
+  if (lng - lngRadius < -180 || lng + lngRadius > 180) return null
+  return [lng - lngRadius, lat - latRadius, lng + lngRadius, lat + latRadius].join(',')
+}
 
 const clearSuggestions = () => {
   suggestions.value = []
@@ -101,13 +126,18 @@ const onInput = (event) => {
         q: query,
         limit: '5',
       })
+      const viewbox = getSearchViewbox(props.searchCenter)
+      if (viewbox) {
+        params.set('viewbox', viewbox)
+        params.set('bounded', '0')
+      }
       const response = await fetch('https://api.locationiq.com/v1/autocomplete?' + params, {
         signal: pending.signal,
       })
       if (!response.ok) throw new Error('LocationIQ autocomplete unavailable')
       const places = await response.json()
       if (currentRequest === request) {
-        suggestions.value = Array.isArray(places)
+        const validPlaces = Array.isArray(places)
           ? places.filter((place) => {
               const lat = Number(place?.lat)
               const lng = Number(place?.lon)
@@ -123,6 +153,15 @@ const onInput = (event) => {
               )
             })
           : []
+        const postalCode = props.postalCode?.trim().toUpperCase()
+        if (postalCode) {
+          const isLocal = (place) => {
+            const resultCode = place.address?.postcode?.trim().toUpperCase()
+            return resultCode === postalCode || resultCode?.startsWith(postalCode + '-')
+          }
+          validPlaces.sort((a, b) => Number(isLocal(b)) - Number(isLocal(a)))
+        }
+        suggestions.value = validPlaces
       }
     } catch (error) {
       if (currentRequest === request && error?.name !== 'AbortError') {
@@ -176,6 +215,13 @@ watch(
       cancelSearch()
       clearSuggestions()
     }
+  },
+)
+watch(
+  () => [props.searchCenter?.lat, props.searchCenter?.long ?? props.searchCenter?.lng, props.postalCode],
+  () => {
+    // Refresh an in-progress search if game information arrives after the player starts typing.
+    if (lastTyped.trim().length >= 3) onInput({ target: { value: lastTyped } })
   },
 )
 onBeforeUnmount(() => {
