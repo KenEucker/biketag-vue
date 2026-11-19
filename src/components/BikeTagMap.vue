@@ -1,11 +1,15 @@
 <template>
   <div :class="props.variant">
-    <div ref="mapContainer" class="leaflet-map"></div>
+    <div v-if="!BikeTagEnv.LOQ_AKEY" class="leaflet-map leaflet-map--unavailable" role="status">
+      Map tiles unavailable.
+    </div>
+    <div v-else ref="mapContainer" class="leaflet-map"></div>
   </div>
 </template>
 
 <script setup name="BikeTagMap">
 import Pin from '@/assets/images/pin.svg'
+import { BikeTagEnv } from '@/common/constants'
 import { getImageSized } from '@/common/images'
 import { useBikeTagStore } from '@/store/index'
 import L from 'leaflet'
@@ -41,6 +45,7 @@ const markerHeight = 50
 let map
 let markerLayer
 let fittedTagBounds = false
+let resizeObserver
 
 const getMapPoint = (gps) => {
   const coordinates = [gps?.lat, gps?.long ?? gps?.lng]
@@ -173,6 +178,11 @@ const addPolygons = (paths) => {
 
 // mounted
 onMounted(async () => {
+  if (!BikeTagEnv.LOQ_AKEY) {
+    console.warn('BikeTag map tiles unavailable: LOQ_AKEY is not configured')
+    return
+  }
+
   gameCenter.value = getGame.value.boundary
     ? [
         getGame.value.boundary?.lat ?? 0,
@@ -180,10 +190,39 @@ onMounted(async () => {
       ]
     : gameCenter.value
   map = L.map(mapContainer.value).setView(gameCenter.value, worldZoom)
-  L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-    maxZoom: 20,
-    subdomains: ['mt0'],
-  }).addTo(map)
+  // LocationIQ's Leaflet raster tiles; use the same public token as autocomplete.
+  let reportedTileError = false
+  L.tileLayer(
+    `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${encodeURIComponent(BikeTagEnv.LOQ_AKEY)}`,
+    {
+      maxZoom: 20,
+      subdomains: ['a', 'b', 'c'],
+      attribution:
+        '<a href="https://locationiq.com/?ref=maps" target="_blank" rel="noopener noreferrer">&copy; LocationIQ</a> | <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">&copy; OpenStreetMap contributors</a>',
+    },
+  )
+    .on('tileerror', (event) => {
+      if (!reportedTileError) {
+        reportedTileError = true
+        // Never log tile URLs: they include the public LocationIQ token.
+        console.warn('BikeTag LocationIQ map tile failed to load', {
+          variant: props.variant,
+          zoom: event.coords?.z ?? null,
+        })
+      }
+    })
+    .addTo(map)
+
+  // Leaflet can measure zero width when mounted in the Found Location popover.
+  // Recalculate tile coverage when the container becomes visible or resizes.
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver((entries) => {
+      if (entries.some(({ contentRect }) => contentRect.width > 0 && contentRect.height > 0)) {
+        map?.invalidateSize({ pan: false })
+      }
+    })
+    resizeObserver.observe(mapContainer.value)
+  }
 
   if (props.variant == 'play/input') {
     const marker = L.marker(props.start, {
@@ -217,6 +256,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
   map?.remove()
   markerLayer = undefined
   map = undefined
@@ -261,6 +301,11 @@ onBeforeUnmount(() => {
 
 .leaflet-map {
   height: 500px;
+
+  &--unavailable {
+    display: grid;
+    place-items: center;
+  }
 }
 
 .world-map,
