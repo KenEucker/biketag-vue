@@ -1,11 +1,18 @@
 <template>
   <div :class="props.variant">
-    <div ref="mapContainer" class="leaflet-map"></div>
+    <div v-if="!BikeTagEnv.LOQ_AKEY" class="leaflet-map leaflet-map--unavailable" role="status">
+      Map tiles unavailable.
+    </div>
+    <div v-else ref="mapContainer" class="leaflet-map"></div>
+    <p v-if="props.variant === 'play/input' && !inputPoint" class="leaflet-map__hint">
+      Select a point on the map to place the pin.
+    </p>
   </div>
 </template>
 
 <script setup name="BikeTagMap">
 import Pin from '@/assets/images/pin.svg'
+import { BikeTagEnv } from '@/common/constants'
 import { getImageSized } from '@/common/images'
 import { useBikeTagStore } from '@/store/index'
 import L from 'leaflet'
@@ -35,12 +42,20 @@ const emit = defineEmits(['dragend'])
 const store = useBikeTagStore()
 const worldZoom = 3
 const cityZoom = 10
+const inputZoom = 12
 const playZoom = 15
 const centerNorthAmerica = [40, -45]
 const markerHeight = 50
 let map
 let markerLayer
 let fittedTagBounds = false
+let fittedRegionBounds = false
+let gameCenterApplied = false
+let regionRequest = 0
+let resizeObserver
+let mapWasVisible = false
+let inputMarker
+let lastInputPoint
 
 const getMapPoint = (gps) => {
   const coordinates = [gps?.lat, gps?.long ?? gps?.lng]
@@ -95,7 +110,10 @@ const getMarkers = computed(() =>
 )
 
 const mapContainer = ref(null)
-const gameCenter = ref(centerNorthAmerica)
+const gameCenter = computed(() => getMapPoint(getGame.value?.boundary))
+const inputPoint = computed(
+  () => getMapPoint(props.start) ?? getMapPoint(props.gps) ?? gameCenter.value,
+)
 
 const createTagPopup = (tag) => {
   const popup = L.DomUtil.create('div', 'tag-map-popup')
@@ -169,24 +187,45 @@ const addPolygons = (paths) => {
     },
   }).addTo(map)
   map.fitBounds(polygon.getBounds())
+  fittedRegionBounds = true
 }
 
-// mounted
-onMounted(async () => {
-  gameCenter.value = getGame.value.boundary
-    ? [
-        getGame.value.boundary?.lat ?? 0,
-        getGame.value.boundary?.long ?? getGame.value.boundary?.lng ?? 0,
-      ]
-    : gameCenter.value
-  map = L.map(mapContainer.value).setView(gameCenter.value, worldZoom)
-  L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-    maxZoom: 20,
-    subdomains: ['mt0'],
-  }).addTo(map)
+// The game loads after the map on a direct visit to /map. Center it when its
+// boundary arrives, but don't override a region fit or a tag fit afterwards.
+watch(gameCenter, (center) => {
+  if (!map || !center || gameCenterApplied) return
+  if (
+    (props.variant === 'boundary' && !fittedRegionBounds) ||
+    (props.variant === 'biketags' && !fittedTagBounds)
+  ) {
+    map.setView(center, cityZoom)
+    gameCenterApplied = true
+  }
+})
 
-  if (props.variant == 'play/input') {
-    const marker = L.marker(props.start, {
+const fitRegionBoundary = async () => {
+  const request = ++regionRequest
+  const region = getGame.value?.region
+  if (!map || props.variant !== 'boundary' || !region?.description) return
+
+  const regionData = await store.getRegionPolygon(region)
+  if (map && request === regionRequest && regionData?.geojson) {
+    addPolygons(regionData.geojson)
+  }
+}
+
+// A region may not exist yet when the map mounts.
+watch(() => getGame.value?.region?.description, fitRegionBoundary)
+
+// Don't create an input marker at the default (0, 0) while GPS is missing.
+const showInputPoint = (point) => {
+  if (!map || !point) return
+  if (lastInputPoint?.[0] === point[0] && lastInputPoint?.[1] === point[1]) return
+
+  if (inputMarker) {
+    inputMarker.setLatLng(point)
+  } else {
+    inputMarker = L.marker(point, {
       icon: new L.Icon({
         iconUrl: Pin,
         iconSize: [markerHeight, markerHeight],
@@ -194,22 +233,98 @@ onMounted(async () => {
       }),
       draggable: true,
     }).addTo(map)
+    inputMarker.on('dragend', (event) => {
+      const { lat, lng } = event.target._latlng
+      lastInputPoint = [lat, lng]
+      emit('dragend', { lat, lng })
+    })
+  }
+
+  lastInputPoint = point
+  map.setView(point, inputZoom)
+}
+
+watch(inputPoint, (point) => {
+  if (props.variant === 'play/input') showInputPoint(point)
+})
+
+// mounted
+onMounted(async () => {
+  if (!BikeTagEnv.LOQ_AKEY) {
+    console.warn('BikeTag map tiles unavailable: LOQ_AKEY is not configured')
+    return
+  }
+
+  map = L.map(mapContainer.value).setView(gameCenter.value ?? centerNorthAmerica, worldZoom)
+  // LocationIQ's Leaflet raster tiles; use the same public token as autocomplete.
+  let reportedTileError = false
+  L.tileLayer(
+    `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${encodeURIComponent(BikeTagEnv.LOQ_AKEY)}`,
+    {
+      maxZoom: 20,
+      subdomains: ['a', 'b', 'c'],
+      attribution:
+        '<a href="https://locationiq.com/?ref=maps" target="_blank" rel="noopener noreferrer">&copy; LocationIQ</a> | <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">&copy; OpenStreetMap contributors</a>',
+    },
+  )
+    .on('tileerror', (event) => {
+      if (!reportedTileError) {
+        reportedTileError = true
+        // Never log tile URLs: they include the public LocationIQ token.
+        console.warn('BikeTag LocationIQ map tile failed to load', {
+          variant: props.variant,
+          zoom: event.coords?.z ?? null,
+        })
+      }
+    })
+    .addTo(map)
+
+  // Leaflet can measure zero width when mounted in the Found Location popover.
+  // Recalculate tile coverage when the container becomes visible or resizes.
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver((entries) => {
+      const visible = entries.some(
+        ({ contentRect }) => contentRect.width > 0 && contentRect.height > 0,
+      )
+      if (!visible) {
+        mapWasVisible = false
+        return
+      }
+
+      // A popover can change size after setView has already positioned its pin.
+      // Keep its geographic center during resize, and recenter only on opening.
+      map?.invalidateSize({ pan: props.variant === 'play/input' })
+      if (props.variant === 'play/input' && !mapWasVisible && lastInputPoint) {
+        map.setView(lastInputPoint, map.getZoom(), { animate: false })
+      }
+      mapWasVisible = true
+    })
+    resizeObserver.observe(mapContainer.value)
+  }
+
+  if (props.variant == 'play/input') {
     L.control.locate().addTo(map)
-    map.setView(props.start, playZoom)
-    marker.on('dragend', (e) => {
-      emit('dragend', e.target._latlng)
+    showInputPoint(inputPoint.value)
+    map.on('click', (event) => {
+      if (!inputMarker) {
+        const { lat, lng } = event.latlng
+        showInputPoint([lat, lng])
+        emit('dragend', { lat, lng })
+      }
     })
   } else if (props.variant == 'worldwide') {
     map.setView(centerNorthAmerica, worldZoom)
     markerLayer = L.featureGroup().addTo(map)
     syncMarkers()
   } else if (props.variant == 'boundary') {
-    const regionData = await store.getRegionPolygon(getGame.value.region)
-    if (regionData && map) {
-      addPolygons(regionData?.geojson)
+    if (gameCenter.value) {
+      map.setView(gameCenter.value, cityZoom)
+      gameCenterApplied = true
     }
+    await fitRegionBoundary()
   } else if (props.variant === 'biketags') {
-    map.setView(gameCenter.value, cityZoom)
+    map.setView(gameCenter.value ?? centerNorthAmerica, cityZoom)
+    gameCenterApplied = !!gameCenter.value
     L.control.locate().addTo(map)
     markerLayer = L.featureGroup().addTo(map)
     syncMarkers()
@@ -217,7 +332,10 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
   map?.remove()
+  inputMarker = undefined
+  lastInputPoint = undefined
   markerLayer = undefined
   map = undefined
 })
@@ -261,6 +379,16 @@ onBeforeUnmount(() => {
 
 .leaflet-map {
   height: 500px;
+
+  &--unavailable {
+    display: grid;
+    place-items: center;
+  }
+
+  &__hint {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+  }
 }
 
 .world-map,

@@ -69,18 +69,18 @@
           :placeholder="t('pages.round.location_placeholder')"
         >
           <img :src="pinIcon" alt="pin" />
-          <GMapAutocomplete
-            v-if="isGmapsEnabled() && isGpsDefault"
-            id="google-input"
+          <location-autocomplete
+            v-if="BikeTagEnv.LOQ_AKEY && isGpsDefault"
+            v-model="location"
             :disabled="locationDisabled"
-            @input="changeLocation"
-            @blur="changeLocation"
-            @click="changeLocation"
-            @place_changed="setPlace"
+            :search-center="getGame?.boundary"
+            :postal-code="getGame?.region?.zipcode"
+            :game-city="getGame?.region?.description?.split(',')[0] || getGame?.region?.name"
+            @select="setPlace"
           />
           <input
             v-else
-            id="google-input"
+            id="location-input"
             v-model="location"
             :disabled="locationDisabled"
             class="pac-target-input"
@@ -140,9 +140,9 @@ import {
   debug,
   hasGpsCoordinates,
   isAuthenticationEnabled,
-  isGmapsEnabled,
   summarizeTagGps,
 } from '@/common'
+import { BikeTagEnv } from '@/common/constants'
 import { isPointInPolygon } from '@/common/geo'
 import { readImageMetadata } from '@/common/image-metadata'
 import { useBikeTagStore } from '@/store/index'
@@ -155,6 +155,7 @@ import { useI18n } from 'vue-i18n'
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
+import LocationAutocomplete from '@/components/LocationAutocomplete.vue'
 import Loading from 'vue-loading-overlay'
 
 // props
@@ -174,10 +175,9 @@ const preview = ref(null)
 const image = ref(props.tag?.foundImage ?? '')
 const foundImageUrl = ref(null)
 const locationDisabled = ref(true)
-const center = ref({ lat: 0, lng: 0 })
+const center = ref(null)
 const gps = ref({ lat: null, lng: null })
 const isGpsDefault = ref(true)
-const inputDOM = ref(null)
 const showModal = ref(false)
 const showMap = ref(false)
 const uploadInProgress = ref(false)
@@ -372,17 +372,10 @@ const onSubmit = async (e) => {
     storeAction: 'addFoundTag',
   })
 }
-const changeLocation = (e) => {
-  location.value = e.target.value
-  if (inputDOM.value == null) {
-    inputDOM.value = e.target
-  }
-}
-const setPlace = (e) => {
-  gps.value['lat'] = round(e.geometry.location.lat())
-  gps.value['lng'] = round(e.geometry.location.lng())
+const setPlace = ({ lat, lng }) => {
+  gps.value['lat'] = round(lat)
+  gps.value['lng'] = round(lng)
   center.value = { ...gps.value }
-  location.value = inputDOM.value.value.split(',')[0]
   if (isGpsDefault.value) {
     isGpsDefault.value = false
   }
@@ -572,7 +565,7 @@ input#found {
     left: $default-font-size;
   }
 
-  #google-input {
+  #location-input {
     left: 2rem;
   }
 }

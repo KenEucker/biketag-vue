@@ -41,9 +41,9 @@ export const BikeTagEnv = {
   GAME_NAME: process.env.GAME_NAME ?? null,
   API_HOST: process.env.API_HOST ?? null,
   HOST: process.env.HOST ?? BikeTagDefaults.host ?? null,
-  /* Google Configuration */
-  // Use a browser-restricted Maps API key, never an OAuth access token.
-  G_AKEY: process.env.G_AKEY ?? process.env.GOOGLE_API_KEY ?? null,
+  /* LocationIQ Configuration */
+  // Browser-visible token: restrict its referrers and API scopes in LocationIQ.
+  LOQ_AKEY: process.env.LOCATIONIQ_API_KEY ?? process.env.LOQ_AKEY ?? null,
   /* Imgur Configuration */
   I_CID: process.env.I_CID ?? process.env.IMGUR_CLIENT_ID ?? null,
   RA_FE_KEY: process.env.RA_FE_KEY ?? null,

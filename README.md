@@ -103,8 +103,10 @@ IMGUR_CLIENT_ID=IMGURCLIENTID
 IMGUR_CLIENT_SECRET=IMGURCLIENTSECRET
 IMGUR_REFRESH_TOKEN=IMGURCLIENTREFRESH
 IMGUR_ADMIN_REFRESH_TOKEN=IMGURADMINREFRESH
-# Used for google maps integration
-GOOGLE_API_KEY=GOOGLEAPIKEY
+# LocationIQ browser token for map tiles and optional Found Location autocomplete.
+# Restrict it to your domains and enable both Maps and Autocomplete scopes.
+# Without a token, manual location text entry works but map tiles are unavailable.
+LOQ_AKEY=LOCATIONIQPUBLICTOKEN
 # Used for BikeTag Player and BikeTag Ambassador logins
 AUTH0_CLIENT_ID=AUTH0CLIENTID
 AUTH0_DOMAIN=AUTH0DOMAIN

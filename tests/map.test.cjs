@@ -54,17 +54,33 @@ const renderer = createRenderer({
   patchProp() {},
 })
 
-function mountMap(tags = [], variant = 'biketags') {
+function mountMap(tags = [], variant = 'biketags', token = 'public-test-token', options = {}) {
   const store = reactive({
     getTags: tags,
     getAllGames: [],
-    getGame: { boundary: { lat: 47.6, long: -122.3 } },
+    getGame: options.game ?? { boundary: { lat: 47.6, long: -122.3 } },
     getLogoUrl: () => '/logo.svg',
+    getRegionPolygon: options.getRegionPolygon ?? (async () => undefined),
   })
   const map = {
     fits: [],
-    setView() {
+    views: [],
+    invalidations: [],
+    listeners: {},
+    on(event, listener) {
+      this.listeners[event] = listener
       return this
+    },
+    initialized: false,
+    invalidateSize(options) {
+      this.invalidations.push(options)
+    },
+    setView(center, zoom, options) {
+      this.views.push({ center, zoom, ...(options ? { options } : {}) })
+      return this
+    },
+    getZoom() {
+      return this.views.at(-1)?.zoom ?? 3
     },
     fitBounds(bounds, options) {
       this.fits.push({ bounds, options })
@@ -74,9 +90,40 @@ function mountMap(tags = [], variant = 'biketags') {
     },
   }
   const groups = []
+  const tiles = []
+  const markers = []
+  const events = []
   const leaflet = {
-    map: () => map,
-    tileLayer: () => ({ addTo() {} }),
+    map: () => {
+      map.initialized = true
+      return map
+    },
+    tileLayer(url, options) {
+      return {
+        url,
+        options,
+        listeners: {},
+        on(event, listener) {
+          this.listeners[event] = listener
+          return this
+        },
+        addTo() {
+          tiles.push(this)
+          return this
+        },
+      }
+    },
+    geoJSON(paths) {
+      return {
+        paths,
+        addTo() {
+          return this
+        },
+        getBounds() {
+          return 'region-bounds'
+        },
+      }
+    },
     featureGroup() {
       const group = {
         layers: [],
@@ -94,10 +141,15 @@ function mountMap(tags = [], variant = 'biketags') {
       return group
     },
     marker(point, options) {
-      return {
+      const marker = {
         point,
         options,
+        setLatLng(point) {
+          this.point = point
+          return this
+        },
         addTo(group) {
+          group.layers ??= []
           group.layers.push(this)
           return this
         },
@@ -105,7 +157,14 @@ function mountMap(tags = [], variant = 'biketags') {
           this.openPopup = content
           return this
         },
+        on(event, listener) {
+          this.listeners ??= {}
+          this.listeners[event] = listener
+          return this
+        },
       }
+      markers.push(marker)
+      return marker
     },
     Icon: class {
       constructor(options) {
@@ -122,15 +181,21 @@ function mountMap(tags = [], variant = 'biketags') {
   const component = load(filename, script.content, {
     '@/assets/images/pin.svg': '/pin.svg',
     '@/store/index': { useBikeTagStore: () => store },
+    '@/common/constants': { BikeTagEnv: { LOQ_AKEY: token } },
     '@/common/images': load(imagesFile, fs.readFileSync(imagesFile, 'utf8')),
     leaflet,
     'leaflet.locatecontrol': {},
     'leaflet.locatecontrol/dist/L.Control.Locate.min.css': {},
     'leaflet/dist/leaflet.css': {},
   }).default
-  const app = renderer.createApp(component, { variant })
+  const app = renderer.createApp(component, {
+    variant,
+    start: options.start ?? null,
+    gps: options.gps ?? null,
+    onDragend: (gps) => events.push(gps),
+  })
   app.mount(element('root'))
-  return { store, map, groups, app }
+  return { store, map, groups, tiles, markers, events, app }
 }
 
 const tag = (tagnumber, gps = { lat: 47.6, long: -122.3 }) => ({
@@ -264,4 +329,261 @@ test('unmount removes the Leaflet map and stops reacting to tag changes', async 
   store.getTags = [tag(2), tag(3)]
   await nextTick()
   assert.equal(groups[0].layers.length, 1)
+})
+
+test('uses LocationIQ streets tiles with attribution and all three subdomains', (t) => {
+  const { tiles, app } = mountMap([], 'worldwide', 'pk.test-token&sample')
+  t.after(() => app.unmount())
+  assert.equal(tiles.length, 1)
+  assert.equal(
+    tiles[0].url,
+    'https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.test-token%26sample',
+  )
+  assert.deepEqual(tiles[0].options.subdomains, ['a', 'b', 'c'])
+  assert.equal(tiles[0].options.maxZoom, 20)
+  assert.match(tiles[0].options.attribution, /LocationIQ/)
+  assert.match(tiles[0].options.attribution, /OpenStreetMap contributors/)
+})
+
+test('shows an unavailable map instead of requesting tiles without an API token', (t) => {
+  const { map, tiles, app } = mountMap([], 'biketags', '')
+  t.after(() => app.unmount())
+  assert.equal(map.initialized, false)
+  assert.equal(tiles.length, 0)
+})
+
+test('tile errors report the map variant once without exposing the token in logs', (t) => {
+  const originalWarn = console.warn
+  const warnings = []
+  console.warn = (...parts) => warnings.push(parts)
+  t.after(() => {
+    console.warn = originalWarn
+  })
+  const { tiles, app } = mountMap([], 'biketags', 'public-secret-test-token')
+  t.after(() => app.unmount())
+  const error = { coords: { z: 15 }, tile: { src: tiles[0].url } }
+  tiles[0].listeners.tileerror(error)
+  tiles[0].listeners.tileerror(error)
+  assert.equal(warnings.length, 1)
+  assert.deepEqual(warnings[0][1], { variant: 'biketags', zoom: 15 })
+  assert.ok(!JSON.stringify(warnings).includes('public-secret-test-token'))
+})
+
+test('recalculates tile coverage when a hidden map becomes visible and disconnects on unmount', (t) => {
+  const previousObserver = global.ResizeObserver
+  let callback
+  let observed
+  let disconnectCount = 0
+  global.ResizeObserver = class {
+    constructor(handler) {
+      callback = handler
+    }
+    observe(target) {
+      observed = target
+    }
+    disconnect() {
+      disconnectCount += 1
+    }
+  }
+  t.after(() => {
+    if (previousObserver === undefined) delete global.ResizeObserver
+    else global.ResizeObserver = previousObserver
+  })
+  const { map, app } = mountMap([], 'play/input')
+  assert.ok(observed)
+  callback([{ contentRect: { width: 0, height: 500 } }])
+  assert.equal(map.invalidations.length, 0)
+  callback([{ contentRect: { width: 320, height: 500 } }])
+  assert.deepEqual(map.invalidations, [{ pan: true }])
+  assert.deepEqual(map.views.at(-1), {
+    center: [47.6, -122.3],
+    zoom: 12,
+    options: { animate: false },
+  })
+  const viewCount = map.views.length
+  callback([{ contentRect: { width: 360, height: 500 } }])
+  assert.equal(map.views.length, viewCount, 'regular resizing should not reset a panned map')
+  callback([{ contentRect: { width: 0, height: 500 } }])
+  callback([{ contentRect: { width: 320, height: 500 } }])
+  assert.equal(map.views.length, viewCount + 1, 'reopening should show the pin')
+  app.unmount()
+  assert.equal(disconnectCount, 1)
+})
+
+test('boundary map centers on its game even when there is no region polygon', (t) => {
+  const center = { lat: 45.52, long: -122.67 }
+  const { map, app } = mountMap([], 'boundary', 'test-token', {
+    game: { boundary: center },
+  })
+  t.after(() => app.unmount())
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 10 })
+  assert.equal(map.fits.length, 0)
+})
+
+test('boundary map centers when game data arrives after initial mount', async (t) => {
+  const { store, map, app } = mountMap([], 'boundary', 'test-token', { game: {} })
+  t.after(() => app.unmount())
+  assert.deepEqual(map.views[0], { center: [40, -45], zoom: 3 })
+
+  store.getGame = { boundary: { lat: 45.52, lng: -122.67 } }
+  await nextTick()
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 10 })
+
+  const count = map.views.length
+  store.getGame.otherSetting = 'unchanged location'
+  store.getGame.boundary.lat = 45.53
+  await nextTick()
+  assert.equal(map.views.length, count, 'a refresh must not reset the user view')
+})
+
+test('boundary map fits its region polygon when the region loads later', async (t) => {
+  const requests = []
+  const polygon = { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] }
+  const { store, map, app } = mountMap([], 'boundary', 'test-token', {
+    game: {},
+    getRegionPolygon: async (region) => {
+      requests.push(region.description)
+      return { geojson: polygon }
+    },
+  })
+  t.after(() => app.unmount())
+
+  store.getGame = {
+    boundary: { lat: 45.52, long: -122.67 },
+    region: { description: 'Portland, Oregon' },
+  }
+  await nextTick()
+  await new Promise((resolve) => setImmediate(resolve))
+  assert.deepEqual(requests, ['Portland, Oregon'])
+  assert.deepEqual(map.fits.map((fit) => fit.bounds), ['region-bounds'])
+
+  const count = map.views.length
+  store.getGame.boundary.lat = 45.53
+  await nextTick()
+  assert.equal(map.views.length, count, 'late boundary updates must not undo polygon fit')
+})
+
+test('tag map uses a late game center but does not override fitted tag bounds', async (t) => {
+  const { store, map, app } = mountMap([], 'biketags', 'test-token', { game: {} })
+  t.after(() => app.unmount())
+  store.getGame = { boundary: { lat: 45.52, long: -122.67 } }
+  await nextTick()
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 10 })
+
+  store.getTags = [tag(1)]
+  await nextTick()
+  assert.equal(map.fits.length, 1)
+  const count = map.views.length
+  store.getGame.boundary.lat = 48
+  await nextTick()
+  assert.equal(map.views.length, count, 'tag fit should not be overridden')
+})
+
+test('input map rejects (0, 0) and uses the game center for its initial pin', (t) => {
+  const { map, markers, app } = mountMap([], 'play/input', 'test-token', {
+    start: { lat: 0, lng: 0 },
+    game: { boundary: { lat: 45.52, long: -122.67 } },
+  })
+  t.after(() => app.unmount())
+  assert.equal(markers.length, 1)
+  assert.deepEqual(markers[0].point, [45.52, -122.67])
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 12 })
+})
+
+test('input map prefers real photo GPS over the game boundary', (t) => {
+  const { markers, app } = mountMap([], 'play/input', 'test-token', {
+    start: { lat: 47.6, lng: -122.3 },
+    game: { boundary: { lat: 45.52, long: -122.67 } },
+  })
+  t.after(() => app.unmount())
+  assert.deepEqual(markers.map((marker) => marker.point), [[47.6, -122.3]])
+})
+
+test('input map without known GPS does not invent a (0, 0) pin; clicking places one', (t) => {
+  const { map, markers, events, app } = mountMap([], 'play/input', 'test-token', {
+    start: { lat: 0, lng: 0 },
+    game: {},
+  })
+  t.after(() => app.unmount())
+  assert.equal(markers.length, 0)
+  assert.deepEqual(map.views[0], { center: [40, -45], zoom: 3 })
+  map.listeners.click({ latlng: { lat: 45.53, lng: -122.65 } })
+  assert.deepEqual(markers.map((marker) => marker.point), [[45.53, -122.65]])
+  assert.deepEqual(events, [{ lat: 45.53, lng: -122.65 }])
+})
+
+test('input map adds its marker when game coordinates load later', async (t) => {
+  const { store, map, markers, app } = mountMap([], 'play/input', 'test-token', {
+    game: {},
+  })
+  t.after(() => app.unmount())
+  assert.equal(markers.length, 0)
+  store.getGame = { boundary: { lat: 45.52, long: -122.67 } }
+  await nextTick()
+  assert.deepEqual(markers.map((marker) => marker.point), [[45.52, -122.67]])
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 12 })
+})
+
+test('input map starts zoomed out without changing the tag-map fit zoom', (t) => {
+  const input = mountMap([], 'play/input', 'test-token', {
+    start: { lat: 45.52, lng: -122.67 },
+  })
+  t.after(() => input.app.unmount())
+  assert.deepEqual(input.map.views.at(-1), { center: [45.52, -122.67], zoom: 12 })
+
+  const tags = mountMap([tag(1)])
+  t.after(() => tags.app.unmount())
+  assert.equal(tags.map.fits[0].options.maxZoom, 15)
+})
+
+test('resize keeps an input marker visible after it was placed while the map was hidden', (t) => {
+  const originalObserver = global.ResizeObserver
+  let callback
+  global.ResizeObserver = class {
+    constructor(handler) {
+      callback = handler
+    }
+    observe() {}
+    disconnect() {}
+  }
+  t.after(() => {
+    if (originalObserver === undefined) delete global.ResizeObserver
+    else global.ResizeObserver = originalObserver
+  })
+
+  const { map, app } = mountMap([], 'play/input', 'test-token', { game: {} })
+  t.after(() => app.unmount())
+  callback([{ contentRect: { width: 0, height: 500 } }])
+  map.listeners.click({ latlng: { lat: 45.53, lng: -122.65 } })
+  const viewsBeforeOpen = map.views.length
+  callback([{ contentRect: { width: 320, height: 500 } }])
+  assert.equal(map.views.length, viewsBeforeOpen + 1)
+  assert.deepEqual(map.views.at(-1), {
+    center: [45.53, -122.65],
+    zoom: 12,
+    options: { animate: false },
+  })
+})
+
+test('non-input maps retain their existing resize behavior', (t) => {
+  const originalObserver = global.ResizeObserver
+  let callback
+  global.ResizeObserver = class {
+    constructor(handler) {
+      callback = handler
+    }
+    observe() {}
+    disconnect() {}
+  }
+  t.after(() => {
+    if (originalObserver === undefined) delete global.ResizeObserver
+    else global.ResizeObserver = originalObserver
+  })
+
+  const { map, app } = mountMap([], 'biketags')
+  t.after(() => app.unmount())
+  const originalViews = map.views.length
+  callback([{ contentRect: { width: 320, height: 500 } }])
+  assert.deepEqual(map.invalidations, [{ pan: false }])
+  assert.equal(map.views.length, originalViews)
 })

@@ -435,7 +435,6 @@ export const isOnline = async (checkExternally = false) => {
 }
 
 export const isAuthenticationEnabled = () => !!BikeTagEnv.A_DOMAIN?.length
-export const isGmapsEnabled = () => !!BikeTagEnv.G_AKEY?.length
 
 export const dequeueErrorNotify = (toast: any) => (error: string) => {
   return toast.open({
