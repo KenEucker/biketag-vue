@@ -18,7 +18,7 @@ export const publicEnvironmentKeys = [
   'GAME_NAME',
   'API_HOST',
   'HOST',
-  'LOCATIONIQ_API_KEY',
+  'LOQ_AKEY',
   'I_CID',
   'IMGUR_CLIENT_ID',
   'RA_FE_KEY',

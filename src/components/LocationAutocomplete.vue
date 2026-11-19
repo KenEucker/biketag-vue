@@ -53,8 +53,8 @@
 </template>
 
 <script setup name="LocationAutocomplete">
-import { BikeTagEnv } from '@/common/constants'
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { BikeTagEnv } from '@/common/constants';
+import { onBeforeUnmount, ref, watch } from 'vue';
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -89,7 +89,7 @@ const onInput = (event) => {
   clearSuggestions()
   unavailable.value = false
   const query = lastTyped.trim().slice(0, 200)
-  if (props.disabled || !BikeTagEnv.LOCATIONIQ_API_KEY || query.length < 3) return
+  if (props.disabled || !BikeTagEnv.LOQ_AKEY || query.length < 3) return
 
   const currentRequest = request
   timer = setTimeout(async () => {
@@ -97,7 +97,7 @@ const onInput = (event) => {
     controller = pending
     try {
       const params = new URLSearchParams({
-        key: BikeTagEnv.LOCATIONIQ_API_KEY,
+        key: BikeTagEnv.LOQ_AKEY,
         q: query,
         limit: '5',
       })

@@ -43,7 +43,7 @@ export const BikeTagEnv = {
   HOST: process.env.HOST ?? BikeTagDefaults.host ?? null,
   /* LocationIQ Configuration */
   // Browser-visible token: restrict its referrers and API scopes in LocationIQ.
-  LOCATIONIQ_API_KEY: process.env.LOCATIONIQ_API_KEY ?? null,
+  LOQ_AKEY: process.env.LOCATIONIQ_API_KEY ?? process.env.LOQ_AKEY ?? null,
   /* Imgur Configuration */
   I_CID: process.env.I_CID ?? process.env.IMGUR_CLIENT_ID ?? null,
   RA_FE_KEY: process.env.RA_FE_KEY ?? null,

@@ -106,7 +106,7 @@ IMGUR_ADMIN_REFRESH_TOKEN=IMGURADMINREFRESH
 # Optional LocationIQ Found Location autocomplete (public browser token).
 # Restrict this token to your domains and the Autocomplete API in LocationIQ.
 # Without it, players can still enter a location and use the draggable map pin.
-LOCATIONIQ_API_KEY=LOCATIONIQPUBLICTOKEN
+LOQ_AKEY=LOCATIONIQPUBLICTOKEN
 # Used for BikeTag Player and BikeTag Ambassador logins
 AUTH0_CLIENT_ID=AUTH0CLIENTID
 AUTH0_DOMAIN=AUTH0DOMAIN

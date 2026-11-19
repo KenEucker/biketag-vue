@@ -16,7 +16,7 @@ function loadComponent(apiKey) {
   const originalRequire = loaded.require.bind(loaded)
   loaded.require = (name) =>
     name === '@/common/constants'
-      ? { BikeTagEnv: { LOCATIONIQ_API_KEY: apiKey } }
+      ? { BikeTagEnv: { LOQ_AKEY: apiKey } }
       : originalRequire(name)
   loaded._compile(
     ts.transpileModule(script.content, {

@@ -70,7 +70,7 @@
         >
           <img :src="pinIcon" alt="pin" />
           <location-autocomplete
-            v-if="BikeTagEnv.LOCATIONIQ_API_KEY && isGpsDefault"
+            v-if="BikeTagEnv.LOQ_AKEY && isGpsDefault"
             v-model="location"
             :disabled="locationDisabled"
             @select="setPlace"
@@ -151,8 +151,8 @@ import { useI18n } from 'vue-i18n'
 // components
 import BikeTagButton from '@/components/BikeTagButton.vue'
 import BikeTagInput from '@/components/BikeTagInput.vue'
-import LocationAutocomplete from '@/components/LocationAutocomplete.vue'
 import BikeTagMap from '@/components/BikeTagMap.vue'
+import LocationAutocomplete from '@/components/LocationAutocomplete.vue'
 import Loading from 'vue-loading-overlay'
 
 // props
