@@ -4,6 +4,9 @@
       Map tiles unavailable.
     </div>
     <div v-else ref="mapContainer" class="leaflet-map"></div>
+    <p v-if="props.variant === 'play/input' && !inputPoint" class="leaflet-map__hint">
+      Select a point on the map to place the pin.
+    </p>
   </div>
 </template>
 
@@ -49,6 +52,8 @@ let fittedRegionBounds = false
 let gameCenterApplied = false
 let regionRequest = 0
 let resizeObserver
+let inputMarker
+let lastInputPoint
 
 const getMapPoint = (gps) => {
   const coordinates = [gps?.lat, gps?.long ?? gps?.lng]
@@ -104,6 +109,9 @@ const getMarkers = computed(() =>
 
 const mapContainer = ref(null)
 const gameCenter = computed(() => getMapPoint(getGame.value?.boundary))
+const inputPoint = computed(
+  () => getMapPoint(props.start) ?? getMapPoint(props.gps) ?? gameCenter.value,
+)
 
 const createTagPopup = (tag) => {
   const popup = L.DomUtil.create('div', 'tag-map-popup')
@@ -207,6 +215,37 @@ const fitRegionBoundary = async () => {
 // A region may not exist yet when the map mounts.
 watch(() => getGame.value?.region?.description, fitRegionBoundary)
 
+// Don't create an input marker at the default (0, 0) while GPS is missing.
+const showInputPoint = (point) => {
+  if (!map || !point) return
+  if (lastInputPoint?.[0] === point[0] && lastInputPoint?.[1] === point[1]) return
+
+  if (inputMarker) {
+    inputMarker.setLatLng(point)
+  } else {
+    inputMarker = L.marker(point, {
+      icon: new L.Icon({
+        iconUrl: Pin,
+        iconSize: [markerHeight, markerHeight],
+        iconAnchor: [markerHeight / 2, markerHeight],
+      }),
+      draggable: true,
+    }).addTo(map)
+    inputMarker.on('dragend', (event) => {
+      const { lat, lng } = event.target._latlng
+      lastInputPoint = [lat, lng]
+      emit('dragend', { lat, lng })
+    })
+  }
+
+  lastInputPoint = point
+  map.setView(point, playZoom)
+}
+
+watch(inputPoint, (point) => {
+  if (props.variant === 'play/input') showInputPoint(point)
+})
+
 // mounted
 onMounted(async () => {
   if (!BikeTagEnv.LOQ_AKEY) {
@@ -250,18 +289,14 @@ onMounted(async () => {
   }
 
   if (props.variant == 'play/input') {
-    const marker = L.marker(props.start, {
-      icon: new L.Icon({
-        iconUrl: Pin,
-        iconSize: [markerHeight, markerHeight],
-        iconAnchor: [markerHeight / 2, markerHeight],
-      }),
-      draggable: true,
-    }).addTo(map)
     L.control.locate().addTo(map)
-    map.setView(props.start, playZoom)
-    marker.on('dragend', (e) => {
-      emit('dragend', e.target._latlng)
+    showInputPoint(inputPoint.value)
+    map.on('click', (event) => {
+      if (!inputMarker) {
+        const { lat, lng } = event.latlng
+        showInputPoint([lat, lng])
+        emit('dragend', { lat, lng })
+      }
     })
   } else if (props.variant == 'worldwide') {
     map.setView(centerNorthAmerica, worldZoom)
@@ -285,6 +320,8 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   map?.remove()
+  inputMarker = undefined
+  lastInputPoint = undefined
   markerLayer = undefined
   map = undefined
 })
@@ -332,6 +369,11 @@ onBeforeUnmount(() => {
   &--unavailable {
     display: grid;
     place-items: center;
+  }
+
+  &__hint {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
   }
 }
 

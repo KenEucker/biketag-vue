@@ -66,6 +66,11 @@ function mountMap(tags = [], variant = 'biketags', token = 'public-test-token', 
     fits: [],
     views: [],
     invalidations: [],
+    listeners: {},
+    on(event, listener) {
+      this.listeners[event] = listener
+      return this
+    },
     initialized: false,
     invalidateSize(options) {
       this.invalidations.push(options)
@@ -83,6 +88,8 @@ function mountMap(tags = [], variant = 'biketags', token = 'public-test-token', 
   }
   const groups = []
   const tiles = []
+  const markers = []
+  const events = []
   const leaflet = {
     map: () => {
       map.initialized = true
@@ -131,9 +138,13 @@ function mountMap(tags = [], variant = 'biketags', token = 'public-test-token', 
       return group
     },
     marker(point, options) {
-      return {
+      const marker = {
         point,
         options,
+        setLatLng(point) {
+          this.point = point
+          return this
+        },
         addTo(group) {
           group.layers ??= []
           group.layers.push(this)
@@ -149,6 +160,8 @@ function mountMap(tags = [], variant = 'biketags', token = 'public-test-token', 
           return this
         },
       }
+      markers.push(marker)
+      return marker
     },
     Icon: class {
       constructor(options) {
@@ -172,9 +185,14 @@ function mountMap(tags = [], variant = 'biketags', token = 'public-test-token', 
     'leaflet.locatecontrol/dist/L.Control.Locate.min.css': {},
     'leaflet/dist/leaflet.css': {},
   }).default
-  const app = renderer.createApp(component, { variant })
+  const app = renderer.createApp(component, {
+    variant,
+    start: options.start ?? null,
+    gps: options.gps ?? null,
+    onDragend: (gps) => events.push(gps),
+  })
   app.mount(element('root'))
-  return { store, map, groups, tiles, app }
+  return { store, map, groups, tiles, markers, events, app }
 }
 
 const tag = (tagnumber, gps = { lat: 47.6, long: -122.3 }) => ({
@@ -445,4 +463,49 @@ test('tag map uses a late game center but does not override fitted tag bounds', 
   store.getGame.boundary.lat = 48
   await nextTick()
   assert.equal(map.views.length, count, 'tag fit should not be overridden')
+})
+
+test('input map rejects (0, 0) and uses the game center for its initial pin', (t) => {
+  const { map, markers, app } = mountMap([], 'play/input', 'test-token', {
+    start: { lat: 0, lng: 0 },
+    game: { boundary: { lat: 45.52, long: -122.67 } },
+  })
+  t.after(() => app.unmount())
+  assert.equal(markers.length, 1)
+  assert.deepEqual(markers[0].point, [45.52, -122.67])
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 15 })
+})
+
+test('input map prefers real photo GPS over the game boundary', (t) => {
+  const { markers, app } = mountMap([], 'play/input', 'test-token', {
+    start: { lat: 47.6, lng: -122.3 },
+    game: { boundary: { lat: 45.52, long: -122.67 } },
+  })
+  t.after(() => app.unmount())
+  assert.deepEqual(markers.map((marker) => marker.point), [[47.6, -122.3]])
+})
+
+test('input map without known GPS does not invent a (0, 0) pin; clicking places one', (t) => {
+  const { map, markers, events, app } = mountMap([], 'play/input', 'test-token', {
+    start: { lat: 0, lng: 0 },
+    game: {},
+  })
+  t.after(() => app.unmount())
+  assert.equal(markers.length, 0)
+  assert.deepEqual(map.views[0], { center: [40, -45], zoom: 3 })
+  map.listeners.click({ latlng: { lat: 45.53, lng: -122.65 } })
+  assert.deepEqual(markers.map((marker) => marker.point), [[45.53, -122.65]])
+  assert.deepEqual(events, [{ lat: 45.53, lng: -122.65 }])
+})
+
+test('input map adds its marker when game coordinates load later', async (t) => {
+  const { store, map, markers, app } = mountMap([], 'play/input', 'test-token', {
+    game: {},
+  })
+  t.after(() => app.unmount())
+  assert.equal(markers.length, 0)
+  store.getGame = { boundary: { lat: 45.52, long: -122.67 } }
+  await nextTick()
+  assert.deepEqual(markers.map((marker) => marker.point), [[45.52, -122.67]])
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 15 })
 })
