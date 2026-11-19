@@ -183,6 +183,7 @@ const moveSelection = (direction) => {
 
 const selectPlace = (place) => {
   const name = place.display_place?.trim() || place.display_name.split(',')[0].trim()
+  lastTyped = ''
   emit('update:modelValue', name)
   emit('select', { lat: Number(place.lat), lng: Number(place.lon) })
   cancelSearch()
@@ -221,7 +222,9 @@ watch(
   () => [props.searchCenter?.lat, props.searchCenter?.long ?? props.searchCenter?.lng, props.postalCode],
   () => {
     // Refresh an in-progress search if game information arrives after the player starts typing.
-    if (lastTyped.trim().length >= 3) onInput({ target: { value: lastTyped } })
+    if (lastTyped.trim().length >= 3 && lastTyped === props.modelValue) {
+      onInput({ target: { value: lastTyped } })
+    }
   },
 )
 onBeforeUnmount(() => {
