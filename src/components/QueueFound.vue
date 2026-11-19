@@ -75,6 +75,7 @@
             :disabled="locationDisabled"
             :search-center="getGame?.boundary"
             :postal-code="getGame?.region?.zipcode"
+            :game-city="getGame?.region?.description?.split(',')[0] || getGame?.region?.name"
             @select="setPlace"
           />
           <input

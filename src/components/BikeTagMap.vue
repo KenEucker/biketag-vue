@@ -53,6 +53,7 @@ let fittedRegionBounds = false
 let gameCenterApplied = false
 let regionRequest = 0
 let resizeObserver
+let mapWasVisible = false
 let inputMarker
 let lastInputPoint
 
@@ -282,9 +283,21 @@ onMounted(async () => {
   // Recalculate tile coverage when the container becomes visible or resizes.
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver((entries) => {
-      if (entries.some(({ contentRect }) => contentRect.width > 0 && contentRect.height > 0)) {
-        map?.invalidateSize({ pan: false })
+      const visible = entries.some(
+        ({ contentRect }) => contentRect.width > 0 && contentRect.height > 0,
+      )
+      if (!visible) {
+        mapWasVisible = false
+        return
       }
+
+      // A popover can change size after setView has already positioned its pin.
+      // Keep its geographic center during resize, and recenter only on opening.
+      map?.invalidateSize({ pan: props.variant === 'play/input' })
+      if (props.variant === 'play/input' && !mapWasVisible && lastInputPoint) {
+        map.setView(lastInputPoint, map.getZoom(), { animate: false })
+      }
+      mapWasVisible = true
     })
     resizeObserver.observe(mapContainer.value)
   }
