@@ -54,21 +54,24 @@ const renderer = createRenderer({
   patchProp() {},
 })
 
-function mountMap(tags = [], variant = 'biketags', token = 'public-test-token') {
+function mountMap(tags = [], variant = 'biketags', token = 'public-test-token', options = {}) {
   const store = reactive({
     getTags: tags,
     getAllGames: [],
-    getGame: { boundary: { lat: 47.6, long: -122.3 } },
+    getGame: options.game ?? { boundary: { lat: 47.6, long: -122.3 } },
     getLogoUrl: () => '/logo.svg',
+    getRegionPolygon: options.getRegionPolygon ?? (async () => undefined),
   })
   const map = {
     fits: [],
+    views: [],
     invalidations: [],
     initialized: false,
     invalidateSize(options) {
       this.invalidations.push(options)
     },
-    setView() {
+    setView(center, zoom) {
+      this.views.push({ center, zoom })
       return this
     },
     fitBounds(bounds, options) {
@@ -97,6 +100,17 @@ function mountMap(tags = [], variant = 'biketags', token = 'public-test-token') 
         addTo() {
           tiles.push(this)
           return this
+        },
+      }
+    },
+    geoJSON(paths) {
+      return {
+        paths,
+        addTo() {
+          return this
+        },
+        getBounds() {
+          return 'region-bounds'
         },
       }
     },
@@ -362,4 +376,73 @@ test('recalculates tile coverage when a hidden map becomes visible and disconnec
   assert.deepEqual(map.invalidations, [{ pan: false }])
   app.unmount()
   assert.equal(disconnectCount, 1)
+})
+
+test('boundary map centers on its game even when there is no region polygon', (t) => {
+  const center = { lat: 45.52, long: -122.67 }
+  const { map, app } = mountMap([], 'boundary', 'test-token', {
+    game: { boundary: center },
+  })
+  t.after(() => app.unmount())
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 10 })
+  assert.equal(map.fits.length, 0)
+})
+
+test('boundary map centers when game data arrives after initial mount', async (t) => {
+  const { store, map, app } = mountMap([], 'boundary', 'test-token', { game: {} })
+  t.after(() => app.unmount())
+  assert.deepEqual(map.views[0], { center: [40, -45], zoom: 3 })
+
+  store.getGame = { boundary: { lat: 45.52, lng: -122.67 } }
+  await nextTick()
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 10 })
+
+  const count = map.views.length
+  store.getGame.otherSetting = 'unchanged location'
+  store.getGame.boundary.lat = 45.53
+  await nextTick()
+  assert.equal(map.views.length, count, 'a refresh must not reset the user view')
+})
+
+test('boundary map fits its region polygon when the region loads later', async (t) => {
+  const requests = []
+  const polygon = { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] }
+  const { store, map, app } = mountMap([], 'boundary', 'test-token', {
+    game: {},
+    getRegionPolygon: async (region) => {
+      requests.push(region.description)
+      return { geojson: polygon }
+    },
+  })
+  t.after(() => app.unmount())
+
+  store.getGame = {
+    boundary: { lat: 45.52, long: -122.67 },
+    region: { description: 'Portland, Oregon' },
+  }
+  await nextTick()
+  await new Promise((resolve) => setImmediate(resolve))
+  assert.deepEqual(requests, ['Portland, Oregon'])
+  assert.deepEqual(map.fits.map((fit) => fit.bounds), ['region-bounds'])
+
+  const count = map.views.length
+  store.getGame.boundary.lat = 45.53
+  await nextTick()
+  assert.equal(map.views.length, count, 'late boundary updates must not undo polygon fit')
+})
+
+test('tag map uses a late game center but does not override fitted tag bounds', async (t) => {
+  const { store, map, app } = mountMap([], 'biketags', 'test-token', { game: {} })
+  t.after(() => app.unmount())
+  store.getGame = { boundary: { lat: 45.52, long: -122.67 } }
+  await nextTick()
+  assert.deepEqual(map.views.at(-1), { center: [45.52, -122.67], zoom: 10 })
+
+  store.getTags = [tag(1)]
+  await nextTick()
+  assert.equal(map.fits.length, 1)
+  const count = map.views.length
+  store.getGame.boundary.lat = 48
+  await nextTick()
+  assert.equal(map.views.length, count, 'tag fit should not be overridden')
 })

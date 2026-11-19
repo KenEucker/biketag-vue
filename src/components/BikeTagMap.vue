@@ -45,6 +45,9 @@ const markerHeight = 50
 let map
 let markerLayer
 let fittedTagBounds = false
+let fittedRegionBounds = false
+let gameCenterApplied = false
+let regionRequest = 0
 let resizeObserver
 
 const getMapPoint = (gps) => {
@@ -100,7 +103,7 @@ const getMarkers = computed(() =>
 )
 
 const mapContainer = ref(null)
-const gameCenter = ref(centerNorthAmerica)
+const gameCenter = computed(() => getMapPoint(getGame.value?.boundary))
 
 const createTagPopup = (tag) => {
   const popup = L.DomUtil.create('div', 'tag-map-popup')
@@ -174,7 +177,35 @@ const addPolygons = (paths) => {
     },
   }).addTo(map)
   map.fitBounds(polygon.getBounds())
+  fittedRegionBounds = true
 }
+
+// The game loads after the map on a direct visit to /map. Center it when its
+// boundary arrives, but don't override a region fit or a tag fit afterwards.
+watch(gameCenter, (center) => {
+  if (!map || !center || gameCenterApplied) return
+  if (
+    (props.variant === 'boundary' && !fittedRegionBounds) ||
+    (props.variant === 'biketags' && !fittedTagBounds)
+  ) {
+    map.setView(center, cityZoom)
+    gameCenterApplied = true
+  }
+})
+
+const fitRegionBoundary = async () => {
+  const request = ++regionRequest
+  const region = getGame.value?.region
+  if (!map || props.variant !== 'boundary' || !region?.description) return
+
+  const regionData = await store.getRegionPolygon(region)
+  if (map && request === regionRequest && regionData?.geojson) {
+    addPolygons(regionData.geojson)
+  }
+}
+
+// A region may not exist yet when the map mounts.
+watch(() => getGame.value?.region?.description, fitRegionBoundary)
 
 // mounted
 onMounted(async () => {
@@ -183,13 +214,7 @@ onMounted(async () => {
     return
   }
 
-  gameCenter.value = getGame.value.boundary
-    ? [
-        getGame.value.boundary?.lat ?? 0,
-        getGame.value.boundary?.long ?? getGame.value.boundary?.lng ?? 0,
-      ]
-    : gameCenter.value
-  map = L.map(mapContainer.value).setView(gameCenter.value, worldZoom)
+  map = L.map(mapContainer.value).setView(gameCenter.value ?? centerNorthAmerica, worldZoom)
   // LocationIQ's Leaflet raster tiles; use the same public token as autocomplete.
   let reportedTileError = false
   L.tileLayer(
@@ -243,12 +268,14 @@ onMounted(async () => {
     markerLayer = L.featureGroup().addTo(map)
     syncMarkers()
   } else if (props.variant == 'boundary') {
-    const regionData = await store.getRegionPolygon(getGame.value.region)
-    if (regionData && map) {
-      addPolygons(regionData?.geojson)
+    if (gameCenter.value) {
+      map.setView(gameCenter.value, cityZoom)
+      gameCenterApplied = true
     }
+    await fitRegionBoundary()
   } else if (props.variant === 'biketags') {
-    map.setView(gameCenter.value, cityZoom)
+    map.setView(gameCenter.value ?? centerNorthAmerica, cityZoom)
+    gameCenterApplied = !!gameCenter.value
     L.control.locate().addTo(map)
     markerLayer = L.featureGroup().addTo(map)
     syncMarkers()
