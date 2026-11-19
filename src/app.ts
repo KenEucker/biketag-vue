@@ -19,7 +19,6 @@ import {
 import mitt from 'mitt'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
-import VueGoogleMaps from 'vue-google-maps-community-fork'
 import VueSocials from 'vue-socials'
 import { useToast } from 'vue-toast-notification'
 import VueCookies from 'vue3-cookies'
@@ -119,13 +118,6 @@ class BikeTagApp {
     this.app.use(Markdown)
     this.app.use(VueIframe)
     this.app.use(VueSocials)
-    this.app.use(VueGoogleMaps, {
-      load: {
-        key: BikeTagEnv.G_AKEY,
-        libraries: 'places',
-        v: 3.54,
-      },
-    })
   }
 
   mount() {
