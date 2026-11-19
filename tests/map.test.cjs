@@ -54,7 +54,7 @@ const renderer = createRenderer({
   patchProp() {},
 })
 
-function mountMap(tags = [], variant = 'biketags') {
+function mountMap(tags = [], variant = 'biketags', token = 'public-test-token') {
   const store = reactive({
     getTags: tags,
     getAllGames: [],
@@ -63,6 +63,11 @@ function mountMap(tags = [], variant = 'biketags') {
   })
   const map = {
     fits: [],
+    invalidations: [],
+    initialized: false,
+    invalidateSize(options) {
+      this.invalidations.push(options)
+    },
     setView() {
       return this
     },
@@ -74,9 +79,27 @@ function mountMap(tags = [], variant = 'biketags') {
     },
   }
   const groups = []
+  const tiles = []
   const leaflet = {
-    map: () => map,
-    tileLayer: () => ({ addTo() {} }),
+    map: () => {
+      map.initialized = true
+      return map
+    },
+    tileLayer(url, options) {
+      return {
+        url,
+        options,
+        listeners: {},
+        on(event, listener) {
+          this.listeners[event] = listener
+          return this
+        },
+        addTo() {
+          tiles.push(this)
+          return this
+        },
+      }
+    },
     featureGroup() {
       const group = {
         layers: [],
@@ -122,6 +145,7 @@ function mountMap(tags = [], variant = 'biketags') {
   const component = load(filename, script.content, {
     '@/assets/images/pin.svg': '/pin.svg',
     '@/store/index': { useBikeTagStore: () => store },
+    '@/common/constants': { BikeTagEnv: { LOQ_AKEY: token } },
     '@/common/images': load(imagesFile, fs.readFileSync(imagesFile, 'utf8')),
     leaflet,
     'leaflet.locatecontrol': {},
@@ -130,7 +154,7 @@ function mountMap(tags = [], variant = 'biketags') {
   }).default
   const app = renderer.createApp(component, { variant })
   app.mount(element('root'))
-  return { store, map, groups, app }
+  return { store, map, groups, tiles, app }
 }
 
 const tag = (tagnumber, gps = { lat: 47.6, long: -122.3 }) => ({
@@ -264,4 +288,72 @@ test('unmount removes the Leaflet map and stops reacting to tag changes', async 
   store.getTags = [tag(2), tag(3)]
   await nextTick()
   assert.equal(groups[0].layers.length, 1)
+})
+
+test('uses LocationIQ streets tiles with attribution and all three subdomains', (t) => {
+  const { tiles, app } = mountMap([], 'worldwide', 'pk.test-token&sample')
+  t.after(() => app.unmount())
+  assert.equal(tiles.length, 1)
+  assert.equal(
+    tiles[0].url,
+    'https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.test-token%26sample',
+  )
+  assert.deepEqual(tiles[0].options.subdomains, ['a', 'b', 'c'])
+  assert.equal(tiles[0].options.maxZoom, 20)
+  assert.match(tiles[0].options.attribution, /LocationIQ/)
+  assert.match(tiles[0].options.attribution, /OpenStreetMap contributors/)
+})
+
+test('shows an unavailable map instead of requesting tiles without an API token', (t) => {
+  const { map, tiles, app } = mountMap([], 'biketags', '')
+  t.after(() => app.unmount())
+  assert.equal(map.initialized, false)
+  assert.equal(tiles.length, 0)
+})
+
+test('tile errors report the map variant once without exposing the token in logs', (t) => {
+  const originalWarn = console.warn
+  const warnings = []
+  console.warn = (...parts) => warnings.push(parts)
+  t.after(() => {
+    console.warn = originalWarn
+  })
+  const { tiles, app } = mountMap([], 'biketags', 'public-secret-test-token')
+  t.after(() => app.unmount())
+  const error = { coords: { z: 15 }, tile: { src: tiles[0].url } }
+  tiles[0].listeners.tileerror(error)
+  tiles[0].listeners.tileerror(error)
+  assert.equal(warnings.length, 1)
+  assert.deepEqual(warnings[0][1], { variant: 'biketags', zoom: 15 })
+  assert.ok(!JSON.stringify(warnings).includes('public-secret-test-token'))
+})
+
+test('recalculates tile coverage when a hidden map becomes visible and disconnects on unmount', (t) => {
+  const previousObserver = global.ResizeObserver
+  let callback
+  let observed
+  let disconnectCount = 0
+  global.ResizeObserver = class {
+    constructor(handler) {
+      callback = handler
+    }
+    observe(target) {
+      observed = target
+    }
+    disconnect() {
+      disconnectCount += 1
+    }
+  }
+  t.after(() => {
+    if (previousObserver === undefined) delete global.ResizeObserver
+    else global.ResizeObserver = previousObserver
+  })
+  const { map, app } = mountMap([], 'play/input')
+  assert.ok(observed)
+  callback([{ contentRect: { width: 0, height: 500 } }])
+  assert.equal(map.invalidations.length, 0)
+  callback([{ contentRect: { width: 320, height: 500 } }])
+  assert.deepEqual(map.invalidations, [{ pan: false }])
+  app.unmount()
+  assert.equal(disconnectCount, 1)
 })
