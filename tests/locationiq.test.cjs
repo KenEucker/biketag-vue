@@ -78,8 +78,13 @@ function find(root, predicate) {
   return null
 }
 
-function mount(apiKey) {
-  const state = reactive({ value: '', disabled: false })
+function mount(apiKey, options = {}) {
+  const state = reactive({
+    value: '',
+    disabled: false,
+    searchCenter: options.searchCenter ?? null,
+    postalCode: options.postalCode ?? '',
+  })
   const selected = []
   const component = loadComponent(apiKey)
   const root = element('root')
@@ -89,6 +94,8 @@ function mount(apiKey) {
         h(component, {
           modelValue: state.value,
           disabled: state.disabled,
+          searchCenter: state.searchCenter,
+          postalCode: state.postalCode,
           'onUpdate:modelValue': (value) => {
             state.value = value
           },
@@ -182,4 +189,125 @@ test('API failure leaves manual entry available', async (t) => {
   await nextTick()
   assert.equal(view.state.value, 'Bridge Park')
   assert.ok(find(view.root, (node) => node.props.role === 'status'))
+})
+
+test('biases autocomplete toward the game center without restricting other ZIP codes', async (t) => {
+  const calls = []
+  const originalFetch = global.fetch
+  global.fetch = async (url) => {
+    calls.push(new URL(url))
+    return { ok: true, json: async () => [place] }
+  }
+  t.after(() => {
+    global.fetch = originalFetch
+  })
+  const view = mount('public-token', {
+    searchCenter: { lat: 45.52, lng: -122.67 },
+    postalCode: '97205',
+  })
+  t.after(() => view.app.unmount())
+  view.input().props.onInput({ target: { value: 'Pioneer Square' } })
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  assert.equal(calls.length, 1)
+  const params = calls[0].searchParams
+  assert.equal(params.get('q'), 'Pioneer Square', 'ZIP code must not be appended to search text')
+  assert.equal(params.get('bounded'), '0', 'geographic bias must not exclude other areas')
+  const bounds = params.get('viewbox').split(',').map(Number)
+  assert.equal(bounds.length, 4)
+  assert.ok(bounds[0] < -122.67 && bounds[2] > -122.67)
+  assert.ok(bounds[1] < 45.52 && bounds[3] > 45.52)
+})
+
+test('prioritizes matching ZIP results while still showing other locations', async (t) => {
+  const originalFetch = global.fetch
+  global.fetch = async () => ({
+    ok: true,
+    json: async () => [
+      { ...place, place_id: 'other', display_name: 'Pioneer Square elsewhere', address: { postcode: '10018' } },
+      { ...place, place_id: 'local', display_name: 'Pioneer Square nearby', address: { postcode: '97205' } },
+    ],
+  })
+  t.after(() => {
+    global.fetch = originalFetch
+  })
+  const view = mount('public-token', { postalCode: '97205' })
+  t.after(() => view.app.unmount())
+  view.input().props.onInput({ target: { value: 'Pioneer' } })
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  await nextTick()
+  assert.equal(view.option().text, 'Pioneer Square nearby')
+  assert.equal(
+    find(view.root, (node) => node.props.role === 'listbox')?.children.length,
+    2,
+    'nonmatching ZIP codes must remain selectable',
+  )
+})
+
+test('ignores invalid game coordinates rather than biasing toward zero', async (t) => {
+  const calls = []
+  const originalFetch = global.fetch
+  global.fetch = async (url) => {
+    calls.push(new URL(url))
+    return { ok: true, json: async () => [] }
+  }
+  t.after(() => {
+    global.fetch = originalFetch
+  })
+  const view = mount('public-token', {
+    searchCenter: { lat: 0, lng: 0 },
+  })
+  t.after(() => view.app.unmount())
+  view.input().props.onInput({ target: { value: 'Pioneer' } })
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  assert.equal(calls[0].searchParams.has('viewbox'), false)
+})
+
+test('updates location bias when the game loads after typing has started', async (t) => {
+  const calls = []
+  const originalFetch = global.fetch
+  global.fetch = async (url) => {
+    calls.push(new URL(url))
+    return { ok: true, json: async () => [place] }
+  }
+  t.after(() => {
+    global.fetch = originalFetch
+  })
+  const view = mount('public-token')
+  t.after(() => view.app.unmount())
+  view.input().props.onInput({ target: { value: 'Pioneer' } })
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  view.state.searchCenter = { lat: 45.52, long: -122.67 }
+  view.state.postalCode = '97205'
+  await nextTick()
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  assert.equal(calls.length, 2)
+  assert.equal(calls[0].searchParams.has('viewbox'), false)
+  assert.ok(calls[1].searchParams.has('viewbox'))
+})
+
+test('a selected place is retained when game search hints update', async (t) => {
+  const calls = []
+  const originalFetch = global.fetch
+  global.fetch = async (url) => {
+    calls.push(new URL(url))
+    return { ok: true, json: async () => [place] }
+  }
+  t.after(() => {
+    global.fetch = originalFetch
+  })
+  const view = mount('public-token')
+  t.after(() => view.app.unmount())
+  view.input().props.onInput({ target: { value: 'Pioneer' } })
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  await nextTick()
+  view.option().props.onClick()
+  await nextTick()
+  assert.equal(view.state.value, 'Pioneer Square')
+
+  view.state.searchCenter = { lat: 45.52, lng: -122.67 }
+  view.state.postalCode = '97205'
+  await nextTick()
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  assert.equal(view.state.value, 'Pioneer Square')
+  assert.equal(calls.length, 1, 'changing hints should not reopen a selected search')
 })

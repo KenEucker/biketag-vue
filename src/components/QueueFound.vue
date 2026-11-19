@@ -73,6 +73,8 @@
             v-if="BikeTagEnv.LOQ_AKEY && isGpsDefault"
             v-model="location"
             :disabled="locationDisabled"
+            :search-center="getGame?.boundary"
+            :postal-code="getGame?.region?.zipcode"
             @select="setPlace"
           />
           <input
