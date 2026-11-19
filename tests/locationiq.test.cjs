@@ -383,13 +383,15 @@ test('keeps the full address when the game city or trustworthy coordinates are u
   t.after(() => {
     global.fetch = originalFetch
   })
-  const view = mount('public-token', { gameCity: 'Portland' })
+  const view = mount('public-token', {
+    searchCenter: { lat: 45.52, long: -122.67 },
+  })
   t.after(() => view.app.unmount())
   view.input().props.onInput({ target: { value: 'Pioneer' } })
   await new Promise((resolve) => setTimeout(resolve, 400))
   await nextTick()
   assert.equal(view.option().text, 'Pioneer Square, Portland, Oregon, 97205, USA')
-  view.state.searchCenter = { lat: 45.52, long: -122.67 }
+  view.state.gameCity = 'Portland'
   await nextTick()
   assert.equal(view.option().text, 'Pioneer Square', 'town can identify the local city')
 })
