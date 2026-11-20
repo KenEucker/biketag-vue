@@ -36,8 +36,19 @@ export default async (req: Request) => {
     })
 
     const { success, data } = gameResponse
+    const publicGameData =
+      success && data
+        ? {
+            ...data,
+            settings: Object.fromEntries(
+              Object.entries(data.settings ?? {}).filter(
+                ([key]) => key !== 'notifications::discord',
+              ),
+            ),
+          }
+        : data
 
-    return new Response(JSON.stringify(success ? data : gameResponse), {
+    return new Response(JSON.stringify(success ? publicGameData : gameResponse), {
       status: gameResponse.status,
       headers,
     })
