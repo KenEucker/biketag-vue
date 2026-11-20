@@ -3820,7 +3820,7 @@ export const sendNewBikeTagNotifications = async (
 
     if (!privateSettingsResponse.success) {
       log(
-        'Could not read private Discord notification setting',
+        'Could not read private notification settings',
         { game: game.name, status: privateSettingsResponse.status },
         'warn',
       )
@@ -3840,7 +3840,11 @@ export const sendNewBikeTagNotifications = async (
       )
     }
 
-    const sendSlackNotification = game.settings['notifications::slack']
+    const sendSlackNotification = privateSettingsResponse.success
+      ? privateSettingsResponse.data?.find(
+          (setting) => setting.key === 'notifications::slack',
+        )?.value
+      : undefined
     if (sendSlackNotification) {
       log('Sending Slack notification for game', { game: game.name }, 'info')
       notificationPromises.push(
