@@ -3805,7 +3805,27 @@ export const sendNewBikeTagNotifications = async (
       )
     }
 
-    const sendDiscordNotification = game.settings['notifications::discord']
+    const privateSettingsResponse = await adminBiketag.getSettings(
+      {
+        game: game.name,
+        fields: ['key', 'value'],
+      },
+      { source: 'sanity' },
+    )
+    const sendDiscordNotification = privateSettingsResponse.success
+      ? privateSettingsResponse.data?.find(
+          (setting) => setting.key === 'notifications::discord',
+        )?.value
+      : undefined
+
+    if (!privateSettingsResponse.success) {
+      log(
+        'Could not read private Discord notification setting',
+        { game: game.name, status: privateSettingsResponse.status },
+        'warn',
+      )
+    }
+
     if (sendDiscordNotification) {
       log('Sending Discord notification for game', { game: game.name }, 'info')
       notificationPromises.push(
