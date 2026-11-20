@@ -3646,6 +3646,40 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   return `bluesky::failed`
 }
 
+const getSlackFoundLocation = (tag: Tag, game: Game) => {
+  const location = tag.foundLocation?.trim()
+  const gameCity =
+    game.region?.description?.split(',')[0]?.trim() || game.region?.name?.trim()
+  const gameLat = Number(game.boundary?.lat)
+  const gameLng = Number(game.boundary?.long ?? game.boundary?.lng)
+  const foundLat = Number(tag.gps?.lat)
+  const foundLng = Number(tag.gps?.long ?? tag.gps?.lng)
+
+  if (
+    !location ||
+    !gameCity ||
+    ![gameLat, gameLng, foundLat, foundLng].every(Number.isFinite) ||
+    (gameLat === 0 && gameLng === 0) ||
+    (foundLat === 0 && foundLng === 0)
+  ) {
+    return location
+  }
+
+  // Match the approximate search area used by LocationIQ autocomplete.
+  const isNearGame =
+    foundLat >= gameLat - 0.45 &&
+    foundLat <= gameLat + 0.45 &&
+    foundLng >= gameLng - 0.55 &&
+    foundLng <= gameLng + 0.55
+  if (!isNearGame) return location
+
+  const parts = location.split(',').map((part) => part.trim())
+  const cityIndex = parts.findIndex(
+    (part) => part.toLowerCase() === gameCity.toLowerCase(),
+  )
+  return cityIndex > 0 ? parts[0] : location
+}
+
 export const sendBikeTagPostNotificationToWebhook = (
   currentTag: Tag,
   winningTag: Tag,
@@ -3661,7 +3695,7 @@ export const sendBikeTagPostNotificationToWebhook = (
   const title = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
   const hint = `Hint: ||${winningTag.hint}||`
   const previousDescription = `[Previous round](${host}/${currentNumber}) found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}`
-  const previousDescriptionSlack = `<${host}/${currentNumber}|Previous round> found at ${currentTag.foundLocation} by ${currentTag.foundPlayer}`
+  const previousDescriptionSlack = `<${host}/${currentNumber}|Previous round> found at ${getSlackFoundLocation(currentTag, game)} by ${currentTag.foundPlayer}`
   const mysteryAltText = `BikeTag #${winningTagnumber} by ${winningTag.mysteryPlayer}`
   const foundAltText = `BikeTag #${currentNumber} found by ${currentTag.foundPlayer}`
   const timestamp = getTagDateISOFromTimezone(currentTag.foundTime, game.region.tz)
