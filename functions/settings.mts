@@ -161,12 +161,7 @@ export default async (req: Request) => {
     }
 
     if (req.method === 'GET') {
-      // Settings shown through this authenticated endpoint can include values that
-      // must not be returned by the public game endpoint. Read them with the
-      // server-only Sanity credentials.
-      const adminBiketagOpts = getBikeTagClientOpts(req, true, true)
-      const adminBiketag = new BikeTagClient(adminBiketagOpts)
-      const settingsResponse = await adminBiketag.getSettings(
+      const settingsResponse = await biketag.getSettings(
         {
           game: biketagOpts.game,
           fields: SETTING_FIELDS,
