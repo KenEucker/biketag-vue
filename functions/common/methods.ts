@@ -3752,11 +3752,14 @@ export const sendNewBikeTagNotifications = async (
   adminBiketag?: BikeTagClient,
   skipEmails = false,
   skipSocials = false,
+  notificationTargets?: NotificationTarget[],
 ) => {
   adminBiketag =
     adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
 
   const notificationPromises: any = []
+  const shouldSendNotification = (target: NotificationTarget) =>
+    !notificationTargets || notificationTargets.includes(target)
   const ambassadors = (await adminBiketag.ambassadors(undefined, {
     source: 'sanity',
   })) as Ambassador[]
@@ -3768,7 +3771,7 @@ export const sendNewBikeTagNotifications = async (
 
   if (!skipSocials && currentTag) {
     const sendGlobalDiscordNotification = process.env.DCN
-    if (sendGlobalDiscordNotification) {
+    if (sendGlobalDiscordNotification && shouldSendNotification('global-discord')) {
       log('Sending global Discord notification', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
@@ -3783,7 +3786,7 @@ export const sendNewBikeTagNotifications = async (
     }
 
     const sendGlobalBlueSkyNotification = process.env.BSN
-    if (sendGlobalBlueSkyNotification) {
+    if (sendGlobalBlueSkyNotification && shouldSendNotification('global-bluesky')) {
       log('Sending global BlueSky notification', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToBlueSky(currentTag, winningTag, host, game),
@@ -3791,7 +3794,7 @@ export const sendNewBikeTagNotifications = async (
     }
 
     const sendGlobalSlackNotification = process.env.SLN
-    if (sendGlobalSlackNotification) {
+    if (sendGlobalSlackNotification && shouldSendNotification('global-slack')) {
       log('Sending global Slack notification', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
@@ -3826,7 +3829,7 @@ export const sendNewBikeTagNotifications = async (
       )
     }
 
-    if (sendDiscordNotification) {
+    if (sendDiscordNotification && shouldSendNotification('game-discord')) {
       log('Sending Discord notification for game', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
@@ -3845,7 +3848,7 @@ export const sendNewBikeTagNotifications = async (
           (setting) => setting.key === 'notifications::slack',
         )?.value
       : undefined
-    if (sendSlackNotification) {
+    if (sendSlackNotification && shouldSendNotification('game-slack')) {
       log('Sending Slack notification for game', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
@@ -3864,6 +3867,7 @@ export const sendNewBikeTagNotifications = async (
 
   if (
     !skipEmails &&
+    shouldSendNotification('game-email') &&
     isGameEmailEnabled(game, 'biketag-auto-posted', ['new-biketag-notification'])
   ) {
     log(
@@ -3906,6 +3910,15 @@ export const sendNewBikeTagNotifications = async (
   } else {
     log(
       'Sending of emails disabled for new-biketag-notification',
+      { disabled: game.settings['emails::disable'] },
+      'info',
+    )
+  }
+
+  return notificationPromises
+}
+
+bled for new-biketag-notification',
       { disabled: game.settings['emails::disable'] },
       'info',
     )
