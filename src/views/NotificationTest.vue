@@ -7,7 +7,7 @@
     <template v-else>
       <p class="alert alert-warning" role="note">
         Selected destinations receive real messages. Game email goes to this game's ambassadors.
-        Global destinations are configured server-wide.
+        Global destinations use Admin Sanity settings first, then Netlify environment variables.
       </p>
       <p v-if="error" class="text-danger" role="alert">{{ error }}</p>
       <p v-if="message" class="text-success" role="status">{{ message }}</p>
