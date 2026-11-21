@@ -3791,7 +3791,12 @@ export const sendNewBikeTagNotifications = async (
         (result) => {
           if (report) {
             report.status = 'sent'
-            report.result = result
+            report.result =
+              typeof result === 'string' || typeof result === 'number'
+                ? result
+                : Array.isArray(result)
+                  ? `${result.length} recipient(s) accepted`
+                  : 'Provider accepted the request.'
           }
           return result
         },
