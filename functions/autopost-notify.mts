@@ -35,6 +35,26 @@ export const autoNotifyNewBikeTagPosted = async (
         status: HttpStatusCode.Unauthorized,
       }
     }
+
+    const allowedTargets = [
+      'game-email',
+      'game-discord',
+      'game-slack',
+      'global-discord',
+      'global-slack',
+      'global-bluesky',
+    ]
+    if (
+      !Array.isArray(payloadOpts.notificationTargets) ||
+      !payloadOpts.notificationTargets.length ||
+      !payloadOpts.notificationTargets.every((target: string) => allowedTargets.includes(target))
+    ) {
+      return {
+        results: ['select one or more valid notification destinations'],
+        errors: true,
+        status: HttpStatusCode.BadRequest,
+      }
+    }
   }
   let errors = false
   let results: any = []
@@ -94,6 +114,7 @@ export const autoNotifyNewBikeTagPosted = async (
     nonAdminBiketag,
     payloadOpts.skipEmails,
     payloadOpts.skipSocials,
+    payloadOpts.notificationTargets,
   ).catch((err) => {
     errors = true
     results.push({ error: err instanceof Error ? err.message : String(err) })
