@@ -35,12 +35,6 @@
         :disabled="working"
         @click="clearEntireQueue"
       />
-      <bike-tag-button
-        variant="medium-orange"
-        text="Resend Post Notifications"
-        :disabled="working"
-        @click="resendPostNotifications"
-      />
     </div>
 
     <div v-if="lastAction" class="status-banner">
@@ -399,35 +393,6 @@ async function clearEntireQueue() {
       : `Queue cleared (${deletedCount} file${deletedCount === 1 ? '' : 's'} deleted) and index rebuilt.`,
     (result.storageFileCount ?? 0) > 0,
   )
-}
-
-async function resendPostNotifications() {
-  if (!window.confirm('Resend notifications for the most recently created BikeTag post?')) {
-    return
-  }
-
-  working.value = true
-  lastAction.value = ''
-
-  const result = await store.resendLatestPostNotifications()
-  working.value = false
-
-  if (typeof result === 'string') {
-    toast.open({
-      message: result,
-      type: 'error',
-      duration: 10000,
-      position: 'top',
-    })
-    return
-  }
-
-  const completedCount = Array.isArray(result) ? result.filter(Boolean).length : 0
-  const message = completedCount
-    ? `Post notifications resent: ${completedCount} notification task${completedCount === 1 ? '' : 's'} completed.`
-    : 'Post notification resend completed.'
-
-  notifyAction(message)
 }
 
 onMounted(async () => {
