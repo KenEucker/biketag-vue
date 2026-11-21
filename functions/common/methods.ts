@@ -3915,18 +3915,9 @@ export const sendNewBikeTagNotifications = async (
         return results.accepted
       }),
     )
-  } else {
+  } else if (!skipEmails && shouldSendNotification('game-email')) {
     log(
       'Sending of emails disabled for new-biketag-notification',
-      { disabled: game.settings['emails::disable'] },
-      'info',
-    )
-  }
-
-  return notificationPromises
-}
-
-bled for new-biketag-notification',
       { disabled: game.settings['emails::disable'] },
       'info',
     )
