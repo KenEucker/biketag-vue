@@ -45,7 +45,14 @@
             <template v-if="isDeliveryReport(result)">
               <strong>{{ result.target }}</strong>: {{ result.status }}
               <span v-if="result.source">
-                via {{ result.source === 'admin-sanity' ? 'Admin Sanity' : 'environment variable' }}
+                via
+                {{
+                  result.source === 'admin-sanity'
+                    ? 'Admin Sanity'
+                    : result.source === 'environment'
+                      ? 'environment variables'
+                      : 'mixed sources'
+                }}
               </span>
               <span v-if="result.result !== undefined"> — {{ formatResult(result.result) }}</span>
               <span v-else-if="result.reason"> — {{ result.reason }}</span>
