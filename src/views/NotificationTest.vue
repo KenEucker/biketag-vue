@@ -1,21 +1,37 @@
 <template>
   <div class="notification-test container">
     <h1>Resend Notifications</h1>
-    <p>
-      Resend the configured notifications for the latest live BikeTag post. This sends to the
-      configured email and social notification destinations.
-    </p>
+    <p>Choose which notification destinations to resend for the latest live BikeTag post.</p>
 
     <p v-if="!isBikeTagAdmin" role="alert">This page requires BikeTag Admin access.</p>
     <template v-else>
       <p class="alert alert-warning" role="note">
-        This sends real messages to every enabled notification destination for this game.
+        Selected destinations receive real messages. Game email goes to this game's ambassadors.
+        Global destinations are configured server-wide.
       </p>
       <p v-if="error" class="text-danger" role="alert">{{ error }}</p>
       <p v-if="message" class="text-success" role="status">{{ message }}</p>
 
-      <button class="btn btn-primary" type="button" :disabled="working" @click="resendNotifications">
-        {{ working ? 'Sending notifications…' : 'Resend Latest Post Notifications' }}
+      <fieldset v-for="group in channelGroups" :key="group.name" class="channel-group">
+        <legend>{{ group.name }}</legend>
+        <label v-for="channel in group.channels" :key="channel.value" class="channel-option">
+          <input
+            v-model="selectedTargets"
+            type="checkbox"
+            :value="channel.value"
+            :disabled="working"
+          />
+          {{ channel.label }}
+        </label>
+      </fieldset>
+
+      <button
+        class="btn btn-primary"
+        type="button"
+        :disabled="working || !selectedTargets.length"
+        @click="resendNotifications"
+      >
+        {{ working ? 'Sending notifications…' : 'Resend Selected Notifications' }}
       </button>
 
       <section v-if="results.length" class="results" aria-labelledby="results-heading">
@@ -33,6 +49,25 @@ import { useBikeTagStore } from '@/store/index'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+const channelGroups = [
+  {
+    name: 'Game-specific',
+    channels: [
+      { value: 'game-email', label: 'Email to this game’s ambassadors' },
+      { value: 'game-discord', label: 'This game’s Discord webhook' },
+      { value: 'game-slack', label: 'This game’s Slack webhook' },
+    ],
+  },
+  {
+    name: 'Global',
+    channels: [
+      { value: 'global-discord', label: 'Global Discord webhook' },
+      { value: 'global-slack', label: 'Global Slack webhook' },
+      { value: 'global-bluesky', label: 'Global Bluesky account' },
+    ],
+  },
+]
+const selectedTargets = ref([])
 const store = useBikeTagStore()
 const router = useRouter()
 const isBikeTagAdmin = computed(() => store.isBikeTagAdmin)
@@ -46,9 +81,15 @@ function formatResult(result) {
 }
 
 async function resendNotifications() {
+  const selectedLabels = channelGroups
+    .flatMap((group) => group.channels)
+    .filter((channel) => selectedTargets.value.includes(channel.value))
+    .map((channel) => channel.label)
+    .join(', ')
+
   if (
     !window.confirm(
-      'Resend every configured notification for the latest live BikeTag post? This can send real email and social notifications.',
+      `Resend notifications to: ${selectedLabels}? This can send real email and social messages.`,
     )
   ) {
     return
@@ -60,7 +101,7 @@ async function resendNotifications() {
   results.value = []
 
   try {
-    const result = await store.resendLatestPostNotifications()
+    const result = await store.resendLatestPostNotifications(selectedTargets.value)
     if (typeof result === 'string') {
       error.value = result
       return
@@ -69,7 +110,7 @@ async function resendNotifications() {
     results.value = Array.isArray(result) ? result : result ? [result] : []
     message.value = results.value.length
       ? 'Notification resend completed.'
-      : 'No notification tasks were returned. Check the game notification settings.'
+      : 'No notification tasks were returned. Check the selected notification settings.'
   } catch (err) {
     error.value = err?.message ?? 'Notification resend failed.'
   } finally {
@@ -107,6 +148,19 @@ onMounted(async () => {
 
   p {
     margin-bottom: 1.5rem;
+  }
+
+  .channel-group {
+    border: 1px dashed #000;
+    margin: 1rem auto;
+    max-width: 480px;
+    padding: 1rem;
+    text-align: left;
+  }
+
+  .channel-option {
+    display: block;
+    margin: 0.75rem 0;
   }
 
   .results {
