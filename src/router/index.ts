@@ -16,6 +16,7 @@ import Login from '@/views/Login.vue'
 import Logout from '@/views/Logout.vue'
 import Map from '@/views/Map.vue'
 import New from '@/views/New.vue'
+import NotificationTest from '@/views/NotificationTest.vue'
 import Play from '@/views/Play.vue'
 import Player from '@/views/Player.vue'
 import Players from '@/views/Players.vue'
@@ -73,6 +74,12 @@ const protectedRoutes: Array<RouteRecordRaw> = isAuthenticationEnabled()
         name: 'TagMetadata',
         beforeEnter: authGuard,
         component: TagMetadata,
+      },
+      {
+        path: '/notification-test',
+        name: 'NotificationTest',
+        beforeEnter: authGuard,
+        component: NotificationTest,
       },
       {
         path: '/queue-fix',
