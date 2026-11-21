@@ -35,9 +35,20 @@
       </button>
 
       <section v-if="results.length" class="results" aria-labelledby="results-heading">
-        <h2 id="results-heading">Delivery results</h2>
+        <h2 id="results-heading">Destination results</h2>
+        <p v-if="deliverySummary" class="delivery-summary">
+          Sent: {{ deliverySummary.sent }} · Skipped: {{ deliverySummary.skipped }} ·
+          Failed: {{ deliverySummary.failed }}
+        </p>
         <ul>
-          <li v-for="(result, index) in results" :key="index">{{ formatResult(result) }}</li>
+          <li v-for="(result, index) in results" :key="index">
+            <template v-if="isDeliveryReport(result)">
+              <strong>{{ result.target }}</strong>: {{ result.status }}
+              <span v-if="result.result !== undefined"> — {{ formatResult(result.result) }}</span>
+              <span v-else-if="result.reason"> — {{ result.reason }}</span>
+            </template>
+            <template v-else>{{ formatResult(result) }}</template>
+          </li>
         </ul>
       </section>
     </template>
@@ -75,6 +86,19 @@ const working = ref(false)
 const error = ref('')
 const message = ref('')
 const results = ref([])
+const deliverySummary = computed(() => {
+  const reports = results.value.filter(isDeliveryReport)
+  if (!reports.length) return null
+  return {
+    sent: reports.filter((report) => report.status === 'sent').length,
+    skipped: reports.filter((report) => report.status === 'skipped').length,
+    failed: reports.filter((report) => report.status === 'failed').length,
+  }
+})
+
+function isDeliveryReport(result) {
+  return result && typeof result === 'object' && 'target' in result && 'status' in result
+}
 
 function formatResult(result) {
   return typeof result === 'string' ? result : JSON.stringify(result)
@@ -109,8 +133,8 @@ async function resendNotifications() {
 
     results.value = Array.isArray(result) ? result : result ? [result] : []
     message.value = results.value.length
-      ? 'Notification resend completed.'
-      : 'No notification tasks were returned. Check the selected notification settings.'
+      ? 'Notification request completed. Review each destination below.'
+      : 'The server returned no destination report. Check the function logs for request-level errors.'
   } catch (err) {
     error.value = err?.message ?? 'Notification resend failed.'
   } finally {

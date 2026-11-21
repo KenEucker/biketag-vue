@@ -3753,6 +3753,13 @@ export type NotificationTarget =
   | 'global-slack'
   | 'global-bluesky'
 
+export type NotificationDeliveryReport = {
+  target: NotificationTarget
+  status: 'queued' | 'sent' | 'failed' | 'skipped'
+  reason?: string
+  result?: unknown
+}
+
 export const sendNewBikeTagNotifications = async (
   game: Game,
   currentTag: Tag | undefined,
@@ -3761,6 +3768,7 @@ export const sendNewBikeTagNotifications = async (
   skipEmails = false,
   skipSocials = false,
   notificationTargets?: NotificationTarget[],
+  deliveryReport?: NotificationDeliveryReport[],
 ) => {
   adminBiketag =
     adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
@@ -3768,6 +3776,40 @@ export const sendNewBikeTagNotifications = async (
   const notificationPromises: any = []
   const shouldSendNotification = (target: NotificationTarget) =>
     !notificationTargets || notificationTargets.includes(target)
+  const reportSkipped = (target: NotificationTarget, reason: string) => {
+    if (!deliveryReport || !shouldSendNotification(target)) return
+    deliveryReport.push({ target, status: 'skipped', reason })
+    log('Notification target skipped', { game: game.name, target, reason }, 'info')
+  }
+  const addNotificationTask = (target: NotificationTarget, task: Promise<unknown>) => {
+    const report: NotificationDeliveryReport | undefined = deliveryReport
+      ? { target, status: 'queued' }
+      : undefined
+    if (report) deliveryReport?.push(report)
+    notificationPromises.push(
+      Promise.resolve(task).then(
+        (result) => {
+          if (report) {
+            report.status = 'sent'
+            report.result =
+              typeof result === 'string' || typeof result === 'number'
+                ? result
+                : Array.isArray(result)
+                  ? `${result.length} recipient(s) accepted`
+                  : 'Provider accepted the request.'
+          }
+          return result
+        },
+        (error) => {
+          if (report) {
+            report.status = 'failed'
+            report.reason = error instanceof Error ? error.message : String(error)
+          }
+          throw error
+        },
+      ),
+    )
+  }
   const ambassadors = (await adminBiketag.ambassadors(undefined, {
     source: 'sanity',
   })) as Ambassador[]
@@ -3779,41 +3821,56 @@ export const sendNewBikeTagNotifications = async (
 
   if (!skipSocials && currentTag) {
     const sendGlobalDiscordNotification = process.env.DCN
-    if (sendGlobalDiscordNotification && shouldSendNotification('global-discord')) {
-      log('Sending global Discord notification', { game: game.name }, 'info')
-      notificationPromises.push(
-        sendBikeTagPostNotificationToWebhook(
-          currentTag,
-          winningTag,
-          sendGlobalDiscordNotification,
-          'discord',
-          host,
-          game,
-        ),
-      )
+    if (shouldSendNotification('global-discord')) {
+      if (sendGlobalDiscordNotification) {
+        log('Sending global Discord notification', { game: game.name }, 'info')
+        addNotificationTask(
+          'global-discord',
+          sendBikeTagPostNotificationToWebhook(
+            currentTag,
+            winningTag,
+            sendGlobalDiscordNotification,
+            'discord',
+            host,
+            game,
+          ),
+        )
+      } else {
+        reportSkipped('global-discord', 'Global Discord webhook is not configured (DCN is empty).')
+      }
     }
 
     const sendGlobalBlueSkyNotification = process.env.BSN
-    if (sendGlobalBlueSkyNotification && shouldSendNotification('global-bluesky')) {
-      log('Sending global BlueSky notification', { game: game.name }, 'info')
-      notificationPromises.push(
-        sendBikeTagPostNotificationToBlueSky(currentTag, winningTag, host, game),
-      )
+    if (shouldSendNotification('global-bluesky')) {
+      if (sendGlobalBlueSkyNotification) {
+        log('Sending global BlueSky notification', { game: game.name }, 'info')
+        addNotificationTask(
+          'global-bluesky',
+          sendBikeTagPostNotificationToBlueSky(currentTag, winningTag, host, game),
+        )
+      } else {
+        reportSkipped('global-bluesky', 'Global BlueSky credentials are not configured (BSN is empty).')
+      }
     }
 
     const sendGlobalSlackNotification = process.env.SLN
-    if (sendGlobalSlackNotification && shouldSendNotification('global-slack')) {
-      log('Sending global Slack notification', { game: game.name }, 'info')
-      notificationPromises.push(
-        sendBikeTagPostNotificationToWebhook(
-          currentTag,
-          winningTag,
-          sendGlobalSlackNotification,
-          'slack',
-          host,
-          game,
-        ),
-      )
+    if (shouldSendNotification('global-slack')) {
+      if (sendGlobalSlackNotification) {
+        log('Sending global Slack notification', { game: game.name }, 'info')
+        addNotificationTask(
+          'global-slack',
+          sendBikeTagPostNotificationToWebhook(
+            currentTag,
+            winningTag,
+            sendGlobalSlackNotification,
+            'slack',
+            host,
+            game,
+          ),
+        )
+      } else {
+        reportSkipped('global-slack', 'Global Slack webhook is not configured (SLN is empty).')
+      }
     }
 
     const privateSettingsResponse = await adminBiketag.getSettings(
@@ -3830,25 +3887,39 @@ export const sendNewBikeTagNotifications = async (
       : undefined
 
     if (!privateSettingsResponse.success) {
+      const reason = `Could not read private game notification settings (status ${privateSettingsResponse.status ?? 'unknown'}).`
       log(
         'Could not read private notification settings',
         { game: game.name, status: privateSettingsResponse.status },
         'warn',
       )
-    }
-
-    if (sendDiscordNotification && shouldSendNotification('game-discord')) {
-      log('Sending Discord notification for game', { game: game.name }, 'info')
-      notificationPromises.push(
-        sendBikeTagPostNotificationToWebhook(
-          currentTag,
-          winningTag,
-          sendDiscordNotification,
-          'discord',
-          host,
-          game,
-        ),
-      )
+      reportSkipped('game-discord', reason)
+      reportSkipped('game-slack', reason)
+    } else if (shouldSendNotification('game-discord')) {
+      if (sendDiscordNotification) {
+        log('Sending Discord notification for game', { game: game.name }, 'info')
+        addNotificationTask(
+          'game-discord',
+          sendBikeTagPostNotificationToWebhook(
+            currentTag,
+            winningTag,
+            sendDiscordNotification,
+            'discord',
+            host,
+            game,
+          ),
+        )
+      } else {
+        const configured = privateSettingsResponse.data?.some(
+          (setting) => setting.key === 'notifications::discord',
+        )
+        reportSkipped(
+          'game-discord',
+          configured
+            ? 'Game Discord notification is disabled or its webhook is empty.'
+            : 'No notifications::discord setting was found in the private game dataset.',
+        )
+      }
     }
 
     const sendSlackNotification = privateSettingsResponse.success
@@ -3856,34 +3927,59 @@ export const sendNewBikeTagNotifications = async (
           (setting) => setting.key === 'notifications::slack',
         )?.value
       : undefined
-    if (sendSlackNotification && shouldSendNotification('game-slack')) {
-      log('Sending Slack notification for game', { game: game.name }, 'info')
-      notificationPromises.push(
-        sendBikeTagPostNotificationToWebhook(
-          currentTag,
-          winningTag,
-          sendSlackNotification,
-          'slack',
-          host,
-          game,
-        ),
-      )
+    if (privateSettingsResponse.success && shouldSendNotification('game-slack')) {
+      if (sendSlackNotification) {
+        log('Sending Slack notification for game', { game: game.name }, 'info')
+        addNotificationTask(
+          'game-slack',
+          sendBikeTagPostNotificationToWebhook(
+            currentTag,
+            winningTag,
+            sendSlackNotification,
+            'slack',
+            host,
+            game,
+          ),
+        )
+      } else {
+        const configured = privateSettingsResponse.data?.some(
+          (setting) => setting.key === 'notifications::slack',
+        )
+        reportSkipped(
+          'game-slack',
+          configured
+            ? 'Game Slack notification is disabled or its webhook is empty.'
+            : 'No notifications::slack setting was found in the private game dataset.',
+        )
+      }
     }
   } else {
-    log('Skipping social notifications', { game: game.name }, 'info')
+    const reason = skipSocials
+      ? 'Social notifications were disabled by the request.'
+      : 'No previous live tag was available for social notifications.'
+    ;(['game-discord', 'game-slack', 'global-discord', 'global-slack', 'global-bluesky'] as NotificationTarget[])
+      .forEach((target) => reportSkipped(target, reason))
+    log('Skipping social notifications', { game: game.name, reason }, 'info')
   }
 
+  const gameEmailEnabled = isGameEmailEnabled(
+    game,
+    'biketag-auto-posted',
+    ['new-biketag-notification'],
+  )
   if (
-    !skipEmails &&
     shouldSendNotification('game-email') &&
-    isGameEmailEnabled(game, 'biketag-auto-posted', ['new-biketag-notification'])
+    !skipEmails &&
+    gameEmailEnabled &&
+    (!deliveryReport || thisGamesAmbassadors.length > 0)
   ) {
     log(
       'Sending new BikeTag email notifications',
       { game: game.name, ambassadors: thisGamesAmbassadors.length },
       'info',
     )
-    notificationPromises.push(
+    addNotificationTask(
+      'game-email',
       sendEmailsToAmbassadors(
         'biketag-auto-posted',
         `New BikeTag Round (#${winningTagnumber}) is live for [${game.name}]`,
@@ -3914,13 +4010,23 @@ export const sendNewBikeTagNotifications = async (
           throw new Error(`Email delivery failed for: ${results.rejected.join(', ')}`)
         return results.accepted
       }),
+      ),
     )
-  } else {
-    log(
-      'Sending of emails disabled for new-biketag-notification',
-      { disabled: game.settings['emails::disable'] },
-      'info',
-    )
+  } else if (shouldSendNotification('game-email')) {
+    if (!deliveryReport) {
+      log(
+        'Sending of emails disabled for new-biketag-notification',
+        { disabled: game.settings['emails::disable'] },
+        'info',
+      )
+    } else {
+      const reason = skipEmails
+        ? 'Email notifications were disabled by the request.'
+        : !gameEmailEnabled
+          ? 'Game email notification is disabled by the game settings.'
+          : 'No BikeTag Ambassadors are configured for this game.'
+      reportSkipped('game-email', reason)
+    }
   }
 
   return notificationPromises
