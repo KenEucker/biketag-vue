@@ -3782,8 +3782,8 @@ export const sendNewBikeTagNotifications = async (
     log('Notification target skipped', { game: game.name, target, reason }, 'info')
   }
   const addNotificationTask = (target: NotificationTarget, task: Promise<unknown>) => {
-    const report = deliveryReport
-      ? { target, status: 'queued' as const }
+    const report: NotificationDeliveryReport | undefined = deliveryReport
+      ? { target, status: 'queued' }
       : undefined
     if (report) deliveryReport?.push(report)
     notificationPromises.push(
@@ -3962,7 +3962,12 @@ export const sendNewBikeTagNotifications = async (
     'biketag-auto-posted',
     ['new-biketag-notification'],
   )
-  if (shouldSendNotification('game-email') && !skipEmails && gameEmailEnabled) {
+  if (
+    shouldSendNotification('game-email') &&
+    !skipEmails &&
+    gameEmailEnabled &&
+    thisGamesAmbassadors.length > 0
+  ) {
     log(
       'Sending new BikeTag email notifications',
       { game: game.name, ambassadors: thisGamesAmbassadors.length },
