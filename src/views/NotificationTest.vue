@@ -44,6 +44,9 @@
           <li v-for="(result, index) in results" :key="index">
             <template v-if="isDeliveryReport(result)">
               <strong>{{ result.target }}</strong>: {{ result.status }}
+              <span v-if="result.source">
+                via {{ result.source === 'admin-sanity' ? 'Admin Sanity' : 'environment variable' }}
+              </span>
               <span v-if="result.result !== undefined"> — {{ formatResult(result.result) }}</span>
               <span v-else-if="result.reason"> — {{ result.reason }}</span>
             </template>
