@@ -4010,7 +4010,6 @@ export const sendNewBikeTagNotifications = async (
           throw new Error(`Email delivery failed for: ${results.rejected.join(', ')}`)
         return results.accepted
       }),
-      ),
     )
   } else if (shouldSendNotification('game-email')) {
     if (!deliveryReport) {
