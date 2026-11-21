@@ -3929,9 +3929,12 @@ export const sendNewBikeTagNotifications = async (
           blueSkyUser.reason ?? blueSkyPass.reason ?? 'Global BlueSky credentials are incomplete.',
         )
       } else {
-        const sources = [blueSkyEnabledSource, blueSkyUser.source, blueSkyPass.source].filter(
-          Boolean,
-        )
+        const sources = [
+          blueSkyEnabledSource,
+          blueSkyUser.source,
+          blueSkyPass.source,
+          blueSkyServer.value ? blueSkyServer.source : undefined,
+        ].filter(Boolean)
         const source = sources.every((value) => value === sources[0])
           ? sources[0]
           : 'mixed'
