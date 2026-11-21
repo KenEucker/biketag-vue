@@ -3795,13 +3795,18 @@ export const sendNewBikeTagNotifications = async (
       Promise.resolve(task).then(
         (result) => {
           if (report) {
-            report.status = 'sent'
-            report.result =
-              typeof result === 'string' || typeof result === 'number'
-                ? result
-                : Array.isArray(result)
-                  ? `${result.length} recipient(s) accepted`
-                  : 'Provider accepted the request.'
+            if (result === 'bluesky::failed') {
+              report.status = 'failed'
+              report.reason = 'BlueSky notification send failed; see the function log for details.'
+            } else {
+              report.status = 'sent'
+              report.result =
+                typeof result === 'string' || typeof result === 'number'
+                  ? result
+                  : Array.isArray(result)
+                    ? `${result.length} recipient(s) accepted`
+                    : 'Provider accepted the request.'
+            }
           }
           return result
         },
