@@ -4,15 +4,17 @@ import {
   getBikeTagClientOpts,
   getImageSource,
   getPayloadOpts,
+  getProfileAuthorization,
   isRequestAllowed,
   log,
+  requireGlobalAdmin,
   sendNewBikeTagNotifications,
 } from './common'
 import { HttpStatusCode } from './common/constants'
 
 export const autoNotifyNewBikeTagPosted = async (
   req: Request,
-): Promise<BackgroundProcessResults> => {
+): Promise<BackgroundProcessResults & { status?: HttpStatusCode }> => {
   if (!isRequestAllowed(req, true, true, false, 'post')) {
     return {
       results: ['unauthorized'],
@@ -24,6 +26,16 @@ export const autoNotifyNewBikeTagPosted = async (
     skipEmails: false,
     force: false,
   })
+  if (payloadOpts.force) {
+    const profile = await getProfileAuthorization(req)
+    if (!requireGlobalAdmin(profile)) {
+      return {
+        results: ['unauthorized'],
+        errors: true,
+        status: HttpStatusCode.Unauthorized,
+      }
+    }
+  }
   let errors = false
   let results: any = []
   const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
@@ -110,17 +122,17 @@ export const autoNotifyNewBikeTagPosted = async (
 }
 
 export default async (req: Request) => {
-  const { results, errors } = await autoNotifyNewBikeTagPosted(req)
+  const { results, errors, status } = await autoNotifyNewBikeTagPosted(req)
 
   if (results.length) {
     log('notification delivery completed', { results, errors }, errors ? 'error' : 'info')
     return new Response(JSON.stringify(results), {
-      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+      status: status ?? (errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok),
     })
   } else {
     log('no notifications sent', 'info')
     return new Response('', {
-      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+      status: status ?? (errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok),
     })
   }
 }
