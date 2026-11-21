@@ -108,6 +108,16 @@
         Test Emails
       </router-link>
 
+      <router-link v-if="isBikeTagAdmin" to="/notification-test" class="action-button">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16v13H7l-3 3V4Z" />
+            <path d="M8 9h8M8 13h5" />
+          </svg>
+        </span>
+        Test Notifications
+      </router-link>
+
       <router-link v-if="isBikeTagAdmin" to="/queue-fix" class="action-button">
         <span class="icon">
          <svg

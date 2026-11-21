@@ -1,18 +1,21 @@
 import BikeTagClient, { Game } from 'biketag'
 import {
   BackgroundProcessResults,
+  NotificationDeliveryReport,
   getBikeTagClientOpts,
   getImageSource,
   getPayloadOpts,
+  getProfileAuthorization,
   isRequestAllowed,
   log,
+  requireGlobalAdmin,
   sendNewBikeTagNotifications,
 } from './common'
 import { HttpStatusCode } from './common/constants'
 
 export const autoNotifyNewBikeTagPosted = async (
   req: Request,
-): Promise<BackgroundProcessResults> => {
+): Promise<BackgroundProcessResults & { status?: HttpStatusCode }> => {
   if (!isRequestAllowed(req, true, true, false, 'post')) {
     return {
       results: ['unauthorized'],
@@ -24,6 +27,36 @@ export const autoNotifyNewBikeTagPosted = async (
     skipEmails: false,
     force: false,
   })
+  if (payloadOpts.force) {
+    const profile = await getProfileAuthorization(req)
+    if (!requireGlobalAdmin(profile)) {
+      return {
+        results: ['unauthorized'],
+        errors: true,
+        status: HttpStatusCode.Unauthorized,
+      }
+    }
+
+    const allowedTargets = [
+      'game-email',
+      'game-discord',
+      'game-slack',
+      'global-discord',
+      'global-slack',
+      'global-bluesky',
+    ]
+    if (
+      !Array.isArray(payloadOpts.notificationTargets) ||
+      !payloadOpts.notificationTargets.length ||
+      !payloadOpts.notificationTargets.every((target: string) => allowedTargets.includes(target))
+    ) {
+      return {
+        results: ['select one or more valid notification destinations'],
+        errors: true,
+        status: HttpStatusCode.BadRequest,
+      }
+    }
+  }
   let errors = false
   let results: any = []
   const nonAdminBiketagOpts = getBikeTagClientOpts(req, true)
@@ -75,6 +108,7 @@ export const autoNotifyNewBikeTagPosted = async (
 
   /// Set to admin credentials
   await nonAdminBiketag.config(adminBiketagOpts, true, true)
+  const deliveryReport: NotificationDeliveryReport[] = []
   const notificationsSent = await sendNewBikeTagNotifications(
     game,
     previousTag,
@@ -82,6 +116,8 @@ export const autoNotifyNewBikeTagPosted = async (
     nonAdminBiketag,
     payloadOpts.skipEmails,
     payloadOpts.skipSocials,
+    payloadOpts.notificationTargets,
+    payloadOpts.force ? deliveryReport : undefined,
   ).catch((err) => {
     errors = true
     results.push({ error: err instanceof Error ? err.message : String(err) })
@@ -92,15 +128,21 @@ export const autoNotifyNewBikeTagPosted = async (
     const settled = await Promise.allSettled(notificationsSent)
     for (const result of settled) {
       if (result.status === 'fulfilled') {
-        results.push(result.value)
+        if (!payloadOpts.force) results.push(result.value)
       } else {
         errors = true
-        results.push({
-          error: result.reason instanceof Error ? result.reason.message : String(result.reason),
-        })
+        if (!payloadOpts.force) {
+          results.push({
+            error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+          })
+        }
         log('error sending notification', result.reason, 'error')
       }
     }
+  }
+
+  if (payloadOpts.force) {
+    results.push(...deliveryReport)
   }
 
   return {
@@ -110,17 +152,17 @@ export const autoNotifyNewBikeTagPosted = async (
 }
 
 export default async (req: Request) => {
-  const { results, errors } = await autoNotifyNewBikeTagPosted(req)
+  const { results, errors, status } = await autoNotifyNewBikeTagPosted(req)
 
   if (results.length) {
     log('notification delivery completed', { results, errors }, errors ? 'error' : 'info')
     return new Response(JSON.stringify(results), {
-      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+      status: status ?? (errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok),
     })
   } else {
     log('no notifications sent', 'info')
     return new Response('', {
-      status: errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok,
+      status: status ?? (errors ? HttpStatusCode.BadRequest : HttpStatusCode.Ok),
     })
   }
 }
