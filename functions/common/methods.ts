@@ -3745,6 +3745,14 @@ export const sendBikeTagPostNotificationToWebhook = (
   }).then((response) => `${type}::${response.status}`)
 }
 
+export type NotificationTarget =
+  | 'game-email'
+  | 'game-discord'
+  | 'game-slack'
+  | 'global-discord'
+  | 'global-slack'
+  | 'global-bluesky'
+
 export const sendNewBikeTagNotifications = async (
   game: Game,
   currentTag: Tag | undefined,
