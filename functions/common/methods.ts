@@ -3576,6 +3576,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   winningTag: Tag,
   host: string,
   game: Game,
+  credentials?: { user?: string; pass?: string; server?: string },
 ) => {
   const winningTagnumber = winningTag.tagnumber
   const heading = `A new BikeTag has been posted for the ${game.name} game!`
@@ -3588,11 +3589,10 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   const imageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'm')
 
   try {
-    if (process.env.BSKY_USER && process.env.BSKY_PASS) {
-      const bskyUser = process.env.BSKY_USER
-      const bskyPass = process.env.BSKY_PASS
-      const bskyServer = process.env.BSKY_SERVER ?? 'https://bsky.social'
-
+    const bskyUser = credentials?.user ?? process.env.BSKY_USER
+    const bskyPass = credentials?.pass ?? process.env.BSKY_PASS
+    const bskyServer = credentials?.server ?? process.env.BSKY_SERVER ?? 'https://bsky.social'
+    if (bskyUser && bskyPass) {
       log('sending bluesky on behalf of ' + bskyUser, { winningTagnumber, bskyUser })
 
       const agent = new AtpAgent({
@@ -3756,7 +3756,7 @@ export type NotificationTarget =
 export type NotificationDeliveryReport = {
   target: NotificationTarget
   status: 'queued' | 'sent' | 'failed' | 'skipped'
-  source?: 'admin-sanity' | 'environment'
+  source?: 'admin-sanity' | 'environment' | 'mixed'
   reason?: string
   result?: unknown
 }
@@ -3888,25 +3888,63 @@ export const sendNewBikeTagNotifications = async (
       }
     }
 
-    const sendGlobalBlueSkyNotification = resolveGlobalNotification(
-      'notifications::global-bluesky',
-      'BSN',
-      process.env.BSN,
+    const globalBlueSkySetting = globalSettings?.find(
+      (setting) => setting.key === 'notifications::global-bluesky',
+    )
+    const blueSkyEnabledValue = globalBlueSkySetting?.value
+    const blueSkyEnabled = blueSkyEnabledValue
+      ? ['true', '1', 'enabled'].includes(blueSkyEnabledValue.toLowerCase())
+      : Boolean(process.env.BSN)
+    const blueSkyEnabledSource = blueSkyEnabledValue
+      ? 'admin-sanity'
+      : process.env.BSN
+        ? 'environment'
+        : undefined
+    const blueSkyUser = resolveGlobalNotification(
+      'notifications::global-bluesky-user',
+      'BSKY_USER',
+      process.env.BSKY_USER,
+    )
+    const blueSkyPass = resolveGlobalNotification(
+      'notifications::global-bluesky-pass',
+      'BSKY_PASS',
+      process.env.BSKY_PASS,
+    )
+    const blueSkyServer = resolveGlobalNotification(
+      'notifications::global-bluesky-server',
+      'BSKY_SERVER',
+      process.env.BSKY_SERVER,
     )
     if (shouldSendNotification('global-bluesky')) {
-      if (sendGlobalBlueSkyNotification.value) {
-        log(
-          'Sending global BlueSky notification',
-          { game: game.name, source: sendGlobalBlueSkyNotification.source },
-          'info',
-        )
-        addNotificationTask(
+      if (!blueSkyEnabled) {
+        reportSkipped(
           'global-bluesky',
-          sendBikeTagPostNotificationToBlueSky(currentTag, winningTag, host, game),
-          sendGlobalBlueSkyNotification.source,
+          blueSkyEnabledValue
+            ? 'Global BlueSky notifications are disabled by notifications::global-bluesky.'
+            : 'Global BlueSky notifications are not enabled by Admin Sanity or BSN.',
+        )
+      } else if (!blueSkyUser.value || !blueSkyPass.value) {
+        reportSkipped(
+          'global-bluesky',
+          blueSkyUser.reason ?? blueSkyPass.reason ?? 'Global BlueSky credentials are incomplete.',
         )
       } else {
-        reportSkipped('global-bluesky', sendGlobalBlueSkyNotification.reason!)
+        const sources = [blueSkyEnabledSource, blueSkyUser.source, blueSkyPass.source].filter(
+          Boolean,
+        )
+        const source = sources.every((value) => value === sources[0])
+          ? sources[0]
+          : 'mixed'
+        log('Sending global BlueSky notification', { game: game.name, source }, 'info')
+        addNotificationTask(
+          'global-bluesky',
+          sendBikeTagPostNotificationToBlueSky(currentTag, winningTag, host, game, {
+            user: blueSkyUser.value,
+            pass: blueSkyPass.value,
+            server: blueSkyServer.value,
+          }),
+          source as NotificationDeliveryReport['source'],
+        )
       }
     }
 
