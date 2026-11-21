@@ -3926,15 +3926,6 @@ export const sendNewBikeTagNotifications = async (
   return notificationPromises
 }
 
-bled for new-biketag-notification',
-      { disabled: game.settings['emails::disable'] },
-      'info',
-    )
-  }
-
-  return notificationPromises
-}
-
 export const finalizeNewBikeTagPost = async (
   game: Game,
   winningBikeTagPost: Tag,
