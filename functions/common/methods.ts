@@ -3971,7 +3971,7 @@ export const sendNewBikeTagNotifications = async (
     shouldSendNotification('game-email') &&
     !skipEmails &&
     gameEmailEnabled &&
-    thisGamesAmbassadors.length > 0
+    (!deliveryReport || thisGamesAmbassadors.length > 0)
   ) {
     log(
       'Sending new BikeTag email notifications',
@@ -4013,12 +4013,20 @@ export const sendNewBikeTagNotifications = async (
       ),
     )
   } else if (shouldSendNotification('game-email')) {
-    const reason = skipEmails
-      ? 'Email notifications were disabled by the request.'
-      : !gameEmailEnabled
-        ? 'Game email notification is disabled by the game settings.'
-        : 'No BikeTag Ambassadors are configured for this game.'
-    reportSkipped('game-email', reason)
+    if (!deliveryReport) {
+      log(
+        'Sending of emails disabled for new-biketag-notification',
+        { disabled: game.settings['emails::disable'] },
+        'info',
+      )
+    } else {
+      const reason = skipEmails
+        ? 'Email notifications were disabled by the request.'
+        : !gameEmailEnabled
+          ? 'Game email notification is disabled by the game settings.'
+          : 'No BikeTag Ambassadors are configured for this game.'
+      reportSkipped('game-email', reason)
+    }
   }
 
   return notificationPromises
