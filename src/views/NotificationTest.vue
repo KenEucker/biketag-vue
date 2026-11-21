@@ -7,7 +7,7 @@
     <template v-else>
       <p class="alert alert-warning" role="note">
         Selected destinations receive real messages. Game email goes to this game's ambassadors.
-        Global destinations are configured server-wide.
+        Global destinations use Admin Sanity settings first, then Netlify environment variables.
       </p>
       <p v-if="error" class="text-danger" role="alert">{{ error }}</p>
       <p v-if="message" class="text-success" role="status">{{ message }}</p>
@@ -44,6 +44,16 @@
           <li v-for="(result, index) in results" :key="index">
             <template v-if="isDeliveryReport(result)">
               <strong>{{ result.target }}</strong>: {{ result.status }}
+              <span v-if="result.source">
+                via
+                {{
+                  result.source === 'admin-sanity'
+                    ? 'Admin Sanity'
+                    : result.source === 'environment'
+                      ? 'environment variables'
+                      : 'mixed sources'
+                }}
+              </span>
               <span v-if="result.result !== undefined"> — {{ formatResult(result.result) }}</span>
               <span v-else-if="result.reason"> — {{ result.reason }}</span>
             </template>
