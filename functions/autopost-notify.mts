@@ -1,6 +1,7 @@
 import BikeTagClient, { Game } from 'biketag'
 import {
   BackgroundProcessResults,
+  NotificationDeliveryReport,
   getBikeTagClientOpts,
   getImageSource,
   getPayloadOpts,
@@ -107,6 +108,7 @@ export const autoNotifyNewBikeTagPosted = async (
 
   /// Set to admin credentials
   await nonAdminBiketag.config(adminBiketagOpts, true, true)
+  const deliveryReport: NotificationDeliveryReport[] = []
   const notificationsSent = await sendNewBikeTagNotifications(
     game,
     previousTag,
@@ -115,6 +117,7 @@ export const autoNotifyNewBikeTagPosted = async (
     payloadOpts.skipEmails,
     payloadOpts.skipSocials,
     payloadOpts.notificationTargets,
+    payloadOpts.force ? deliveryReport : undefined,
   ).catch((err) => {
     errors = true
     results.push({ error: err instanceof Error ? err.message : String(err) })
@@ -125,15 +128,21 @@ export const autoNotifyNewBikeTagPosted = async (
     const settled = await Promise.allSettled(notificationsSent)
     for (const result of settled) {
       if (result.status === 'fulfilled') {
-        results.push(result.value)
+        if (!payloadOpts.force) results.push(result.value)
       } else {
         errors = true
-        results.push({
-          error: result.reason instanceof Error ? result.reason.message : String(result.reason),
-        })
+        if (!payloadOpts.force) {
+          results.push({
+            error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+          })
+        }
         log('error sending notification', result.reason, 'error')
       }
     }
+  }
+
+  if (payloadOpts.force) {
+    results.push(...deliveryReport)
   }
 
   return {
