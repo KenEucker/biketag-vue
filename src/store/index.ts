@@ -785,9 +785,12 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
         return typeof message === 'string' ? message : 'error moving queue found image to main'
       }
     },
-    async resendLatestPostNotifications() {
+    async resendLatestPostNotifications(notificationTargets: string[]) {
       if (!this.isBikeTagAdmin) {
         return 'incorrect permissions'
+      }
+      if (!Array.isArray(notificationTargets) || !notificationTargets.length) {
+        return 'select at least one notification destination'
       }
 
       try {
@@ -796,6 +799,7 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           url: getApiUrl('autopost-notify'),
           data: {
             force: true,
+            notificationTargets,
           },
           headers: {
             authorization: `Bearer ${this.auth0Token}`,

@@ -3745,6 +3745,14 @@ export const sendBikeTagPostNotificationToWebhook = (
   }).then((response) => `${type}::${response.status}`)
 }
 
+export type NotificationTarget =
+  | 'game-email'
+  | 'game-discord'
+  | 'game-slack'
+  | 'global-discord'
+  | 'global-slack'
+  | 'global-bluesky'
+
 export const sendNewBikeTagNotifications = async (
   game: Game,
   currentTag: Tag | undefined,
@@ -3752,11 +3760,14 @@ export const sendNewBikeTagNotifications = async (
   adminBiketag?: BikeTagClient,
   skipEmails = false,
   skipSocials = false,
+  notificationTargets?: NotificationTarget[],
 ) => {
   adminBiketag =
     adminBiketag ?? new BikeTagClient(getBikeTagClientOpts(undefined, true, true, game))
 
   const notificationPromises: any = []
+  const shouldSendNotification = (target: NotificationTarget) =>
+    !notificationTargets || notificationTargets.includes(target)
   const ambassadors = (await adminBiketag.ambassadors(undefined, {
     source: 'sanity',
   })) as Ambassador[]
@@ -3768,7 +3779,7 @@ export const sendNewBikeTagNotifications = async (
 
   if (!skipSocials && currentTag) {
     const sendGlobalDiscordNotification = process.env.DCN
-    if (sendGlobalDiscordNotification) {
+    if (sendGlobalDiscordNotification && shouldSendNotification('global-discord')) {
       log('Sending global Discord notification', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
@@ -3783,7 +3794,7 @@ export const sendNewBikeTagNotifications = async (
     }
 
     const sendGlobalBlueSkyNotification = process.env.BSN
-    if (sendGlobalBlueSkyNotification) {
+    if (sendGlobalBlueSkyNotification && shouldSendNotification('global-bluesky')) {
       log('Sending global BlueSky notification', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToBlueSky(currentTag, winningTag, host, game),
@@ -3791,7 +3802,7 @@ export const sendNewBikeTagNotifications = async (
     }
 
     const sendGlobalSlackNotification = process.env.SLN
-    if (sendGlobalSlackNotification) {
+    if (sendGlobalSlackNotification && shouldSendNotification('global-slack')) {
       log('Sending global Slack notification', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
@@ -3805,8 +3816,28 @@ export const sendNewBikeTagNotifications = async (
       )
     }
 
-    const sendDiscordNotification = game.settings['notifications::discord']
-    if (sendDiscordNotification) {
+    const privateSettingsResponse = await adminBiketag.getSettings(
+      {
+        game: game.name,
+        fields: ['key', 'value'],
+      },
+      { source: 'sanity' },
+    )
+    const sendDiscordNotification = privateSettingsResponse.success
+      ? privateSettingsResponse.data?.find(
+          (setting) => setting.key === 'notifications::discord',
+        )?.value
+      : undefined
+
+    if (!privateSettingsResponse.success) {
+      log(
+        'Could not read private notification settings',
+        { game: game.name, status: privateSettingsResponse.status },
+        'warn',
+      )
+    }
+
+    if (sendDiscordNotification && shouldSendNotification('game-discord')) {
       log('Sending Discord notification for game', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
@@ -3820,8 +3851,12 @@ export const sendNewBikeTagNotifications = async (
       )
     }
 
-    const sendSlackNotification = game.settings['notifications::slack']
-    if (sendSlackNotification) {
+    const sendSlackNotification = privateSettingsResponse.success
+      ? privateSettingsResponse.data?.find(
+          (setting) => setting.key === 'notifications::slack',
+        )?.value
+      : undefined
+    if (sendSlackNotification && shouldSendNotification('game-slack')) {
       log('Sending Slack notification for game', { game: game.name }, 'info')
       notificationPromises.push(
         sendBikeTagPostNotificationToWebhook(
@@ -3840,6 +3875,7 @@ export const sendNewBikeTagNotifications = async (
 
   if (
     !skipEmails &&
+    shouldSendNotification('game-email') &&
     isGameEmailEnabled(game, 'biketag-auto-posted', ['new-biketag-notification'])
   ) {
     log(
@@ -3882,6 +3918,15 @@ export const sendNewBikeTagNotifications = async (
   } else {
     log(
       'Sending of emails disabled for new-biketag-notification',
+      { disabled: game.settings['emails::disable'] },
+      'info',
+    )
+  }
+
+  return notificationPromises
+}
+
+bled for new-biketag-notification',
       { disabled: game.settings['emails::disable'] },
       'info',
     )
