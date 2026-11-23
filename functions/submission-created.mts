@@ -56,6 +56,13 @@ export default async (req: Request) => {
         'info',
       )
     }
+    if (formName === 'add-found-tag' || formName === 'add-mystery-tag') {
+      // These forms only record queue-image submissions; no notification processing is needed.
+      return new Response(JSON.stringify({ data: true }), {
+        status: HttpStatusCode.Ok,
+      })
+    }
+
     let successfulEmailsSent: any = []
     let rejectedEmails: any = []
     let thisGamesAmbassadors: Ambassador[] = []
@@ -66,120 +73,104 @@ export default async (req: Request) => {
     let queuedTags: Tag[] = []
 
     if (gameName) {
-      if (formName !== 'add-found-tag' && formName !== 'add-mystery-tag') {
-        const nonAdminBiketagOpts = getBikeTagClientOpts(req, true, false, {
-          name: gameName.toLowerCase(),
-        } as Game)
-        const adminBiketagOpts = getBikeTagClientOpts(req, true, true, {
-          name: gameName.toLowerCase(),
-        } as Game)
-        /// TODO: fix whatever is wrong with the biketag-api interface
-        const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
-        const adminBiketag = new BikeTagClient(adminBiketagOpts)
-        game = (await nonAdminBiketag.game(undefined, {
-          source: 'sanity',
-        })) as Game
-
-        if (!game) {
-          console.error('no game found for', gameName, payload)
-          return {
-            data: false,
-            statusCode: HttpStatusCode.BadRequest,
-          }
-        }
-
-        const imageSource = getImageSource(game)
-        if (imageSource === 'aws' && game.awsRegion?.length) {
-          nonAdminBiketag.config(
-            {
-              biketag: { host: process.env.HOST },
-              aws: { region: game.awsRegion },
-            },
-            false,
-            true,
-          )
-          adminBiketag.config(
-            {
-              biketag: { host: process.env.HOST },
-              aws: { region: game.awsRegion },
-            },
-            false,
-            true,
-          )
-        }
-
-        const ambassadors = (await adminBiketag.ambassadors(undefined, {
-          source: 'sanity',
-        })) as Ambassador[]
-        thisGamesAmbassadors = ambassadors.length
-          ? ambassadors.filter((a) => game!.ambassadors?.includes(a?.name))
-          : []
-
-        // Error reports already contain a snapshot. They must not depend on the
-        // queue or tag API that may have caused the player's error.
-        if (!isErrorReport) {
-          const currentMysteryTagResponse = await nonAdminBiketag.getTag(undefined, {
-            source: imageSource,
-          })
-          currentMysteryTag = currentMysteryTagResponse.success
-            ? (currentMysteryTagResponse.data as Tag)
-            : undefined
-        }
-
-        const requiresAmbassadorEmail =
-          formName === 'post-new-biketag' ||
-          formName === 'approve-tag-error' ||
-          formName === 'post-tag-error'
-
-        if (requiresAmbassadorEmail && !thisGamesAmbassadors.length) {
-          log('no ambassadors configured for game', { gameName, formName })
-          return {
-            data: false,
-            statusCode: HttpStatusCode.BadRequest,
-          }
-        }
-
-        if (!requiresAmbassadorEmail && (!currentMysteryTag || !thisGamesAmbassadors.length)) {
-          log('insufficient game data to work with', {
-            gameName,
-            game,
-            ambassadors,
-            thisGamesAmbassadors,
-            currentMysteryTag,
-          })
-          return {
-            data: false,
-            statusCode: HttpStatusCode.BadRequest,
-          }
-        }
-
-        if (!currentMysteryTag && !isErrorReport) {
-          log(
-            'current mystery tag unavailable; continuing with submission email',
-            { gameName },
-            'warn',
-          )
-        }
-
-        if (!isErrorReport) {
-          try {
-            const queueResponse = await nonAdminBiketag.getQueue(undefined, { source: imageSource })
-            queuedTags = queueResponse.success ? (queueResponse.data as Tag[]) : []
-            numberInQueue = getSubmissionQueuePosition(queuedTags, tag)
-          } catch (err) {
-            log('could not load queue for submission email', { gameName, err }, 'warn')
-          }
-        }
-      } else {
-        /// doing nothing, eh?
-        success = true
-      }
+      const nonAdminBiketagOpts = getBikeTagClientOpts(req, true, false, {
+        name: gameName.toLowerCase(),
+      } as Game)
+      const adminBiketagOpts = getBikeTagClientOpts(req, true, true, {
+        name: gameName.toLowerCase(),
+      } as Game)
+      /// TODO: fix whatever is wrong with the biketag-api interface
+      const nonAdminBiketag = new BikeTagClient(nonAdminBiketagOpts)
+      const adminBiketag = new BikeTagClient(adminBiketagOpts)
+      game = (await nonAdminBiketag.game(undefined, {
+        source: 'sanity',
+      })) as Game
 
       if (!game) {
         console.error('no game found for', gameName, payload)
-        return {
-          data: false,
-          statusCode: HttpStatusCode.BadRequest,
+        return new Response(JSON.stringify({ data: false }), {
+          status: HttpStatusCode.BadRequest,
+        })
+      }
+
+      const imageSource = getImageSource(game)
+      if (imageSource === 'aws' && game.awsRegion?.length) {
+        nonAdminBiketag.config(
+          {
+            biketag: { host: process.env.HOST },
+            aws: { region: game.awsRegion },
+          },
+          false,
+          true,
+        )
+        adminBiketag.config(
+          {
+            biketag: { host: process.env.HOST },
+            aws: { region: game.awsRegion },
+          },
+          false,
+          true,
+        )
+      }
+
+      const ambassadors = (await adminBiketag.ambassadors(undefined, {
+        source: 'sanity',
+      })) as Ambassador[]
+      thisGamesAmbassadors = ambassadors.length
+        ? ambassadors.filter((a) => game!.ambassadors?.includes(a?.name))
+        : []
+
+      // Error reports already contain a snapshot. They must not depend on the
+      // queue or tag API that may have caused the player's error.
+      if (!isErrorReport) {
+        const currentMysteryTagResponse = await nonAdminBiketag.getTag(undefined, {
+          source: imageSource,
+        })
+        currentMysteryTag = currentMysteryTagResponse.success
+          ? (currentMysteryTagResponse.data as Tag)
+          : undefined
+      }
+
+      const requiresAmbassadorEmail =
+        formName === 'post-new-biketag' ||
+        formName === 'approve-tag-error' ||
+        formName === 'post-tag-error'
+
+      if (requiresAmbassadorEmail && !thisGamesAmbassadors.length) {
+        log('no ambassadors configured for game', { gameName, formName })
+        return new Response(JSON.stringify({ data: false }), {
+          status: HttpStatusCode.BadRequest,
+        })
+      }
+
+      if (!requiresAmbassadorEmail && (!currentMysteryTag || !thisGamesAmbassadors.length)) {
+        log('insufficient game data to work with', {
+          gameName,
+          game,
+          ambassadors,
+          thisGamesAmbassadors,
+          currentMysteryTag,
+        })
+        return new Response(JSON.stringify({ data: false }), {
+          status: HttpStatusCode.BadRequest,
+        })
+      }
+
+      if (!currentMysteryTag && !isErrorReport) {
+        log(
+          'current mystery tag unavailable; continuing with submission email',
+          { gameName },
+          'warn',
+        )
+      }
+
+      if (!isErrorReport) {
+        try {
+          const queueResponse = await nonAdminBiketag.getQueue(undefined, { source: imageSource })
+          queuedTags = queueResponse.success ? (queueResponse.data as Tag[]) : []
+          numberInQueue = getSubmissionQueuePosition(queuedTags, tag)
+        } catch (err) {
+          log('could not load queue for submission email', { gameName, err }, 'warn')
         }
       }
 
@@ -324,9 +315,8 @@ export default async (req: Request) => {
       console.error('no game to work with', payload)
     }
 
-    return {
-      data: success,
-      statusCode: success ? HttpStatusCode.Ok : HttpStatusCode.BadRequest,
-    }
+    return new Response(JSON.stringify({ data: success }), {
+      status: success ? HttpStatusCode.Ok : HttpStatusCode.BadRequest,
+    })
   }
 }
