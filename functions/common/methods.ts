@@ -3576,6 +3576,7 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   winningTag: Tag,
   host: string,
   game: Game,
+  credentials?: { user?: string; pass?: string; server?: string },
 ) => {
   const winningTagnumber = winningTag.tagnumber
   const heading = `A new BikeTag has been posted for the ${game.name} game!`
@@ -3588,11 +3589,10 @@ export const sendBikeTagPostNotificationToBlueSky = async (
   const imageUrl = getImageSized(imageSource, winningTag.mysteryImageUrl, 'm')
 
   try {
-    if (process.env.BSKY_USER && process.env.BSKY_PASS) {
-      const bskyUser = process.env.BSKY_USER
-      const bskyPass = process.env.BSKY_PASS
-      const bskyServer = process.env.BSKY_SERVER ?? 'https://bsky.social'
-
+    const bskyUser = credentials?.user ?? process.env.BSKY_USER
+    const bskyPass = credentials?.pass ?? process.env.BSKY_PASS
+    const bskyServer = credentials?.server ?? process.env.BSKY_SERVER ?? 'https://bsky.social'
+    if (bskyUser && bskyPass) {
       log('sending bluesky on behalf of ' + bskyUser, { winningTagnumber, bskyUser })
 
       const agent = new AtpAgent({
@@ -3756,6 +3756,7 @@ export type NotificationTarget =
 export type NotificationDeliveryReport = {
   target: NotificationTarget
   status: 'queued' | 'sent' | 'failed' | 'skipped'
+  source?: 'admin-sanity' | 'environment' | 'mixed'
   reason?: string
   result?: unknown
 }
@@ -3781,22 +3782,31 @@ export const sendNewBikeTagNotifications = async (
     deliveryReport.push({ target, status: 'skipped', reason })
     log('Notification target skipped', { game: game.name, target, reason }, 'info')
   }
-  const addNotificationTask = (target: NotificationTarget, task: Promise<unknown>) => {
+  const addNotificationTask = (
+    target: NotificationTarget,
+    task: Promise<unknown>,
+    source?: NotificationDeliveryReport['source'],
+  ) => {
     const report: NotificationDeliveryReport | undefined = deliveryReport
-      ? { target, status: 'queued' }
+      ? { target, status: 'queued', source }
       : undefined
     if (report) deliveryReport?.push(report)
     notificationPromises.push(
       Promise.resolve(task).then(
         (result) => {
           if (report) {
-            report.status = 'sent'
-            report.result =
-              typeof result === 'string' || typeof result === 'number'
-                ? result
-                : Array.isArray(result)
-                  ? `${result.length} recipient(s) accepted`
-                  : 'Provider accepted the request.'
+            if (result === 'bluesky::failed') {
+              report.status = 'failed'
+              report.reason = 'BlueSky notification send failed; see the function log for details.'
+            } else {
+              report.status = 'sent'
+              report.result =
+                typeof result === 'string' || typeof result === 'number'
+                  ? result
+                  : Array.isArray(result)
+                    ? `${result.length} recipient(s) accepted`
+                    : 'Provider accepted the request.'
+            }
           }
           return result
         },
@@ -3820,56 +3830,158 @@ export const sendNewBikeTagNotifications = async (
   const logo = new URL(game.logo?.length ? getSanityImageUrl(game.logo) : defaultLogo, host).href
 
   if (!skipSocials && currentTag) {
-    const sendGlobalDiscordNotification = process.env.DCN
+    const selectedGlobalTargets = (
+      ['global-discord', 'global-slack', 'global-bluesky'] as NotificationTarget[]
+    ).filter(shouldSendNotification)
+    const globalSettingsResponse = selectedGlobalTargets.length
+      ? await adminBiketag
+          .getSettings({ fields: ['key', 'value'] }, { source: 'sanity' })
+          .catch((error) => {
+            log('Could not read private global notification settings', error, 'warn')
+            return undefined
+          })
+      : undefined
+    const globalSettings = globalSettingsResponse?.success ? globalSettingsResponse.data : undefined
+    if (globalSettingsResponse && !globalSettingsResponse.success) {
+      log(
+        'Could not read private global notification settings',
+        { status: globalSettingsResponse.status },
+        'warn',
+      )
+    }
+    const resolveGlobalNotification = (
+      key: string,
+      environmentVariable: string,
+      environmentValue?: string,
+    ) => {
+      const adminValue = globalSettings?.find((setting) => setting.key === key)?.value
+      if (adminValue) return { value: adminValue, source: 'admin-sanity' as const }
+      if (environmentValue) return { value: environmentValue, source: 'environment' as const }
+      return {
+        value: undefined,
+        source: undefined,
+        reason: `No value was found for Admin Sanity key ${key} or environment variable ${environmentVariable}.`,
+      }
+    }
+
+    const sendGlobalDiscordNotification = resolveGlobalNotification(
+      'notifications::global-discord',
+      'DCN',
+      process.env.DCN,
+    )
     if (shouldSendNotification('global-discord')) {
-      if (sendGlobalDiscordNotification) {
-        log('Sending global Discord notification', { game: game.name }, 'info')
+      if (sendGlobalDiscordNotification.value) {
+        log(
+          'Sending global Discord notification',
+          { game: game.name, source: sendGlobalDiscordNotification.source },
+          'info',
+        )
         addNotificationTask(
           'global-discord',
           sendBikeTagPostNotificationToWebhook(
             currentTag,
             winningTag,
-            sendGlobalDiscordNotification,
+            sendGlobalDiscordNotification.value,
             'discord',
             host,
             game,
           ),
+          sendGlobalDiscordNotification.source,
         )
       } else {
-        reportSkipped('global-discord', 'Global Discord webhook is not configured (DCN is empty).')
+        reportSkipped('global-discord', sendGlobalDiscordNotification.reason!)
       }
     }
 
-    const sendGlobalBlueSkyNotification = process.env.BSN
+    const globalBlueSkySetting = globalSettings?.find(
+      (setting) => setting.key === 'notifications::global-bluesky',
+    )
+    const blueSkyEnabledValue = globalBlueSkySetting?.value
+    const blueSkyEnabled = blueSkyEnabledValue
+      ? ['true', '1', 'enabled'].includes(blueSkyEnabledValue.toLowerCase())
+      : Boolean(process.env.BSN)
+    const blueSkyEnabledSource = blueSkyEnabledValue
+      ? 'admin-sanity'
+      : process.env.BSN
+        ? 'environment'
+        : undefined
+    const blueSkyUser = resolveGlobalNotification(
+      'notifications::global-bluesky-user',
+      'BSKY_USER',
+      process.env.BSKY_USER,
+    )
+    const blueSkyPass = resolveGlobalNotification(
+      'notifications::global-bluesky-pass',
+      'BSKY_PASS',
+      process.env.BSKY_PASS,
+    )
+    const blueSkyServer = resolveGlobalNotification(
+      'notifications::global-bluesky-server',
+      'BSKY_SERVER',
+      process.env.BSKY_SERVER,
+    )
     if (shouldSendNotification('global-bluesky')) {
-      if (sendGlobalBlueSkyNotification) {
-        log('Sending global BlueSky notification', { game: game.name }, 'info')
+      if (!blueSkyEnabled) {
+        reportSkipped(
+          'global-bluesky',
+          blueSkyEnabledValue
+            ? 'Global BlueSky notifications are disabled by notifications::global-bluesky.'
+            : 'Global BlueSky notifications are not enabled by Admin Sanity or BSN.',
+        )
+      } else if (!blueSkyUser.value || !blueSkyPass.value) {
+        reportSkipped(
+          'global-bluesky',
+          blueSkyUser.reason ?? blueSkyPass.reason ?? 'Global BlueSky credentials are incomplete.',
+        )
+      } else {
+        const sources = [
+          blueSkyEnabledSource,
+          blueSkyUser.source,
+          blueSkyPass.source,
+          blueSkyServer.value ? blueSkyServer.source : undefined,
+        ].filter(Boolean)
+        const source = sources.every((value) => value === sources[0])
+          ? sources[0]
+          : 'mixed'
+        log('Sending global BlueSky notification', { game: game.name, source }, 'info')
         addNotificationTask(
           'global-bluesky',
-          sendBikeTagPostNotificationToBlueSky(currentTag, winningTag, host, game),
+          sendBikeTagPostNotificationToBlueSky(currentTag, winningTag, host, game, {
+            user: blueSkyUser.value,
+            pass: blueSkyPass.value,
+            server: blueSkyServer.value,
+          }),
+          source as NotificationDeliveryReport['source'],
         )
-      } else {
-        reportSkipped('global-bluesky', 'Global BlueSky credentials are not configured (BSN is empty).')
       }
     }
 
-    const sendGlobalSlackNotification = process.env.SLN
+    const sendGlobalSlackNotification = resolveGlobalNotification(
+      'notifications::global-slack',
+      'SLN',
+      process.env.SLN,
+    )
     if (shouldSendNotification('global-slack')) {
-      if (sendGlobalSlackNotification) {
-        log('Sending global Slack notification', { game: game.name }, 'info')
+      if (sendGlobalSlackNotification.value) {
+        log(
+          'Sending global Slack notification',
+          { game: game.name, source: sendGlobalSlackNotification.source },
+          'info',
+        )
         addNotificationTask(
           'global-slack',
           sendBikeTagPostNotificationToWebhook(
             currentTag,
             winningTag,
-            sendGlobalSlackNotification,
+            sendGlobalSlackNotification.value,
             'slack',
             host,
             game,
           ),
+          sendGlobalSlackNotification.source,
         )
       } else {
-        reportSkipped('global-slack', 'Global Slack webhook is not configured (SLN is empty).')
+        reportSkipped('global-slack', sendGlobalSlackNotification.reason!)
       }
     }
 
@@ -3908,6 +4020,7 @@ export const sendNewBikeTagNotifications = async (
             host,
             game,
           ),
+          'admin-sanity',
         )
       } else {
         const configured = privateSettingsResponse.data?.some(
@@ -3940,6 +4053,7 @@ export const sendNewBikeTagNotifications = async (
             host,
             game,
           ),
+          'admin-sanity',
         )
       } else {
         const configured = privateSettingsResponse.data?.some(

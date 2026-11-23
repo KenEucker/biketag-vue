@@ -142,6 +142,9 @@ export const autoNotifyNewBikeTagPosted = async (
   }
 
   if (payloadOpts.force) {
+    if (deliveryReport.some((report) => report.status === 'failed')) {
+      errors = true
+    }
     results.push(...deliveryReport)
   }
 

@@ -817,9 +817,17 @@ export const useBikeTagStore = defineStore(BikeTagDefaults.store, {
           : response.data?.error || response.data || 'failed to resend post notifications'
       } catch (e: any) {
         console.error('error resending post notifications', e?.message ?? e)
-        return Array.isArray(e.response?.data)
-          ? e.response.data.join(' ')
-          : e.response?.data?.error || e.response?.data || 'error resending post notifications'
+        const errorData = e.response?.data
+        if (Array.isArray(errorData)) return errorData
+        if (typeof errorData === 'string') {
+          try {
+            const parsedData = JSON.parse(errorData)
+            if (Array.isArray(parsedData)) return parsedData
+          } catch {
+            // Keep the original response text for non-JSON errors.
+          }
+        }
+        return errorData?.error || errorData || 'error resending post notifications'
       }
     },
     async dequeueTag(d: any) {
