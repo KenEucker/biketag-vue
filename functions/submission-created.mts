@@ -82,10 +82,9 @@ export default async (req: Request) => {
 
         if (!game) {
           console.error('no game found for', gameName, payload)
-          return {
-            data: false,
-            statusCode: HttpStatusCode.BadRequest,
-          }
+          return new Response(JSON.stringify({ data: false }), {
+            status: HttpStatusCode.BadRequest,
+          })
         }
 
         const imageSource = getImageSource(game)
@@ -133,10 +132,9 @@ export default async (req: Request) => {
 
         if (requiresAmbassadorEmail && !thisGamesAmbassadors.length) {
           log('no ambassadors configured for game', { gameName, formName })
-          return {
-            data: false,
-            statusCode: HttpStatusCode.BadRequest,
-          }
+          return new Response(JSON.stringify({ data: false }), {
+            status: HttpStatusCode.BadRequest,
+          })
         }
 
         if (!requiresAmbassadorEmail && (!currentMysteryTag || !thisGamesAmbassadors.length)) {
@@ -147,10 +145,9 @@ export default async (req: Request) => {
             thisGamesAmbassadors,
             currentMysteryTag,
           })
-          return {
-            data: false,
-            statusCode: HttpStatusCode.BadRequest,
-          }
+          return new Response(JSON.stringify({ data: false }), {
+            status: HttpStatusCode.BadRequest,
+          })
         }
 
         if (!currentMysteryTag && !isErrorReport) {
@@ -171,16 +168,17 @@ export default async (req: Request) => {
           }
         }
       } else {
-        /// doing nothing, eh?
-        success = true
+        // Queue-image forms have no notification work to perform.
+        return new Response(JSON.stringify({ data: true }), {
+          status: HttpStatusCode.Ok,
+        })
       }
 
       if (!game) {
         console.error('no game found for', gameName, payload)
-        return {
-          data: false,
-          statusCode: HttpStatusCode.BadRequest,
-        }
+        return new Response(JSON.stringify({ data: false }), {
+          status: HttpStatusCode.BadRequest,
+        })
       }
 
       const autoPostSetting = game.settings?.['queue::autoPost']?.length
@@ -324,9 +322,8 @@ export default async (req: Request) => {
       console.error('no game to work with', payload)
     }
 
-    return {
-      data: success,
-      statusCode: success ? HttpStatusCode.Ok : HttpStatusCode.BadRequest,
-    }
+    return new Response(JSON.stringify({ data: success }), {
+      status: success ? HttpStatusCode.Ok : HttpStatusCode.BadRequest,
+    })
   }
 }
